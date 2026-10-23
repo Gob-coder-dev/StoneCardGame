@@ -3,6 +3,7 @@
 extends RefCounted
 
 const Effects := preload("res://scripts/domain/StoneEffects.gd")
+const AIProfileModel := preload("res://scripts/ai/AIProfile.gd")
 
 static func find_problems(stones: Array, gods: Dictionary, npcs: Array, default_god_id: String) -> Array[String]:
 	var problems: Array[String] = []
@@ -52,8 +53,8 @@ static func _check_npc(npc: Dictionary, gods: Dictionary, problems: Array[String
 	var god_id := str(npc.get("god_id", ""))
 	if not gods.has(god_id):
 		problems.append("dieu inconnu pour le NPC '%s'." % npc_id)
-	if not AIPlayer.LEVELS.has(str(npc.get("ai_level", ""))):
-		problems.append("niveau d'IA inconnu pour le NPC '%s'." % npc_id)
+	for ai_problem in AIProfileModel.problems(npc.get("ai")):
+		problems.append("%s pour le NPC '%s'." % [ai_problem, npc_id])
 	# Les adversaires ne sont pas soumis au budget du joueur, seulement à la taille du deck.
 	if npc.get("deck", []).size() != DeckRules.DECK_SIZE:
 		problems.append("le deck du NPC '%s' doit contenir %d pierres." % [npc_id, DeckRules.DECK_SIZE])

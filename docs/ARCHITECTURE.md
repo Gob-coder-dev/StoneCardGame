@@ -9,7 +9,7 @@ Une IA appelle le même moteur sur une copie pour essayer un coup instantanémen
 | --- | --- | --- |
 | `data/stones.json` | — | Définition complète de chaque carte, pouvoirs compris |
 | `data/gods.json` | — | Dieux, familles, couleurs et descriptions |
-| `data/npcs.json` | — | Adversaires, decks, dieux et stratégies IA |
+| `data/npcs.json` | — | Adversaires, decks, dieux et profils d'IA |
 | `StoneLoader` | `get_stone`, `has_stone`, `has_effect`, `get_god`, `get_npc` | Charge les catalogues, fournit des copies et des lectures sans copie |
 | `ContentValidator` | `find_problems` | Liste les incohérences des catalogues ; `StoneLoader` les signale au démarrage |
 | `PlayerData` | `load_save`, `save`, `set_player_deck` | Pseudo, dieu, deck et statistiques persistants |
@@ -37,6 +37,7 @@ de pile ou face inconnu dans `stones.json`.
 
 `GameState` contient le plateau, les mains et le hasard propre à la partie.
 Chaque pierre posée possède une `BattleStone` mutable ; le catalogue reste intact.
+Une case garde aussi l'auteur de sa pose (`placed_by`), que les captures ne changent pas.
 `StoneSide` centralise les côtés, leurs directions et leurs opposés.
 `PlacementRules.is_valid()` est la validation commune aux coups réels et simulés.
 
@@ -68,8 +69,7 @@ CombatResolver.finish_move()
 `PostAttackEffectResolver` reçoit le plan complet : le Pillage lit ses captures,
 l'Échec corrosif ses attaques ratées. Chaque transfert de Pillage indique ses
 faces possibles (`candidate_sides`), que `PillageAnimation` fait clignoter.
-`RulesEngine` fournit score, fin de partie, liste des coups disponibles et
-l'estimation des captures de `GreedyAI`.
+`RulesEngine` fournit score, fin de partie et liste des coups disponibles.
 `CombatBoard` est l'accès partagé aux instances des cases : une case occupée
 porte toujours sa `BattleStone`, y compris dans les tests.
 `BattleStone.markers_for_side()` décrit les symboles ; le moteur connaît leur type
@@ -174,16 +174,48 @@ relâcher demande `TurnManager.human_play()`, relâcher ailleurs annule sans sé
 
 ## IA
 
-`AITurnRunner` attend son délai, demande un coup à `AIPlayer.choose_move()`, puis
-le transmet à `TurnManager`. `clone_for_ai()` cache la main humaine et le prochain tirage réel.
-`AITurnRunner.create_ai()` crée l'IA d'un niveau de `AIPlayer.LEVELS`, la liste
-vérifiée par `ContentValidator` pour `npcs.json`.
-`RandomAI` tire un coup, `GreedyAI` maximise les captures estimées, `ScoreAI` compare
-le score après simulation. Elle simule chaque coup une seule fois : la même
-simulation donne le score et le nombre de captures qui départage les égalités.
-`ScoreAI` reprend la stratégie de l'ancien `MinimaxAI` :
-celui-ci s'arrêtait dès la branche humaine et n'explorait pas trois tours.
-Le nom et le code décrivent désormais cette profondeur réelle d'un seul coup.
+Une seule IA, `ProfileAI`, joue tous les adversaires. `AIProfile` lit son réglage
+dans le champ `"ai"` de `npcs.json` ; `ContentValidator` en signale les erreurs.
+`AITurnRunner.create_ai()` crée l'IA d'un profil.
+
+| Niveau | `precision` | `anticipation` | Adversaires | Délai minimal |
+| --- | --- | --- | --- | --- |
+| 1 | 0 | non | Hiro, Mei | 0,6 s |
+| 2 | 0,5 | non | Tetsuo, Yuki | 0,8 s |
+| 3 | 1 | oui | Raiko, Kaguya | 1,2 s |
+
+Avec la probabilité `precision`, l'IA joue le meilleur coup évalué, au hasard
+entre les ex aequo. Sinon elle commet une erreur crédible : un coup tiré au sort
+avec le poids `exp(−écart / T)`, où `T = (1 − p) / p` capture. À 0, elle joue au
+hasard sans rien évaluer. Ce choix est tiré avant la réflexion, avec un hasard
+propre à l'IA (`ProfileAI.rng`, fixé par les tests).
+
+`MoveEvaluator` mesure un coup en captures, en le jouant avec
+`CombatResolver.apply_move()` sur une copie de l'état. Un coup dont la simulation
+consomme du hasard (Fortune, Pillage) est rejoué sur 8 tirages, avec des graines
+propres à l'IA. Avec `anticipation` :
+
+- la valeur retire la riposte attendue : pour chaque carte possible du joueur,
+  ses meilleures captures immédiates depuis une case libre, puis la meilleure
+  carte de sa main, en moyenne sur les mains possibles de sa taille
+  (`OpponentModel.rank_weights`) ;
+- à trois cases libres ou moins, un calcul exact joue toutes les fins de partie
+  (élagage alpha-bêta sur les coups de l'IA), avec la même moyenne sur les mains
+  pour chaque riposte. Un coup aléatoire y est rejoué sur 2 tirages.
+
+`OpponentModel` déduit les cartes possibles du dieu du joueur et des poses déjà
+faites (`placed_by`) : `clone_for_ai()` cache la main humaine et le prochain tirage
+réel, et l'IA ne lit jamais la vraie main. La riposte immédiate utilise des pierres
+non posées, avec les deux issues d'un pile ou face (`CoinFlipEffect.apply_outcome`) ;
+elle ignore les lames roses et l'aura d'Essaim que la carte recevrait. Le calcul
+exact de fin de partie pose réellement les cartes.
+
+`AIPlayer` définit le contrat : `start_search(état)` rend une `MoveSearch`, dont
+`step(budget)` évalue les tirages un par un, puis `chosen_move()` donne le coup.
+`AITurnRunner` l'avance de 4 ms par image dans `_process`, sans minuteur ni `await`,
+et joue quand la réflexion est finie et le délai écoulé. Une partie relancée ou
+une scène fermée abandonne la réflexion. `choose_move()` réfléchit d'un bloc pour
+les tests.
 
 ## Ajouter un pouvoir
 
@@ -193,6 +225,11 @@ Le nom et le code décrivent désormais cette profondeur réelle d'un seul coup.
 4. Décrire son résultat dans `CombatEvents` sans données d'affichage.
 5. Lui associer une animation dans `BoardAnimationController` et un logo via `StoneSymbols`.
 6. Ajouter les vérifications dans la suite de règles et la suite visuelle concernées.
+
+L'IA joue ses coups avec le même résolveur : un nouveau pouvoir y est compté
+sans code, et un pouvoir qui tire au hasard y est détecté. Seule la riposte
+immédiate d'`OpponentModel` lit les cartes adverses sans les poser : elle ne voit
+pas leurs pouvoirs de pose, à part le pile ou face.
 
 Un nouveau système continu peut suivre `SwarmSystem`, avec un instantané et une
 transition avant/après. `CombatResolver` garde uniquement l'ordre général des phases.

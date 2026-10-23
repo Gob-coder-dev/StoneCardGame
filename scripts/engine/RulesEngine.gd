@@ -1,34 +1,12 @@
 ## RulesEngine.gd
-## Lectures pures d'un GameState : score, fin de partie, coups possibles et
-## estimation des captures. Fonctions statiques, sans effet sur la partie.
+## Lectures pures d'un GameState : score, fin de partie et coups possibles.
+## Fonctions statiques, sans effet sur la partie.
 ##
 ## Les définitions restent dans StoneLoader et les modifications de combat dans
-## BattleStone. CombatResolver est l'unique chemin qui applique un coup.
+## BattleStone. CombatResolver est l'unique chemin qui applique un coup ; l'IA
+## l'appelle sur des copies (voir scripts/ai/MoveEvaluator.gd).
 class_name RulesEngine
 extends RefCounted
-
-const CombatResolverModel := preload("res://scripts/engine/CombatResolver.gd")
-
-
-## Estime les captures par simulation ; huit tirages pour les pouvoirs aléatoires.
-static func count_captures(state: GameState, row: int, col: int, stone_id: String, owner: int) -> int:
-	var definition := StoneLoader.get_stone(stone_id)
-	var stochastic := int(definition.get("random_blades", 0)) > 0 or str(definition.get("coin_flip", "")) != ""
-	var samples := 8 if stochastic else 1
-	var total := 0.0
-	for sample in range(samples):
-		var simulation := state.clone()
-		simulation.set_random_seed(hash("preview:%s:%d:%d:%d" % [stone_id, row, col, sample]))
-		if not simulation.hand_of(owner).has(stone_id):
-			simulation.hand_of(owner).append(stone_id)
-		var before_score := calculate_score(simulation)
-		var result := CombatResolverModel.apply_move(simulation, row, col, stone_id, owner)
-		if result.get("success", false):
-			var after_score := calculate_score(simulation)
-			var before_owned: int = before_score["human"] if owner == GameState.PLAYER_HUMAN else before_score["ai"]
-			var after_owned: int = after_score["human"] if owner == GameState.PLAYER_HUMAN else after_score["ai"]
-			total += maxi(0, after_owned - before_owned - 1)
-	return int(round(total / float(samples)))
 
 
 ## ─── Fin de partie / score / vainqueur ───────────────────────────────────────

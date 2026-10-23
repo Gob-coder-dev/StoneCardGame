@@ -27,6 +27,8 @@ func _register_test_stones() -> void:
 	_register("fx_mixed_ranged", 0, 0, 0, 2, {"long_blades": {"top": 0, "bottom": 0, "left": 0, "right": 2}})
 	_register("fx_strong_wall", 4, 4, 4, 4)
 	_register("fx_ranged_target", 0, 0, 0, 0)
+	# Défense 2 à gauche seulement : seules les fortes lames de droite la capturent par là.
+	_register("fx_left2", 0, 0, 2, 0)
 	_register("fx_target", 0, 0, 1, 0, {"shields": {"top": 0, "bottom": 0, "left": 1, "right": 0}})
 	_register("fx_weaken_local", 0, 0, 0, 0, {"effects": [StoneEffects.WEAKEN_ADJACENT]})
 	_register("fx_weaken_attack1", 0, 0, 0, 1, {"effects": [StoneEffects.WEAKEN_ADJACENT]})
@@ -67,6 +69,7 @@ func _force_instance(state: GameState, row: int, col: int, stone_id: String, own
 	cell["stone_id"] = stone_id
 	cell["stone"] = stone
 	cell["owner"] = owner
+	cell["placed_by"] = owner
 	state.empty_playable_cells -= 1
 
 

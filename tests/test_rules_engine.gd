@@ -160,17 +160,6 @@ func test_capture_changes_owner() -> void:
 	assert_eq(state.get_cell(0, 1)["owner"], GameState.PLAYER_HUMAN)
 
 
-## ─── count_captures (estimation utilisée par GreedyAI) ───────────────────────
-
-func test_count_captures_matches_resolver() -> void:
-	var state := _make_state()
-	_force_instance(state, 1, 2, "t_0010", GameState.PLAYER_AI)
-	_force_instance(state, 2, 1, "t_1000", GameState.PLAYER_AI)
-	var n := RulesEngine.count_captures(state, 1, 1, "t_0303", GameState.PLAYER_HUMAN)
-	assert_eq(n, 2)
-	assert_eq(state.get_cell(1, 1)["owner"], GameState.PLAYER_NONE, "l'estimation ne modifie pas la partie")
-
-
 ## ─── Fin de partie ───────────────────────────────────────────────────────────
 
 func test_game_not_over_on_empty_board() -> void:
@@ -266,7 +255,6 @@ func run() -> void:
 	test_capture_bottom_neighbor()
 	test_capture_left_neighbor()
 	test_capture_changes_owner()
-	test_count_captures_matches_resolver()
 	test_game_not_over_on_empty_board()
 	test_game_over_when_no_empty_cells()
 	test_score_empty_board()

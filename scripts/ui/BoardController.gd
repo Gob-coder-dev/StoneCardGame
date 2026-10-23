@@ -72,7 +72,7 @@ func _start_battle(human_deck: Array, npc_id: String) -> void:
 	var ai_hand := StoneLoader.build_hand(_npc_data["deck"])
 
 	## Préparer l'IA et son runner.
-	var ai := AITurnRunner.create_ai(str(_npc_data.get("ai_level", "")))
+	var ai := AITurnRunner.create_ai(_npc_data.get("ai", {}))
 	_ai_runner = AITurnRunner.new()
 	add_child(_ai_runner)
 	_ai_runner.setup(ai, turn_manager)

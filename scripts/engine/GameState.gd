@@ -33,6 +33,8 @@ static func total_cells() -> int:
 ##   "stone_id": String,   # "" si vide
 ##   "stone": BattleStone, # null si vide
 ##   "owner": PLAYER_NONE | PLAYER_HUMAN | PLAYER_AI
+##   "placed_by": joueur qui a posé la pierre, inchangé par les captures.
+##                Information publique : l'IA en déduit les cartes déjà jouées.
 ## }
 
 ## ─── État de la partie ────────────────────────────────────────────────────────
@@ -73,7 +75,8 @@ func _reset_board() -> void:
 			"cell_type": CELL_EMPTY,
 			"stone_id": "",
 			"stone": null,
-			"owner": PLAYER_NONE
+			"owner": PLAYER_NONE,
+			"placed_by": PLAYER_NONE
 		})
 	empty_playable_cells = total_cells()
 	score_human = 0

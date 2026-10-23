@@ -28,6 +28,7 @@ static func place_stone(state: GameState, row: int, col: int, stone_id: String, 
 	var index := GameState.cell_index(row, col)
 	state.board[index]["stone_id"] = stone_id
 	state.board[index]["owner"] = player
+	state.board[index]["placed_by"] = player
 	state.board[index]["stone"] = battle_stone
 	state.empty_playable_cells -= 1
 	state.hand_of(player).erase(stone_id)

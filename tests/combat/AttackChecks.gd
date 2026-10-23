@@ -77,8 +77,6 @@ func _test_attack_paths() -> void:
 	var piercing := _state_with_hands(["fx_ranged"], [])
 	_force_instance(piercing, 1, 1, "fx_wall", GameState.PLAYER_AI)
 	_force_instance(piercing, 1, 2, "fx_ranged_target", GameState.PLAYER_AI)
-	_check(RulesEngine.count_captures(piercing, 1, 0, "fx_ranged", GameState.PLAYER_HUMAN) == 2,
-		"l'évaluation IA compte les captures transperçantes")
 	result = CombatResolverModel.apply_move(piercing, 1, 0, "fx_ranged", GameState.PLAYER_HUMAN)
 	ray = result["attacks"][0]
 	_check(result["captures"].size() == 2 and ray["hits"][0]["attack"] == 3 and ray["hits"][1]["attack"] == 1,

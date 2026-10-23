@@ -8,10 +8,15 @@ static func resolve(state: GameState, battle_stone: BattleStoneModel, definition
 	var coin_axis := str(definition.get("coin_flip", ""))
 	if coin_axis != "":
 		var flipped := state.draw_random_index(2) == 1
-		battle_stone.coin_flipped = flipped
-		if flipped:
-			var faces := StoneSide.coin_faces(coin_axis)
-			battle_stone.swap_faces(faces[0], faces[1])
+		apply_outcome(battle_stone, coin_axis, flipped)
 		events.append(CombatEvents.coin_flip(coin_axis, flipped))
 
 	return events
+
+## Applique une issue du pile ou face : une pièce gagnante échange les faces de
+## l'axe. L'IA s'en sert pour envisager les deux issues sans tirer au sort.
+static func apply_outcome(battle_stone: BattleStoneModel, axis: String, flipped: bool) -> void:
+	battle_stone.coin_flipped = flipped
+	if flipped:
+		var faces := StoneSide.coin_faces(axis)
+		battle_stone.swap_faces(faces[0], faces[1])

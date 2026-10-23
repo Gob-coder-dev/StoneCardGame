@@ -28,7 +28,7 @@ scripts/
   engine/              État, tours, validation et résolution générale
     combat/            Attaques, événements et ticket de présentation
     effects/           Pose, Fortune, Déclin, Pillage et Essaim
-  ai/                  RandomAI, GreedyAI, ScoreAI et AITurnRunner
+  ai/                  IA à profils, évaluation des coups et AITurnRunner
   ui/                  Écrans, plateau, main et StoneCard
     collection/        Sélecteur de dieu, deck, grille et panneaux
     combat/            Présentation, géométrie et animations
@@ -59,7 +59,7 @@ commandes depuis la racine du projet, avec Godot disponible dans le `PATH`.
 
 La suite de règles et d'intégration couvre le deck, les sauvegardes, les six
 familles, les attaques, le hasard reproductible et caché à l'IA, les effets,
-les trois IA, les menus et le séquencement des animations. Elle compare aussi
+l'IA et ses profils, les menus et le séquencement des animations. Elle compare aussi
 des parties animées avec les simulations instantanées pour chaque famille.
 
 ```sh
@@ -80,7 +80,7 @@ au doigt et à la souris. Elle ne sauvegarde aucun
 changement de deck ou de statistiques.
 
 Chaque suite se termine par un résumé, par exemple
-`GOD_SYSTEM_CHECKS: 255 passed, 0 failed, 0 Godot errors` ou
+`GOD_SYSTEM_CHECKS: 280 passed, 0 failed, 0 Godot errors` ou
 `TACTILE : 50 vérifications, 0 échec(s), 0 erreur(s) Godot.`, et renvoie le code
 de sortie 1 en cas de problème. Sont comptés comme problèmes : une vérification
 ratée, une suite qui ne compile pas, une erreur ou un avertissement Godot non
@@ -213,16 +213,26 @@ les règles et affichés sans arrondi dans les menus.
 Chaque adversaire possède désormais un dieu et un deck cohérent avec sa famille.
 Les decks des adversaires ne sont pas soumis au plafond de 50 points du joueur :
 Yuki, Raiko et Kaguya le dépassent. Au chargement, `ContentValidator` vérifie
-seulement leur taille, leur famille et leur niveau d'IA.
+seulement leur taille, leur famille et leur profil d'IA.
 
 | NPC | Difficulté | IA | Dieu / famille |
 |-----|-----------|-----|----------------|
-| Hiro le Novice | Facile | RandomAI | Hachiman / Rempart |
-| Mei la Kunoichi | Facile | RandomAI | Izanami / Déclin |
-| Tetsuo le Rōnin | Moyen | GreedyAI | Inari / Fortune |
-| Yuki la Prêtresse | Moyen | GreedyAI | Ōkuninushi / Essaim |
-| Raiko le Maître du Tonnerre | Difficile | ScoreAI | Tsukuyomi / Horizon |
-| Kaguya la Sans-Nom | Difficile | ScoreAI | Susanoo / Pillage |
+| Hiro le Novice | Facile | Niveau 1 | Hachiman / Rempart |
+| Mei la Kunoichi | Facile | Niveau 1 | Izanami / Déclin |
+| Tetsuo le Rōnin | Moyen | Niveau 2 | Inari / Fortune |
+| Yuki la Prêtresse | Moyen | Niveau 2 | Ōkuninushi / Essaim |
+| Raiko le Maître du Tonnerre | Difficile | Niveau 3 | Tsukuyomi / Horizon |
+| Kaguya la Sans-Nom | Difficile | Niveau 3 | Susanoo / Pillage |
 
-`ScoreAI` évalue le score après un coup simulé. Elle n'explore pas un arbre minimax
-sur plusieurs tours et ne connaît ni la main humaine ni le prochain tirage réel.
+Une seule IA joue tous les adversaires, réglée par le champ `"ai"` de `npcs.json` :
+
+- niveau 1, `{"precision": 0.0, "anticipation": false}` : joue au hasard ;
+- niveau 2, `{"precision": 0.5, "anticipation": false}` : une fois sur deux, le
+  coup qui capture le plus ; sinon une erreur crédible, tirée au sort en
+  favorisant les coups qui rapportent ;
+- niveau 3, `{"precision": 1.0, "anticipation": true}` : retire de chaque coup la
+  riposte attendue du joueur, puis calcule exactement les trois derniers coups.
+
+L'IA ne voit ni la main du joueur ni le prochain tirage réel : elle suppose les
+cartes de son dieu et les neutres, moins celles déjà posées. D'autres niveaux se
+créent en changeant ces deux valeurs, sans code.

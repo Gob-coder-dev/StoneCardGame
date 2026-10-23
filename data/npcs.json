@@ -7,7 +7,7 @@
       "description": "Un jeune samouraï qui découvre à peine les SamStones.",
       "quote": "Je m'entraîne encore, mais un jour je serai le meilleur !",
       "difficulty": "easy",
-      "ai_level": "random",
+      "ai": { "precision": 0.0, "anticipation": false },
       "portrait": "res://assets/npcs/hiro.png",
       "deck": [
         "ashigaru",
@@ -25,7 +25,7 @@
       "description": "Une ninja qui joue vite et sans se faire remarquer.",
       "quote": "Tu ne m'auras pas deux fois au même endroit.",
       "difficulty": "easy",
-      "ai_level": "random",
+      "ai": { "precision": 0.0, "anticipation": false },
       "portrait": "res://assets/npcs/mei.png",
       "deck": [
         "shinobi",
@@ -43,7 +43,7 @@
       "description": "Un guerrier sans maître qui a beaucoup appris dans les rues.",
       "quote": "Je n'obéis qu'à mes pierres.",
       "difficulty": "medium",
-      "ai_level": "greedy",
+      "ai": { "precision": 0.5, "anticipation": false },
       "portrait": "res://assets/npcs/tetsuo.png",
       "deck": [
         "kappa",
@@ -61,7 +61,7 @@
       "description": "Servante des dieux, elle invoque les yokai les plus puissants.",
       "quote": "Les esprits choisissent leur camp eux-mêmes.",
       "difficulty": "medium",
-      "ai_level": "greedy",
+      "ai": { "precision": 0.5, "anticipation": false },
       "portrait": "res://assets/npcs/yuki.png",
       "deck": [
         "oni_minor",
@@ -79,7 +79,7 @@
       "description": "Un guerrier légendaire dont chaque coup résonne comme le tonnerre.",
       "quote": "Tu entendras ma pierre avant de la voir.",
       "difficulty": "hard",
-      "ai_level": "score",
+      "ai": { "precision": 1.0, "anticipation": true },
       "portrait": "res://assets/npcs/raiko.png",
       "deck": [
         "yumi_archer",
@@ -97,7 +97,7 @@
       "description": "Personne ne sait d'où elle vient. Elle joue les dieux comme des pions.",
       "quote": "Je n'ai pas de pierre faible. Seulement de mauvais adversaires.",
       "difficulty": "hard",
-      "ai_level": "score",
+      "ai": { "precision": 1.0, "anticipation": true },
       "portrait": "res://assets/npcs/kaguya.png",
       "deck": [
         "samurai_red",

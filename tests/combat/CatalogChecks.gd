@@ -20,6 +20,11 @@ func _test_content_validation() -> void:
 	var problems := ContentChecks.find_problems([typo], gods, [], StoneLoader.default_god_id())
 	_check(problems.size() == 2 and problems[0].contains("horizonal") and problems[1].contains("swarn"),
 		"un pouvoir ou un axe de pile ou face mal orthographié est signalé au chargement")
+	var npc := StoneLoader.get_npc("hiro")
+	npc["ai"] = {"precison": 0.5, "anticipation": false}
+	problems = ContentChecks.find_problems([], gods, [npc], StoneLoader.default_god_id())
+	_check(problems.size() == 2 and problems[0].contains("precison") and problems[1].contains("précision"),
+		"un réglage d'IA mal orthographié dans npcs.json est signalé au chargement")
 
 func _test_catalog_and_decks() -> void:
 	_check(StoneLoader.get_all_gods().size() == 6, "six dieux sont chargés")
