@@ -198,8 +198,7 @@ func _animate_weakening(events: Array, duration: float) -> void:
 	animation.name = "WeaknessReveal"
 	add_child(animation)
 	_track(animation)
-	animation.play_weakening(source, targets, first.get("scope", "") == "global",
-		maxf(0.1, duration))
+	animation.play_weakening(source, targets, maxf(0.1, duration))
 
 
 func _animate_weakness_repair(events: Array, duration: float) -> void:

@@ -20,8 +20,6 @@ var _source: StoneCard
 var _source_center := Vector2.ZERO
 var _square: float = 0.0
 var _targets: Array = []
-var _global: bool = false
-var _max_distance: float = 1.0
 
 
 func _init() -> void:
@@ -29,20 +27,20 @@ func _init() -> void:
 	z_index = 20
 
 
-func play_weakening(source: StoneCard, targets: Array, global_effect: bool, duration: float) -> void:
+## Une traînée de poison part de la pierre posée vers chaque pierre affaiblie :
+## ses voisines pour le Miasme, les pierres qui ont résisté pour l'Échec corrosif.
+func play_weakening(source: StoneCard, targets: Array, duration: float) -> void:
 	mode = CombatEvents.WEAKEN
 	_source = source
 	_targets = targets
-	_global = global_effect
 	var source_transform := get_global_transform().affine_inverse() * source.get_global_transform()
 	_source_center = source_transform * (source.size * 0.5)
 	_square = minf(source.size.x, source.size.y)
-	_max_distance = _square
 	for index in range(_targets.size()):
 		var target: Dictionary = _targets[index]
+		# Une cible plus lointaine (lame bleue) est atteinte un peu plus tard.
 		var distance := _source_center.distance_to(target["center"])
-		_max_distance = maxf(_max_distance, distance)
-		var stagger := minf(0.18, distance / maxf(_square, 1.0) * 0.035) if _global else 0.0
+		var stagger := minf(0.12, maxf(0.0, distance / maxf(_square, 1.0) - 1.2) * 0.06)
 		target["arrival"] = 0.54 + stagger
 		var card: StoneCard = target.get("card")
 		if is_instance_valid(card):
@@ -97,8 +95,6 @@ func _restore_cards() -> void:
 func _draw() -> void:
 	if mode == CombatEvents.WEAKEN and is_instance_valid(_source):
 		_draw_source_aura()
-		if _global:
-			_draw_global_wave()
 		for index in range(_targets.size()):
 			_draw_poison_path(_targets[index], index)
 	elif mode == "repair":
@@ -125,18 +121,6 @@ func _draw_source_aura() -> void:
 		draw_colored_polygon(flame, Color(AURA, cast * (0.20 + 0.10 * (index % 2))))
 
 
-func _draw_global_wave() -> void:
-	var value := clampf(inverse_lerp(0.12, 0.68, progress), 0.0, 1.0)
-	if value <= 0.0 or value >= 1.0:
-		return
-	var radius := lerpf(_square * 0.18, _max_distance + _square * 0.30, smoothstep(0.0, 1.0, value))
-	var fade := sin(value * PI)
-	draw_arc(_source_center, radius, 0.0, TAU, 64, Color(AURA, 0.26 * fade),
-		maxf(8.0, _square * 0.085), true)
-	draw_arc(_source_center, radius, 0.0, TAU, 64, Color(AURA_BRIGHT, 0.72 * fade),
-		maxf(2.0, _square * 0.018), true)
-
-
 func _draw_poison_path(target: Dictionary, index: int) -> void:
 	var arrival := float(target.get("arrival", 0.54))
 	var travel := clampf(inverse_lerp(0.16, arrival, progress), 0.0, 1.0)
@@ -144,7 +128,7 @@ func _draw_poison_path(target: Dictionary, index: int) -> void:
 	var end: Vector2 = target["center"]
 	var direction := (end - start).normalized()
 	var tangent := Vector2(-direction.y, direction.x)
-	var bend := (1.0 if index % 2 == 0 else -1.0) * _square * (0.10 if _global else 0.075)
+	var bend := (1.0 if index % 2 == 0 else -1.0) * _square * 0.075
 	if travel > 0.0 and travel < 1.0:
 		var head := _wisp_point(start, end, tangent, bend, travel)
 		for trail in range(11, -1, -1):

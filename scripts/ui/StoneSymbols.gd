@@ -26,7 +26,7 @@ static func badges_for(stone: Dictionary) -> Array[Dictionary]:
 		result.append({"kind": "long"})
 	for effect in stone.get("effects", []):
 		match str(effect):
-			Effects.WEAKEN_ON_MISS: result.append({"kind": "weaken_miss"})
+			Effects.WEAKEN_ON_FAILED_ATTACK: result.append({"kind": "weaken_miss"})
 			Effects.WEAKEN_ADJACENT: result.append({"kind": "weaken_adjacent"})
 			Effects.SWARM: result.append({"kind": "swarm"})
 			Effects.SHIELD_THEFT: result.append({"kind": "theft"})

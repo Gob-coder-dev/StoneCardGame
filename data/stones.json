@@ -131,10 +131,10 @@
       "asset": "",
       "god_id": "izanami",
       "effects": [
-        "weaken_enemies_on_miss"
+        "weaken_on_failed_attack"
       ],
       "power_cost": 1.0,
-      "power_text": "Échec corrosif : sans capture, affaiblit les pierres adverses jusqu'à la fin de votre prochain coup."
+      "power_text": "Échec corrosif : chaque pierre adverse qui résiste à son attaque perd 1 force jusqu'à la fin de votre prochain coup."
     },
     {
       "id": "samurai_red",
@@ -157,7 +157,7 @@
         "shield_theft"
       ],
       "power_cost": 1.0,
-      "power_text": "Pillage : la force de la face vaincue devient des boucliers sur cette pierre, placés au hasard dans les emplacements libres."
+      "power_text": "Pillage : la force de la face vaincue devient des boucliers placés au hasard sur les trois autres faces de cette pierre."
     },
     {
       "id": "kitsune",
@@ -519,7 +519,7 @@
         "shield_theft"
       ],
       "power_cost": 1.0,
-      "power_text": "Pillage divin : absorbe la force vaincue dans les emplacements de bouclier encore libres."
+      "power_text": "Pillage divin : absorbe la force vaincue dans les emplacements encore libres de ses autres faces."
     },
     {
       "id": "amaterasu",

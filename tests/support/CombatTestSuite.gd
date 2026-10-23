@@ -31,13 +31,20 @@ func _register_test_stones() -> void:
 	_register("fx_weaken_local", 0, 0, 0, 0, {"effects": [StoneEffects.WEAKEN_ADJACENT]})
 	_register("fx_weaken_attack1", 0, 0, 0, 1, {"effects": [StoneEffects.WEAKEN_ADJACENT]})
 	_register("fx_weaken_attack2", 0, 0, 0, 2, {"effects": [StoneEffects.WEAKEN_ADJACENT]})
-	_register("fx_weaken_miss", 0, 0, 0, 0, {"effects": [StoneEffects.WEAKEN_ON_MISS]})
+	# Échec corrosif : 1 lame à droite, qui échoue contre une défense de 1.
+	_register("fx_corrode", 0, 0, 0, 1, {"effects": [StoneEffects.WEAKEN_ON_FAILED_ATTACK]})
+	# Attaque en haut (1 lame) et à droite (2 lames) : une réussite et un échec possibles.
+	_register("fx_corrode_mixed", 1, 0, 0, 2, {"effects": [StoneEffects.WEAKEN_ON_FAILED_ATTACK]})
+	_register("fx_corrode_ranged", 0, 0, 0, 0, {"effects": [StoneEffects.WEAKEN_ON_FAILED_ATTACK],
+		"long_blades": {"top": 0, "bottom": 0, "left": 0, "right": 1}})
 	_register("fx_swarm_a", 1, 1, 1, 1, {"effects": [StoneEffects.SWARM]})
 	_register("fx_swarm_b", 1, 1, 1, 1, {"effects": [StoneEffects.SWARM]})
 	_register("fx_swarm_c", 1, 1, 1, 1, {"effects": [StoneEffects.SWARM]})
 	# Seule la face du bas a de la place : sa lame d'Essaim y pousse toujours.
 	_register("fx_swarm_bottom", 4, 0, 4, 4, {"effects": [StoneEffects.SWARM]})
 	_register("fx_thief", 3, 3, 3, 3, {"effects": [StoneEffects.SHIELD_THEFT]})
+	# Seule la face droite a de la place : c'est aussi elle qui attaque.
+	_register("fx_thief_right_open", 4, 4, 4, 2, {"effects": [StoneEffects.SHIELD_THEFT]})
 
 
 func _register(id: String, top: int, bottom: int, left: int, right: int, extras: Dictionary = {}) -> void:

@@ -5,13 +5,14 @@ extends RefCounted
 
 ## Déclin : Miasme, affaiblit définitivement les voisines après les attaques.
 const WEAKEN_ADJACENT := "weaken_adjacent"
-## Déclin : Échec corrosif, affaiblit le camp adverse si la pose ne capture rien.
-const WEAKEN_ON_MISS := "weaken_enemies_on_miss"
+## Déclin : Échec corrosif, chaque pierre adverse qui résiste à l'attaque perd
+## 1 force jusqu'à la fin du prochain coup du lanceur.
+const WEAKEN_ON_FAILED_ATTACK := "weaken_on_failed_attack"
 ## Essaim : aura de groupe entre pierres Essaim alliées reliées.
 const SWARM := "swarm"
 ## Pillage : la force vaincue devient des boucliers sur la pierre attaquante.
 const SHIELD_THEFT := "shield_theft"
 
 ## Pouvoirs de la famille Déclin : une carte n'en porte qu'un seul.
-const DECLINE: Array[String] = [WEAKEN_ADJACENT, WEAKEN_ON_MISS]
-const ALL: Array[String] = [WEAKEN_ADJACENT, WEAKEN_ON_MISS, SWARM, SHIELD_THEFT]
+const DECLINE: Array[String] = [WEAKEN_ADJACENT, WEAKEN_ON_FAILED_ATTACK]
+const ALL: Array[String] = [WEAKEN_ADJACENT, WEAKEN_ON_FAILED_ATTACK, SWARM, SHIELD_THEFT]

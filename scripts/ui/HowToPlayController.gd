@@ -15,7 +15,7 @@ const GOD_RULES := {
 	],
 	"izanami": [
 		{"kind": "weaken_miss", "title": "Échec corrosif −1",
-			"text": "Si cette carte ne capture rien à la pose, une vague de poison atteint toutes les pierres adverses déjà présentes et leur retire 1 force sur chaque face. Le malus reste actif pendant leur tour puis pendant votre attaque suivante, et expire après ce coup. Les lames neutralisées apparaissent fissurées ; les boucliers restent fonctionnels."},
+			"text": "Quand cette carte attaque une pierre adverse sans réussir à la capturer, de près ou avec une lame bleue, un poison atteint cette pierre et lui retire 1 force sur chaque face. Les pierres capturées, non attaquées ou hors de portée ne sont pas touchées. Le malus reste actif pendant le tour adverse puis pendant votre coup suivant, et expire après ce coup. Les lames neutralisées apparaissent fissurées ; les boucliers restent fonctionnels."},
 		{"kind": "weaken_adjacent", "title": "Miasme autour de la pierre",
 			"text": "Le point central et ses quatre voisins représentent les cases adjacentes. Après toutes les tentatives de capture, une aura violette atteint chaque pierre voisine, alliée ou adverse, et lui retire définitivement 1 force sur chaque face, y compris après une capture. Chaque niveau de faiblesse brise visuellement une lame par face, sans affecter les boucliers. Une carte Déclin ne possède qu'un seul pouvoir."}
 	],
@@ -33,7 +33,7 @@ const GOD_RULES := {
 	],
 	"susanoo": [
 		{"kind": "theft", "title": "Pillage : le cercle avec un +",
-			"text": "Après une capture, les symboles vaincus sont aspirés puis un répartiteur orange révèle les boucliers gagnés. Exemple : vaincre une face avec 2 lames et 1 bouclier donne jusqu'à 3 boucliers, distribués au hasard dans les emplacements libres. La pierre capturée conserve ses symboles. Chaque face reste limitée à {max_markers} symboles au total."}
+			"text": "Après une capture, les symboles vaincus sont aspirés puis un répartiteur orange révèle les boucliers gagnés. Exemple : vaincre une face avec 2 lames et 1 bouclier donne jusqu'à 3 boucliers, distribués au hasard dans les emplacements libres des trois autres faces : la face qui a capturé n'en reçoit pas, et un symbole sans place est perdu. La pierre capturée conserve ses symboles. Chaque face reste limitée à {max_markers} symboles au total."}
 	]
 }
 

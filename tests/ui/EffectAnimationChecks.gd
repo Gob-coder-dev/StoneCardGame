@@ -2,7 +2,31 @@ extends "res://tests/support/CombatTestSuite.gd"
 
 func run() -> void:
 	await _test_pillage_view_animation()
+	await _test_pillage_closed_gate()
 	await _test_weakness_view_animation()
+
+
+## Capture par la droite : la recherche ne parcourt que les trois autres conduits.
+func _test_pillage_closed_gate() -> void:
+	var state := _state_with_hands(["fx_thief"], [])
+	_force_instance(state, 1, 2, "fx_wall", GameState.PLAYER_AI)
+	var result := CombatResolverModel.apply_move(state, 1, 1, "fx_thief", GameState.PLAYER_HUMAN)
+	var view := BoardView.new()
+	view.size = Vector2(900, 900)
+	add_child(view)
+	view.build()
+	view.refresh(state)
+	view.animations.animate_effects(result["effects"], Timeline.PILLAGE)
+	var animation: Control = view.animations.get_node("PillageReveal")
+	var right_gate: int = animation.GATE_SIDES.find("right")
+	var searched: Array[String] = []
+	for gate in animation._searchable_gates:
+		searched.append(animation.GATE_SIDES[gate])
+	searched.sort()
+	_check(not animation._searchable_gates.has(right_gate) and searched == ["bottom", "left", "top"],
+		"le conduit de la face qui a capturé reste éteint pendant la répartition")
+	view.queue_free()
+	await get_tree().process_frame
 
 func _test_pillage_view_animation() -> void:
 	var state := _state_with_hands(["fx_thief"], [])
@@ -47,7 +71,7 @@ func _test_weakness_view_animation() -> void:
 	view.animations.animate_effects(result["effects"], 0.55)
 	var animation: Control = view.animations.get_node("WeaknessReveal")
 	var target: StoneCard = view.get_node("cell_1_2").get_child(0)
-	_check(animation._targets.size() == 2 and not animation._global
+	_check(animation._targets.size() == 2
 		and target.displayed_weakness() == 0,
 		"le Miasme masque les fissures jusqu'à l'arrivée de l'aura locale")
 	await get_tree().create_timer(0.34).timeout
@@ -63,10 +87,11 @@ func _test_weakness_view_animation() -> void:
 	view.queue_free()
 	await get_tree().process_frame
 
-	state = _state_with_hands(["fx_weaken_miss", "fx_plain"], ["fx_plain"])
-	_force_instance(state, 0, 1, "fx_plain", GameState.PLAYER_AI)
+	# Échec corrosif : seule la voisine de droite résiste à l'attaque.
+	state = _state_with_hands(["fx_corrode", "fx_plain"], ["fx_plain"])
 	_force_instance(state, 1, 2, "fx_plain", GameState.PLAYER_AI)
-	result = CombatResolverModel.apply_move(state, 2, 2, "fx_weaken_miss", GameState.PLAYER_HUMAN)
+	_force_instance(state, 0, 0, "fx_plain", GameState.PLAYER_AI)
+	result = CombatResolverModel.apply_move(state, 1, 1, "fx_corrode", GameState.PLAYER_HUMAN)
 	view = BoardView.new()
 	view.size = Vector2(900, 900)
 	add_child(view)
@@ -74,25 +99,27 @@ func _test_weakness_view_animation() -> void:
 	view.refresh(state)
 	view.animations.animate_effects(result["effects"], 0.55)
 	animation = view.animations.get_node("WeaknessReveal")
-	target = view.get_node("cell_0_1").get_child(0)
-	_check(animation._global and animation._targets.size() == 2
+	target = view.get_node("cell_1_2").get_child(0)
+	var far_card: StoneCard = view.get_node("cell_0_0").get_child(0)
+	_check(animation._targets.size() == 1 and animation._targets[0]["card"] == target
 		and target.displayed_weakness() == 0,
-		"l'échec corrosif prépare une vague globale vers les seules cartes adverses")
+		"l'échec corrosif envoie son poison vers la seule pierre qui a résisté")
 	await get_tree().create_timer(0.39).timeout
-	_check(target.displayed_weakness() == 1 and target.broken_blade_count("top") == 1,
-		"la vague globale révèle les lames brisées à son impact")
+	_check(target.displayed_weakness() == 1 and target.broken_blade_count("left") == 1
+		and far_card.displayed_weakness() == 0,
+		"le poison révèle les lames brisées à son impact, sans toucher les autres pierres")
 	view.queue_free()
 	await get_tree().process_frame
 
 	CombatResolverModel.apply_move(state, 2, 0, "fx_plain", GameState.PLAYER_AI)
-	var expiry := CombatResolverModel.apply_move(state, 0, 0, "fx_plain", GameState.PLAYER_HUMAN)
+	var expiry := CombatResolverModel.apply_move(state, 0, 2, "fx_plain", GameState.PLAYER_HUMAN)
 	view = BoardView.new()
 	view.size = Vector2(900, 900)
 	add_child(view)
 	view.build()
 	view.refresh(state)
 	view.animations.animate_effects(expiry["effects"], 0.35)
-	target = view.get_node("cell_0_1").get_child(0)
+	target = view.get_node("cell_1_2").get_child(0)
 	_check(target.displayed_weakness() == 1 and view.animations.get_node_or_null("WeaknessRepair") != null,
 		"une faiblesse expirée conserve brièvement ses fissures pour la réparation")
 	await get_tree().create_timer(0.20).timeout

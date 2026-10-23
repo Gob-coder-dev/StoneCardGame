@@ -17,23 +17,25 @@ static func apply_miasma(state: GameState, row: int, col: int) -> Array:
 			weakness_before, adjacent_stone.weakness(), row, col, "adjacent"))
 	return effects
 
-## Échec corrosif : si la pose n'a rien capturé, chaque pierre adverse perd
-## 1 force jusqu'à la fin du prochain coup du lanceur.
-static func apply_failed_attack(state: GameState, row: int, col: int, player: int, captures: Array) -> Array:
+## Échec corrosif : chaque pierre adverse qui a résisté à l'attaque, de près
+## ou à distance, perd 1 force jusqu'à la fin du prochain coup du lanceur.
+## Les pierres capturées, non attaquées ou hors de portée ne sont pas touchées.
+static func apply_failed_attack(state: GameState, row: int, col: int, player: int, attacks: Array) -> Array:
 	var effects: Array = []
-	if not captures.is_empty():
-		return effects
-	var opponent := GameState.PLAYER_AI if player == GameState.PLAYER_HUMAN else GameState.PLAYER_HUMAN
-	for index in range(state.board.size()):
-		var cell: Dictionary = state.board[index]
-		var target := Board.stone_at(cell)
-		if cell["owner"] == opponent and target != null:
+	for attack in attacks:
+		for hit in attack.get("hits", []):
+			if bool(hit["success"]):
+				continue
+			var cell := state.get_cell(int(hit["row"]), int(hit["col"]))
+			var target := Board.stone_at(cell)
+			if target == null or cell["owner"] == player or cell["owner"] == GameState.PLAYER_NONE:
+				continue
 			var weakness_before := target.weakness()
 			target.temporary_weakness += 1
 			target.temporary_weakness_owner = player
 			effects.append(CombatEvents.weakness(CombatEvents.TEMPORARY_WEAKEN,
-			index / GameState.BOARD_SIZE, index % GameState.BOARD_SIZE,
-			weakness_before, target.weakness(), row, col, "global"))
+				int(hit["row"]), int(hit["col"]), weakness_before, target.weakness(),
+				row, col, "failed_attack"))
 	return effects
 
 static func expire_for_player(state: GameState, player: int) -> Array:

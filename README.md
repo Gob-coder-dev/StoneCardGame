@@ -125,11 +125,12 @@ appuis natifs, le clavier et la souris physique.
   sont révélées à la pose, les boucliers défendent et les grandes lames bleues
   peuvent attaquer à distance
 - Le Miasme de Déclin affaiblit les voisines après les tentatives de capture ;
-  son autre malus, temporaire, expire après le prochain coup du lanceur
+  l'Échec corrosif affaiblit seulement les pierres adverses qui ont résisté à
+  l'attaque, jusqu'à la fin du prochain coup du lanceur
 - Les auras de Déclin révèlent le malus à l'impact et brisent visuellement les
   lames neutralisées, tandis que les boucliers restent intacts
-- Essaim entretient une aura de groupe et Pillage remplit les emplacements
-  libres avec de nouveaux boucliers
+- Essaim entretient une aura de groupe et Pillage remplit avec de nouveaux
+  boucliers les emplacements libres des faces autres que celle qui a capturé
 - Les changements d'Essaim propagent une impulsion entre les cartes puis font
   pousser ou rétracter exactement les lames calculées par le moteur
 - Les lianes vertes croisées restent visibles sur toute la largeur des bords tant
@@ -178,10 +179,11 @@ par des demi-cercles, avec une base plate contre la pierre.
 Après une capture Pillage, les symboles de la face vaincue se détachent et sont
 aspirés dans un entonnoir d'énergie. Ils repoussent ensuite sur la carte
 capturée. Sur l'attaquant, un noyau central alimente quatre conduits : de faux
-chemins s'allument rapidement, puis les chemins sélectionnés restent dorés et
-acheminent les demi-boucliers vers leurs emplacements définitifs.
-`CombatResolver` relie chaque symbole à sa vraie destination dans les
-événements ; la vue ne relance aucun tirage. `TurnManager` verrouille le coup
+chemins s'allument rapidement parmi les faces possibles, puis les chemins
+sélectionnés restent dorés et acheminent les demi-boucliers vers leurs
+emplacements définitifs. La face qui a capturé ne reçoit aucun bouclier : son
+conduit reste éteint. `ShieldTheftSystem` tire chaque destination et indique dans
+l'événement les faces possibles ; la vue ne relance aucun tirage. `TurnManager` verrouille le coup
 jusqu'au signal de fin de la présentation, y compris avant la fin de partie.
 Les aperçus animés de `StoneCard` sont des copies et ne modifient jamais le modèle
 de combat. `StoneSymbols` dessine les mêmes pictogrammes sur les cartes et dans

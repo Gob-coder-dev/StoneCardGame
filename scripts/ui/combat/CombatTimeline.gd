@@ -24,8 +24,8 @@ static func attack_duration(attacks: Array) -> float:
 
 const PREPARATION := 1.1
 const PILLAGE := 1.7
+## Miasme et Échec corrosif partagent la même traînée de poison.
 const WEAKEN := 1.15
-const WEAKEN_GLOBAL := 1.35
 const WEAKNESS_REPAIR := 0.48
 const SWARM := 0.90
 
@@ -35,7 +35,7 @@ static func effects_duration(events: Array) -> float:
 		match event.get("type", ""):
 			CombatEvents.SHIELD_THEFT: duration = maxf(duration, PILLAGE)
 			CombatEvents.WEAKEN: duration = maxf(duration, WEAKEN)
-			CombatEvents.TEMPORARY_WEAKEN: duration = maxf(duration, WEAKEN_GLOBAL)
+			CombatEvents.TEMPORARY_WEAKEN: duration = maxf(duration, WEAKEN)
 			CombatEvents.WEAKNESS_EXPIRED: duration = maxf(duration, WEAKNESS_REPAIR)
 	return duration
 

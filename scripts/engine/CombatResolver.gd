@@ -55,7 +55,7 @@ static func finish_move(state: GameState, row: int, col: int, player: int, attac
 	var captures: Array = attack_plan["captures"]
 	for capture in captures:
 		state.get_cell(capture["row"], capture["col"])["owner"] = player
-	var effects := PostAttackEffects.resolve(state, source, row, col, player, captures)
+	var effects := PostAttackEffects.resolve(state, source, row, col, player, attack_plan)
 	Swarm.recalculate(state)
 	return {"success": true, "captures": captures, "attacks": attack_plan["attacks"],
 		"effects": effects, "swarm_events": Swarm.transitions(swarm_before, Swarm.snapshot(state), row, col)}

@@ -7,6 +7,11 @@ var _targets: Array[Vector2] = []
 var _transfers: Array = []
 var _channels: Array = []
 var _face_gates: Dictionary = {}
+## Ordre de dessin des quatre conduits du répartiteur.
+const GATE_SIDES: Array[String] = ["top", "right", "bottom", "left"]
+## Indices des conduits que le moteur pouvait choisir : ce sont les seuls que
+## la recherche fait clignoter. Les autres restent éteints.
+var _searchable_gates: Array[int] = []
 
 func play(card: StoneCard, event: Dictionary, transfers: Array, duration: float) -> void:
 	_prepare(card)
@@ -31,6 +36,13 @@ func play(card: StoneCard, event: Dictionary, transfers: Array, duration: float)
 		seen[side] = int(seen.get(side, 0)) + 1
 	for side in BattleStoneModel.SIDES:
 		_face_gates[side] = _card_transform * card.face_center(side)
+	var possible := {}
+	for transfer in _transfers:
+		for side in transfer.get("candidate_sides", [transfer["destination_side"]]):
+			possible[str(side)] = true
+	for gate_index in range(GATE_SIDES.size()):
+		if possible.has(GATE_SIDES[gate_index]):
+			_searchable_gates.append(gate_index)
 	card.set_combat_preview(preview)
 	_start(duration)
 
@@ -153,20 +165,26 @@ func _draw_random_distribution() -> void:
 	var landing := clampf(inverse_lerp(DISTRIBUTION_END, 1.0, progress), 0.0, 1.0)
 	var gates := [_face_gates.get("top", _center), _face_gates.get("right", _center),
 		_face_gates.get("bottom", _center), _face_gates.get("left", _center)]
-	var side_names := ["top", "right", "bottom", "left"]
+	var side_names := GATE_SIDES
 	var selected_sides := {}
 	for transfer in _transfers:
 		var selected_side := str(transfer["destination_side"])
 		selected_sides[selected_side] = int(selected_sides.get(selected_side, 0)) + 1
-	var active_gate := int(floor(search * 15.0)) % 4
-	# Les quatre conduits possibles restent lisibles pendant toute la phase.
+	var active_gate := -1
+	if not _searchable_gates.is_empty():
+		active_gate = _searchable_gates[int(floor(search * 15.0)) % _searchable_gates.size()]
+	# Les quatre conduits restent lisibles ; seuls les possibles sont parcourus.
 	for gate_index in range(gates.size()):
 		var gate: Vector2 = gates[gate_index]
+		var closed := not _searchable_gates.has(gate_index)
 		var chosen := landing > 0.0 and selected_sides.has(side_names[gate_index])
 		var searching := landing <= 0.0 and gate_index == active_gate
 		var branch_color := Color(0.31, 0.14, 0.24, 0.62)
 		var branch_width := maxf(3.0, _square * 0.019)
-		if searching:
+		if closed:
+			# La face qui a capturé ne peut rien recevoir : son conduit reste éteint.
+			branch_color = Color(0.20, 0.10, 0.14, 0.22)
+		elif searching:
 			branch_color = Color(1.0, 0.72, 0.24, 0.96)
 			branch_width = maxf(7.0, _square * 0.052)
 		elif chosen:
@@ -177,7 +195,10 @@ func _draw_random_distribution() -> void:
 		draw_polyline(path, branch_color, branch_width, true)
 		var gate_color := Symbols.THEFT if not searching and not chosen else Color("#ffd45b")
 		gate_color.a = 0.58 if not searching and not chosen else 1.0
-		draw_circle(gate, _square * (0.050 if searching or chosen else 0.037), Color(0.19, 0.08, 0.10, 0.88))
+		if closed:
+			gate_color.a = 0.20
+		draw_circle(gate, _square * (0.050 if searching or chosen else 0.037),
+			Color(0.19, 0.08, 0.10, 0.40 if closed else 0.88))
 		draw_arc(gate, _square * (0.058 if searching or chosen else 0.044), 0.0, TAU, 20,
 			gate_color, maxf(2.0, _square * 0.016), true)
 	# Un paquet lumineux parcourt le faux chemin actif pour matérialiser le tirage.

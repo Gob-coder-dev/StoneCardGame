@@ -1,4 +1,6 @@
-## Pillage : transferts vers des emplacements libres, sans changement du RNG visuel.
+## Pillage : chaque symbole volé devient un bouclier sur une autre face que
+## celle qui a capturé, tirée au hasard parmi celles qui ont encore une place.
+## Le tirage utilise le hasard de la partie ; la vue ne relance aucun tirage.
 extends RefCounted
 const BattleStoneModel := preload("res://scripts/engine/BattleStone.gd")
 const SIDES = StoneSide.ALL
@@ -7,31 +9,29 @@ static func resolve(state: GameState, source: BattleStoneModel, row: int, col: i
 	var effects: Array = []
 	var shields_before := source.shields.duplicate()
 	var placements: Array[String] = []
-	var stolen_sources: Array = []
-	for capture in captures:
-		for marker_index in capture.get("stolen_markers", []):
-			stolen_sources.append({
-				"row": capture["row"], "col": capture["col"],
-				"direction": capture["direction"],
-				"defense_side": capture["defense_side"],
-				"marker_index": marker_index
-			})
-	var gained := 0
 	var transfers: Array = []
-	for stolen_source in stolen_sources:
-		var candidates: Array[String] = []
-		for candidate in SIDES:
-			if source.free_marker_slots(candidate) > 0:
-				candidates.append(candidate)
-		if candidates.is_empty():
-			break
-		var side := candidates[state.draw_random_index(candidates.size())]
-		source.shields[side] = int(source.shields.get(side, 0)) + 1
-		placements.append(side)
-		var transfer: Dictionary = stolen_source.duplicate()
-		transfer["destination_side"] = side
-		transfers.append(transfer)
-		gained += 1
-	if gained > 0:
+	for capture in captures:
+		var attacking_side := str(capture["direction"])
+		for marker_index in capture.get("stolen_markers", []):
+			var candidates: Array[String] = []
+			for side in SIDES:
+				if side != attacking_side and source.free_marker_slots(side) > 0:
+					candidates.append(side)
+			# Sans place sur les trois autres faces, ce symbole est perdu.
+			if candidates.is_empty():
+				continue
+			var destination := candidates[state.draw_random_index(candidates.size())]
+			source.shields[destination] = int(source.shields.get(destination, 0)) + 1
+			placements.append(destination)
+			transfers.append({
+				"row": capture["row"], "col": capture["col"],
+				"direction": attacking_side,
+				"defense_side": capture["defense_side"],
+				"marker_index": marker_index,
+				# Faces possibles au moment du tirage : l'animation les fait clignoter.
+				"candidate_sides": candidates,
+				"destination_side": destination
+			})
+	if not transfers.is_empty():
 		effects.append(CombatEvents.shield_theft(row, col, placements, shields_before, captures, transfers))
 	return effects

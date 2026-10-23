@@ -56,15 +56,18 @@ CombatResolver.resolve_attacks()
 
 CombatResolver.finish_move()
   ├─ application des captures du plan
-  ├─ PostAttackEffectResolver.resolve()
-  │    ├─ WeaknessSystem.apply_miasma()
-  │    ├─ ShieldTheftSystem.resolve()
+  ├─ PostAttackEffectResolver.resolve(plan d'attaque)
+  │    ├─ WeaknessSystem.apply_miasma()          voisines de la pierre posée
+  │    ├─ ShieldTheftSystem.resolve()             autres faces que celle qui a capturé
   │    ├─ WeaknessSystem.expire_for_player()
-  │    └─ WeaknessSystem.apply_failed_attack()
+  │    └─ WeaknessSystem.apply_failed_attack()    pierres qui ont résisté à l'attaque
   └─ SwarmSystem.recalculate() + transitions()
 ```
 
 `CombatResolver.apply_move()` enchaîne ces opérations immédiatement pour les IA.
+`PostAttackEffectResolver` reçoit le plan complet : le Pillage lit ses captures,
+l'Échec corrosif ses attaques ratées. Chaque transfert de Pillage indique ses
+faces possibles (`candidate_sides`), que `PillageAnimation` fait clignoter.
 `RulesEngine` fournit score, fin de partie, liste des coups disponibles et
 l'estimation des captures de `GreedyAI`.
 `CombatBoard` est l'accès partagé aux instances des cases : une case occupée

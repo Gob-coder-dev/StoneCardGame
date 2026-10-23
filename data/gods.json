@@ -13,7 +13,7 @@
       "name": "Izanami",
       "family_name": "Déclin",
       "color": "#9b6bc7",
-      "description": "Affaiblit les pierres déjà en jeu : définitivement autour de la pierre posée, ou jusqu'à la fin du prochain coup du lanceur."
+      "description": "Affaiblit les pierres déjà en jeu : définitivement autour de la pierre posée, ou jusqu'à la fin du prochain coup du lanceur pour celles qui résistent à son attaque."
     },
     {
       "id": "hachiman",
@@ -41,7 +41,7 @@
       "name": "Susanoo",
       "family_name": "Pillage",
       "color": "#ef8b45",
-      "description": "Après une capture, transforme la force vaincue en boucliers répartis sur la pierre attaquante."
+      "description": "Après une capture, transforme la force vaincue en boucliers répartis sur les autres faces de la pierre attaquante."
     }
   ]
 }
