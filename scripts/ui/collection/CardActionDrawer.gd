@@ -12,7 +12,6 @@ enum Source { DECK, COLLECTION }
 
 var _stone_id: String = ""
 var _source: Source = Source.COLLECTION
-var _is_in_deck: bool = false
 
 
 func _ready() -> void:
@@ -21,24 +20,16 @@ func _ready() -> void:
 	_refresh()
 
 
-func setup(stone_id: String, source: Source, is_in_deck: bool) -> void:
+## Une carte de la collection n'est jamais dans le deck : elle peut toujours être utilisée.
+func setup(stone_id: String, source: Source) -> void:
 	_stone_id = stone_id
 	_source = source
-	_is_in_deck = is_in_deck
 	if is_node_ready():
 		_refresh()
 
 
 func _refresh() -> void:
-	if _source == Source.DECK:
-		primary_button.text = "RETIRER"
-		primary_button.disabled = false
-	elif _is_in_deck:
-		primary_button.text = "DANS LE DECK"
-		primary_button.disabled = true
-	else:
-		primary_button.text = "UTILISER"
-		primary_button.disabled = false
+	primary_button.text = "RETIRER" if _source == Source.DECK else "UTILISER"
 
 
 func _on_info_pressed() -> void:

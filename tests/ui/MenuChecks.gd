@@ -129,19 +129,61 @@ func _test_hud_game_over() -> void:
 	await get_tree().process_frame
 
 
+## Les cartes du deck sont absentes de la collection ; une carte retirée du
+## deck y revient. Le deck change sans être enregistré : la sauvegarde reste intacte.
 func _test_collection_incremental_refresh() -> void:
-	var previous := PlayerData.player_deck.duplicate()
+	var saved_deck: Array = PlayerData.player_deck.duplicate()
+	var saved_god: String = PlayerData.player_god_id
+	PlayerData.player_god_id = "inari"
+	PlayerData.player_deck = ["kappa", "tanuki", "ronin", "naginata_monk", "kitsune"]
 	var scene: PackedScene = load("res://scenes/menus/CollectionScreen.tscn")
 	var page: Control = scene.instantiate()
 	add_child(page)
 	await get_tree().process_frame
-	var card: StoneCard = page.collection_rows.get_child(0).get_child(0).get_child(0)
-	var identity := card.get_instance_id()
-	page._current_deck = []
+	var cards := _collection_cards(page)
+	var shown := _shown_collection_ids(page)
+	shown.sort()
+	_check(cards.size() == 10 and shown == ["amaterasu", "izanagi", "raijin", "ryujin", "tatsu"],
+		"la collection n'affiche pas les cartes déjà dans le deck")
+	var kappa: StoneCard = cards["kappa"]
+	var identity := kappa.get_instance_id()
+	page._current_deck = ["tanuki", "ronin", "naginata_monk", "kitsune"]
 	page._refresh_all()
 	await get_tree().process_frame
-	_check(is_instance_valid(card) and card.get_instance_id() == identity,
-		"rafraîchir le deck conserve les nœuds de la collection")
-	page.queue_free()
-	PlayerData.player_deck = previous
+	var grid: GridContainer = page.collection_rows.get_child(0)
+	# Dans l'ordre d'origine, Kappa précède toutes les cartes encore affichées.
+	_check(_shown_collection_ids(page) == ["kappa", "raijin", "tatsu", "ryujin", "amaterasu", "izanagi"]
+		and is_instance_valid(kappa) and kappa.get_instance_id() == identity and not kappa._selected,
+		"une carte retirée du deck revient à sa place dans la collection, sans recréer de carte")
+	page._current_deck = ["tanuki", "ronin", "naginata_monk", "kitsune", "izanagi"]
+	page._refresh_all()
 	await get_tree().process_frame
+	var visible_wrappers: Array = []
+	for wrapper in grid.get_children():
+		if wrapper.visible:
+			visible_wrappers.append(wrapper)
+	# Izanagi masqué, les cartes visibles restent alignées sur trois colonnes.
+	_check(not _shown_collection_ids(page).has("izanagi") and visible_wrappers.size() == 5
+		and is_equal_approx(visible_wrappers[3].position.x, visible_wrappers[0].position.x)
+		and visible_wrappers[3].position.y > visible_wrappers[0].position.y,
+		"une carte ajoutée au deck disparaît et la grille referme le trou")
+	page.queue_free()
+	await get_tree().process_frame
+	PlayerData.player_deck = saved_deck
+	PlayerData.player_god_id = saved_god
+
+
+func _collection_cards(page: Control) -> Dictionary:
+	var cards := {}
+	for wrapper in page.collection_rows.get_child(0).get_children():
+		var card: StoneCard = wrapper.get_child(0)
+		cards[card.get_stone_id()] = card
+	return cards
+
+
+func _shown_collection_ids(page: Control) -> Array:
+	var ids: Array = []
+	for wrapper in page.collection_rows.get_child(0).get_children():
+		if wrapper.visible:
+			ids.append(wrapper.get_child(0).get_stone_id())
+	return ids

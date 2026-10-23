@@ -117,8 +117,12 @@ func _check_collection() -> void:
 	page._close_action_drawer()
 	await _settle()
 
-	var collection: VBoxContainer = scroll.get_node("Page/CollectionRows")
-	var collection_card: StoneCard = collection.get_child(0).get_child(0).get_child(0)
+	# Les cartes du deck sont masquées dans la collection : prendre la première affichée.
+	var collection_card: StoneCard = null
+	for wrapper in scroll.get_node("Page/CollectionRows").get_child(0).get_children():
+		if wrapper.visible:
+			collection_card = wrapper.get_child(0)
+			break
 	scroll.ensure_control_visible(collection_card)
 	await _settle()
 	var before := scroll.scroll_vertical
@@ -496,6 +500,8 @@ func _center(control: Control) -> Vector2:
 
 
 func _find_visible_card(node: Node, rect: Rect2) -> StoneCard:
+	if node is CanvasItem and not node.is_visible_in_tree():
+		return null
 	if node is StoneCard and rect.has_point(_center(node)):
 		return node
 	for child in node.get_children():

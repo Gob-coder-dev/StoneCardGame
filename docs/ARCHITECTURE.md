@@ -151,7 +151,10 @@ Aucune animation ne change le plateau logique ni ne relance le hasard.
 `CollectionScreenController` coordonne les choix et enregistre les opérations.
 `GodSelector`, `DeckPanel` et `CollectionGrid` possèdent chacun leur vue.
 `CardGridLayout` crée les éléments visuels communs. Le tri est défini dans `CollectionGrid`.
-Un changement de deck actualise ses emplacements et la sélection des cartes existantes.
+Les cartes du deck n'apparaissent pas dans la collection. `CollectionGrid` les
+garde construites mais masquées dans une `GridContainer`, qui referme les trous :
+un changement de deck reconstruit ses emplacements et masque ou réaffiche seulement
+les cartes concernées de la collection, sans recréer de carte.
 Un changement de dieu ou de tri reconstruit la collection.
 
 `CardActionDrawer`, `StoneInfoSheet` et `ReplacementPanel` gèrent leurs panneaux.

@@ -118,7 +118,7 @@ func _refresh_all(preserve_scroll: bool = true, rebuild_collection: bool = false
 	if rebuild_collection:
 		_populate_collection()
 	else:
-		_collection_grid.update_selection(_current_deck)
+		_collection_grid.update_deck(_current_deck)
 	_refresh_god_panel()
 	var cost := DeckRules.deck_cost(_current_deck)
 	deck_count_label.text = "%d/%d  •  %s/%d pts" % [
@@ -163,15 +163,14 @@ func _open_card_actions(stone_id: String, wrapper: VBoxContainer, source: int) -
 		_action_card.set_selected(true)
 	_action_drawer = ACTION_DRAWER_SCENE.instantiate() as CardActionDrawer
 	wrapper.add_child(_action_drawer)
-	_action_drawer.setup(stone_id, source, _current_deck.has(stone_id))
+	_action_drawer.setup(stone_id, source)
 	_action_drawer.info_requested.connect(_on_info_requested)
 	_action_drawer.primary_requested.connect(_on_primary_requested)
 
 
 func _close_action_drawer() -> void:
 	if is_instance_valid(_action_card):
-		var remains_selected := _action_source == CardActionDrawer.Source.COLLECTION and _current_deck.has(_action_stone_id)
-		_action_card.set_selected(remains_selected)
+		_action_card.set_selected(false)
 	if is_instance_valid(_action_drawer):
 		var parent := _action_drawer.get_parent()
 		if parent != null:

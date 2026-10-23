@@ -80,7 +80,7 @@ au doigt et à la souris. Elle ne sauvegarde aucun
 changement de deck ou de statistiques.
 
 Chaque suite se termine par un résumé, par exemple
-`GOD_SYSTEM_CHECKS: 280 passed, 0 failed, 0 Godot errors` ou
+`GOD_SYSTEM_CHECKS: 282 passed, 0 failed, 0 Godot errors` ou
 `TACTILE : 50 vérifications, 0 échec(s), 0 erreur(s) Godot.`, et renvoie le code
 de sortie 1 en cas de problème. Sont comptés comme problèmes : une vérification
 ratée, une suite qui ne compile pas, une erreur ou un avertissement Godot non
@@ -149,6 +149,8 @@ Les trois écrans principaux sont accessibles depuis la barre inférieure :
 page Profil & Stats, où ce pseudo peut être modifié (2 à 16 caractères).
 
 Dans l'écran Cartes, le deck et la collection appartiennent au même défilement.
+La collection montre seulement les cartes absentes du deck : une carte retirée
+du deck y revient à sa place.
 Le panneau supérieur permet de choisir l'un des six dieux ; la collection est
 alors filtrée et les cartes incompatibles sont retirées du deck avec un message.
 Toucher une pierre ouvre ses informations et son action. Si le deck est plein,
