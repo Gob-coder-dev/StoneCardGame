@@ -59,6 +59,7 @@ func _run() -> void:
 	await _check_other_menus()
 	await _check_buffered_input()
 	await _check_battle_touch()
+	await _check_battle_drag()
 	PlayerData.player_deck = saved_deck
 	PlayerData.player_god_id = saved_god
 	_finish()
@@ -288,6 +289,122 @@ func _check_battle_touch() -> void:
 	await _remove(board)
 	BattleContext.selected_npc_id = saved_npc
 	BattleContext.forced_first_player = saved_first
+
+
+## Glisser une carte de la main jusqu'au plateau, au doigt puis à la souris.
+func _check_battle_drag() -> void:
+	var saved_npc: String = BattleContext.selected_npc_id
+	var saved_first: int = BattleContext.forced_first_player
+	BattleContext.selected_npc_id = "hiro"
+
+	var board := await _open_battle(GameState.PLAYER_HUMAN)
+	var hand: HandView = board.get_node("Root/HandView")
+	var view: BoardView = board.get_node("Root/BoardArea/BoardView")
+	var state: GameState = board.turn_manager.get_state()
+	var cell := _free_cell(state)
+	var card: StoneCard = hand.get_child(0).get_child(0)
+	var start := _center(card)
+	var lift: float = board._card_drag.TOUCH_LIFT * view.slot_at(0, 0).size.y
+	var release := _center(view.slot_at(cell.x, cell.y)) + Vector2(0, lift)
+	_press(start)
+	for step in range(1, 9):
+		var point := start.lerp(release, float(step) / 8.0)
+		_drag(point, (release - start) / 8.0)
+		await get_tree().process_frame
+	await _settle()
+	_check(board._card_drag.is_dragging() and view._drop_target == cell and card.modulate.a < 1.0,
+		"glisser : la copie suit le doigt et la case visée s'éclaire")
+	_release(release)
+	await _settle()
+	_check(state.human_hand.size() == 4 and state.get_cell(cell.x, cell.y)["owner"] == GameState.PLAYER_HUMAN
+		and view._drop_target == Vector2i(-1, -1) and board._card_drag.get_child_count() == 0,
+		"glisser : relâcher sur une case y pose la carte une seule fois")
+	await _remove(board)
+
+	board = await _open_battle(GameState.PLAYER_HUMAN)
+	hand = board.get_node("Root/HandView")
+	view = board.get_node("Root/BoardArea/BoardView")
+	state = board.turn_manager.get_state()
+	cell = _free_cell(state)
+	card = hand.get_child(0).get_child(0)
+	# Lâchée un peu à côté du centre, la carte va quand même sur la case la plus proche.
+	var near := _center(view.slot_at(cell.x, cell.y)) + Vector2(view.slot_at(0, 0).size.x * 0.3, lift)
+	await _drag_touch(_center(card), near)
+	_check(state.human_hand.size() == 4 and state.get_cell(cell.x, cell.y)["owner"] == GameState.PLAYER_HUMAN,
+		"glisser : une carte lâchée près d'une case est posée sur cette case")
+	await _remove(board)
+
+	board = await _open_battle(GameState.PLAYER_HUMAN)
+	hand = board.get_node("Root/HandView")
+	state = board.turn_manager.get_state()
+	card = hand.get_child(0).get_child(0)
+	await _drag_touch(_center(card), _center(card) + Vector2(0, 260))
+	_check(state.human_hand.size() == 5 and board._selected_stone_id == ""
+		and is_equal_approx(card.modulate.a, 1.0) and board._card_drag.get_child_count() == 0,
+		"glisser : relâcher hors du plateau ne joue rien et la carte revient sans sélection")
+	_press(_center(card))
+	_drag(_center(card) + Vector2(8, 0), Vector2(8, 0))
+	_release(_center(card) + Vector2(8, 0))
+	await _settle()
+	_check(board._selected_stone_id == card.get_stone_id() and state.human_hand.size() == 5,
+		"glisser : un petit mouvement reste un appui qui sélectionne la carte")
+	await _remove(board)
+
+	board = await _open_battle(GameState.PLAYER_HUMAN)
+	hand = board.get_node("Root/HandView")
+	view = board.get_node("Root/BoardArea/BoardView")
+	state = board.turn_manager.get_state()
+	cell = _free_cell(state)
+	card = hand.get_child(0).get_child(0)
+	var mouse_start := _center(card)
+	var mouse_end := _center(view.slot_at(cell.x, cell.y))
+	_mouse_move(mouse_start)
+	_mouse_button(mouse_start, true)
+	for step in range(1, 9):
+		_mouse_move(mouse_start.lerp(mouse_end, float(step) / 8.0))
+		await get_tree().process_frame
+	_mouse_button(mouse_end, false)
+	await _settle()
+	_check(state.human_hand.size() == 4 and state.get_cell(cell.x, cell.y)["owner"] == GameState.PLAYER_HUMAN,
+		"glisser : la souris pose aussi la carte sur la case visée")
+	await _remove(board)
+
+	board = await _open_battle(GameState.PLAYER_AI)
+	hand = board.get_node("Root/HandView")
+	view = board.get_node("Root/BoardArea/BoardView")
+	state = board.turn_manager.get_state()
+	cell = _free_cell(state)
+	card = hand.get_child(0).get_child(0)
+	await _drag_touch(_center(card), _center(view.slot_at(cell.x, cell.y)) + Vector2(0, lift))
+	_check(state.human_hand.size() == 5 and state.get_cell(cell.x, cell.y)["owner"] != GameState.PLAYER_HUMAN,
+		"glisser : aucune carte ne peut être posée pendant le tour adverse")
+	await _remove(board)
+
+	BattleContext.selected_npc_id = saved_npc
+	BattleContext.forced_first_player = saved_first
+
+
+func _open_battle(first_player: int) -> Control:
+	BattleContext.forced_first_player = first_player
+	return await _open_scene("res://scenes/game/Board.tscn")
+
+
+## Première case jouable : le plateau peut comporter une case bloquée.
+func _free_cell(state: GameState) -> Vector2i:
+	for index in range(state.board.size()):
+		var cell: Dictionary = state.board[index]
+		if cell["cell_type"] != GameState.CELL_BLOCKED and cell["owner"] == GameState.PLAYER_NONE:
+			return Vector2i(index / GameState.BOARD_SIZE, index % GameState.BOARD_SIZE)
+	return Vector2i(-1, -1)
+
+
+func _drag_touch(start: Vector2, finish: Vector2) -> void:
+	_press(start)
+	for step in range(1, 9):
+		_drag(start.lerp(finish, float(step) / 8.0), (finish - start) / 8.0)
+		await get_tree().process_frame
+	_release(finish)
+	await _settle()
 
 
 func _open_scene(path: String) -> Control:

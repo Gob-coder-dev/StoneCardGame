@@ -20,6 +20,12 @@ var _slots: Array = []        ## Panel par case (index 1D)
 var _cards: Array = []        ## StoneCard par case (ou null)
 var _swarm_link_layer: Control = null
 var _built: bool = false
+## Portée d'une case pour une carte glissée, en écarts entre deux cases.
+## Au-delà de la moitié de la diagonale (0,71), tout le plateau est couvert.
+const DROP_RADIUS: float = 0.75
+var _drop_target := Vector2i(-1, -1)
+var _drop_style: StyleBoxFlat = null
+var _drop_previous_style: StyleBox = null
 
 
 ## Construit le plateau une fois, à une taille carrée fixe calculée sur la
@@ -139,6 +145,48 @@ func _mark_blocked(slot: Panel) -> void:
 	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	slot.add_child(lbl)
 
+
+
+## ─── Glisser une carte vers le plateau ──────────────────────────────────────
+
+## Case acceptée la plus proche d'un point du canevas, ou (-1, -1). Une case est
+## retenue jusqu'à DROP_RADIUS fois l'écart entre deux cases de son centre :
+## le plateau entier est couvert et la carte peut être lâchée entre deux cases.
+## accepts(row, col) -> bool décide des cases possibles ; la vue ne connaît aucune règle.
+func nearest_cell(canvas_point: Vector2, accepts: Callable) -> Vector2i:
+	var best := Vector2i(-1, -1)
+	if not _built:
+		return best
+	var best_distance := INF
+	for row in range(GameState.BOARD_SIZE):
+		for col in range(GameState.BOARD_SIZE):
+			var slot: Panel = _slots[GameState.cell_index(row, col)]
+			var to_canvas := slot.get_global_transform_with_canvas()
+			var reach := DROP_RADIUS * (slot.size.x + GAP) * to_canvas.get_scale().x
+			var distance := canvas_point.distance_to(to_canvas * (slot.size * 0.5))
+			if distance < reach and distance < best_distance and accepts.call(row, col):
+				best = Vector2i(row, col)
+				best_distance = distance
+	return best
+
+
+## Éclaire la case où la carte serait posée ; (-1, -1) retire l'éclairage.
+func set_drop_target(cell: Vector2i) -> void:
+	if _drop_target != Vector2i(-1, -1):
+		var previous: Panel = _slots[GameState.cell_index(_drop_target.x, _drop_target.y)]
+		previous.add_theme_stylebox_override("panel", _drop_previous_style)
+	_drop_target = cell
+	if cell == Vector2i(-1, -1):
+		return
+	var slot: Panel = _slots[GameState.cell_index(cell.x, cell.y)]
+	_drop_previous_style = slot.get_theme_stylebox("panel")
+	if _drop_style == null:
+		_drop_style = StyleBoxFlat.new()
+		_drop_style.bg_color = Color("#3c2a16")
+		_drop_style.border_color = UITheme.COL_GOLD
+		_drop_style.set_border_width_all(5)
+		_drop_style.set_corner_radius_all(6)
+	slot.add_theme_stylebox_override("panel", _drop_style)
 
 
 ## Accès géométrique pour le coordinateur d'animations.

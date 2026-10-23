@@ -11,6 +11,7 @@
 extends Control
 
 const CombatResolverModel := preload("res://scripts/engine/CombatResolver.gd")
+const CardDragController := preload("res://scripts/ui/CardDragController.gd")
 
 @onready var turn_manager: TurnManager = $TurnManager
 @onready var board_view: BoardView = $Root/BoardArea/BoardView
@@ -21,6 +22,7 @@ var _ai_runner: AITurnRunner = null
 var _npc_data: Dictionary = {}
 var _selected_stone_id: String = ""
 var _human_captures: int = 0
+var _card_drag: CardDragController = null  ## couche du glisser-déposer
 
 
 func _ready() -> void:
@@ -47,6 +49,15 @@ func _connect_signals() -> void:
 	turn_manager.game_over.connect(_on_game_over)
 	turn_manager.invalid_move.connect(_on_invalid_move)
 	turn_manager.presentation_requested.connect(_on_presentation_requested)
+	## Glisser une carte de la main : la couche est ajoutée en dernier pour
+	## que la copie de la carte passe au-dessus du plateau et de la main.
+	_card_drag = CardDragController.new()
+	_card_drag.name = "CardDrag"
+	add_child(_card_drag)
+	_card_drag.setup(board_view, _can_drop)
+	hand_view.card_press_started.connect(_on_card_press_started)
+	_card_drag.drag_started.connect(_on_card_drag_started)
+	_card_drag.drop_requested.connect(_on_card_dropped)
 
 
 func _start_battle(human_deck: Array, npc_id: String) -> void:
@@ -97,6 +108,35 @@ func _on_cell_pressed(row: int, col: int) -> void:
 	if turn_manager.human_play(row, col, _selected_stone_id):
 		_selected_stone_id = ""
 		hand_view.clear_selection()
+
+
+## Le glissement n'est suivi que lorsque le joueur peut réellement jouer.
+func _on_card_press_started(stone_id: String, card: StoneCard, pointer: int, canvas_position: Vector2) -> void:
+	if _human_can_play():
+		_card_drag.begin(stone_id, card, pointer, canvas_position)
+
+
+## Une carte glissée n'est pas sélectionnée : une sélection précédente est retirée.
+func _on_card_drag_started(_stone_id: String) -> void:
+	_selected_stone_id = ""
+	hand_view.clear_selection()
+
+
+func _on_card_dropped(stone_id: String, row: int, col: int) -> void:
+	turn_manager.human_play(row, col, stone_id)
+
+
+## Mêmes règles que pour un appui : PlacementRules décide, au tour du joueur.
+func _can_drop(stone_id: String, row: int, col: int) -> bool:
+	return _human_can_play() \
+		and PlacementRules.is_valid(turn_manager.get_state(), row, col, stone_id, GameState.PLAYER_HUMAN)
+
+
+func _human_can_play() -> bool:
+	var state := turn_manager.get_state()
+	return state != null and not state.is_game_over \
+		and state.current_player == GameState.PLAYER_HUMAN \
+		and turn_manager.phase == TurnManager.Phase.WAITING_INPUT
 
 
 ## ─── Réactions aux signaux du TurnManager ────────────────────────────────────

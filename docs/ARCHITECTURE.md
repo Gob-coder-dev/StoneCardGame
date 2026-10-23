@@ -157,6 +157,21 @@ Un changement de dieu ou de tri reconstruit la collection.
 `CardActionDrawer`, `StoneInfoSheet` et `ReplacementPanel` gèrent leurs panneaux.
 `TapGesture`, `TouchButton` et `TouchScrollContainer` conservent les gestes tactiles.
 
+## Poser une carte en combat
+
+Deux gestes posent une carte : toucher la carte puis la case, ou glisser la carte
+jusqu'à la case. `HandView` signale chaque appui (`card_press_started`) ;
+`BoardController` le transmet à `CardDragController` seulement pendant le tour du
+joueur. `DragGesture` suit le doigt (par son index) ou la souris physique et ignore
+les clics émulés ; au-delà de `UITheme.TOUCH_SLOP`, l'appui devient un glissement
+et `TapGesture` l'annule, donc la carte n'est pas sélectionnée.
+
+Pendant le glissement, une copie de la carte suit le pointeur (levée au-dessus du
+doigt), la carte restée dans la main s'estompe, et `BoardView.nearest_cell()` éclaire
+la case acceptée la plus proche de la copie, jusqu'à `DROP_RADIUS` écart de case.
+`BoardController._can_drop()` décide des cases avec `PlacementRules.is_valid()` ;
+relâcher demande `TurnManager.human_play()`, relâcher ailleurs annule sans sélection.
+
 ## IA
 
 `AITurnRunner` attend son délai, demande un coup à `AIPlayer.choose_move()`, puis

@@ -75,12 +75,13 @@ godot --headless --fixed-fps 60 --path . res://tests/TouchInputChecks.tscn
 Cette suite injecte les événements par `Input`, avec l'émulation et le routage
 GUI de Godot. Elle couvre le défilement sur le texte, les cartes et les boutons,
 l'annulation des appuis, l'inertie, le multitouch, les fenêtres, la souris,
-le clavier et la pose d'une carte pendant un combat. Elle ne sauvegarde aucun
+le clavier et la pose d'une carte pendant un combat, par appuis ou par glissement
+au doigt et à la souris. Elle ne sauvegarde aucun
 changement de deck ou de statistiques.
 
 Chaque suite se termine par un résumé, par exemple
-`GOD_SYSTEM_CHECKS: 248 passed, 0 failed, 0 Godot errors` ou
-`TACTILE : 43 vérifications, 0 échec(s), 0 erreur(s) Godot.`, et renvoie le code
+`GOD_SYSTEM_CHECKS: 255 passed, 0 failed, 0 Godot errors` ou
+`TACTILE : 50 vérifications, 0 échec(s), 0 erreur(s) Godot.`, et renvoie le code
 de sortie 1 en cas de problème. Sont comptés comme problèmes : une vérification
 ratée, une suite qui ne compile pas, une erreur ou un avertissement Godot non
 annoncé par le test, et un dépassement du temps limite (300 s et 120 s de jeu).
@@ -116,6 +117,8 @@ appuis natifs, le clavier et la souris physique.
 - Chaque joueur équipe un dieu puis choisit 5 pierres parmi les cartes neutres
   et celles de la famille de ce dieu
 - Les joueurs posent à tour de rôle (tirage pile/face pour le premier)
+- Pour poser une carte : la toucher puis toucher une case, ou la glisser jusqu'à
+  la case ; pendant le glissement, la case où elle sera posée s'éclaire
 - Chaque face possède au maximum 4 emplacements communs aux lames normales,
   lames spéciales et boucliers
 - Quand une pierre est posée, elle capture les pierres adverses adjacentes

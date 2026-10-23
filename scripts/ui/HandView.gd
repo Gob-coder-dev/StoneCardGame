@@ -6,6 +6,11 @@ extends GridContainer
 
 ## Émis quand le joueur touche une carte de sa main.
 signal card_selected(stone_id: String)
+## Émis dès qu'un doigt ou la souris appuie sur une carte : l'appui peut devenir
+## un glissement vers le plateau (voir CardDragController).
+signal card_press_started(stone_id: String, card: StoneCard, pointer: int, canvas_position: Vector2)
+
+const DragGesture := preload("res://scripts/ui/input/DragGesture.gd")
 
 var _cards: Array[StoneCard] = []  ## cartes affichées, dans l'ordre de la main
 var _selected_id: String = ""
@@ -56,6 +61,7 @@ func _rebuild(stone_ids: Array) -> void:
 		var card := StoneCard.new()
 		card.setup(StoneLoader.get_stone(str(stone_id)), StoneCard.OWNER_HUMAN)
 		card.card_pressed.connect(_on_card_pressed)
+		card.gui_input.connect(_on_card_input.bind(card))
 		wrapper.add_child(card)
 
 		add_child(wrapper)
@@ -65,6 +71,14 @@ func _rebuild(stone_ids: Array) -> void:
 
 func _on_card_pressed(stone_id: String) -> void:
 	emit_signal("card_selected", stone_id)
+
+
+## Un appui peut devenir un glissement : la position est donnée dans le canevas.
+func _on_card_input(event: InputEvent, card: StoneCard) -> void:
+	var pointer := DragGesture.pressed_pointer(event)
+	if pointer != DragGesture.NO_POINTER:
+		card_press_started.emit(card.get_stone_id(), card, pointer,
+			card.get_global_transform_with_canvas() * event.position)
 
 
 func set_selected(stone_id: String) -> void:
