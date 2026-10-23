@@ -1,0 +1,94 @@
+[gd_scene format=3 uid="uid://b8hjkpj0hmjtc"]
+
+[ext_resource type="Script" uid="uid://c620obhplo3k1" path="res://scripts/ui/MainMenu.gd" id="1_mainmenu"]
+[ext_resource type="Script" uid="uid://cms1p5lxyjnml" path="res://scripts/ui/ParchmentBackground.gd" id="2_parchment"]
+[ext_resource type="PackedScene" path="res://scenes/ui/BottomNav.tscn" id="3_nav"]
+
+[node name="MainMenu" type="Control" unique_id=1585933656]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_mainmenu")
+
+[node name="Background" type="Control" parent="." unique_id=2069900510]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2_parchment")
+
+[node name="Content" type="VBoxContainer" parent="." unique_id=84869108]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 40.0
+offset_top = 64.0
+offset_right = -40.0
+offset_bottom = -174.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 40
+
+[node name="Header" type="HBoxContainer" parent="Content" unique_id=732867860]
+layout_mode = 2
+
+[node name="ProfileButton" type="Button" parent="Content/Header" unique_id=1858800995]
+custom_minimum_size = Vector2(390, 100)
+layout_mode = 2
+text = "PROFIL  •  Joueur"
+
+[node name="Spacer" type="Control" parent="Content/Header" unique_id=53395186]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Hero" type="VBoxContainer" parent="Content" unique_id=1506783815]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 30
+alignment = 1
+
+[node name="Title" type="Label" parent="Content/Hero" unique_id=1468223497]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.78, 0.31, 1)
+theme_override_font_sizes/font_size = 116
+text = "SAMSTONE"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="Content/Hero" unique_id=1396934591]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.88, 0.75, 0.49, 1)
+theme_override_font_sizes/font_size = 48
+text = "石 の 戦 い"
+horizontal_alignment = 1
+
+[node name="Emblem" type="Label" parent="Content/Hero" unique_id=1571428575]
+custom_minimum_size = Vector2(0, 400)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.12, 0.1, 1)
+theme_override_font_sizes/font_size = 270
+text = "石"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DeckStatus" type="Label" parent="Content/Hero" unique_id=1503925981]
+layout_mode = 2
+theme_override_font_sizes/font_size = 34
+text = "0/5 pierres • 0/50 points"
+horizontal_alignment = 1
+
+[node name="PlayButton" type="Button" parent="Content/Hero" unique_id=1162903087]
+custom_minimum_size = Vector2(760, 180)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 56
+text = "⚔  JOUER"
+
+[node name="BottomNav" parent="." unique_id=2090898695 instance=ExtResource("3_nav")]
+grow_horizontal = 2

@@ -1,0 +1,78 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/collection/ReplacementPanel.gd" id="1_replacement"]
+[ext_resource type="Script" path="res://scripts/ui/input/TouchButton.gd" id="2_touch_button"]
+
+[node name="ReplacementPanel" type="Control"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_replacement")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.035, 0.02, 0.012, 0.96)
+
+[node name="Panel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 38.0
+offset_top = 54.0
+offset_right = -38.0
+offset_bottom = -54.0
+
+[node name="Content" type="VBoxContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Title" type="Label" parent="Panel/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.79, 0.34, 1)
+theme_override_font_sizes/font_size = 48
+text = "REMPLACER UNE PIERRE"
+horizontal_alignment = 1
+
+[node name="Instruction" type="Label" parent="Panel/Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "TOUCHE UNE PIERRE DU DECK"
+horizontal_alignment = 1
+
+[node name="DeckGrid" type="GridContainer" parent="Panel/Content"]
+layout_mode = 2
+columns = 3
+theme_override_constants/h_separation = 14
+theme_override_constants/v_separation = 14
+
+[node name="Status" type="Label" parent="Panel/Content"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 70)
+theme_override_font_sizes/font_size = 30
+text = "Choisis une pierre du deck à remplacer."
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="CandidateLabel" type="Label" parent="Panel/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.79, 0.34, 1)
+theme_override_font_sizes/font_size = 30
+text = "NOUVELLE PIERRE"
+horizontal_alignment = 1
+
+[node name="Candidate" type="CenterContainer" parent="Panel/Content"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 300)
+
+[node name="CancelButton" type="Button" parent="Panel/Content"]
+layout_mode = 2
+script = ExtResource("2_touch_button")
+custom_minimum_size = Vector2(0, 102)
+text = "ANNULER"

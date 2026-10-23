@@ -1,0 +1,357 @@
+## Régressions tactiles avec de vrais événements routés par le Viewport.
+## Exécuter : godot --headless --fixed-fps 60 --path . res://tests/TouchInputChecks.tscn
+## Ne nécessite pas GUT et ne modifie pas la sauvegarde du joueur.
+extends Node
+
+const TouchButtonScript := preload("res://scripts/ui/input/TouchButton.gd")
+
+var _checks: int = 0
+var _failures: Array[String] = []
+
+@onready var root: Window = get_tree().root
+
+
+func _ready() -> void:
+	_run.call_deferred()
+
+
+func _run() -> void:
+	# Donne au serveur headless le même indicateur tactile qu'Android.
+	Input.emulate_touch_from_mouse = true
+	Input.use_accumulated_input = false
+	var saved_deck: Array = PlayerData.player_deck.duplicate()
+	var saved_god: String = PlayerData.player_god_id
+	PlayerData.player_god_id = "inari"
+	PlayerData.player_deck = ["kappa", "tanuki", "ronin", "naginata_monk", "kitsune"]
+	await _check_rules_scroll()
+	await _check_collection()
+	await _check_button_inputs()
+	await _check_other_menus()
+	await _check_buffered_input()
+	await _check_battle_touch()
+	PlayerData.player_deck = saved_deck
+	PlayerData.player_god_id = saved_god
+	print("TACTILE : %d vérifications, %d échec(s)." % [_checks, _failures.size()])
+	for failure in _failures:
+		push_error(failure)
+	get_tree().quit(0 if _failures.is_empty() else 1)
+
+
+func _check_rules_scroll() -> void:
+	var page := await _open_scene("res://scenes/menus/HowToPlay.tscn")
+	var scroll: ScrollContainer = page.get_node("Content/Scroll")
+	var text: RichTextLabel = scroll.get_node("RulesPanel/Page/RulesText")
+	_check(scroll.get_v_scroll_bar().max_value > scroll.size.y, "règles : le contenu dépasse l'écran")
+	await _swipe(_point(text, Vector2(200, 350)), Vector2(0, -240))
+	_check(scroll.scroll_vertical > 100, "règles : glisser depuis le texte fait défiler")
+	var badge: Control = scroll.get_node("RulesPanel/Page/GodRules").get_child(1).get_child(0)
+	scroll.ensure_control_visible(badge)
+	await _settle()
+	var before := scroll.scroll_vertical
+	await _swipe(_center(badge), Vector2(0, -220))
+	_check(scroll.scroll_vertical > before + 60, "règles : glisser depuis un logo fait aussi défiler")
+	await _remove(page)
+
+
+func _check_collection() -> void:
+	var page := await _open_scene("res://scenes/menus/CollectionScreen.tscn")
+	var scroll: ScrollContainer = page.get_node("Content/Scroll")
+	var deck_rows: VBoxContainer = scroll.get_node("Page/DeckPanel/DeckContent/DeckRows")
+	var first_card: StoneCard = deck_rows.get_child(0).get_child(0).get_child(0)
+	await _swipe(_center(first_card), Vector2(0, -150))
+	_check(scroll.scroll_vertical > 50, "deck : glisser depuis une carte fait défiler")
+	_check(not is_instance_valid(page._action_drawer), "deck : un glissement n'ouvre pas le tiroir")
+	await _reset_scroll(scroll)
+	await _tap(_center(first_card))
+	_check(is_instance_valid(page._action_drawer), "deck : un appui ouvre le tiroir")
+	await _tap(_center(first_card))
+	_check(not is_instance_valid(page._action_drawer), "deck : un second appui referme le tiroir une seule fois")
+	await _swipe(_center(first_card), Vector2(0, -220))
+	_check(scroll._scrolling, "défilement : l'inertie est active après le geste")
+	var visible_card := _find_visible_card(scroll, scroll.get_global_rect())
+	if visible_card != null:
+		var stopped_at := scroll.scroll_vertical
+		await _tap(_center(visible_card))
+		_check(not is_instance_valid(page._action_drawer), "inertie : toucher une carte arrête la liste sans l'ouvrir")
+		_check(scroll.scroll_vertical == stopped_at, "inertie : la liste reste arrêtée après le toucher")
+	else:
+		_check(false, "inertie : une carte est visible pour tester l'arrêt")
+	await _reset_scroll(scroll)
+	var first_position := _center(first_card)
+	_press(first_position)
+	_press(first_position, 1)
+	_release(first_position, false, 1)
+	await _settle()
+	_check(not is_instance_valid(page._action_drawer), "multitouch : le second doigt ne termine pas l'appui du premier")
+	_release(first_position)
+	await _settle()
+	_check(is_instance_valid(page._action_drawer), "multitouch : le premier doigt déclenche une seule action")
+	page._close_action_drawer()
+	await _settle()
+
+	var collection: VBoxContainer = scroll.get_node("Page/CollectionRows")
+	var collection_card: StoneCard = collection.get_child(0).get_child(0).get_child(0)
+	scroll.ensure_control_visible(collection_card)
+	await _settle()
+	var before := scroll.scroll_vertical
+	await _swipe(_center(collection_card), Vector2(0, -180))
+	_check(scroll.scroll_vertical > before + 60, "collection : glisser sur l'illustration fait défiler")
+	_check(not is_instance_valid(page._action_drawer), "collection : aucune sélection accidentelle")
+
+	var sort: Button = scroll.get_node("Page/CollectionHeader/SortButton")
+	await _reset_scroll(scroll)
+	await _swipe(_center(sort), Vector2(0, -180))
+	_check(scroll.scroll_vertical > 60, "tri : un glissement démarré sur le bouton fait défiler")
+	_check(not page.sort_menu.visible, "tri : glisser n'ouvre pas les options")
+	await _reset_scroll(scroll)
+	var sort_center := _center(sort)
+	_press(sort_center)
+	_drag(sort_center + Vector2(70, 0), Vector2(70, 0))
+	_drag(sort_center, Vector2(-70, 0))
+	_release(sort_center)
+	await _settle()
+	_check(not page.sort_menu.visible, "tri : revenir au point de départ après un glissement reste annulé")
+
+	var crossing_start := _center(sort) + Vector2(0, 170)
+	await _swipe(crossing_start, Vector2(0, -300))
+	_check(not page.sort_menu.visible, "tri : traverser le bouton n'active rien")
+	_check(sort.get_theme_stylebox("hover") == sort.get_theme_stylebox("normal"), "tri : aucune surbrillance de souris pendant le toucher")
+	await _reset_scroll(scroll)
+	await _tap(_center(sort))
+	_check(page.sort_menu.visible, "tri : un véritable appui ouvre les options")
+	var cost_option: Button = scroll.get_node("Page/SortMenu/SortOptions/CostButton")
+	scroll.ensure_control_visible(cost_option)
+	await _settle()
+	await _tap(_center(cost_option))
+	_check(page._sort_mode == 1 and not page.sort_menu.visible, "tri : choisir le coût fonctionne au tactile")
+
+	await _reset_scroll(scroll)
+	first_card = deck_rows.get_child(0).get_child(0).get_child(0)
+	_press(_center(first_card))
+	_release(_center(first_card), true)
+	await _settle()
+	_check(not is_instance_valid(page._action_drawer), "carte : un toucher annulé par le système n'active rien")
+	await _tap(_center(first_card))
+	if is_instance_valid(page._action_drawer):
+		var info_button: Button = page._action_drawer.get_node("Actions/InfoButton")
+		scroll.ensure_control_visible(info_button)
+		await _settle()
+		await _swipe(_center(info_button), Vector2(0, -150))
+		_check(not page.info_sheet.visible, "tiroir : glisser sur Infos n'ouvre pas la fiche")
+		await _reset_scroll(scroll)
+		scroll.ensure_control_visible(info_button)
+		await _settle()
+		await _tap(_center(info_button))
+		_check(page.info_sheet.visible, "tiroir : toucher Infos ouvre la fiche")
+		var modal_scroll := scroll.scroll_vertical
+		await _swipe(Vector2(200, 180), Vector2(0, -100))
+		_check(scroll.scroll_vertical == modal_scroll, "fenêtre : les gestes ne traversent pas le fond modal")
+		await _tap(Vector2(200, 100))
+		_check(not page.info_sheet.visible, "fenêtre : toucher le fond ferme la fiche")
+	await _remove(page)
+
+
+func _check_button_inputs() -> void:
+	var button: Button = TouchButtonScript.new()
+	button.text = "TEST"
+	button.position = Vector2(100, 100)
+	button.size = Vector2(300, 100)
+	root.add_child(button)
+	await _settle()
+	var activations := [0]
+	button.pressed.connect(func(): activations[0] += 1)
+	var position := _center(button)
+	_press(position)
+	_check(activations[0] == 0, "bouton : aucune action avant le relâchement")
+	_release(position)
+	_check(activations[0] == 1, "bouton : un toucher déclenche exactement une action")
+	_press(position)
+	_release(position, true)
+	_check(activations[0] == 1, "bouton : un toucher annulé ne déclenche rien")
+
+	button.grab_focus()
+	var accept := InputEventKey.new()
+	accept.keycode = KEY_ENTER
+	accept.pressed = true
+	Input.parse_input_event(accept)
+	accept = InputEventKey.new()
+	accept.keycode = KEY_ENTER
+	Input.parse_input_event(accept)
+	_check(activations[0] == 2, "bouton : l'activation au clavier/manette reste disponible")
+	_mouse_move(position)
+	_mouse_button(position, true)
+	_mouse_button(position, false)
+	_check(activations[0] == 3, "bouton : le clic de souris physique reste disponible")
+	_check(button.get_theme_stylebox("hover") != button.get_theme_stylebox("normal"), "bouton : le survol de souris est restauré")
+	button.disabled = true
+	await _tap(position)
+	_check(activations[0] == 3, "bouton : une action désactivée reste inactive au toucher")
+	await _remove(button)
+
+
+func _check_other_menus() -> void:
+	var stats := await _open_scene("res://scenes/menus/Stats.tscn")
+	var scroll: ScrollContainer = stats.get_node("Root/Scroll")
+	var edit: Button = scroll.get_node("Content/ProfilePanel/ProfileContent/PseudoRow/EditButton")
+	await _tap(_center(edit))
+	_check(stats.edit_row.visible, "profil : un seul appui ouvre l'édition du pseudo")
+	stats._cancel_edit()
+	# Les six adversaires actuels peuvent tenir sur un grand écran. Préparer
+	# une liste longue pour vérifier le défilement sans dépendre des stats sauvées.
+	scroll.get_node("Content/NPCPanel/NPCList").custom_minimum_size.y = 1400
+	await _settle()
+	var value_before := scroll.scroll_vertical
+	await _swipe(_point(scroll, Vector2(100, 400)), Vector2(0, -200))
+	_check(scroll.scroll_vertical > value_before, "profil : défilement tactile des statistiques")
+	await _remove(stats)
+	var levels := await _open_scene("res://scenes/menus/LevelSelect.tscn")
+	var first_npc: Button = levels.get_node("Root/NPCListScroll/NPCList").get_child(0)
+	await _tap(_center(first_npc))
+	_check(levels.profile_panel.visible, "adversaires : les boutons dynamiques fonctionnent au toucher")
+	await _remove(levels)
+
+
+func _check_buffered_input() -> void:
+	# Vérifie aussi le regroupement d'événements utilisé par défaut en jeu.
+	Input.use_accumulated_input = true
+	var page := await _open_scene("res://scenes/menus/HowToPlay.tscn")
+	var scroll: ScrollContainer = page.get_node("Content/Scroll")
+	await _swipe(_point(scroll, Vector2(200, 400)), Vector2(0, -240))
+	_check(scroll.scroll_vertical > 100, "entrée regroupée : le défilement fonctionne avec les réglages du jeu")
+	await _remove(page)
+	Input.use_accumulated_input = false
+
+
+func _check_battle_touch() -> void:
+	var saved_npc: String = BattleContext.selected_npc_id
+	var saved_first: int = BattleContext.forced_first_player
+	BattleContext.selected_npc_id = "hiro"
+	BattleContext.forced_first_player = GameState.PLAYER_HUMAN
+	var board := await _open_scene("res://scenes/game/Board.tscn")
+	var hand: HandView = board.get_node("Root/HandView")
+	var card: StoneCard = hand.get_child(0).get_child(0)
+	await _tap(_center(card))
+	_check(board._selected_stone_id != "", "combat : sélectionner une carte avec un toucher natif")
+	var slot: Panel = board.get_node("Root/BoardArea/BoardView/cell_1_1")
+	var state: GameState = board.turn_manager.get_state()
+	# Le plateau peut comporter une case bloquée : choisir une case libre.
+	for index in range(state.board.size()):
+		if state.board[index]["cell_type"] != GameState.CELL_BLOCKED:
+			slot = board.get_node("Root/BoardArea/BoardView").get_node("cell_%d_%d" % [index / 3, index % 3])
+			break
+	await _tap(_center(slot))
+	_check(state.human_hand.size() == 4, "combat : une seule carte est posée au toucher")
+	await _remove(board)
+	BattleContext.selected_npc_id = saved_npc
+	BattleContext.forced_first_player = saved_first
+
+
+func _open_scene(path: String) -> Control:
+	var scene: PackedScene = load(path)
+	var page := scene.instantiate() as Control
+	root.add_child(page)
+	await _settle()
+	return page
+
+
+func _remove(node: Node) -> void:
+	root.remove_child(node)
+	node.queue_free()
+	await _settle()
+
+
+func _reset_scroll(scroll: ScrollContainer) -> void:
+	var point := _point(scroll, Vector2(3, 50))
+	_press(point)
+	_release(point, true)
+	scroll.scroll_vertical = 0
+	await _settle()
+
+
+func _tap(position: Vector2) -> void:
+	_press(position)
+	_release(position)
+	await _settle()
+
+
+func _swipe(start: Vector2, movement: Vector2) -> void:
+	_press(start)
+	for step in range(1, 9):
+		_drag(start + movement * (float(step) / 8.0), movement / 8.0)
+		await get_tree().process_frame
+	_release(start + movement)
+	await _settle()
+
+
+func _press(position: Vector2, index: int = 0) -> void:
+	var event := InputEventScreenTouch.new()
+	event.index = index
+	event.position = position
+	event.pressed = true
+	_inject(event)
+
+
+func _release(position: Vector2, canceled: bool = false, index: int = 0) -> void:
+	var event := InputEventScreenTouch.new()
+	event.index = index
+	event.position = position
+	event.canceled = canceled
+	_inject(event)
+
+
+func _drag(position: Vector2, relative: Vector2) -> void:
+	var event := InputEventScreenDrag.new()
+	event.position = position
+	event.relative = relative
+	_inject(event)
+
+
+func _mouse_move(position: Vector2) -> void:
+	var event := InputEventMouseMotion.new()
+	event.position = position
+	_inject(event)
+
+
+func _mouse_button(position: Vector2, pressed: bool) -> void:
+	var event := InputEventMouseButton.new()
+	event.position = position
+	event.button_index = MOUSE_BUTTON_LEFT
+	event.pressed = pressed
+	_inject(event)
+
+
+func _inject(event: InputEvent) -> void:
+	# L'entrée passe par Input, y compris l'émulation native et le routage GUI.
+	# Les contrôles vivent dans le canevas 1080p ; l'OS reçoit des pixels écran.
+	Input.parse_input_event(event.xformed_by(root.get_final_transform()))
+
+
+func _point(control: Control, local_point: Vector2) -> Vector2:
+	return control.get_global_transform_with_canvas() * local_point
+
+
+func _center(control: Control) -> Vector2:
+	return _point(control, control.size * 0.5)
+
+
+func _find_visible_card(node: Node, rect: Rect2) -> StoneCard:
+	if node is StoneCard and rect.has_point(_center(node)):
+		return node
+	for child in node.get_children():
+		var found := _find_visible_card(child, rect)
+		if found != null:
+			return found
+	return null
+
+
+func _settle() -> void:
+	await get_tree().process_frame
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+
+func _check(condition: bool, label: String) -> void:
+	_checks += 1
+	print("%s %s" % ["OK" if condition else "ÉCHEC", label])
+	if not condition:
+		_failures.append(label)

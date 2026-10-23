@@ -1,0 +1,112 @@
+{
+  "npcs": [
+    {
+      "id": "hiro",
+      "name": "Hiro le Novice",
+      "name_jp": "新入り",
+      "description": "Un jeune samouraï qui découvre à peine les SamStones.",
+      "quote": "Je m'entraîne encore, mais un jour je serai le meilleur !",
+      "difficulty": "easy",
+      "ai_level": "random",
+      "portrait": "res://assets/npcs/hiro.png",
+      "deck": [
+        "ashigaru",
+        "yamabushi",
+        "sumo",
+        "naginata_monk",
+        "kitsune"
+      ],
+      "god_id": "hachiman"
+    },
+    {
+      "id": "mei",
+      "name": "Mei la Kunoichi",
+      "name_jp": "忍の梅",
+      "description": "Une ninja qui joue vite et sans se faire remarquer.",
+      "quote": "Tu ne m'auras pas deux fois au même endroit.",
+      "difficulty": "easy",
+      "ai_level": "random",
+      "portrait": "res://assets/npcs/mei.png",
+      "deck": [
+        "shinobi",
+        "kunoichi",
+        "yasha",
+        "naginata_monk",
+        "kitsune"
+      ],
+      "god_id": "izanami"
+    },
+    {
+      "id": "tetsuo",
+      "name": "Tetsuo le Rōnin",
+      "name_jp": "浪人の鉄雄",
+      "description": "Un guerrier sans maître qui a beaucoup appris dans les rues.",
+      "quote": "Je n'obéis qu'à mes pierres.",
+      "difficulty": "medium",
+      "ai_level": "greedy",
+      "portrait": "res://assets/npcs/tetsuo.png",
+      "deck": [
+        "kappa",
+        "tanuki",
+        "ronin",
+        "naginata_monk",
+        "raijin"
+      ],
+      "god_id": "inari"
+    },
+    {
+      "id": "yuki",
+      "name": "Yuki la Prêtresse",
+      "name_jp": "巫女の雪",
+      "description": "Servante des dieux, elle invoque les yokai les plus puissants.",
+      "quote": "Les esprits choisissent leur camp eux-mêmes.",
+      "difficulty": "medium",
+      "ai_level": "greedy",
+      "portrait": "res://assets/npcs/yuki.png",
+      "deck": [
+        "oni_minor",
+        "jorogumo",
+        "oni_major",
+        "kitsune",
+        "tatsu"
+      ],
+      "god_id": "okuninushi"
+    },
+    {
+      "id": "raiko",
+      "name": "Raiko le Maître du Tonnerre",
+      "name_jp": "雷光の雷鼓",
+      "description": "Un guerrier légendaire dont chaque coup résonne comme le tonnerre.",
+      "quote": "Tu entendras ma pierre avant de la voir.",
+      "difficulty": "hard",
+      "ai_level": "score",
+      "portrait": "res://assets/npcs/raiko.png",
+      "deck": [
+        "yumi_archer",
+        "tengu",
+        "fujin",
+        "raijin",
+        "tatsu"
+      ],
+      "god_id": "tsukuyomi"
+    },
+    {
+      "id": "kaguya",
+      "name": "Kaguya la Sans-Nom",
+      "name_jp": "かぐや",
+      "description": "Personne ne sait d'où elle vient. Elle joue les dieux comme des pions.",
+      "quote": "Je n'ai pas de pierre faible. Seulement de mauvais adversaires.",
+      "difficulty": "hard",
+      "ai_level": "score",
+      "portrait": "res://assets/npcs/kaguya.png",
+      "deck": [
+        "samurai_red",
+        "samurai_blue",
+        "susanoo",
+        "amaterasu",
+        "izanagi"
+      ],
+      "god_id": "susanoo"
+    }
+  ]
+}

@@ -1,0 +1,66 @@
+[gd_scene load_steps=7 format=3 uid="uid://board_scene"]
+
+[ext_resource type="Script" path="res://scripts/ui/BoardController.gd" id="1_boardctrl"]
+[ext_resource type="Script" path="res://scripts/engine/TurnManager.gd" id="2_turnmgr"]
+[ext_resource type="Script" path="res://scripts/ui/ParchmentBackground.gd" id="3_parchment"]
+[ext_resource type="Script" path="res://scripts/ui/BoardView.gd" id="4_boardview"]
+[ext_resource type="Script" path="res://scripts/ui/HandView.gd" id="5_handview"]
+[ext_resource type="Script" path="res://scripts/ui/BattleHUD.gd" id="6_hud"]
+
+[node name="Board" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_boardctrl")
+
+[node name="Background" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("3_parchment")
+
+[node name="TurnManager" type="Node" parent="."]
+script = ExtResource("2_turnmgr")
+
+[node name="Root" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 48.0
+offset_top = 72.0
+offset_right = -48.0
+offset_bottom = -48.0
+theme_override_constants/separation = 40
+
+[node name="HUD" type="PanelContainer" parent="Root"]
+layout_mode = 2
+script = ExtResource("6_hud")
+
+[node name="BoardArea" type="Control" parent="Root"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="BoardView" type="Control" parent="Root/BoardArea"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("4_boardview")
+
+[node name="HandLabel" type="Label" parent="Root"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.74, 0.58, 1)
+theme_override_font_sizes/font_size = 34
+text = "Ta main"
+horizontal_alignment = 1
+
+[node name="HandView" type="GridContainer" parent="Root"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 560)
+size_flags_vertical = 0
+columns = 3
+script = ExtResource("5_handview")

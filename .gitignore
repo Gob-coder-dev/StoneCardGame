@@ -1,0 +1,50 @@
+# Cache, imports générés et identifiants locaux de Godot.
+# Conserver les fichiers source *.uid et *.import de Godot 4.
+/.godot/
+/.import/
+export_credentials.cfg
+
+# Builds et exports ; les APK n'appartiennent pas au code source.
+/build/
+/dist/
+/exports/
+/android/build/
+v1/
+*.apk
+*.apk.idsig
+*.aab
+*.pck
+*.obb
+*.ipa
+
+# Documents locaux non destinés à GitHub.
+/docs/archives/
+/ANALYSE_PROJET.md
+[Cc][Ll][Aa][Uu][Dd][Ee].[Mm][Dd]
+
+# Secrets locaux et clés de signature.
+.env
+.env.*
+!.env.example
+*.keystore
+*.jks
+*.p12
+*.pfx
+*.key
+*.pem
+
+# Réglages personnels d'éditeur et fichiers du système.
+/.idea/
+/.vscode/
+/.vs/
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Journaux et fichiers temporaires.
+*.log
+*.tmp
+*.temp
+*.bak
+*.swp
+*~

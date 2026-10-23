@@ -1,0 +1,68 @@
+[gd_scene load_steps=3 format=3 uid="uid://result_scene"]
+
+[ext_resource type="Script" path="res://scripts/ui/ResultController.gd" id="1_result"]
+[ext_resource type="Script" path="res://scripts/ui/input/TouchButton.gd" id="2_touch_button"]
+
+[node name="Result" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_result")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.07, 0.045, 0.025, 1)
+
+[node name="VBoxCenter" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -420.0
+offset_top = -460.0
+offset_right = 420.0
+offset_bottom = 460.0
+alignment = 1
+theme_override_constants/separation = 28
+
+[node name="ResultLabel" type="Label" parent="VBoxCenter"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.91, 0.78, 0.47, 1)
+theme_override_font_sizes/font_size = 96
+text = "RÉSULTAT"
+horizontal_alignment = 1
+
+[node name="ScoreLabel" type="Label" parent="VBoxCenter"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.9, 0.78, 1)
+theme_override_font_sizes/font_size = 48
+text = "0 — 0"
+horizontal_alignment = 1
+
+[node name="Separator" type="Control" parent="VBoxCenter"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 40)
+
+[node name="ReplayButton" type="Button" parent="VBoxCenter"]
+layout_mode = 2
+script = ExtResource("2_touch_button")
+custom_minimum_size = Vector2(0, 130)
+text = "Rejouer"
+
+[node name="LevelSelectButton" type="Button" parent="VBoxCenter"]
+layout_mode = 2
+script = ExtResource("2_touch_button")
+custom_minimum_size = Vector2(0, 130)
+text = "Choisir un adversaire"
+
+[node name="MainMenuButton" type="Button" parent="VBoxCenter"]
+layout_mode = 2
+script = ExtResource("2_touch_button")
+custom_minimum_size = Vector2(0, 130)
+text = "Accueil"

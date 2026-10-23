@@ -1,0 +1,83 @@
+[gd_scene load_steps=5 format=3 uid="uid://howto_screen"]
+
+[ext_resource type="Script" path="res://scripts/ui/HowToPlayController.gd" id="1_howto"]
+[ext_resource type="Script" path="res://scripts/ui/ParchmentBackground.gd" id="2_background"]
+[ext_resource type="PackedScene" path="res://scenes/ui/BottomNav.tscn" id="3_nav"]
+[ext_resource type="Script" path="res://scripts/ui/input/TouchScrollContainer.gd" id="4_touch_scroll"]
+
+[node name="HowToPlay" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_howto")
+
+[node name="Background" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("2_background")
+
+[node name="Content" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 40.0
+offset_top = 56.0
+offset_right = -40.0
+offset_bottom = -174.0
+theme_override_constants/separation = 24
+
+[node name="Title" type="Label" parent="Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.94, 0.78, 0.35, 1)
+theme_override_font_sizes/font_size = 64
+text = "RÈGLES DU JEU"
+horizontal_alignment = 1
+
+[node name="Scroll" type="ScrollContainer" parent="Content"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+script = ExtResource("4_touch_scroll")
+
+[node name="RulesPanel" type="PanelContainer" parent="Content/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 1
+
+[node name="Page" type="VBoxContainer" parent="Content/Scroll/RulesPanel"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 1
+theme_override_constants/separation = 32
+
+[node name="RulesText" type="RichTextLabel" parent="Content/Scroll/RulesPanel/Page"]
+layout_mode = 2
+mouse_filter = 2
+custom_minimum_size = Vector2(0, 1830)
+theme_override_font_sizes/normal_font_size = 34
+theme_override_font_sizes/bold_font_size = 34
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
+
+[node name="GodRules" type="VBoxContainer" parent="Content/Scroll/RulesPanel/Page"]
+layout_mode = 2
+mouse_filter = 1
+theme_override_constants/separation = 28
+
+[node name="EndText" type="RichTextLabel" parent="Content/Scroll/RulesPanel/Page"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/normal_font_size = 34
+theme_override_font_sizes/bold_font_size = 34
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
+
+[node name="BottomNav" parent="." instance=ExtResource("3_nav")]
+current_tab = 2

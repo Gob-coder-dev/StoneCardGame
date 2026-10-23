@@ -1,0 +1,206 @@
+[gd_scene load_steps=8 format=3 uid="uid://collection_screen"]
+
+[ext_resource type="Script" path="res://scripts/ui/CollectionScreenController.gd" id="1_controller"]
+[ext_resource type="Script" path="res://scripts/ui/ParchmentBackground.gd" id="2_background"]
+[ext_resource type="PackedScene" path="res://scenes/ui/BottomNav.tscn" id="3_nav"]
+[ext_resource type="PackedScene" path="res://scenes/ui/StoneInfoSheet.tscn" id="4_info"]
+[ext_resource type="PackedScene" path="res://scenes/ui/ReplacementPanel.tscn" id="5_replacement"]
+[ext_resource type="Script" path="res://scripts/ui/input/TouchScrollContainer.gd" id="6_touch_scroll"]
+[ext_resource type="Script" path="res://scripts/ui/input/TouchButton.gd" id="7_touch_button"]
+
+[node name="CollectionScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_controller")
+
+[node name="Background" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("2_background")
+
+[node name="Content" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 32.0
+offset_top = 42.0
+offset_right = -32.0
+offset_bottom = -174.0
+theme_override_constants/separation = 14
+
+[node name="Title" type="Label" parent="Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.94, 0.78, 0.35, 1)
+theme_override_font_sizes/font_size = 66
+text = "CARTES"
+horizontal_alignment = 1
+
+[node name="StatusLabel" type="Label" parent="Content"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 42)
+theme_override_colors/font_color = Color(0.83, 0.72, 0.5, 1)
+theme_override_font_sizes/font_size = 27
+text = "Le deck est enregistré automatiquement."
+horizontal_alignment = 1
+
+[node name="Scroll" type="ScrollContainer" parent="Content"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+script = ExtResource("6_touch_scroll")
+
+[node name="Page" type="VBoxContainer" parent="Content/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 30
+
+[node name="GodPanel" type="PanelContainer" parent="Content/Scroll/Page"]
+layout_mode = 2
+mouse_filter = 1
+
+[node name="GodContent" type="VBoxContainer" parent="Content/Scroll/Page/GodPanel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="GodHeader" type="Label" parent="Content/Scroll/Page/GodPanel/GodContent"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.94, 0.78, 0.35, 1)
+theme_override_font_sizes/font_size = 32
+text = "DIEU ÉQUIPÉ"
+horizontal_alignment = 1
+
+[node name="GodButton" type="Button" parent="Content/Scroll/Page/GodPanel/GodContent"]
+layout_mode = 2
+script = ExtResource("7_touch_button")
+custom_minimum_size = Vector2(0, 108)
+theme_override_font_sizes/font_size = 38
+text = "INARI • FORTUNE  ›"
+
+[node name="GodDescription" type="Label" parent="Content/Scroll/Page/GodPanel/GodContent"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.86, 0.78, 0.65, 1)
+theme_override_font_sizes/font_size = 27
+text = "Pouvoir de famille"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="GodMenu" type="PanelContainer" parent="Content/Scroll/Page"]
+visible = false
+layout_mode = 2
+mouse_filter = 1
+
+[node name="GodOptions" type="VBoxContainer" parent="Content/Scroll/Page/GodMenu"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="DeckPanel" type="PanelContainer" parent="Content/Scroll/Page"]
+layout_mode = 2
+mouse_filter = 1
+
+[node name="DeckContent" type="VBoxContainer" parent="Content/Scroll/Page/DeckPanel"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="DeckHeader" type="HBoxContainer" parent="Content/Scroll/Page/DeckPanel/DeckContent"]
+layout_mode = 2
+
+[node name="DeckTitle" type="Label" parent="Content/Scroll/Page/DeckPanel/DeckContent/DeckHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 42
+text = "MON DECK"
+
+[node name="DeckCount" type="Label" parent="Content/Scroll/Page/DeckPanel/DeckContent/DeckHeader"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "0/5 • 0/50 pts"
+horizontal_alignment = 2
+
+[node name="DeckHint" type="Label" parent="Content/Scroll/Page/DeckPanel/DeckContent"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.63, 0.48, 1)
+theme_override_font_sizes/font_size = 25
+text = "Touche une pierre pour afficher ses actions."
+horizontal_alignment = 1
+
+[node name="DeckRows" type="VBoxContainer" parent="Content/Scroll/Page/DeckPanel/DeckContent"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="CollectionHeader" type="HBoxContainer" parent="Content/Scroll/Page"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="CollectionTitle" type="Label" parent="Content/Scroll/Page/CollectionHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 39
+text = "COLLECTION"
+vertical_alignment = 1
+
+[node name="SortButton" type="Button" parent="Content/Scroll/Page/CollectionHeader"]
+layout_mode = 2
+script = ExtResource("7_touch_button")
+custom_minimum_size = Vector2(420, 100)
+theme_override_font_sizes/font_size = 31
+text = "TRIER : ORDRE ▼"
+
+[node name="SortMenu" type="PanelContainer" parent="Content/Scroll/Page"]
+visible = false
+layout_mode = 2
+mouse_filter = 1
+
+[node name="SortOptions" type="VBoxContainer" parent="Content/Scroll/Page/SortMenu"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="OriginalButton" type="Button" parent="Content/Scroll/Page/SortMenu/SortOptions"]
+layout_mode = 2
+script = ExtResource("7_touch_button")
+custom_minimum_size = Vector2(0, 92)
+theme_override_font_sizes/font_size = 34
+text = "✓  ORDRE"
+
+[node name="CostButton" type="Button" parent="Content/Scroll/Page/SortMenu/SortOptions"]
+layout_mode = 2
+script = ExtResource("7_touch_button")
+custom_minimum_size = Vector2(0, 92)
+theme_override_font_sizes/font_size = 34
+text = "COÛT"
+
+[node name="RarityButton" type="Button" parent="Content/Scroll/Page/SortMenu/SortOptions"]
+layout_mode = 2
+script = ExtResource("7_touch_button")
+custom_minimum_size = Vector2(0, 92)
+theme_override_font_sizes/font_size = 34
+text = "RARETÉ"
+
+[node name="NameButton" type="Button" parent="Content/Scroll/Page/SortMenu/SortOptions"]
+layout_mode = 2
+script = ExtResource("7_touch_button")
+custom_minimum_size = Vector2(0, 92)
+theme_override_font_sizes/font_size = 34
+text = "NOM"
+
+[node name="CollectionRows" type="VBoxContainer" parent="Content/Scroll/Page"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 18
+
+[node name="BottomSpacer" type="Control" parent="Content/Scroll/Page"]
+layout_mode = 2
+mouse_filter = 2
+custom_minimum_size = Vector2(0, 30)
+
+[node name="BottomNav" parent="." instance=ExtResource("3_nav")]
+current_tab = 0
+
+[node name="StoneInfoSheet" parent="." instance=ExtResource("4_info")]
+
+[node name="ReplacementPanel" parent="." instance=ExtResource("5_replacement")]

@@ -1,0 +1,91 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/collection/StoneInfoSheet.gd" id="1_info"]
+[ext_resource type="Script" path="res://scripts/ui/input/TouchButton.gd" id="2_touch_button"]
+
+[node name="StoneInfoSheet" type="Control"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_info")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0, 0, 0, 0.72)
+mouse_filter = 0
+
+[node name="InfoPanel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 30.0
+offset_top = 230.0
+offset_right = -30.0
+offset_bottom = -30.0
+
+[node name="InfoContent" type="VBoxContainer" parent="InfoPanel"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Header" type="HBoxContainer" parent="InfoPanel/InfoContent"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Title" type="Label" parent="InfoPanel/InfoContent/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.98, 0.84, 0.44, 1)
+theme_override_font_sizes/font_size = 58
+text = "Pierre"
+vertical_alignment = 1
+
+[node name="CloseButton" type="Button" parent="InfoPanel/InfoContent/Header"]
+layout_mode = 2
+script = ExtResource("2_touch_button")
+custom_minimum_size = Vector2(92, 92)
+theme_override_font_sizes/font_size = 42
+text = "×"
+
+[node name="Summary" type="Label" parent="InfoPanel/InfoContent"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.91, 0.8, 0.63, 1)
+theme_override_font_sizes/font_size = 36
+text = "Rare • 10 points"
+
+[node name="Description" type="Label" parent="InfoPanel/InfoContent"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 108)
+theme_override_colors/font_color = Color(0.94, 0.88, 0.76, 1)
+theme_override_font_sizes/font_size = 35
+text = "Description de la pierre."
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="Power" type="Label" parent="InfoPanel/InfoContent"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 96)
+theme_override_colors/font_color = Color(0.9, 0.64, 0.85, 1)
+theme_override_font_sizes/font_size = 30
+text = "Pouvoir de famille"
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="Stats" type="Label" parent="InfoPanel/InfoContent"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 72)
+theme_override_colors/font_color = Color(0.96, 0.79, 0.34, 1)
+theme_override_font_sizes/font_size = 34
+text = "HAUT 1   •   BAS 1   •   GAUCHE 1   •   DROITE 1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Card" type="CenterContainer" parent="InfoPanel/InfoContent"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 650)
+size_flags_vertical = 3

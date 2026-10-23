@@ -1,0 +1,563 @@
+{
+  "stones": [
+    {
+      "id": "ashigaru",
+      "name": "Ashigaru",
+      "name_jp": "足軽",
+      "description": "Un fantassin humble, mais déterminé.",
+      "rarity": "common",
+      "kind": "human",
+      "weapon": "yari",
+      "body_color": "#7a6a4a",
+      "blades": {
+        "top": 1,
+        "bottom": 1,
+        "left": 1,
+        "right": 1
+      },
+      "asset": "",
+      "god_id": "hachiman",
+      "effects": [],
+      "shields": {
+        "top": 1,
+        "bottom": 0,
+        "left": 0,
+        "right": 1
+      },
+      "power_text": "Rempart : +1 défense en haut et à droite."
+    },
+    {
+      "id": "yumi_archer",
+      "name": "Yumi Archer",
+      "name_jp": "弓手",
+      "description": "Son arc est redoutable face aux ennemis du haut.",
+      "rarity": "common",
+      "kind": "human",
+      "weapon": "yumi",
+      "body_color": "#8a7a3a",
+      "blades": {
+        "top": 2,
+        "bottom": 1,
+        "left": 1,
+        "right": 1
+      },
+      "asset": "",
+      "god_id": "tsukuyomi",
+      "effects": [],
+      "long_blades": {
+        "top": 2,
+        "bottom": 0,
+        "left": 0,
+        "right": 0
+      },
+      "power_text": "Horizon : 2 lames bleues attaquent à distance vers le haut."
+    },
+    {
+      "id": "naginata_monk",
+      "name": "Naginata Monk",
+      "name_jp": "薙刀僧",
+      "description": "Sa lame balaie la gauche et la droite sans pitié.",
+      "rarity": "common",
+      "kind": "human",
+      "weapon": "naginata",
+      "body_color": "#9a5a2a",
+      "blades": {
+        "top": 1,
+        "bottom": 1,
+        "left": 3,
+        "right": 3
+      },
+      "asset": "",
+      "god_id": "neutral",
+      "effects": []
+    },
+    {
+      "id": "kappa",
+      "name": "Kappa",
+      "name_jp": "河童",
+      "description": "Le yokai aquatique surgit par en bas.",
+      "rarity": "common",
+      "kind": "creature",
+      "weapon": "none",
+      "body_color": "#2a7a5a",
+      "blades": {
+        "top": 0,
+        "bottom": 3,
+        "left": 2,
+        "right": 1
+      },
+      "asset": "",
+      "god_id": "inari",
+      "effects": [],
+      "random_blades": 2,
+      "power_text": "Fortune : 2 lames roses sont réparties aléatoirement à la pose."
+    },
+    {
+      "id": "tanuki",
+      "name": "Tanuki",
+      "name_jp": "狸",
+      "description": "Maître du déguisement, difficile à cerner.",
+      "rarity": "common",
+      "kind": "creature",
+      "weapon": "none",
+      "body_color": "#6a4a2a",
+      "blades": {
+        "top": 2,
+        "bottom": 2,
+        "left": 2,
+        "right": 0
+      },
+      "asset": "",
+      "god_id": "inari",
+      "effects": [],
+      "coin_flip": "horizontal",
+      "power_text": "Pile ou face horizontal : peut échanger gauche et droite à la pose."
+    },
+    {
+      "id": "shinobi",
+      "name": "Shinobi",
+      "name_jp": "忍び",
+      "description": "Lame dans l'ombre, frappe par la droite.",
+      "rarity": "common",
+      "kind": "human",
+      "weapon": "kunai",
+      "body_color": "#2a2a3a",
+      "blades": {
+        "top": 1,
+        "bottom": 2,
+        "left": 0,
+        "right": 3
+      },
+      "asset": "",
+      "god_id": "izanami",
+      "effects": [
+        "weaken_enemies_on_miss"
+      ],
+      "power_cost": 1.0,
+      "power_text": "Échec corrosif : sans capture, affaiblit les pierres adverses jusqu'à la fin de votre prochain coup."
+    },
+    {
+      "id": "samurai_red",
+      "name": "Samurai Red",
+      "name_jp": "赤武者",
+      "description": "Un guerrier équilibré aux quatre vents.",
+      "rarity": "uncommon",
+      "kind": "human",
+      "weapon": "katana",
+      "body_color": "#9a2a2a",
+      "blades": {
+        "top": 2,
+        "bottom": 2,
+        "left": 2,
+        "right": 2
+      },
+      "asset": "",
+      "god_id": "susanoo",
+      "effects": [
+        "shield_theft"
+      ],
+      "power_cost": 1.0,
+      "power_text": "Pillage : vole lames et boucliers de la face vaincue sous forme de boucliers."
+    },
+    {
+      "id": "kitsune",
+      "name": "Kitsune",
+      "name_jp": "狐",
+      "description": "Le renard à neuf queues domine par le haut et la droite.",
+      "rarity": "uncommon",
+      "kind": "creature",
+      "weapon": "none",
+      "body_color": "#d07a2a",
+      "blades": {
+        "top": 3,
+        "bottom": 1,
+        "left": 1,
+        "right": 3
+      },
+      "asset": "",
+      "god_id": "neutral",
+      "effects": []
+    },
+    {
+      "id": "oni_minor",
+      "name": "Oni Mineur",
+      "name_jp": "小鬼",
+      "description": "Un démon jeune mais offensif sur trois côtés.",
+      "rarity": "uncommon",
+      "kind": "oni",
+      "weapon": "kanabo",
+      "body_color": "#4a7a3a",
+      "blades": {
+        "top": 3,
+        "bottom": 0,
+        "left": 3,
+        "right": 2
+      },
+      "asset": "",
+      "god_id": "okuninushi",
+      "effects": [
+        "swarm"
+      ],
+      "power_cost": 1.0,
+      "power_text": "Swarm : chaque allié Swarm connecté renforce toutes les pierres du groupe."
+    },
+    {
+      "id": "ronin",
+      "name": "Rōnin",
+      "name_jp": "浪人",
+      "description": "Sans maître, sa puissance est imprévisible.",
+      "rarity": "uncommon",
+      "kind": "human",
+      "weapon": "katana",
+      "body_color": "#5a5a6a",
+      "blades": {
+        "top": 2,
+        "bottom": 3,
+        "left": 3,
+        "right": 1
+      },
+      "asset": "",
+      "god_id": "inari",
+      "effects": [],
+      "coin_flip": "vertical",
+      "power_text": "Pile ou face vertical : peut échanger haut et bas à la pose."
+    },
+    {
+      "id": "yamabushi",
+      "name": "Yamabushi",
+      "name_jp": "山伏",
+      "description": "L'ascète de la montagne, résistant de tous côtés.",
+      "rarity": "uncommon",
+      "kind": "human",
+      "weapon": "bo",
+      "body_color": "#6a7a2a",
+      "blades": {
+        "top": 2,
+        "bottom": 2,
+        "left": 3,
+        "right": 2
+      },
+      "asset": "",
+      "god_id": "hachiman",
+      "effects": [],
+      "shields": {
+        "top": 1,
+        "bottom": 1,
+        "left": 1,
+        "right": 1
+      },
+      "power_text": "Rempart équilibré : +1 défense sur chaque face."
+    },
+    {
+      "id": "tengu",
+      "name": "Tengu",
+      "name_jp": "天狗",
+      "description": "Maître du vent, il surpasse tout ce qui vient d'en haut.",
+      "rarity": "uncommon",
+      "kind": "creature",
+      "weapon": "tessen",
+      "body_color": "#b03a2a",
+      "blades": {
+        "top": 2,
+        "bottom": 1,
+        "left": 2,
+        "right": 2
+      },
+      "asset": "",
+      "god_id": "tsukuyomi",
+      "effects": [],
+      "long_blades": {
+        "top": 2,
+        "bottom": 0,
+        "left": 1,
+        "right": 0
+      },
+      "power_text": "Vent lointain : attaque à distance vers le haut et la gauche."
+    },
+    {
+      "id": "kunoichi",
+      "name": "Kunoichi",
+      "name_jp": "くノ一",
+      "description": "Ninja féminine, redoutable par les flancs.",
+      "rarity": "uncommon",
+      "kind": "human",
+      "weapon": "tanto",
+      "body_color": "#3a2a4a",
+      "blades": {
+        "top": 1,
+        "bottom": 2,
+        "left": 3,
+        "right": 3
+      },
+      "asset": "",
+      "god_id": "izanami",
+      "effects": [
+        "weaken_adjacent"
+      ],
+      "power_cost": 1.0,
+      "power_text": "Miasme : après les tentatives de capture, retire définitivement 1 force à chaque face des voisines, alliées ou ennemies."
+    },
+    {
+      "id": "sumo",
+      "name": "Rikishi",
+      "name_jp": "力士",
+      "description": "Il écrase tout ce qui vient d'en bas.",
+      "rarity": "uncommon",
+      "kind": "human",
+      "weapon": "none",
+      "body_color": "#c08a7a",
+      "blades": {
+        "top": 1,
+        "bottom": 2,
+        "left": 2,
+        "right": 2
+      },
+      "asset": "",
+      "god_id": "hachiman",
+      "effects": [],
+      "shields": {
+        "top": 0,
+        "bottom": 2,
+        "left": 1,
+        "right": 1
+      },
+      "power_text": "Forteresse basse : +2 défense en bas, +1 sur les flancs."
+    },
+    {
+      "id": "samurai_blue",
+      "name": "Samurai Blue",
+      "name_jp": "青武者",
+      "description": "Offensif sur trois côtés, légèrement vulnérable.",
+      "rarity": "rare",
+      "kind": "human",
+      "weapon": "katana",
+      "body_color": "#2a4a9a",
+      "blades": {
+        "top": 3,
+        "bottom": 1,
+        "left": 3,
+        "right": 3
+      },
+      "asset": "",
+      "god_id": "susanoo",
+      "effects": [
+        "shield_theft"
+      ],
+      "power_cost": 1.0,
+      "power_text": "Pillage : chaque capture renforce aléatoirement ses défenses."
+    },
+    {
+      "id": "jorogumo",
+      "name": "Jōrōgumo",
+      "name_jp": "絡新婦",
+      "description": "La femme-araignée tisse ses pièges sur les flancs.",
+      "rarity": "rare",
+      "kind": "creature",
+      "weapon": "none",
+      "body_color": "#5a2a5a",
+      "blades": {
+        "top": 2,
+        "bottom": 2,
+        "left": 4,
+        "right": 3
+      },
+      "asset": "",
+      "god_id": "okuninushi",
+      "effects": [
+        "swarm"
+      ],
+      "power_cost": 1.0,
+      "power_text": "Swarm : tisse une aura commune avec les pierres Swarm alliées connectées."
+    },
+    {
+      "id": "raijin",
+      "name": "Raijin",
+      "name_jp": "雷神",
+      "description": "Le dieu du tonnerre frappe de partout.",
+      "rarity": "rare",
+      "kind": "deity",
+      "weapon": "drums",
+      "body_color": "#c0a02a",
+      "blades": {
+        "top": 3,
+        "bottom": 3,
+        "left": 3,
+        "right": 2
+      },
+      "asset": "",
+      "god_id": "neutral",
+      "effects": []
+    },
+    {
+      "id": "tatsu",
+      "name": "Tatsu",
+      "name_jp": "龍",
+      "description": "Le dragon domine le haut et la droite avec force.",
+      "rarity": "rare",
+      "kind": "dragon",
+      "weapon": "none",
+      "body_color": "#2a8a6a",
+      "blades": {
+        "top": 4,
+        "bottom": 2,
+        "left": 2,
+        "right": 4
+      },
+      "asset": "",
+      "god_id": "neutral",
+      "effects": []
+    },
+    {
+      "id": "fujin",
+      "name": "Fūjin",
+      "name_jp": "風神",
+      "description": "Le dieu du vent, puissant sur trois côtés.",
+      "rarity": "rare",
+      "kind": "deity",
+      "weapon": "windbag",
+      "body_color": "#3a9a9a",
+      "blades": {
+        "top": 3,
+        "bottom": 3,
+        "left": 2,
+        "right": 2
+      },
+      "asset": "",
+      "god_id": "tsukuyomi",
+      "effects": [],
+      "long_blades": {
+        "top": 1,
+        "bottom": 1,
+        "left": 0,
+        "right": 2
+      },
+      "power_text": "Tempête d'horizon : attaque à distance sur trois lignes."
+    },
+    {
+      "id": "oni_major",
+      "name": "Grand Oni",
+      "name_jp": "大鬼",
+      "description": "Le grand démon est presque imbattable.",
+      "rarity": "rare",
+      "kind": "oni",
+      "weapon": "kanabo_large",
+      "body_color": "#9a2a2a",
+      "blades": {
+        "top": 4,
+        "bottom": 2,
+        "left": 4,
+        "right": 3
+      },
+      "asset": "",
+      "god_id": "okuninushi",
+      "effects": [
+        "swarm"
+      ],
+      "power_cost": 1.0,
+      "power_text": "Swarm : dirige un groupe dont le bonus continu atteint au maximum +2 par pierre."
+    },
+    {
+      "id": "yasha",
+      "name": "Yasha",
+      "name_jp": "夜叉",
+      "description": "Esprit de la nuit, redoutable sur tous les côtés.",
+      "rarity": "epic",
+      "kind": "creature",
+      "weapon": "dual_swords",
+      "body_color": "#4a2a6a",
+      "blades": {
+        "top": 3,
+        "bottom": 3,
+        "left": 3,
+        "right": 3
+      },
+      "asset": "",
+      "god_id": "izanami",
+      "effects": [
+        "weaken_adjacent"
+      ],
+      "power_cost": 1.0,
+      "power_text": "Miasme supérieur : après les tentatives de capture, affaiblit définitivement toutes les pierres voisines."
+    },
+    {
+      "id": "ryujin",
+      "name": "Ryūjin",
+      "name_jp": "龍神",
+      "description": "Le roi dragon des mers, puissance absolue en bas et à gauche.",
+      "rarity": "epic",
+      "kind": "dragon",
+      "weapon": "none",
+      "body_color": "#2a5a9a",
+      "blades": {
+        "top": 2,
+        "bottom": 4,
+        "left": 4,
+        "right": 3
+      },
+      "asset": "",
+      "god_id": "neutral",
+      "effects": []
+    },
+    {
+      "id": "susanoo",
+      "name": "Susanoo",
+      "name_jp": "須佐之男",
+      "description": "Le dieu des tempêtes, impétueux et puissant.",
+      "rarity": "epic",
+      "kind": "deity",
+      "weapon": "katana_legendary",
+      "body_color": "#2a6a8a",
+      "blades": {
+        "top": 4,
+        "bottom": 3,
+        "left": 3,
+        "right": 4
+      },
+      "asset": "",
+      "god_id": "susanoo",
+      "effects": [
+        "shield_theft"
+      ],
+      "power_cost": 1.0,
+      "power_text": "Pillage divin : absorbe la force vaincue dans les emplacements de bouclier encore libres."
+    },
+    {
+      "id": "amaterasu",
+      "name": "Amaterasu",
+      "name_jp": "天照",
+      "description": "La déesse du soleil illumine chaque côté de sa pierre.",
+      "rarity": "epic",
+      "kind": "deity",
+      "weapon": "none",
+      "body_color": "#e0b030",
+      "blades": {
+        "top": 4,
+        "bottom": 4,
+        "left": 3,
+        "right": 3
+      },
+      "asset": "",
+      "god_id": "neutral",
+      "effects": []
+    },
+    {
+      "id": "izanagi",
+      "name": "Izanagi",
+      "name_jp": "伊邪那岐",
+      "description": "Le créateur du monde. La pierre ultime, maîtresse des quatre côtés.",
+      "rarity": "legendary",
+      "kind": "deity",
+      "weapon": "naginata_celestial",
+      "body_color": "#d0c0e0",
+      "blades": {
+        "top": 4,
+        "bottom": 4,
+        "left": 4,
+        "right": 4
+      },
+      "asset": "",
+      "god_id": "neutral",
+      "effects": []
+    }
+  ]
+}
