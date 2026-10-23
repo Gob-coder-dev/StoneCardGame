@@ -11,7 +11,8 @@ func play(card: StoneCard, event: Dictionary, duration: float) -> void:
 	_flipped = event["flipped"]
 	var preview: BattleStoneModel = card.get_battle_stone().clone()
 	if _flipped:
-		preview.swap_faces("left" if _axis == "horizontal" else "top", "right" if _axis == "horizontal" else "bottom")
+		var faces := StoneSide.coin_faces(_axis)
+		preview.swap_faces(faces[0], faces[1])
 	card.set_combat_preview(preview)
 	_start(duration)
 
@@ -52,7 +53,6 @@ func _draw_coin() -> void:
 			draw_line(center + Vector2(-0.36, 0.36) * radius, center + Vector2(0.36, -0.36) * radius, ink, width, true)
 		_draw_caption(("ÉCHANGE ↔" if _axis == "horizontal" else "ÉCHANGE ↕") if _flipped else "INCHANGÉ", Color("#ffe9a8"))
 		if _flipped and progress >= COIN_REVEAL:
-			var sides := ["left", "right"] if _axis == "horizontal" else ["top", "bottom"]
-			for side in sides:
+			for side in StoneSide.coin_faces(_axis):
 				var point := _card_transform * _card.marker_position(side)
 				draw_arc(point, _square * 0.075, 0.0, TAU, 24, Color("#fff0b8"), maxf(2.0, _square * 0.012), true)

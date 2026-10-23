@@ -79,16 +79,22 @@ func _rarity_label(rarity: String) -> String:
 
 func _special_summary(stone: Dictionary) -> String:
 	var pieces: Array[String] = []
-	if int(stone.get("random_blades", 0)) > 0:
-		pieces.append("%d hasard" % int(stone["random_blades"]))
+	var random_count := int(stone.get("random_blades", 0))
+	if random_count > 0:
+		pieces.append(_count_label(random_count, "hasard"))
 	var shield_count := 0
 	for value in stone.get("shields", {}).values():
 		shield_count += int(value)
 	if shield_count > 0:
-		pieces.append("%d bouclier" % shield_count)
+		pieces.append(_count_label(shield_count, "bouclier"))
 	var long_count := 0
 	for value in stone.get("long_blades", {}).values():
 		long_count += int(value)
 	if long_count > 0:
-		pieces.append("%d longue" % long_count)
+		pieces.append(_count_label(long_count, "longue"))
 	return "" if pieces.is_empty() else "   •   " + " / ".join(pieces)
+
+
+## « 1 bouclier », « 2 boucliers ».
+static func _count_label(count: int, word: String) -> String:
+	return "%d %s%s" % [count, word, "s" if count > 1 else ""]

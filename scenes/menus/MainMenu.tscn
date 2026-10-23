@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://c620obhplo3k1" path="res://scripts/ui/MainMenu.gd" id="1_mainmenu"]
 [ext_resource type="Script" uid="uid://cms1p5lxyjnml" path="res://scripts/ui/ParchmentBackground.gd" id="2_parchment"]
 [ext_resource type="PackedScene" path="res://scenes/ui/BottomNav.tscn" id="3_nav"]
+[ext_resource type="Script" uid="uid://153ulybbb0hg" path="res://scripts/ui/input/TouchButton.gd" id="4_touch_button"]
 
 [node name="MainMenu" type="Control" unique_id=1585933656]
 layout_mode = 3
@@ -43,6 +44,7 @@ layout_mode = 2
 custom_minimum_size = Vector2(390, 100)
 layout_mode = 2
 text = "PROFIL  •  Joueur"
+script = ExtResource("4_touch_button")
 
 [node name="Spacer" type="Control" parent="Content/Header" unique_id=53395186]
 layout_mode = 2
@@ -89,6 +91,7 @@ layout_mode = 2
 size_flags_horizontal = 4
 theme_override_font_sizes/font_size = 56
 text = "⚔  JOUER"
+script = ExtResource("4_touch_button")
 
 [node name="BottomNav" parent="." unique_id=2090898695 instance=ExtResource("3_nav")]
 grow_horizontal = 2

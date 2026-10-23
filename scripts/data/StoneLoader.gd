@@ -32,7 +32,8 @@ func _ready() -> void:
 	_load_stones()
 	_load_gods()
 	_load_npcs()
-	ContentChecks.validate(_stones_list, _gods, _npcs.values(), _default_god_id)
+	for problem in ContentChecks.find_problems(_stones_list, _gods, _npcs.values(), _default_god_id):
+		push_error("StoneLoader: " + problem)
 
 
 ## ─── Chargement ───────────────────────────────────────────────────────────────
@@ -91,29 +92,27 @@ func _load_gods() -> void:
 		_gods_list.append(god)
 
 
+## ─── Accès aux pierres ────────────────────────────────────────────────────────
 
-
-
-
-
-
-
-
-
-
+## Copie complète de la définition : l'appelant peut la modifier sans toucher
+## au catalogue. Pour une simple question, préférer les lectures ci-dessous.
 func get_stone(stone_id: String) -> Dictionary:
 	return _stones.get(stone_id, {}).duplicate(true)
 
 
-## Retourne le nombre de lames d'un côté donné d'une pierre.
-## side : "top" | "bottom" | "left" | "right". 0 si pierre/côté introuvable.
-## C'est l'accès le plus ciblé : le moteur de règles ne lit QUE ce dont il a
-## besoin, sans copier la pierre entière.
-func blade_of(stone_id: String, side: String) -> int:
-	var stone: Dictionary = _stones.get(stone_id, {})
-	if stone.is_empty():
-		return 0
-	return int(stone["blades"].get(side, 0))
+## Lectures indexées sans copie, pour les questions posées des milliers de fois
+## pendant les simulations. Elles ne renvoient qu'un booléen : le catalogue
+## reste protégé.
+func has_stone(stone_id: String) -> bool:
+	return _stones.has(stone_id)
+
+
+func has_effect(stone_id: String, effect: String) -> bool:
+	var stone = _stones.get(stone_id)
+	if stone == null:
+		return false
+	var effects = stone.get("effects")
+	return effects is Array and effects.has(effect)
 
 
 ## Enregistre une pierre fabriquée à la main (utilisé par les tests unitaires
@@ -133,17 +132,10 @@ func get_all_stones() -> Array:
 	return _stones_list.duplicate(true)
 
 
-## Coût d'une pierre (somme des lames). 0 si introuvable.
-## Accès pratique au coût ; la règle vit dans StoneCostRules.
+## Coût d'une pierre du catalogue, 0 si introuvable. La règle vit dans StoneCostRules.
 func stone_cost(stone_id: String) -> float:
-	return StoneCostRules.cost(get_stone(stone_id))
-
-
-
-
-## Conservé pour le composant StoneCard ; le format appartient à UIFormat.
-func format_cost(value: float) -> String:
-	return UIFormat.cost(value)
+	# StoneCostRules lit seulement la définition : inutile de la copier.
+	return StoneCostRules.cost(_stones.get(stone_id, {}))
 
 
 func build_hand(stone_ids: Array) -> Array:
@@ -159,10 +151,6 @@ func build_hand(stone_ids: Array) -> Array:
 
 func get_npc(npc_id: String) -> Dictionary:
 	return _npcs.get(npc_id, {}).duplicate(true)
-
-
-func get_all_npcs() -> Array:
-	return _npcs.values().duplicate(true)
 
 
 ## Retourne la liste des NPCs triée par difficulté (easy → hard)
@@ -192,7 +180,7 @@ func default_god_id() -> String:
 
 
 func is_stone_available_to_god(stone_id: String, god_id: String) -> bool:
-	var stone := get_stone(stone_id)
+	var stone: Dictionary = _stones.get(stone_id, {})
 	if stone.is_empty() or not _gods.has(god_id):
 		return false
 	var affinity := str(stone.get("god_id", "neutral"))

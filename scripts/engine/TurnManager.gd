@@ -36,11 +36,13 @@ func start_game(human_hand: Array, ai_hand: Array, blocked_cells: Array, npc_id:
 	_state.setup_hands(human_hand, ai_hand)
 	_coin_flip(forced_first_player)
 
+## Le premier joueur est normalement tiré avant le combat (écran PreBattle) ;
+## sans tirage préalable, le même tirage du moteur est utilisé ici.
 func _coin_flip(forced_first_player: int = 0) -> void:
 	if forced_first_player == GameState.PLAYER_HUMAN or forced_first_player == GameState.PLAYER_AI:
 		_state.current_player = forced_first_player
 	else:
-		_state.current_player = GameState.PLAYER_HUMAN if randi() % 2 == 0 else GameState.PLAYER_AI
+		_state.current_player = BoardSetupGenerator.draw_first_player()
 	emit_signal("coin_flip_result", _state.current_player)
 	emit_signal("turn_started", _state.current_player)
 
@@ -77,7 +79,7 @@ func _apply_move(row: int, col: int, stone_id: String, player: int) -> bool:
 
 func _resolve_placed_move(row: int, col: int, player: int, placement: Dictionary, move_state: GameState) -> void:
 	var pose := CombatPresentation.new(CombatPresentation.Kind.PLACEMENT, row, col, player)
-	pose.placement_swarm = placement["swarm_events"]
+	pose.pending_swarm = placement["swarm_events"]
 	await _present(pose)
 	if _state != move_state:
 		return
@@ -103,7 +105,9 @@ func _resolve_placed_move(row: int, col: int, player: int, placement: Dictionary
 		stone_captured.emit(capture["row"], capture["col"], player)
 	phase = Phase.EFFECTS
 	effects_resolved.emit(result["effects"])
-	await _present(CombatPresentation.new(CombatPresentation.Kind.EFFECTS, row, col, player, result["effects"]))
+	var effects := CombatPresentation.new(CombatPresentation.Kind.EFFECTS, row, col, player, result["effects"])
+	effects.pending_swarm = result["swarm_events"]
+	await _present(effects)
 	if _state != move_state:
 		return
 	await _reveal_swarm(result["swarm_events"], row, col, player)

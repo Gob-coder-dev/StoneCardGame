@@ -1,7 +1,7 @@
 extends "res://tests/support/CombatTestSuite.gd"
 
 func run() -> void:
-	for npc in StoneLoader.get_all_npcs():
+	for npc in StoneLoader.get_npcs_ordered():
 		await _compare_animated_and_instant(npc)
 
 

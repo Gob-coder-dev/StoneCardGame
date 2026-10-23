@@ -38,3 +38,19 @@ static func effects_duration(events: Array) -> float:
 			CombatEvents.TEMPORARY_WEAKEN: duration = maxf(duration, WEAKEN_GLOBAL)
 			CombatEvents.WEAKNESS_EXPIRED: duration = maxf(duration, WEAKNESS_REPAIR)
 	return duration
+
+
+## Durée prévue de la présentation d'une étape du moteur.
+static func step_duration(step: CombatPresentation) -> float:
+	match step.kind:
+		CombatPresentation.Kind.PLACEMENT: return PLACEMENT
+		CombatPresentation.Kind.PREPARATION: return PREPARATION
+		CombatPresentation.Kind.SWARM: return SWARM
+		CombatPresentation.Kind.ATTACK: return attack_duration(step.events)
+		CombatPresentation.Kind.EFFECTS: return effects_duration(step.events)
+	return 0.0
+
+
+## Délai accordé en plus de la durée prévue avant d'interrompre une animation
+## qui ne signale jamais sa fin. La partie continue alors avec l'état final.
+const WATCHDOG_MARGIN := 2.0

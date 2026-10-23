@@ -15,36 +15,65 @@ var _board: BoardView
 var _batch: Batch
 var _active_step: CombatPresentation
 var _tweens: Array[Tween] = []
+## Garde-fou interne : il n'apparaît pas dans get_children(), donc
+## _cancel_animations() ne le supprime pas avec les animations.
+var _watchdog: Timer
 
 func setup(board: BoardView) -> void:
 	_board = board
 	_geometry = Geometry.new(board)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_watchdog = Timer.new()
+	_watchdog.one_shot = true
+	_watchdog.timeout.connect(_on_watchdog_timeout)
+	add_child(_watchdog, false, Node.INTERNAL_MODE_BACK)
 
 func present(step: CombatPresentation) -> void:
 	_active_step = step
 	step.cancelled.connect(_cancel_animations, CONNECT_ONE_SHOT)
 	_batch = Batch.new()
 	var current_batch = _batch
+	var duration := Timeline.step_duration(step)
+	if _watchdog.is_inside_tree():
+		_watchdog.start(duration + Timeline.WATCHDOG_MARGIN)
+	# Le changement d'Essaim révélé à l'étape suivante reste masqué pendant celle-ci.
+	_hold_swarm_preview(step.pending_swarm)
 	match step.kind:
 		CombatPresentation.Kind.PLACEMENT:
-			_hold_swarm_preview(step.placement_swarm)
 			animate_placement(step.row, step.col)
 		CombatPresentation.Kind.PREPARATION:
-			animate_preparation(step.row, step.col, step.events, Timeline.PREPARATION)
+			animate_preparation(step.row, step.col, step.events, duration)
 		CombatPresentation.Kind.SWARM:
-			animate_swarm(step.events, Timeline.SWARM)
+			animate_swarm(step.events, duration)
 		CombatPresentation.Kind.ATTACK:
-			animate_attacks(step.row, step.col, step.events, step.player, Timeline.attack_duration(step.events))
+			animate_attacks(step.row, step.col, step.events, step.player, duration)
 		CombatPresentation.Kind.EFFECTS:
-			animate_effects(step.events, Timeline.effects_duration(step.events))
+			animate_effects(step.events, duration)
 	current_batch.seal()
 	if not current_batch.completed:
 		await current_batch.finished
+	# Arrêté avant complete() : l'étape suivante peut démarrer dans le même appel.
+	_watchdog.stop()
 	if step.cancelled.is_connected(_cancel_animations):
 		step.cancelled.disconnect(_cancel_animations)
-	_active_step = null
+	if _active_step == step:
+		_active_step = null
 	step.complete()
+
+## Une animation qui ne signale jamais sa fin ne doit pas bloquer la partie :
+## le résultat est déjà calculé, il suffit d'interrompre sa présentation.
+func _on_watchdog_timeout() -> void:
+	var step := _active_step
+	if step == null or step.completed:
+		return
+	push_warning("Animation %s interrompue : elle a dépassé sa durée prévue." %
+		CombatPresentation.Kind.keys()[step.kind])
+	_cancel_animations()
+	# Si present() s'est arrêté sur une erreur, personne n'attend plus le lot.
+	if not step.completed:
+		if _active_step == step:
+			_active_step = null
+		step.complete()
 
 func _track(animation: Node) -> void:
 	if _batch != null and not _batch.completed:
@@ -54,7 +83,7 @@ func _hold_swarm_preview(events: Array) -> void:
 	for event in events:
 		for member in event.get("members", []):
 			var card := _board.card_at(member["row"], member["col"])
-			if card != null:
+			if card != null and card.get_battle_stone() != null:
 				var preview = card.get_battle_stone().clone()
 				preview.swarm_blades = member["before"].duplicate()
 				card.set_combat_preview(preview)
@@ -64,12 +93,21 @@ func animate_capture(row: int, col: int, new_owner: int) -> void:
 	if card == null or card.get_combat_owner() == new_owner:
 		return
 	card.pivot_offset = card.size * 0.5
-	var tween := create_tween()
-	_tweens.append(tween)
-	tween.finished.connect(func(): _tweens.erase(tween), CONNECT_ONE_SHOT)
+	var tween := _create_tracked_tween()
 	tween.tween_property(card, "modulate", Color(1.6, 1.6, 1.2), 0.12)
 	tween.tween_property(card, "modulate", Color(1, 1, 1), 0.18)
 	card.set_owner_color(new_owner)
+
+
+## Tween gardé pour pouvoir l'arrêter si l'étape est annulée. Aucune connexion
+## ne le retient : les tweens terminés ou arrêtés sont simplement oubliés ici.
+func _create_tracked_tween() -> Tween:
+	for index in range(_tweens.size() - 1, -1, -1):
+		if not _tweens[index].is_valid():
+			_tweens.remove_at(index)
+	var tween := create_tween()
+	_tweens.append(tween)
+	return tween
 
 
 func animate_placement(row: int, col: int) -> void:
@@ -79,9 +117,7 @@ func animate_placement(row: int, col: int) -> void:
 	card.hide_placement_power()
 	card.pivot_offset = card.size * 0.5
 	card.scale = Vector2.ONE * 0.90
-	var tween := create_tween()
-	_tweens.append(tween)
-	tween.finished.connect(func(): _tweens.erase(tween), CONNECT_ONE_SHOT)
+	var tween := _create_tracked_tween()
 	tween.tween_property(card, "scale", Vector2.ONE * 1.035, Timeline.PLACEMENT * 0.55).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tween.tween_property(card, "scale", Vector2.ONE, Timeline.PLACEMENT * 0.45)
 	if _batch != null and not _batch.completed:
@@ -125,31 +161,11 @@ func animate_effects(events: Array, duration: float = 0.0) -> void:
 		if card == null:
 			continue
 		if event_type == CombatEvents.SHIELD_THEFT:
-			var transfers: Array = []
-			for transfer_value in event.get("transfers", []):
-				var transfer: Dictionary = transfer_value
-				var target: StoneCard = _board.card_at(transfer["row"], transfer["col"])
-				if target == null:
-					continue
-				var side := str(transfer["defense_side"])
-				var markers := target.get_battle_stone().markers_for_side(side)
-				var marker_index := int(transfer.get("marker_index", -1))
-				if marker_index < 0 or marker_index >= markers.size():
-					continue
-				var marker: Dictionary = markers[marker_index]
-				var transform_to_board := get_global_transform().affine_inverse() * target.get_global_transform()
-				var visual: Dictionary = transfer.duplicate()
-				visual["card"] = target
-				visual["side"] = side
-				visual["kind"] = marker["kind"]
-				visual["position"] = transform_to_board * target.marker_position(side, marker_index)
-				visual["face"] = transform_to_board * target.face_center(side)
-				transfers.append(visual)
 			var animation := PillageReveal.new()
 			animation.name = "PillageReveal"
 			add_child(animation)
 			_track(animation)
-			animation.play(card, event, transfers, duration)
+			animation.play(card, event, _geometry.pillage_transfers(event), duration)
 			continue
 		push_warning("Événement visuel inconnu : " + event_type)
 	if not weakening_events.is_empty():

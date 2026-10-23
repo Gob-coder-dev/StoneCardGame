@@ -52,10 +52,9 @@ func _style_coin() -> void:
 
 
 ## Animation : la pièce "tourne" (écrase/étire horizontalement) plusieurs fois,
-## alterne les faces, puis s'arrête sur le résultat réel.
+## alterne les faces, puis s'arrête sur le résultat tiré par le moteur.
 func _animate_coin_flip() -> void:
-	## Tirage réel (0 = joueur commence, 1 = NPC commence)
-	var player_starts := randi() % 2 == 0
+	var player_starts := BoardSetupGenerator.draw_first_player() == GameState.PLAYER_HUMAN
 
 	coin.pivot_offset = coin.size * 0.5
 

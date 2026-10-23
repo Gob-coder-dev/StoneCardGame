@@ -10,10 +10,8 @@ static func resolve(state: GameState, battle_stone: BattleStoneModel, definition
 		var flipped := state.draw_random_index(2) == 1
 		battle_stone.coin_flipped = flipped
 		if flipped:
-			if coin_axis == "horizontal":
-				battle_stone.swap_faces("left", "right")
-			else:
-				battle_stone.swap_faces("top", "bottom")
+			var faces := StoneSide.coin_faces(coin_axis)
+			battle_stone.swap_faces(faces[0], faces[1])
 		events.append(CombatEvents.coin_flip(coin_axis, flipped))
 
 	return events

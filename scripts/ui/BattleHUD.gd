@@ -10,7 +10,6 @@ extends PanelContainer
 const COL_PLATE_BG := Color("#1a120a")
 const COL_HUMAN := Color("#3a7ad0")
 const COL_AI := Color("#d04040")
-const COL_IDLE := Color("#4a3a22")
 const COL_ACTIVE := Color("#ffe060")   ## surlignage du joueur actif
 const COL_NAME := Color("#e8dcc0")
 const COL_SCORE := Color("#ffe9a8")
@@ -23,7 +22,6 @@ var _human_score: Label
 var _ai_score: Label
 var _center: Label        ## symbole central : flèche directionnelle ou "VS"
 var _banner: Label        ## bandeau de tour sous les plaques
-var _human_display_name: String = "TOI"
 var _ai_display_name: String = "Adversaire"
 
 
@@ -55,10 +53,10 @@ func _build() -> void:
 	## Symbole central, zone fixe. Affiche une flèche vers le joueur actif.
 	_center = Label.new()
 	_center.text = "VS"
-	_center.custom_minimum_size = Vector2(90, 0)
+	_center.custom_minimum_size = Vector2(UITheme.HUD_CENTER_WIDTH, 0)
 	_center.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_center.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_center.add_theme_font_size_override("font_size", 56)
+	_center.add_theme_font_size_override("font_size", UITheme.FONT_HUD_CENTER)
 	_center.add_theme_color_override("font_color", Color("#c8a060"))
 	row.add_child(_center)
 
@@ -97,7 +95,7 @@ func _build() -> void:
 ## accent_color : la couleur du camp (bleu joueur / rouge IA).
 func _make_plate(accent_color: Color) -> Dictionary:
 	var plate := PanelContainer.new()
-	plate.custom_minimum_size = Vector2(0, 150)
+	plate.custom_minimum_size = Vector2(0, UITheme.HUD_PLATE_HEIGHT)
 	plate.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	plate.add_theme_stylebox_override("panel", _plate_style(accent_color, false))
 
@@ -139,7 +137,6 @@ func _plate_style(accent_color: Color, active: bool) -> StyleBoxFlat:
 
 ## Définit les noms affichés (le nom adverse sera clippé s'il est trop long).
 func set_names(human_name: String, ai_name: String) -> void:
-	_human_display_name = human_name
 	_ai_display_name = ai_name
 	_human_name.text = human_name
 	_ai_name.text = ai_name
@@ -164,3 +161,11 @@ func set_active_player(player: int) -> void:
 		_banner.text = "À toi de jouer"
 	else:
 		_banner.text = "Tour de %s" % _ai_display_name
+
+
+## Fin de partie : plus aucun joueur n'est actif pendant le passage au résultat.
+func set_game_over() -> void:
+	_human_plate.add_theme_stylebox_override("panel", _plate_style(COL_HUMAN, false))
+	_ai_plate.add_theme_stylebox_override("panel", _plate_style(COL_AI, false))
+	_center.text = "VS"
+	_banner.text = "Partie terminée"

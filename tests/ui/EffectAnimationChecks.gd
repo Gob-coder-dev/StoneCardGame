@@ -18,7 +18,7 @@ func _test_pillage_view_animation() -> void:
 	view.refresh(state)
 	view.animations.animate_effects(result["effects"], Timeline.PILLAGE)
 	var card: StoneCard = view.get_node("cell_1_1").get_child(0)
-	_check(_sum(card._display_stone().shields) == 0 and _sum(card.get_battle_stone().shields) == 4,
+	_check(_sum(card.displayed_stone().shields) == 0 and _sum(card.get_battle_stone().shields) == 4,
 		"les nouveaux boucliers attendent la fin de la répartition aléatoire")
 	var animation: Control = view.animations.get_node("PillageReveal")
 	var robbed: StoneCard = view.get_node("cell_0_1").get_child(0)
@@ -27,7 +27,7 @@ func _test_pillage_view_animation() -> void:
 		"les symboles volés se détachent et convergent vers leurs bonnes destinations")
 	await get_tree().create_timer(1.85).timeout
 	_check(card._combat_preview == null and state.random_state == saved_rng
-		and _sum(card._display_stone().shields) == 4
+		and _sum(card.displayed_stone().shields) == 4
 		and is_equal_approx(robbed._animated_marker_growth("bottom", 0), 1.0),
 		"le Pillage fait repousser les symboles et révèle les boucliers sans nouveau hasard")
 	view.queue_free()

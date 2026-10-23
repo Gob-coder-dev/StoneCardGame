@@ -3,16 +3,45 @@
 ## Ne nécessite pas GUT et ne modifie pas la sauvegarde du joueur.
 extends Node
 
-const TouchButtonScript := preload("res://scripts/ui/input/TouchButton.gd")
+const TestLog := preload("res://tests/support/TestLog.gd")
+## Secondes de jeu : avec --fixed-fps 60, la limite ne dépend pas de la machine.
+const TIME_LIMIT := 120.0
 
 var _checks: int = 0
 var _failures: Array[String] = []
+var _log: TestLog = TestLog.new()
+var _finished := false
 
 @onready var root: Window = get_tree().root
 
 
 func _ready() -> void:
+	TestLog.current = _log
+	OS.add_logger(_log)
+	get_tree().create_timer(TIME_LIMIT).timeout.connect(_on_time_limit)
 	_run.call_deferred()
+
+
+func _on_time_limit() -> void:
+	if not _finished:
+		_failures.append("temps limite de %d s dépassé" % TIME_LIMIT)
+		_finish()
+
+
+func _finish() -> void:
+	if _finished:
+		return
+	_finished = true
+	OS.remove_logger(_log)
+	TestLog.current = null
+	var problems: Array[String] = _log.problems()
+	print("TACTILE : %d vérifications, %d échec(s), %d erreur(s) Godot." % [_checks, _failures.size(), problems.size()])
+	# printerr : les échecs sont comptés ici, pas comme des erreurs Godot.
+	for failure in _failures:
+		printerr("ÉCHEC : ", failure)
+	for problem in problems:
+		printerr("ERREUR GODOT : ", problem)
+	get_tree().quit(0 if _failures.is_empty() and problems.is_empty() else 1)
 
 
 func _run() -> void:
@@ -26,15 +55,13 @@ func _run() -> void:
 	await _check_rules_scroll()
 	await _check_collection()
 	await _check_button_inputs()
+	await _check_main_menu()
 	await _check_other_menus()
 	await _check_buffered_input()
 	await _check_battle_touch()
 	PlayerData.player_deck = saved_deck
 	PlayerData.player_god_id = saved_god
-	print("TACTILE : %d vérifications, %d échec(s)." % [_checks, _failures.size()])
-	for failure in _failures:
-		push_error(failure)
-	get_tree().quit(0 if _failures.is_empty() else 1)
+	_finish()
 
 
 func _check_rules_scroll() -> void:
@@ -152,7 +179,8 @@ func _check_collection() -> void:
 
 
 func _check_button_inputs() -> void:
-	var button: Button = TouchButtonScript.new()
+	# Chargé ici : une erreur dans ce script est comptée au lieu de bloquer le lanceur.
+	var button: Button = load("res://scripts/ui/input/TouchButton.gd").new()
 	button.text = "TEST"
 	button.position = Vector2(100, 100)
 	button.size = Vector2(300, 100)
@@ -187,6 +215,22 @@ func _check_button_inputs() -> void:
 	await _tap(position)
 	_check(activations[0] == 3, "bouton : une action désactivée reste inactive au toucher")
 	await _remove(button)
+
+
+func _check_main_menu() -> void:
+	var menu := await _open_scene("res://scenes/menus/MainMenu.tscn")
+	for path in ["Content/Header/ProfileButton", "Content/Hero/PlayButton"]:
+		var button: Button = menu.get_node(path)
+		# Les vrais changements de scène fermeraient la suite : on compte seulement.
+		for connection in button.pressed.get_connections():
+			button.pressed.disconnect(connection["callable"])
+		var activations := [0]
+		button.pressed.connect(func(): activations[0] += 1)
+		await _tap(_center(button))
+		_check(activations[0] == 1, "accueil : un toucher sur %s déclenche une seule action" % button.name)
+		await _swipe(_center(button), Vector2(0, -150))
+		_check(activations[0] == 1, "accueil : glisser depuis %s ne déclenche rien" % button.name)
+	await _remove(menu)
 
 
 func _check_other_menus() -> void:

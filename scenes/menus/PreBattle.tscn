@@ -82,7 +82,3 @@ custom_minimum_size = Vector2(640, 130)
 size_flags_horizontal = 4
 text = "COMMENCER"
 disabled = true
-
-[node name="CoinFlipTimer" type="Timer" parent="."]
-wait_time = 2
-one_shot = true

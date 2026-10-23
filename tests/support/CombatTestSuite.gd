@@ -4,6 +4,8 @@ const BattleStoneModel := preload("res://scripts/engine/BattleStone.gd")
 const CombatResolverModel := preload("res://scripts/engine/CombatResolver.gd")
 const Symbols := preload("res://scripts/ui/StoneSymbols.gd")
 const Timeline := preload("res://scripts/ui/combat/CombatTimeline.gd")
+const TestLog := preload("res://tests/support/TestLog.gd")
+const StoneEffects := preload("res://scripts/domain/StoneEffects.gd")
 var _passed: int = 0
 var _failed: int = 0
 
@@ -26,14 +28,16 @@ func _register_test_stones() -> void:
 	_register("fx_strong_wall", 4, 4, 4, 4)
 	_register("fx_ranged_target", 0, 0, 0, 0)
 	_register("fx_target", 0, 0, 1, 0, {"shields": {"top": 0, "bottom": 0, "left": 1, "right": 0}})
-	_register("fx_weaken_local", 0, 0, 0, 0, {"effects": ["weaken_adjacent"]})
-	_register("fx_weaken_attack1", 0, 0, 0, 1, {"effects": ["weaken_adjacent"]})
-	_register("fx_weaken_attack2", 0, 0, 0, 2, {"effects": ["weaken_adjacent"]})
-	_register("fx_weaken_miss", 0, 0, 0, 0, {"effects": ["weaken_enemies_on_miss"]})
-	_register("fx_swarm_a", 1, 1, 1, 1, {"effects": ["swarm"]})
-	_register("fx_swarm_b", 1, 1, 1, 1, {"effects": ["swarm"]})
-	_register("fx_swarm_c", 1, 1, 1, 1, {"effects": ["swarm"]})
-	_register("fx_thief", 3, 3, 3, 3, {"effects": ["shield_theft"]})
+	_register("fx_weaken_local", 0, 0, 0, 0, {"effects": [StoneEffects.WEAKEN_ADJACENT]})
+	_register("fx_weaken_attack1", 0, 0, 0, 1, {"effects": [StoneEffects.WEAKEN_ADJACENT]})
+	_register("fx_weaken_attack2", 0, 0, 0, 2, {"effects": [StoneEffects.WEAKEN_ADJACENT]})
+	_register("fx_weaken_miss", 0, 0, 0, 0, {"effects": [StoneEffects.WEAKEN_ON_MISS]})
+	_register("fx_swarm_a", 1, 1, 1, 1, {"effects": [StoneEffects.SWARM]})
+	_register("fx_swarm_b", 1, 1, 1, 1, {"effects": [StoneEffects.SWARM]})
+	_register("fx_swarm_c", 1, 1, 1, 1, {"effects": [StoneEffects.SWARM]})
+	# Seule la face du bas a de la place : sa lame d'Essaim y pousse toujours.
+	_register("fx_swarm_bottom", 4, 0, 4, 4, {"effects": [StoneEffects.SWARM]})
+	_register("fx_thief", 3, 3, 3, 3, {"effects": [StoneEffects.SHIELD_THEFT]})
 
 
 func _register(id: String, top: int, bottom: int, left: int, right: int, extras: Dictionary = {}) -> void:
@@ -72,7 +76,14 @@ func _check(condition: bool, label: String) -> void:
 		print("PASS: ", label)
 	else:
 		_failed += 1
-		push_error("FAIL: " + label)
+		# printerr : un échec est compté ici, pas comme une erreur Godot.
+		printerr("FAIL: ", label)
+
+
+## Annonce un message Godot que le test provoque volontairement.
+func _expect_log(fragment: String) -> void:
+	if TestLog.current != null:
+		TestLog.current.expect(fragment)
 
 
 func _animated_manager() -> TurnManager:
@@ -88,10 +99,3 @@ func _animated_manager() -> TurnManager:
 			board.refresh(manager.get_state())
 		board.animations.present(step))
 	return manager
-
-
-func _ai_for_level(level: String) -> AIPlayer:
-	match level:
-		"greedy": return GreedyAI.new()
-		"score": return ScoreAI.new()
-		_: return RandomAI.new()

@@ -182,7 +182,8 @@ func _clone_common() -> GameState:
 	var copy := GameState.new()
 	copy.board.clear()
 	for cell in board:
-		var cloned_cell: Dictionary = cell.duplicate(true)
+		# Une case ne contient que des valeurs simples et sa pierre, copiée à part.
+		var cloned_cell: Dictionary = cell.duplicate()
 		var stone = cell.get("stone")
 		cloned_cell["stone"] = stone.clone() if stone is BattleStoneModel else null
 		copy.board.append(cloned_cell)

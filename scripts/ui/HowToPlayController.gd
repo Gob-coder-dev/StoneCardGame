@@ -2,11 +2,12 @@
 extends Control
 
 const Badge := preload("res://scripts/ui/PowerBadge.gd")
+const Swarm := preload("res://scripts/engine/effects/SwarmSystem.gd")
 
 const GOD_RULES := {
 	"inari": [
 		{"kind": "fortune", "count": 2, "title": "Lames aléatoires ×2",
-			"text": "Le nombre indique combien de lames roses seront ajoutées. À la pose, elles tournent puis rejoignent leurs faces tirées au sort. Chaque lame coûte 0,5 point. Une face pleine ne peut plus en recevoir."},
+			"text": "Le nombre indique combien de lames roses seront ajoutées. À la pose, elles tournent puis rejoignent leurs faces tirées au sort. Chaque lame coûte {random_cost} point. Une face pleine ne peut plus en recevoir."},
 		{"kind": "coin_horizontal", "title": "Pile ou face horizontal ↔",
 			"text": "Une pièce est lancée au-dessus de la carte : ✓ échange gauche et droite, ✕ conserve les valeurs. Chaque issue a une chance sur deux. Exemple : gauche 0 / droite 2 devient gauche 2 / droite 0 si ✓ apparaît."},
 		{"kind": "coin_vertical", "title": "Pile ou face vertical ↕",
@@ -20,19 +21,19 @@ const GOD_RULES := {
 	],
 	"hachiman": [
 		{"kind": "shield", "title": "Rempart : le demi-cercle",
-			"text": "Un demi-cercle est un bouclier : il occupe un emplacement comme une lame, mais défend uniquement. Exemple : 2 lames + 1 bouclier = 2 d'attaque et 3 de défense. Il coûte 0,5 point. Lames et boucliers ne dépassent jamais 4 symboles au total sur une face."}
+			"text": "Un demi-cercle est un bouclier : il occupe un emplacement comme une lame, mais défend uniquement. Exemple : 2 lames + 1 bouclier = 2 d'attaque et 3 de défense. Il coûte {shield_cost} point. Lames et boucliers ne dépassent jamais {max_markers} symboles au total sur une face."}
 	],
 	"tsukuyomi": [
 		{"kind": "long", "title": "Horizon : la grande lame bleue",
-			"text": "Une lame bleue attaque au contact et sur toute sa ligne. Exemple : 2 lames normales + 2 lames longues = 4 d'attaque voisine et 2 à distance. Après chaque capture, les bleues transpercent la pierre et continuent avec leur force distante inchangée. Elles traversent les alliés et les cases vides ; un ennemi qui résiste ou une case bloquée les arrête. Aucun tir ne part sans ennemi atteignable sur la ligne. À distance, seules les lames bleues s'activent. Une lame longue coûte 1,5 point."}
+			"text": "Une lame bleue attaque au contact et sur toute sa ligne. Exemple : 2 lames normales + 2 lames longues = 4 d'attaque voisine et 2 à distance. Après chaque capture, les bleues transpercent la pierre et continuent avec leur force distante inchangée. Elles traversent les alliés et les cases vides ; un ennemi qui résiste ou une case bloquée les arrête. Aucun tir ne part sans ennemi atteignable sur la ligne. À distance, seules les lames bleues s'activent. Une lame longue coûte {long_cost} point."}
 	],
 	"okuninushi": [
 		{"kind": "swarm", "title": "Essaim : les trois points reliés",
-			"text": "Les pierres Essaim alliées reliées par leurs côtés forment un groupe. Plusieurs lianes vertes croisées restent visibles entre toute la largeur de leurs bords, puis une impulsion y fait pousser leurs lames d'aura. Chaque membre reçoit une lame par autre membre, jusqu'à +2, dans ses emplacements libres. Exemple : un groupe de 3 renforce chacune de ses pierres de 2 lames. Capturer un maillon coupe les lianes concernées et rétracte les bonus perdus."}
+			"text": "Les pierres Essaim alliées reliées par leurs côtés forment un groupe. Plusieurs lianes vertes croisées restent visibles entre toute la largeur de leurs bords, puis une impulsion y fait pousser leurs lames d'aura. Chaque membre reçoit une lame par autre membre, jusqu'à +{swarm_cap}, dans ses emplacements libres. Exemple : un groupe de 3 renforce chacune de ses pierres de 2 lames. Capturer un maillon coupe les lianes concernées et rétracte les bonus perdus."}
 	],
 	"susanoo": [
 		{"kind": "theft", "title": "Pillage : le cercle avec un +",
-			"text": "Après une capture, les symboles vaincus sont aspirés puis un répartiteur orange révèle les boucliers gagnés. Exemple : vaincre une face avec 2 lames et 1 bouclier donne jusqu'à 3 boucliers, distribués au hasard dans les emplacements libres. La pierre capturée conserve ses symboles. Chaque face reste limitée à 4 symboles au total."}
+			"text": "Après une capture, les symboles vaincus sont aspirés puis un répartiteur orange révèle les boucliers gagnés. Exemple : vaincre une face avec 2 lames et 1 bouclier donne jusqu'à 3 boucliers, distribués au hasard dans les emplacements libres. La pierre capturée conserve ses symboles. Chaque face reste limitée à {max_markers} symboles au total."}
 	]
 }
 
@@ -42,9 +43,10 @@ const GOD_RULES := {
 
 
 func _ready() -> void:
-	rules_text.text = _rules_bbcode()
+	var values := _rule_values()
+	rules_text.text = _rules_bbcode().format(values)
 	for god in StoneLoader.get_all_gods():
-		_add_god_rules(god)
+		_add_god_rules(god, values)
 	end_text.text = """[color=#ffe060][font_size=44]Fin de partie[/font_size][/color]
 
 Quand toutes les cases jouables sont remplies, on compte les pierres de chaque camp. Celui qui en contrôle le plus gagne.
@@ -54,7 +56,21 @@ Quand toutes les cases jouables sont remplies, on compte les pierres de chaque c
 Regarde les côtés faibles déjà exposés et garde une pierre capable de les attaquer au bon moment."""
 
 
-func _add_god_rules(god: Dictionary) -> void:
+## Valeurs lues dans les règles du code, pour que les textes ne s'en écartent pas.
+static func _rule_values() -> Dictionary:
+	return {
+		"deck_size": DeckRules.DECK_SIZE,
+		"deck_budget": DeckRules.DECK_BUDGET,
+		"normal_cost": UIFormat.cost(StoneCostRules.NORMAL_BLADE_COST),
+		"random_cost": UIFormat.cost(StoneCostRules.RANDOM_BLADE_COST),
+		"shield_cost": UIFormat.cost(StoneCostRules.SHIELD_COST),
+		"long_cost": UIFormat.cost(StoneCostRules.LONG_BLADE_COST),
+		"swarm_cap": Swarm.SWARM_CAP,
+		"max_markers": BattleStone.MAX_MARKERS_PER_SIDE,
+	}
+
+
+func _add_god_rules(god: Dictionary, values: Dictionary) -> void:
 	var color := Color(str(god["color"]))
 	var heading := _make_text("[font_size=40][color=#%s]%s • %s[/color][/font_size]" % [color.to_html(false), god["name"], god["family_name"]])
 	god_rules.add_child(heading)
@@ -69,7 +85,7 @@ func _add_god_rules(god: Dictionary) -> void:
 		badge.custom_minimum_size = Vector2(132 if badge.count > 0 else 76, 76)
 		badge.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 		row.add_child(badge)
-		row.add_child(_make_text("[b]%s[/b]\n%s" % [rule["title"], rule["text"]]))
+		row.add_child(_make_text("[b]%s[/b]\n%s" % [rule["title"], str(rule["text"]).format(values)]))
 		god_rules.add_child(row)
 
 
@@ -97,9 +113,9 @@ Une grille de 3×3. Certaines parties comportent une case bloquée (marquée ✕
 
 [color=#ffe060][font_size=44]Les pierres[/font_size][/color]
 
-Chaque pierre possède des symboles sur ses 4 côtés (haut, bas, gauche, droite). Une face contient au maximum [color=#ffe060]4 symboles au total[/color] : lames normales, lames spéciales et boucliers partagent les mêmes emplacements.
+Chaque pierre possède des symboles sur ses 4 côtés (haut, bas, gauche, droite). Une face contient au maximum [color=#ffe060]{max_markers} symboles au total[/color] : lames normales, lames spéciales et boucliers partagent les mêmes emplacements.
 
-Tu choisis {deck_size} pierres pour ton deck, dans la limite de [color=#ffe060]{deck_budget} points[/color]. Une lame normale coûte 1 point. Les lames aléatoires, boucliers, lames longues et pouvoirs sont comptés selon leur coût propre.
+Tu choisis {deck_size} pierres pour ton deck, dans la limite de [color=#ffe060]{deck_budget} points[/color]. Une lame normale coûte {normal_cost} point. Les lames aléatoires, boucliers, lames longues et pouvoirs sont comptés selon leur coût propre.
 
 [color=#ffe060][font_size=44]Déroulement d'un tour[/font_size][/color]
 
@@ -117,7 +133,4 @@ En cas d'[color=#f0d88a]égalité[/color], personne ne capture. Une pierre peut 
 
 Tu équipes un dieu dans le menu Cartes. Ton deck peut contenir les cartes neutres et les cartes propres à sa famille. Changer de dieu retire du deck les cartes incompatibles.
 
-Le contour de chaque pierre reprend la couleur de sa famille. Les logos en haut à droite annoncent ses pouvoirs. Voici les mêmes pictogrammes et leur fonctionnement :""".format({
-		"deck_size": DeckRules.DECK_SIZE,
-		"deck_budget": DeckRules.DECK_BUDGET
-	})
+Le contour de chaque pierre reprend la couleur de sa famille. Les logos en haut à droite annoncent ses pouvoirs. Voici les mêmes pictogrammes et leur fonctionnement :"""

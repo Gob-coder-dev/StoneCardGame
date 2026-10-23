@@ -5,6 +5,11 @@ class_name BattleStone
 extends Resource
 
 const SIDES = StoneSide.ALL
+## Une face accueille au plus quatre symboles, tous types confondus.
+const MAX_MARKERS_PER_SIDE: int = 4
+## Ordre stable des symboles sur une face. Le moteur numérote les symboles dans
+## cet ordre ; la vue l'utilise pour les dessiner et les animer.
+const MARKER_KINDS: Array[String] = ["normal", "random", "swarm", "long", "shield"]
 
 var instance_id: int = 0
 var stone_id: String = ""
@@ -29,15 +34,16 @@ func configure(id: String, definition: Dictionary, uid: int = 0) -> void:
 	swarm_blades = _side_map({})
 
 
+## Les cartes de faces ne contiennent que des nombres : une copie simple suffit.
 func clone():
 	var result = get_script().new()
 	result.instance_id = instance_id
 	result.stone_id = stone_id
-	result.base_blades = base_blades.duplicate(true)
-	result.random_blades = random_blades.duplicate(true)
-	result.long_blades = long_blades.duplicate(true)
-	result.shields = shields.duplicate(true)
-	result.swarm_blades = swarm_blades.duplicate(true)
+	result.base_blades = base_blades.duplicate()
+	result.random_blades = random_blades.duplicate()
+	result.long_blades = long_blades.duplicate()
+	result.shields = shields.duplicate()
+	result.swarm_blades = swarm_blades.duplicate()
 	result.permanent_weakness = permanent_weakness
 	result.temporary_weakness = temporary_weakness
 	result.temporary_weakness_owner = temporary_weakness_owner
@@ -60,7 +66,7 @@ func marker_count(side: String) -> int:
 
 
 func free_marker_slots(side: String) -> int:
-	return maxi(0, 4 - marker_count(side))
+	return maxi(0, MAX_MARKERS_PER_SIDE - marker_count(side))
 
 
 func weakness() -> int:
@@ -96,12 +102,30 @@ func _side_map(source: Dictionary) -> Dictionary:
 ## la vue ajoute uniquement les coordonnées de dessin.
 func markers_for_side(side: String) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
-	var kinds := ["normal", "random", "swarm", "long", "shield"]
-	var maps := [base_blades, random_blades, swarm_blades, long_blades, shields]
-	for group in range(kinds.size()):
-		for _index in range(int(maps[group].get(side, 0))):
-			result.append({"kind": kinds[group], "index": result.size()})
+	for kind in MARKER_KINDS:
+		for _index in range(marker_count_of(kind, side)):
+			result.append({"kind": kind, "index": result.size()})
 	return result
+
+## Nombre de symboles d'un type de MARKER_KINDS sur une face.
+func marker_count_of(kind: String, side: String) -> int:
+	match kind:
+		"normal": return int(base_blades.get(side, 0))
+		"random": return int(random_blades.get(side, 0))
+		"swarm": return int(swarm_blades.get(side, 0))
+		"long": return int(long_blades.get(side, 0))
+		"shield": return int(shields.get(side, 0))
+	return 0
+
+## Indice du premier symbole d'un type sur une face : nombre de symboles des
+## types qui le précèdent dans MARKER_KINDS.
+func marker_offset(kind: String, side: String) -> int:
+	var offset := 0
+	for previous in MARKER_KINDS:
+		if previous == kind:
+			break
+		offset += marker_count_of(previous, side)
+	return offset
 
 func defending_marker_indices(side: String) -> Array[int]:
 	var indices: Array[int] = []

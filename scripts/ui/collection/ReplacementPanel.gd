@@ -51,7 +51,7 @@ func _rebuild() -> void:
 		var card := _make_card(StoneLoader.get_stone(old_id), StoneCard.OWNER_HUMAN, 275.0)
 		card.card_pressed.connect(_on_target_pressed)
 		var new_cost := DeckRules.replacement_cost(_deck, old_id, _incoming_id)
-		var valid := new_cost <= DeckRules.DECK_BUDGET
+		var valid := DeckRules.can_replace(_deck, old_id, _incoming_id, PlayerData.player_god_id)
 		if not valid:
 			card.modulate = Color(0.55, 0.55, 0.55)
 		var formula := Label.new()

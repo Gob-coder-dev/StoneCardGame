@@ -58,6 +58,7 @@ func _ready() -> void:
 func _toggle_god_menu() -> void:
 	_close_action_drawer()
 	sort_menu.visible = false
+	_update_sort_labels()
 	god_menu.visible = not god_menu.visible
 	_refresh_god_panel()
 
@@ -145,7 +146,7 @@ func _populate_collection() -> void:
 
 
 func _open_card_actions(stone_id: String, wrapper: VBoxContainer, source: int) -> void:
-	if StoneLoader.get_stone(stone_id).is_empty():
+	if not StoneLoader.has_stone(stone_id):
 		return
 	if _action_stone_id == stone_id and _action_source == source and is_instance_valid(_action_drawer):
 		_close_action_drawer()

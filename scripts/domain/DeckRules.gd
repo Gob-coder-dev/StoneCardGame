@@ -28,7 +28,7 @@ static func sanitize_deck(stone_ids: Array, god_id: String = "") -> Array:
 	var clean: Array = []
 	for raw_id in stone_ids:
 		var stone_id := str(raw_id)
-		if StoneLoader.get_stone(stone_id).is_empty() or clean.has(stone_id):
+		if not StoneLoader.has_stone(stone_id) or clean.has(stone_id):
 			continue
 		if god_id != "" and not StoneLoader.is_stone_available_to_god(stone_id, god_id):
 			continue
@@ -43,7 +43,7 @@ static func validate_deck(stone_ids: Array, require_full: bool = true, god_id: S
 	var unique: Array = []
 	for raw_id in stone_ids:
 		var stone_id := str(raw_id)
-		if StoneLoader.get_stone(stone_id).is_empty():
+		if not StoneLoader.has_stone(stone_id):
 			return {"valid": false, "reason": "Pierre inconnue : %s" % stone_id}
 		if unique.has(stone_id):
 			return {"valid": false, "reason": "Une pierre ne peut apparaître qu'une fois."}
@@ -73,7 +73,7 @@ static func can_replace(stone_ids: Array, old_id: String, new_id: String, god_id
 ## d'échec, cette copie est inchangée et reason explique la cause à l'UI.
 static func try_add(stone_ids: Array, stone_id: String, god_id: String = "") -> Dictionary:
 	var deck := stone_ids.duplicate()
-	if StoneLoader.get_stone(stone_id).is_empty():
+	if not StoneLoader.has_stone(stone_id):
 		return _operation_result(false, deck, REASON_UNKNOWN)
 	if deck.has(stone_id):
 		return _operation_result(false, deck, REASON_DUPLICATE)
@@ -101,7 +101,7 @@ static func try_replace(stone_ids: Array, old_id: String, new_id: String, god_id
 	var index := deck.find(old_id)
 	if index < 0:
 		return _operation_result(false, deck, REASON_MISSING)
-	if StoneLoader.get_stone(new_id).is_empty():
+	if not StoneLoader.has_stone(new_id):
 		return _operation_result(false, deck, REASON_UNKNOWN)
 	if god_id != "" and not StoneLoader.is_stone_available_to_god(new_id, god_id):
 		return _operation_result(false, deck, REASON_GOD)

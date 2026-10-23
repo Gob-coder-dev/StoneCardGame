@@ -12,7 +12,9 @@ var col: int
 var player: int
 var events: Array
 var completed: bool = false
-var placement_swarm: Array = []
+## Changement d'Essaim révélé par l'étape SWARM suivante. La vue garde son état
+## « avant » pendant cette étape pour ne pas dévoiler le résultat trop tôt.
+var pending_swarm: Array = []
 
 func _init(type: Kind, r: int, c: int, owner: int, data: Array = []) -> void:
 	kind = type

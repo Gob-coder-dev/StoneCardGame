@@ -27,6 +27,11 @@ const FONT_SMALL: int = 30         ## texte secondaire
 const FONT_SCORE: int = 60         ## gros chiffres (scores)
 const FONT_BANNER: int = 38        ## bandeau de tour
 
+## ─── HUD de combat ───────────────────────────────────────────────────────────
+const HUD_PLATE_HEIGHT: int = 150  ## hauteur fixe des plaques joueur / adversaire
+const HUD_CENTER_WIDTH: int = 90   ## zone fixe du symbole central
+const FONT_HUD_CENTER: int = 56    ## flèche du joueur actif ou « VS »
+
 ## ─── Tailles des cartes dans les menus ──────────────────────────────────────
 const CARD_DECK: int = 265
 const CARD_COLLECTION: int = 300

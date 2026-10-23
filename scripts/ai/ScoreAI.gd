@@ -7,17 +7,25 @@ const Resolver := preload("res://scripts/engine/CombatResolver.gd")
 func _init() -> void:
 	think_delay = 1.2
 
+## Chaque coup n'est simulé qu'une fois : la même simulation donne le score
+## obtenu et le nombre de captures qui départage les égalités.
 func choose_move(state: GameState) -> Dictionary:
-	var moves := RulesEngine.get_valid_moves_sorted(state, GameState.PLAYER_AI)
-	var best_score := -9999
-	var best_move: Dictionary = {}
-	for move in moves:
+	var candidates: Array = []
+	for move in RulesEngine.get_valid_moves(state, GameState.PLAYER_AI):
 		var simulation := state.clone()
-		Resolver.apply_move(simulation, move["row"], move["col"], move["stone_id"], GameState.PLAYER_AI)
+		var result := Resolver.apply_move(simulation, move["row"], move["col"], move["stone_id"], GameState.PLAYER_AI)
 		var score := RulesEngine.calculate_score(simulation)
-		var value: int = score["ai"] - score["human"]
-		if value > best_score:
-			best_score = value
-			best_move = move.duplicate()
-	best_move.erase("_captures")
+		candidates.append({
+			"move": move,
+			"captures": result.get("captures", []).size(),
+			"value": score["ai"] - score["human"]
+		})
+	# À score égal, le coup qui capture le plus est examiné en premier.
+	candidates.sort_custom(func(a, b): return a["captures"] > b["captures"])
+	var best_value := -9999
+	var best_move: Dictionary = {}
+	for candidate in candidates:
+		if candidate["value"] > best_value:
+			best_value = candidate["value"]
+			best_move = candidate["move"].duplicate()
 	return best_move

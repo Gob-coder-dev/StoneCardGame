@@ -9,6 +9,7 @@
 extends Node
 
 const SaveCodec := preload("res://scripts/data/PlayerSaveCodec.gd")
+const SaveStorage := preload("res://scripts/data/PlayerSaveStorage.gd")
 
 ## Deck courant du joueur (Array de stone_id String)
 var player_deck: Array = []
@@ -87,33 +88,23 @@ func npc_record(npc_id: String) -> Dictionary:
 	return per_npc.get(npc_id, { "wins": 0, "games": 0, "best_diff": -99 })
 
 
-## ─── Persistance légère ──────────────────────────────────────────────────────
-
-const SAVE_VERSION := SaveCodec.VERSION
+## ─── Persistance ─────────────────────────────────────────────────────────────
 
 const SAVE_PATH: String = "user://savegame.json"
 
 
 func save() -> void:
 	var data := SaveCodec.encode(player_deck, player_god_id, player_name, stats)
-	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
-	if file:
-		file.store_string(JSON.stringify(data))
-		file.close()
+	var error := SaveStorage.write(SAVE_PATH, data)
+	if error != OK:
+		push_error("PlayerData: profil non enregistré (%s)." % error_string(error))
 
 
 func load_save() -> void:
-	if not FileAccess.file_exists(SAVE_PATH):
+	var raw := SaveStorage.read(SAVE_PATH)
+	if raw.is_empty():
 		return
-	var file := FileAccess.open(SAVE_PATH, FileAccess.READ)
-	if file == null:
-		return
-	var content := file.get_as_text()
-	file.close()
-	var parsed = JSON.parse_string(content)
-	if not parsed is Dictionary:
-		return
-	var profile := SaveCodec.decode(parsed)
+	var profile := SaveCodec.decode(raw)
 	player_deck = profile["player_deck"]
 	player_god_id = profile["player_god_id"]
 	player_name = profile["player_name"]

@@ -1,17 +1,12 @@
-## Accès commun aux instances du plateau, y compris les anciennes fixtures id-only.
+## Accès commun aux instances de combat posées sur le plateau.
+## Une case occupée porte toujours sa BattleStone : il n'existe plus de case
+## reconstruite à partir du seul identifiant de catalogue.
 extends RefCounted
 const BattleStoneModel := preload("res://scripts/engine/BattleStone.gd")
 
 static func stone_at(cell: Dictionary) -> BattleStoneModel:
 	var stored = cell.get("stone")
-	if stored is BattleStoneModel:
-		return stored
-	var stone_id := str(cell.get("stone_id", ""))
-	if stone_id == "":
-		return null
-	var fallback: BattleStoneModel = BattleStoneModel.new()
-	fallback.configure(stone_id, StoneLoader.get_stone(stone_id))
-	return fallback
+	return stored if stored is BattleStoneModel else null
 
 static func is_enemy(cell: Dictionary, player: int) -> bool:
 	return cell["cell_type"] != GameState.CELL_BLOCKED \

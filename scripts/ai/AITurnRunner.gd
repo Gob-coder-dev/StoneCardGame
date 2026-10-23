@@ -10,6 +10,17 @@ var _turn_manager: TurnManager = null
 var _timer: Timer = null
 
 
+## Crée l'IA d'un niveau de npcs.json (voir AIPlayer.LEVELS). Un niveau inconnu,
+## déjà signalé au chargement par ContentValidator, retombe sur RandomAI.
+static func create_ai(level: String) -> AIPlayer:
+	match level:
+		"random": return RandomAI.new()
+		"greedy": return GreedyAI.new()
+		"score": return ScoreAI.new()
+	push_warning("AITurnRunner: niveau IA inconnu '%s', RandomAI utilisée." % level)
+	return RandomAI.new()
+
+
 func setup(ai: AIPlayer, turn_manager: TurnManager) -> void:
 	_ai = ai
 	_turn_manager = turn_manager

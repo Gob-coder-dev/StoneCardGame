@@ -16,10 +16,10 @@ func _test_fortune_view_animation() -> void:
 	var slot: Panel = view.get_node("cell_1_1")
 	var card: StoneCard = slot.get_child(0)
 	view.animations.animate_placement(1, 1)
-	_check(_sum(card._display_stone().random_blades) == 0, "Fortune ne dévoile aucune lame pendant le rebond initial")
+	_check(_sum(card.displayed_stone().random_blades) == 0, "Fortune ne dévoile aucune lame pendant le rebond initial")
 	await get_tree().create_timer(Timeline.PLACEMENT + 0.04).timeout
 	view.animations.animate_preparation(1, 1, placement["placement_effects"], Timeline.PREPARATION)
-	_check(_sum(card._display_stone().random_blades) == 0 and _sum(card.get_battle_stone().random_blades) == 2,
+	_check(_sum(card.displayed_stone().random_blades) == 0 and _sum(card.get_battle_stone().random_blades) == 2,
 		"la spirale Fortune masque les lames jusqu'à leur révélation sans changer le moteur")
 	await get_tree().create_timer(1.3).timeout
 	_check(card._combat_preview == null and is_zero_approx(card.rotation) and view.animations.get_node_or_null("RandomReveal") == null,
@@ -48,7 +48,7 @@ func _test_coin_view_animation() -> void:
 		var original: Dictionary = StoneLoader.get_stone("tanuki")["blades"]
 		var unchanged := true
 		for side in BattleStoneModel.SIDES:
-			unchanged = unchanged and int(card._display_stone().base_blades[side]) == int(original[side])
+			unchanged = unchanged and int(card.displayed_stone().base_blades[side]) == int(original[side])
 		_check(unchanged,
 			"le pile ou face conserve les valeurs d'origine avant son résultat (%s)" % flipped)
 		await get_tree().create_timer(0.4).timeout
@@ -56,7 +56,7 @@ func _test_coin_view_animation() -> void:
 		_check(is_zero_approx(card.rotation),
 			"une pièce est superposée à la carte qui reste immobile (%s)" % flipped)
 		await get_tree().create_timer(0.85).timeout
-		_check(card._combat_preview == null and card._display_stone().coin_flipped == flipped,
+		_check(card._combat_preview == null and card.displayed_stone().coin_flipped == flipped,
 			"la pièce révèle fidèlement l'issue du moteur (%s)" % flipped)
 		view.queue_free()
 		await get_tree().process_frame

@@ -61,7 +61,7 @@ func _start_battle(human_deck: Array, npc_id: String) -> void:
 	var ai_hand := StoneLoader.build_hand(_npc_data["deck"])
 
 	## Préparer l'IA et son runner.
-	var ai := _create_ai(_npc_data["ai_level"])
+	var ai := AITurnRunner.create_ai(str(_npc_data.get("ai_level", "")))
 	_ai_runner = AITurnRunner.new()
 	add_child(_ai_runner)
 	_ai_runner.setup(ai, turn_manager)
@@ -134,6 +134,7 @@ func _on_turn_ended(score_human: int, score_ai: int) -> void:
 
 
 func _on_game_over(winner: int, score_human: int, score_ai: int) -> void:
+	hud.set_game_over()
 	BattleContext.record_result(winner, score_human, score_ai)
 	PlayerData.record_game(BattleContext.selected_npc_id, winner, score_human, score_ai, _human_captures)
 	await get_tree().create_timer(1.5).timeout
@@ -144,17 +145,6 @@ func _on_invalid_move(_reason: String) -> void:
 	## Coup refusé : rien à afficher (le joueur peut simplement réessayer).
 	pass
 
-
-## ─── Création de l'IA ─────────────────────────────────────────────────────────
-
-func _create_ai(ai_level: String) -> AIPlayer:
-	match ai_level:
-		"random":  return RandomAI.new()
-		"greedy":  return GreedyAI.new()
-		"score": return ScoreAI.new()
-		_:
-			push_warning("BoardController: niveau IA inconnu '%s', fallback RandomAI." % ai_level)
-			return RandomAI.new()
 
 ## Relais unique de présentation ; les annonces métier ne déclenchent aucun dessin.
 func _on_presentation_requested(step: CombatPresentation) -> void:

@@ -11,7 +11,6 @@
 ## cette image est affichée à la place du dessin procédural.
 ##
 ## Utilisé partout : collection, main, plateau.
-@tool
 class_name StoneCard
 extends Control
 
@@ -28,10 +27,8 @@ const OWNER_AI: int = 2
 
 ## ─── Palette ──────────────────────────────────────────────────────────────────
 const COL_FRAME_LIGHT := Color("#f0d88a")
-const COL_FRAME_DARK := Color("#8a6a28")
 const COL_FRAME_EDGE := Color("#5a4418")
 const COL_BLADE_LIGHT := Color("#ffe9a8")
-const COL_BLADE_DARK := Color("#b8902f")
 const COL_RANDOM_BLADE := Symbols.FORTUNE
 const COL_LONG_BLADE := Color("#4fa9ff")
 const COL_SWARM_BLADE := Color("#83d85d")
@@ -51,12 +48,23 @@ var _texture: Texture2D = null  ## illustration si disponible
 var _show_cost: bool = false
 var _battle_stone: BattleStoneModel = null
 var _combat_preview: BattleStoneModel = null
+## Pierre sans état de combat, construite une fois depuis le catalogue pour
+## dessiner les cartes hors plateau (main, collection, fiches).
+var _catalog_preview: BattleStoneModel = null
+## Copie des valeurs dessinées de _battle_stone : le moteur modifie la pierre
+## sur place, cette copie dit si un rafraîchissement doit la redessiner.
+var _drawn_stone_state: Array = []
 var _attacking_faces: Dictionary = {}
 var _marker_growth: Dictionary = {}
 var _visual_weakness_override: int = -1
+## Les animations peuvent régler ces valeurs à chaque image : chaque réglage
+## ne redessine la carte que si la valeur affichée change réellement.
 var attack_regrowth: float = 1.0:
 	set(value):
-		attack_regrowth = clampf(value, 0.0, 1.15)
+		var clamped := clampf(value, 0.0, 1.15)
+		if clamped == attack_regrowth:
+			return
+		attack_regrowth = clamped
 		queue_redraw()
 const Gesture := preload("res://scripts/ui/input/TapGesture.gd")
 var _tap := Gesture.new()
@@ -78,11 +86,15 @@ func setup(stone: Dictionary, owner: int = OWNER_NONE, battle_stone = null) -> v
 	_stone = stone
 	_owner = owner
 	_battle_stone = battle_stone if battle_stone is BattleStoneModel else null
+	_drawn_stone_state = _stone_state(_battle_stone)
+	_catalog_preview = null
 	_load_texture_if_any()
 	queue_redraw()
 
 
 func set_owner_color(owner: int) -> void:
+	if owner == _owner:
+		return
 	_owner = owner
 	queue_redraw()
 
@@ -118,29 +130,32 @@ func face_markers(side: String) -> Array:
 	var markers: Array = []
 	if _battle_stone == null:
 		return markers
-	var kinds := ["normal", "random", "swarm", "long", "shield"]
-	var maps := [_battle_stone.base_blades, _battle_stone.random_blades,
-		_battle_stone.swarm_blades, _battle_stone.long_blades, _battle_stone.shields]
-	var index := 0
-	for group in range(kinds.size()):
-		for _marker in range(int(maps[group].get(side, 0))):
-			markers.append({"kind": kinds[group], "index": index,
-				"position": marker_position(side, index)})
-			index += 1
+	for marker in _battle_stone.markers_for_side(side):
+		marker["position"] = marker_position(side, int(marker["index"]))
+		markers.append(marker)
 	return markers
 
 
 func set_marker_growth(side: String, index: int, growth: float) -> void:
-	_marker_growth["%s:%d" % [side, index]] = clampf(growth, 0.0, 1.15)
+	var key := "%s:%d" % [side, index]
+	var clamped := clampf(growth, 0.0, 1.15)
+	if float(_marker_growth.get(key, 1.0)) == clamped:
+		return
+	_marker_growth[key] = clamped
 	queue_redraw()
 
 
 func clear_marker_growth() -> void:
+	if _marker_growth.is_empty():
+		return
 	_marker_growth.clear()
 	queue_redraw()
 
 
 func _animated_marker_growth(side: String, index: int) -> float:
+	# Hors animation, aucune clé n'est construite pour chaque symbole dessiné.
+	if _marker_growth.is_empty():
+		return 1.0
 	return float(_marker_growth.get("%s:%d" % [side, index], 1.0))
 
 
@@ -149,13 +164,30 @@ func face_center(side: String) -> Vector2:
 	return (marker_position(side, 0) + marker_position(side, maxi(0, count - 1))) * 0.5
 
 
+## Appelé à chaque rafraîchissement du plateau : la carte n'est redessinée que si
+## la pierre ou l'une de ses valeurs dessinées a changé depuis le dernier appel.
 func set_battle_stone(value) -> void:
-	_battle_stone = value if value is BattleStoneModel else null
+	var stone: BattleStoneModel = value if value is BattleStoneModel else null
+	var state := _stone_state(stone)
+	if stone == _battle_stone and state == _drawn_stone_state:
+		return
+	_battle_stone = stone
+	_drawn_stone_state = state
 	queue_redraw()
+
+
+static func _stone_state(stone: BattleStoneModel) -> Array:
+	if stone == null:
+		return []
+	return [stone.base_blades.duplicate(), stone.random_blades.duplicate(),
+		stone.swarm_blades.duplicate(), stone.long_blades.duplicate(),
+		stone.shields.duplicate(), stone.weakness()]
 
 
 ## Aperçu visuel seulement : le moteur a déjà calculé le résultat.
 func set_combat_preview(value: BattleStoneModel) -> void:
+	if value == _combat_preview:
+		return
 	_combat_preview = value
 	queue_redraw()
 
@@ -167,11 +199,16 @@ func get_battle_stone() -> BattleStoneModel:
 ## La logique est déjà résolue quand l'aura commence. Cette valeur permet à la
 ## vue de conserver l'ancien aspect jusqu'à l'impact, sans toucher au modèle.
 func set_visual_weakness(value: int) -> void:
-	_visual_weakness_override = maxi(0, value)
+	var weakness := maxi(0, value)
+	if weakness == _visual_weakness_override:
+		return
+	_visual_weakness_override = weakness
 	queue_redraw()
 
 
 func clear_visual_weakness() -> void:
+	if _visual_weakness_override < 0:
+		return
 	_visual_weakness_override = -1
 	queue_redraw()
 
@@ -183,7 +220,7 @@ func displayed_weakness() -> int:
 
 
 func broken_blade_count(side: String) -> int:
-	var displayed := _display_stone()
+	var displayed := displayed_stone()
 	if displayed == null:
 		return 0
 	var blade_count := displayed.normal_blades(side) + int(displayed.long_blades.get(side, 0))
@@ -203,21 +240,33 @@ func hide_placement_power() -> void:
 	for side in BattleStoneModel.SIDES:
 		preview.random_blades[side] = 0
 	if preview.coin_flipped:
-		preview.swap_faces("left" if axis == "horizontal" else "top", "right" if axis == "horizontal" else "bottom")
+		var faces := StoneSide.coin_faces(axis)
+		preview.swap_faces(faces[0], faces[1])
 	set_combat_preview(preview)
 
 
-func _display_stone() -> BattleStoneModel:
+## Version de la pierre visible à l'écran : l'aperçu d'une animation en cours,
+## sinon l'état du moteur.
+func displayed_stone() -> BattleStoneModel:
 	return _combat_preview if _combat_preview != null else _battle_stone
 
 
 ## Coordonnée locale d'un symbole dans la disposition finale de la face.
 func marker_position(side: String, index: int = -1) -> Vector2:
+	return _marker_position_in(_battle_stone, side, index)
+
+
+## Coordonnée locale d'un symbole tel qu'il est dessiné maintenant, aperçu compris.
+func displayed_marker_position(side: String, index: int = -1) -> Vector2:
+	return _marker_position_in(displayed_stone(), side, index)
+
+
+func _marker_position_in(stone: BattleStoneModel, side: String, index: int) -> Vector2:
 	var square := minf(size.x, size.y)
 	var margin := square * BLADE_MARGIN
 	var frame := Rect2((size - Vector2.ONE * square) * 0.5 + Vector2.ONE * margin,
 		Vector2.ONE * (square - margin * 2.0))
-	var count := _battle_stone.marker_count(side) if _battle_stone != null else 1
+	var count := stone.marker_count(side) if stone != null else 1
 	var slot_index := count - 1 if index < 0 else index
 	var along := frame.size.x * 0.14 + frame.size.x * 0.72 * (slot_index + 0.5) / float(maxi(1, count))
 	match side:
@@ -228,11 +277,15 @@ func marker_position(side: String, index: int = -1) -> Vector2:
 
 
 func set_selected(value: bool) -> void:
+	if value == _selected:
+		return
 	_selected = value
 	queue_redraw()
 
 
 func set_show_cost(value: bool) -> void:
+	if value == _show_cost:
+		return
 	_show_cost = value
 	queue_redraw()
 
@@ -368,7 +421,7 @@ func _draw_cost_badge(frame_rect: Rect2, square_side: float) -> void:
 	draw_arc(center, radius, 0, TAU, 24, COL_FRAME_LIGHT, max(2.0, square_side * 0.012))
 	var font := ThemeDB.fallback_font
 	var font_size := clampi(int(radius * 1.15), 12, 30)
-	var value := StoneLoader.format_cost(cost)
+	var value := UIFormat.cost(cost)
 	var text_size := font.get_string_size(value, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size)
 	draw_string(font, center + Vector2(-text_size.x * 0.5, text_size.y * 0.32), value,
 		HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color.WHITE)
@@ -377,35 +430,25 @@ func _draw_cost_badge(frame_rect: Rect2, square_side: float) -> void:
 ## ─── Dessin des lames ─────────────────────────────────────────────────────────
 
 func _draw_combat_edges(frame_rect: Rect2, margin: float) -> void:
-	var base: Dictionary = _stone.get("blades", {})
-	# Les lames Fortune inconnues ne sont plus inventées sur l'aperçu : leur
-	# badge annonce le pouvoir, puis leurs vraies faces apparaissent à la pose.
-	var random_map: Dictionary = {}
-	var long_map: Dictionary = _stone.get("long_blades", {})
-	var shield_map: Dictionary = _stone.get("shields", {})
-	var swarm_map: Dictionary = {}
-	var displayed := _display_stone()
-	if displayed != null:
-		base = displayed.base_blades
-		random_map = displayed.random_blades
-		long_map = displayed.long_blades
-		shield_map = displayed.shields
-		swarm_map = displayed.swarm_blades
+	var displayed := displayed_stone()
+	if displayed == null:
+		# Hors plateau, les lames Fortune inconnues ne sont pas inventées : leur
+		# badge annonce le pouvoir, puis leurs vraies faces apparaissent à la pose.
+		displayed = _catalog_stone()
 	for side in BattleStoneModel.SIDES:
 		var entries: Array = []
-		for i in range(int(base.get(side, 0))):
-			entries.append("normal")
-		for i in range(int(random_map.get(side, 0))):
-			entries.append("random")
-		for i in range(int(swarm_map.get(side, 0))):
-			entries.append("swarm")
-		for i in range(int(long_map.get(side, 0))):
-			entries.append("long")
-		for i in range(int(shield_map.get(side, 0))):
-			entries.append("shield")
-		var blade_count := entries.size() - int(shield_map.get(side, 0))
+		for marker in displayed.markers_for_side(side):
+			entries.append(marker["kind"])
+		var blade_count := entries.size() - displayed.marker_count_of("shield", side)
 		var broken_count := broken_blade_count(side)
 		_draw_blade_row(frame_rect, side, entries, margin, broken_count, blade_count)
+
+
+func _catalog_stone() -> BattleStoneModel:
+	if _catalog_preview == null:
+		_catalog_preview = BattleStoneModel.new()
+		_catalog_preview.configure(get_stone_id(), _stone)
+	return _catalog_preview
 
 
 func _draw_blade_row(frame_rect: Rect2, side: String, entries: Array, margin: float,

@@ -82,6 +82,31 @@ func _add_swarm_link_position(positions: Dictionary, instance_id: int,
 		"square": minf(card.size.x, card.size.y)
 	}
 
+## Symboles volés par un Pillage, placés sur les cartes vaincues. Les indices
+## du moteur décrivent la face avant le coup : ils sont lus sur la carte telle
+## qu'elle est affichée, pas sur son état final.
+func pillage_transfers(event: Dictionary) -> Array:
+	var transfers: Array = []
+	for transfer_value in event.get("transfers", []):
+		var transfer: Dictionary = transfer_value
+		var target: StoneCard = _board.card_at(int(transfer["row"]), int(transfer["col"]))
+		if target == null or target.displayed_stone() == null:
+			continue
+		var side := str(transfer["defense_side"])
+		var markers := target.displayed_stone().markers_for_side(side)
+		var marker_index := int(transfer.get("marker_index", -1))
+		if marker_index < 0 or marker_index >= markers.size():
+			continue
+		var to_board := get_global_transform().affine_inverse() * target.get_global_transform()
+		var visual: Dictionary = transfer.duplicate()
+		visual["card"] = target
+		visual["side"] = side
+		visual["kind"] = markers[marker_index]["kind"]
+		visual["position"] = to_board * target.displayed_marker_position(side, marker_index)
+		visual["face"] = to_board * target.face_center(side)
+		transfers.append(visual)
+	return transfers
+
 func attack_paths(card: StoneCard, attacks: Array) -> Array:
 	var to_board := get_global_transform().affine_inverse() * card.get_global_transform()
 	var paths: Array = []

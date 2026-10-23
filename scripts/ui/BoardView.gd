@@ -118,24 +118,26 @@ func _spawn_card(slot: Panel, stone_id: String, owner_val: int, battle_stone = n
 	return card
 
 
+## Une case reste bloquée pendant tout le match : elle n'est habillée qu'une fois.
 func _mark_blocked(slot: Panel) -> void:
+	if slot.get_node_or_null("BlockedMark") != null:
+		return
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = Color("#140c06")
 	sb.border_color = Color("#2a2018")
 	sb.set_border_width_all(2)
 	sb.set_corner_radius_all(6)
 	slot.add_theme_stylebox_override("panel", sb)
-	if slot.get_node_or_null("BlockedMark") == null:
-		var lbl := Label.new()
-		lbl.name = "BlockedMark"
-		lbl.text = "✕"
-		lbl.add_theme_font_size_override("font_size", 40)
-		lbl.add_theme_color_override("font_color", Color("#4a3a28"))
-		lbl.set_anchors_preset(Control.PRESET_FULL_RECT)
-		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		slot.add_child(lbl)
+	var lbl := Label.new()
+	lbl.name = "BlockedMark"
+	lbl.text = "✕"
+	lbl.add_theme_font_size_override("font_size", 40)
+	lbl.add_theme_color_override("font_color", Color("#4a3a28"))
+	lbl.set_anchors_preset(Control.PRESET_FULL_RECT)
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	slot.add_child(lbl)
 
 
 

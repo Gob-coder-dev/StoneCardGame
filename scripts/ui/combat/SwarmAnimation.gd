@@ -112,7 +112,7 @@ func _swarm_marker_start(card: StoneCard, side: String) -> int:
 	var stone = card.get_battle_stone()
 	if stone == null:
 		return 0
-	return int(stone.base_blades.get(side, 0)) + int(stone.random_blades.get(side, 0))
+	return stone.marker_offset("swarm", side)
 
 
 func _growth_with_bounce(value: float) -> float:

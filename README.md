@@ -23,8 +23,8 @@ conserve uniquement les informations temporaires du combat.
 ```text
 data/                  Définitions complètes : cartes, dieux et adversaires
 scripts/
-  data/                Catalogue, validation, PlayerData et BattleContext
-  domain/              DeckRules, StoneCostRules et StoneSide
+  data/                Catalogue, validation, profil sauvegardé et BattleContext
+  domain/              DeckRules, StoneCostRules, StoneSide et StoneEffects
   engine/              État, tours, validation et résolution générale
     combat/            Attaques, événements et ticket de présentation
     effects/           Pose, Fortune, Déclin, Pillage et Essaim
@@ -78,10 +78,20 @@ l'annulation des appuis, l'inertie, le multitouch, les fenêtres, la souris,
 le clavier et la pose d'une carte pendant un combat. Elle ne sauvegarde aucun
 changement de deck ou de statistiques.
 
-Vérifier le résumé de chaque suite, le code de sortie et l'absence d'erreurs
-Godot dans les journaux. Les suites détaillées sont réparties dans `tests/combat/`,
-`tests/ai/` et `tests/ui/` ; leurs fixtures et assertions sont dans `tests/support/`.
-Une vérification headless ne remplace pas un contrôle visuel des animations.
+Chaque suite se termine par un résumé, par exemple
+`GOD_SYSTEM_CHECKS: 248 passed, 0 failed, 0 Godot errors` ou
+`TACTILE : 43 vérifications, 0 échec(s), 0 erreur(s) Godot.`, et renvoie le code
+de sortie 1 en cas de problème. Sont comptés comme problèmes : une vérification
+ratée, une suite qui ne compile pas, une erreur ou un avertissement Godot non
+annoncé par le test, et un dépassement du temps limite (300 s et 120 s de jeu).
+Les avertissements annoncés, comme le garde-fou des animations, restent visibles
+dans le journal. Une erreur de compilation d'un lanceur lui-même n'affiche aucun
+résumé : un résumé absent est donc aussi un échec.
+
+Les suites détaillées sont réparties dans `tests/combat/`, `tests/ai/` et
+`tests/ui/` ; leurs fixtures, assertions et le journal `TestLog` sont dans
+`tests/support/`. Une vérification headless ne remplace pas un contrôle visuel
+des animations.
 
 Sur téléphone, vérifier également les mêmes gestes après réexport de l'APK.
 L'émulation souris depuis le tactile reste activée : Godot 4.7 l'utilise pour
@@ -196,7 +206,9 @@ les règles et affichés sans arrondi dans les menus.
 ## Les 6 NPCs
 
 Chaque adversaire possède désormais un dieu et un deck cohérent avec sa famille.
-Les decks des adversaires difficiles peuvent dépasser le plafond de 50 points.
+Les decks des adversaires ne sont pas soumis au plafond de 50 points du joueur :
+Yuki, Raiko et Kaguya le dépassent. Au chargement, `ContentValidator` vérifie
+seulement leur taille, leur famille et leur niveau d'IA.
 
 | NPC | Difficulté | IA | Dieu / famille |
 |-----|-----------|-----|----------------|

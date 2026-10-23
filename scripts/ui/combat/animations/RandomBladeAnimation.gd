@@ -8,7 +8,7 @@ func play(card: StoneCard, events: Array, duration: float) -> void:
 	var seen := {}
 	for event in events:
 		var side := str(event["side"])
-		var index := int(preview.base_blades.get(side, 0)) + int(seen.get(side, 0))
+		var index := preview.marker_offset("random", side) + int(seen.get(side, 0))
 		_targets.append(_card_transform * card.marker_position(side, index))
 		seen[side] = int(seen.get(side, 0)) + 1
 	for side in StoneSide.ALL:

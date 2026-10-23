@@ -4,6 +4,10 @@
 class_name AIPlayer
 extends RefCounted
 
+## Niveaux utilisables dans le champ ai_level de npcs.json.
+## AITurnRunner.create_ai() associe chacun à sa classe.
+const LEVELS: Array[String] = ["random", "greedy", "score"]
+
 ## Délai simulé avant que l'IA joue (confort visuel).
 var think_delay: float = 0.8
 

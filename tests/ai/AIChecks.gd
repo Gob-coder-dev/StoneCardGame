@@ -3,6 +3,8 @@ extends "res://tests/support/CombatTestSuite.gd"
 func run() -> void:
 	await _test_clone_and_hidden_random()
 	await _test_ai_moves()
+	await _test_score_ai_choice()
+	await _test_ai_levels()
 	await _test_complete_matches()
 
 func _test_clone_and_hidden_random() -> void:
@@ -20,7 +22,26 @@ func _test_ai_moves() -> void:
 	for ai in [RandomAI.new(), GreedyAI.new(), ScoreAI.new()]:
 		var state := _state_with_hands([], ["kappa", "tanuki", "ronin"])
 		var move: Dictionary = ai.choose_move(state.clone_for_ai())
-		_check(not move.is_empty() and RulesEngine.is_placement_valid(state, move["row"], move["col"], move["stone_id"], GameState.PLAYER_AI), "%s produit un coup légal avec les pouvoirs" % ai.get_class())
+		_check(not move.is_empty() and PlacementRules.is_valid(state, move["row"], move["col"], move["stone_id"], GameState.PLAYER_AI), "%s produit un coup légal avec les pouvoirs" % ai.get_class())
+
+
+func _test_score_ai_choice() -> void:
+	# Seul fx_attack2 posé en (1,1) capture la pierre humaine : 2 lames contre 1.
+	var state := _state_with_hands([], ["fx_plain", "fx_attack2"])
+	_force_instance(state, 1, 2, "fx_plain", GameState.PLAYER_HUMAN)
+	var move: Dictionary = ScoreAI.new().choose_move(state.clone_for_ai())
+	_check(move == {"row": 1, "col": 1, "stone_id": "fx_attack2"},
+		"ScoreAI choisit le coup qui rapporte le meilleur score")
+
+
+func _test_ai_levels() -> void:
+	var created := {}
+	for level in AIPlayer.LEVELS:
+		var ai := AITurnRunner.create_ai(level)
+		created[level] = ai.get_script()
+	_check(created.size() == 3 and created["random"] == RandomAI and created["greedy"] == GreedyAI
+		and created["score"] == ScoreAI,
+		"chaque niveau d'IA déclaré crée l'IA correspondante")
 
 
 func _test_complete_matches() -> void:
@@ -38,7 +59,7 @@ func _test_complete_matches() -> void:
 				state.apply_blocked_cells([[1, 1]])
 			state.set_random_seed(hash("%s:%d" % [npc.get("id", "npc"), sample]))
 			var player := GameState.PLAYER_AI if sample == 2 else GameState.PLAYER_HUMAN
-			var ai := _ai_for_level(str(npc.get("ai_level", "random")))
+			var ai := AITurnRunner.create_ai(str(npc.get("ai_level", "random")))
 			var safety := 0
 			while not RulesEngine.is_game_over(state) and safety < 12:
 				var move: Dictionary

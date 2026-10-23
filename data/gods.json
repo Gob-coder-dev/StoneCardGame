@@ -13,7 +13,7 @@
       "name": "Izanami",
       "family_name": "Déclin",
       "color": "#9b6bc7",
-      "description": "Affaiblit les pierres déjà en jeu, localement ou jusqu'au prochain coup du lanceur."
+      "description": "Affaiblit les pierres déjà en jeu : définitivement autour de la pierre posée, ou jusqu'à la fin du prochain coup du lanceur."
     },
     {
       "id": "hachiman",

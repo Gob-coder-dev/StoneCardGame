@@ -1,4 +1,3 @@
-@tool
 class_name TapGesture
 extends RefCounted
 ## Reconnaît un appui au relâchement, sans confondre déplacement et clic.
@@ -25,13 +24,15 @@ func update(event: InputEvent, control: Control) -> Result:
 			return _finish(event.position, control, event.canceled)
 	elif event is InputEventScreenDrag and event.index == _pointer:
 		return _move(event.position, control)
-	elif event is InputEventMouseButton and event.device != EMULATED_DEVICE:
+	# Les clics émulés depuis le tactile sont écartés plus haut : il ne reste ici
+	# que la souris physique.
+	elif event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			if event.pressed:
 				_begin(MOUSE_POINTER, event.position, control)
 			elif _pointer == MOUSE_POINTER:
 				return _finish(event.position, control, event.canceled)
-	elif event is InputEventMouseMotion and event.device != EMULATED_DEVICE:
+	elif event is InputEventMouseMotion:
 		if _pointer == MOUSE_POINTER:
 			return _move(event.position, control)
 	return Result.NONE

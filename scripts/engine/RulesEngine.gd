@@ -1,41 +1,13 @@
 ## RulesEngine.gd
-## Moteur de règles pur de SamStone.
-## Fonctions statiques, sans état, sans effet de bord : elles lisent un
-## GameState et retournent un résultat.
+## Lectures pures d'un GameState : score, fin de partie, coups possibles et
+## estimation des captures. Fonctions statiques, sans effet sur la partie.
 ##
 ## Les définitions restent dans StoneLoader et les modifications de combat dans
 ## BattleStone. CombatResolver est l'unique chemin qui applique un coup.
 class_name RulesEngine
 extends RefCounted
 
-const BattleStoneModel := preload("res://scripts/engine/BattleStone.gd")
 const CombatResolverModel := preload("res://scripts/engine/CombatResolver.gd")
-
-## ─── Direction opposée ────────────────────────────────────────────────────────
-
-## Côté de la pierre voisine qui fait face au côté "direction" de la pierre posée.
-static func opposite_direction(direction: String) -> String:
-	return StoneSide.opposite(direction)
-
-
-static func is_placement_valid(state: GameState, row: int, col: int, stone_id: String, player: int) -> bool:
-	return PlacementRules.is_valid(state, row, col, stone_id, player)
-
-
-static func resolve_captures(state: GameState, row: int, col: int, stone_id: String, owner: int) -> Array:
-	var source: BattleStoneModel = null
-	if row >= 0 and row < GameState.BOARD_SIZE and col >= 0 and col < GameState.BOARD_SIZE:
-		var stored = state.get_cell(row, col).get("stone")
-		if stored is BattleStoneModel and stored.stone_id == stone_id:
-			source = stored
-	if source == null:
-		source = BattleStoneModel.new()
-		source.configure(stone_id, StoneLoader.get_stone(stone_id))
-	var detailed := CombatResolverModel.find_captures(state, row, col, owner, source)
-	var captured: Array = []
-	for result in detailed:
-		captured.append({"row": result["row"], "col": result["col"]})
-	return captured
 
 
 ## Estime les captures par simulation ; huit tirages pour les pouvoirs aléatoires.
@@ -98,42 +70,12 @@ static func get_free_cells(state: GameState) -> Array:
 
 
 ## ─── Coups valides ────────────────────────────────────────────────────────────
-## Un coup est { "row", "col", "stone_id" }.
-## Note : on ne stocke plus "stone_data" — l'id suffit, les lames se lisent via
-## StoneLoader au moment du besoin.
 
-## Liste simple de tous les coups valides (utilisée hors chemin critique).
+## Tous les coups { "row", "col", "stone_id" } de la main du joueur, utilisés par les IA.
 static func get_valid_moves(state: GameState, player: int) -> Array:
 	var moves: Array = []
 	var hand: Array = state.hand_of(player)
 	for cell in get_free_cells(state):
 		for stone_id in hand:
 			moves.append({ "row": cell["row"], "col": cell["col"], "stone_id": stone_id })
-	return moves
-
-
-## Coups valides TRIÉS par nombre de captures décroissant (pour l'IA).
-## Examiner les coups prometteurs en premier rend l'élagage alpha-bêta beaucoup
-## plus efficace (levier 2). On dédoublonne les pierres identiques pour éviter
-## d'évaluer plusieurs fois le même coup effectif.
-static func get_valid_moves_sorted(state: GameState, player: int) -> Array:
-	var hand: Array = state.hand_of(player)
-	## Dédoublonnage : deux pierres de même id donnent le même coup.
-	var unique_ids: Array = []
-	for sid in hand:
-		if not unique_ids.has(sid):
-			unique_ids.append(sid)
-
-	var moves: Array = []
-	for cell in get_free_cells(state):
-		for stone_id in unique_ids:
-			moves.append({
-				"row": cell["row"],
-				"col": cell["col"],
-				"stone_id": stone_id,
-				"_captures": count_captures(state, cell["row"], cell["col"], stone_id, player)
-			})
-
-	## Tri décroissant par captures (les meilleurs coups d'abord).
-	moves.sort_custom(func(a, b): return a["_captures"] > b["_captures"])
 	return moves

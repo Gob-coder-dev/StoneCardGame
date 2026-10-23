@@ -2,6 +2,8 @@
 ## Aucun tirage ni état de combat n'est modifié par ce composant.
 extends RefCounted
 
+const Effects := preload("res://scripts/domain/StoneEffects.gd")
+
 const FORTUNE := Color("#ff55c8")
 const SHIELD := Color("#92e7f2")
 const LONG := Color("#4fa9ff")
@@ -24,10 +26,10 @@ static func badges_for(stone: Dictionary) -> Array[Dictionary]:
 		result.append({"kind": "long"})
 	for effect in stone.get("effects", []):
 		match str(effect):
-			"weaken_enemies_on_miss": result.append({"kind": "weaken_miss"})
-			"weaken_adjacent": result.append({"kind": "weaken_adjacent"})
-			"swarm": result.append({"kind": "swarm"})
-			CombatEvents.SHIELD_THEFT: result.append({"kind": "theft"})
+			Effects.WEAKEN_ON_MISS: result.append({"kind": "weaken_miss"})
+			Effects.WEAKEN_ADJACENT: result.append({"kind": "weaken_adjacent"})
+			Effects.SWARM: result.append({"kind": "swarm"})
+			Effects.SHIELD_THEFT: result.append({"kind": "theft"})
 	return result
 
 

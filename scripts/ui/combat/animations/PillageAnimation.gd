@@ -17,7 +17,9 @@ func play(card: StoneCard, event: Dictionary, transfers: Array, duration: float)
 	for index in range(_transfers.size()):
 		var transfer: Dictionary = _transfers[index]
 		var side := str(transfer["destination_side"])
-		var slot_index := preview.marker_count(side) + int(seen.get(side, 0))
+		# Les nouveaux boucliers se rangent après ceux que la face avait déjà.
+		var slot_index := preview.marker_offset("shield", side) \
+			+ preview.marker_count_of("shield", side) + int(seen.get(side, 0))
 		var target := _card_transform * card.marker_position(side, slot_index)
 		_targets.append(target)
 		transfer["target"] = target

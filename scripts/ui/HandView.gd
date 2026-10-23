@@ -7,7 +7,7 @@ extends GridContainer
 ## Émis quand le joueur touche une carte de sa main.
 signal card_selected(stone_id: String)
 
-var _cards: Array = []            ## StoneCard affichées
+var _cards: Array[StoneCard] = []  ## cartes affichées, dans l'ordre de la main
 var _selected_id: String = ""
 
 
@@ -17,12 +17,33 @@ func _ready() -> void:
 	add_theme_constant_override("v_separation", UITheme.GAP_MEDIUM)
 
 
-## Reconstruit la main depuis la liste de stone_id.
+## Synchronise la main avec la liste de stone_id du moteur. Pendant un match,
+## la main ne fait que perdre des cartes : seules les cartes jouées sont
+## retirées. Une liste qui n'en découle pas reconstruit la main.
 func refresh(stone_ids: Array) -> void:
+	var played: Array[StoneCard] = []
+	var next := 0
+	for card in _cards:
+		if next < stone_ids.size() and card.get_stone_id() == str(stone_ids[next]):
+			next += 1
+		else:
+			played.append(card)
+	if next < stone_ids.size():
+		_rebuild(stone_ids)
+		return
+	for card in played:
+		_cards.erase(card)
+		var wrapper := card.get_parent()
+		remove_child(wrapper)
+		wrapper.queue_free()
+	_apply_selection()
+
+
+func _rebuild(stone_ids: Array) -> void:
 	for child in get_children():
+		remove_child(child)
 		child.queue_free()
 	_cards.clear()
-
 	for stone_id in stone_ids:
 		var wrapper := AspectRatioContainer.new()
 		wrapper.ratio = 1.0  ## carré : les cartes sont 1:1
@@ -33,13 +54,12 @@ func refresh(stone_ids: Array) -> void:
 		wrapper.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
 		var card := StoneCard.new()
-		card.setup(StoneLoader.get_stone(stone_id), StoneCard.OWNER_HUMAN)
+		card.setup(StoneLoader.get_stone(str(stone_id)), StoneCard.OWNER_HUMAN)
 		card.card_pressed.connect(_on_card_pressed)
 		wrapper.add_child(card)
 
 		add_child(wrapper)
 		_cards.append(card)
-
 	_apply_selection()
 
 

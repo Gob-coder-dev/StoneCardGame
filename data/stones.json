@@ -157,7 +157,7 @@
         "shield_theft"
       ],
       "power_cost": 1.0,
-      "power_text": "Pillage : vole lames et boucliers de la face vaincue sous forme de boucliers."
+      "power_text": "Pillage : la force de la face vaincue devient des boucliers sur cette pierre, placés au hasard dans les emplacements libres."
     },
     {
       "id": "kitsune",
@@ -199,7 +199,7 @@
         "swarm"
       ],
       "power_cost": 1.0,
-      "power_text": "Swarm : chaque allié Swarm connecté renforce toutes les pierres du groupe."
+      "power_text": "Swarm : chaque allié Swarm connecté ajoute une lame à chaque pierre du groupe, jusqu'à +2 par pierre."
     },
     {
       "id": "ronin",
@@ -477,7 +477,7 @@
         "weaken_adjacent"
       ],
       "power_cost": 1.0,
-      "power_text": "Miasme supérieur : après les tentatives de capture, affaiblit définitivement toutes les pierres voisines."
+      "power_text": "Miasme : après les tentatives de capture, retire définitivement 1 force à chaque face des voisines, alliées ou ennemies."
     },
     {
       "id": "ryujin",

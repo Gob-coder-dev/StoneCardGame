@@ -3,17 +3,25 @@ extends RefCounted
 const BattleStoneModel := preload("res://scripts/engine/BattleStone.gd")
 const SIDES = StoneSide.ALL
 const Board := preload("res://scripts/engine/combat/CombatBoard.gd")
+const Effects := preload("res://scripts/domain/StoneEffects.gd")
 const SWARM_CAP := 2
 
+## Seules les pierres Essaim reçoivent des lames d'aura, et une pierre posée le
+## reste jusqu'à la fin du match : sans elles, il n'y a rien à recalculer.
 static func recalculate(state: GameState) -> void:
-	for cell in state.board:
-		var stone := Board.stone_at(cell)
-		if stone != null:
-			for side in SIDES:
-				stone.swarm_blades[side] = 0
+	var is_member := {}
+	for index in range(state.board.size()):
+		if _is_swarm_cell(state.board[index]):
+			is_member[index] = true
+	if is_member.is_empty():
+		return
+	for index in is_member:
+		var stone := Board.stone_at(state.board[index])
+		for side in SIDES:
+			stone.swarm_blades[side] = 0
 	var visited := {}
 	for index in range(state.board.size()):
-		if visited.has(index) or not _is_swarm_cell(state.board[index]):
+		if visited.has(index) or not is_member.has(index):
 			continue
 		var owner: int = state.board[index]["owner"]
 		var component: Array[int] = []
@@ -28,7 +36,7 @@ static func recalculate(state: GameState) -> void:
 				var next_index := GameState.cell_index(adjacent["row"], adjacent["col"])
 				if visited.has(next_index):
 					continue
-				if state.board[next_index]["owner"] == owner and _is_swarm_cell(state.board[next_index]):
+				if state.board[next_index]["owner"] == owner and is_member.has(next_index):
 					visited[next_index] = true
 					pending.append(next_index)
 		var bonus_count := mini(SWARM_CAP, component.size() - 1)
@@ -198,7 +206,7 @@ static func _empty_side_map() -> Dictionary:
 
 
 static func _is_swarm_cell(cell: Dictionary) -> bool:
-	var stone := Board.stone_at(cell)
-	if stone == null or cell["owner"] == GameState.PLAYER_NONE:
+	if cell["owner"] == GameState.PLAYER_NONE:
 		return false
-	return StoneLoader.get_stone(stone.stone_id).get("effects", []).has("swarm")
+	var stone := Board.stone_at(cell)
+	return stone != null and StoneLoader.has_effect(stone.stone_id, Effects.SWARM)

@@ -12,3 +12,11 @@ const OPPOSITE := {"top": "bottom", "bottom": "top", "left": "right", "right": "
 static func opposite(side: String) -> String:
 	assert(OPPOSITE.has(side), "Face inconnue : " + side)
 	return OPPOSITE.get(side, "")
+
+## Valeurs possibles du champ "coin_flip" d'une pierre (vérifiées au chargement).
+const COIN_AXES: Array[String] = ["horizontal", "vertical"]
+
+## Faces échangées par un pile ou face : « horizontal » échange gauche et droite,
+## « vertical » échange le haut et le bas.
+static func coin_faces(axis: String) -> Array:
+	return ["left", "right"] if axis == "horizontal" else ["top", "bottom"]

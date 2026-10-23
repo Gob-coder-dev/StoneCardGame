@@ -49,8 +49,8 @@ static func finish_move(state: GameState, row: int, col: int, player: int, attac
 	if source == null:
 		return {"success": false, "reason": "missing_source", "captures": [], "effects": [], "swarm_events": []}
 	var swarm_before := Swarm.snapshot(state)
+	# place_stone() vient de recalculer l'Essaim : le plan lit déjà ses bonus.
 	if attack_plan.is_empty():
-		Swarm.recalculate(state)
 		attack_plan = Attack.resolve(state, row, col, player, source)
 	var captures: Array = attack_plan["captures"]
 	for capture in captures:
