@@ -1,11 +1,46 @@
 extends "res://tests/support/CombatTestSuite.gd"
 const Effects := preload("res://scripts/domain/StoneEffects.gd")
 const ContentChecks := preload("res://scripts/data/ContentValidator.gd")
+const Board := preload("res://scripts/engine/combat/CombatBoard.gd")
 
 func run() -> void:
 	await _test_catalog_and_decks()
 	await _test_immutable_catalog()
 	_test_content_validation()
+	_test_active_power_rule()
+
+
+func _test_active_power_rule() -> void:
+	_check(StoneLoader.stone_affinity("oni_minor") == "okuninushi"
+		and StoneLoader.stone_affinity("kitsune") == "neutral"
+		and StoneLoader.stone_affinity("pierre_inconnue") == "",
+		"le catalogue fournit l'affinité brute, sans confondre une inconnue et une neutre")
+	_check(not StoneLoader.is_stone_available_to_god("kitsune", "dieu_inconnu")
+		and not StoneLoader.is_stone_available_to_god("pierre_inconnue", "inari"),
+		"une carte ou un dieu inconnu ne devient pas disponible par défaut")
+	var state := _state_with_hands([], [])
+	state.human_god_id = "okuninushi"
+	state.ai_god_id = "izanami"
+	_check(not Board.has_active_power(state, state.get_cell(0, 0), Effects.SWARM),
+		"une case vide n'active aucun pouvoir")
+	_force_instance(state, 1, 1, "fx_swarm_okuni_a", GameState.PLAYER_HUMAN)
+	var cell := state.get_cell(1, 1)
+	_check(Board.has_active_power(state, cell, Effects.SWARM)
+		and not Board.has_active_power(state, cell, Effects.WEAKEN_ADJACENT),
+		"une pierre active seulement le pouvoir qu'elle possède dans le camp de son dieu")
+	cell["owner"] = GameState.PLAYER_AI
+	_check(not Board.has_active_power(state, cell, Effects.SWARM),
+		"une capture par un autre dieu désactive le pouvoir continu")
+	state.ai_god_id = "okuninushi"
+	_check(Board.has_active_power(state, cell, Effects.SWARM),
+		"une capture par le même dieu conserve le pouvoir continu")
+	_force_instance(state, 0, 0, "fx_weaken_local", GameState.PLAYER_AI)
+	var neutral := state.get_cell(0, 0)
+	_check(Board.has_active_power(state, neutral, Effects.WEAKEN_ADJACENT),
+		"un pouvoir continu neutre reste actif quel que soit le dieu")
+	neutral["owner"] = GameState.PLAYER_NONE
+	_check(not Board.has_active_power(state, neutral, Effects.WEAKEN_ADJACENT),
+		"sans propriétaire, même une pierre neutre n'active pas son pouvoir")
 
 
 func _test_content_validation() -> void:

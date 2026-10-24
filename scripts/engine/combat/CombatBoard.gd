@@ -13,3 +13,15 @@ static func is_enemy(cell: Dictionary, player: int) -> bool:
 		and cell["owner"] != GameState.PLAYER_NONE \
 		and cell["owner"] != player \
 		and stone_at(cell) != null
+
+
+## Activation des pouvoirs continus (Essaim, Miasme) : une pierre de famille
+## n'agit que dans le camp de son dieu ; les neutres agissent dans tous les camps.
+## Les symboles physiques, comme les boucliers, ne passent pas par cette règle.
+static func has_active_power(state: GameState, cell: Dictionary, effect: String) -> bool:
+	var owner := int(cell["owner"])
+	var stone := stone_at(cell)
+	if owner == GameState.PLAYER_NONE or stone == null or not StoneLoader.has_effect(stone.stone_id, effect):
+		return false
+	var affinity := StoneLoader.stone_affinity(stone.stone_id)
+	return affinity != "" and (affinity == "neutral" or affinity == state.god_of(owner))

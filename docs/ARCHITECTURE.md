@@ -10,14 +10,14 @@ Une IA appelle le même moteur sur une copie pour essayer un coup instantanémen
 | `data/stones.json` | — | Définition complète de chaque carte, pouvoirs compris |
 | `data/gods.json` | — | Dieux, familles, couleurs et descriptions |
 | `data/npcs.json` | — | Adversaires, decks, dieux et profils d'IA |
-| `StoneLoader` | `get_stone`, `has_stone`, `has_effect`, `get_god`, `get_npc` | Charge les catalogues, fournit des copies et des lectures sans copie |
+| `StoneLoader` | `get_stone`, `has_stone`, `has_effect`, `stone_affinity`, `get_god`, `get_npc` | Charge les catalogues, fournit des copies et des lectures sans copie |
 | `ContentValidator` | `find_problems` | Liste les incohérences des catalogues ; `StoneLoader` les signale au démarrage |
 | `PlayerData` | `load_save`, `save`, `set_player_deck` | Pseudo, dieu, deck et statistiques persistants |
 | `PlayerSaveCodec` | `encode`, `decode` | Format et migration du profil sans accès disque |
 | `PlayerSaveStorage` | `write`, `read` | Écriture sûre du profil sur le disque |
 | `BattleContext` | `record_result` | Adversaire sélectionné, premier joueur et dernier résultat |
 | `StoneCostRules` | `cost` | Règle du coût d'une carte |
-| `StoneEffects` | — | Identifiants des pouvoirs du champ `effects` |
+| `StoneEffects` | — | Identifiants et valeurs des pouvoirs (corrosion, renfort et plafond d'Essaim) |
 | `DeckRules` | `try_add`, `try_remove`, `try_replace` | Composition du deck |
 | `UIFormat` | `cost` | Affichage des nombres dans l'interface |
 
@@ -30,7 +30,9 @@ remplacement interrompu est récupéré au chargement suivant.
 simulations (`has_stone`, `has_effect`, `stone_cost`) lisent l'index du catalogue
 sans copie. Les coûts unitaires sont des constantes de `StoneCostRules`, reprises
 par l'écran des règles. Moteur, interface et validation désignent les pouvoirs par
-les constantes de `StoneEffects` ; `ContentValidator` signale tout pouvoir ou axe
+les constantes de `StoneEffects`, y compris les valeurs numériques affichées
+dans les légendes : celles-ci ne chargent pas les systèmes du moteur.
+`ContentValidator` signale tout pouvoir ou axe
 de pile ou face inconnu dans `stones.json`.
 
 ## Résolution d'un coup
@@ -72,6 +74,11 @@ faces possibles (`candidate_sides`), que `PillageAnimation` fait clignoter.
 `RulesEngine` fournit score, fin de partie et liste des coups disponibles.
 `CombatBoard` est l'accès partagé aux instances des cases : une case occupée
 porte toujours sa `BattleStone`, y compris dans les tests.
+`CombatBoard.has_active_power(state, cell, effect)` centralise l'activation des
+pouvoirs continus : propriétaire, pierre, effet présent et affinité compatible
+avec le dieu du camp. Une pierre neutre agit dans tous les camps. Le catalogue
+ne fournit que `stone_affinity(id)` ; cette activation ne s'applique pas aux
+symboles physiques (boucliers et lames longues).
 `BattleStone.markers_for_side()` décrit les symboles ; le moteur connaît leur type
 et leur indice stable, tandis que l'interface calcule leurs positions.
 L'ordre des types est `BattleStone.MARKER_KINDS` et la capacité d'une face
@@ -84,8 +91,9 @@ ni coordonnées écran. Les identifiants communs sont également définis ici.
 
 ## Tours et animations
 
-`BoardSetupGenerator` tire avant le match la case bloquée et le premier joueur ;
-l'écran `PreBattle` anime seulement ce tirage et le transmet par `BattleContext`.
+`BoardSetupGenerator` fournit le tirage des cases bloquées et du premier joueur.
+`PreBattle` révèle ce dernier et le transmet par `BattleContext` ; le terrain
+est tiré au démarrage du combat.
 `TurnManager.human_play()` et `ai_play()` vérifient le joueur actif puis déclenchent
 le moteur. Les phases explicites sont `PLACING`, `PREPARING`, `SWARM`, `ATTACKING`,
 `EFFECTS`, `WAITING_INPUT` et `GAME_OVER`.
@@ -131,6 +139,10 @@ et `swarm_changed` annoncent les faits ; ils ne contrôlent pas la fin des anima
 `BoardView` construit les cases, synchronise les cartes, reçoit les gestes et
 fournit leur géométrie. Son enfant `Animations` contient `BoardAnimationController`.
 La couche `SwarmLinks` reste responsable des lianes persistantes.
+`BoardEffectGeometry.weakness_groups()` fusionne les malus d'une même cible du
+premier état avant au dernier état après, puis fournit les cartes et trajectoires
+regroupées par source. Le contrôleur se contente de lancer une animation par
+groupe ; deux sources ne pilotent jamais deux aperçus rivaux d'une même cible.
 
 | Animation | Ce qu'elle montre |
 | --- | --- |
@@ -158,6 +170,11 @@ garde construites mais masquées dans une `GridContainer`, qui referme les trous
 un changement de deck reconstruit ses emplacements et masque ou réaffiche seulement
 les cartes concernées de la collection, sans recréer de carte.
 Un changement de dieu ou de tri reconstruit la collection.
+
+`UITheme.DECK_COLUMNS` fixe les colonnes de la main, du deck et du remplacement.
+La main calcule ses rangées sur le deck complet, puis garde sa hauteur pendant
+le combat. `CARD_HAND`, `CARD_DECK` et `CARD_REPLACEMENT` restent des tailles
+indépendantes ; les valeurs initiales des scènes reflètent la disposition actuelle.
 
 `CardActionDrawer`, `StoneInfoSheet` et `ReplacementPanel` gèrent leurs panneaux.
 `TapGesture`, `TouchButton` et `TouchScrollContainer` conservent les gestes tactiles.
@@ -204,21 +221,32 @@ propres à l'IA. Avec `anticipation` :
   ses meilleures captures immédiates depuis une case libre, puis la meilleure
   carte de sa main, en moyenne sur les mains possibles de sa taille
   (`OpponentModel.rank_weights`) ;
-- à deux cases libres ou moins, un calcul exact pose chaque riposte possible
+- à deux cases libres ou moins, `EndgameSearch.evaluate()` pose chaque riposte possible
   jusqu'à la fin de la partie, avec la même moyenne sur les mains. Un coup
   aléatoire y est rejoué sur 2 tirages.
 
 La riposte immédiate est découpée en tirs : une attaque est un plan pur où chaque
-direction est indépendante. `MoveEvaluator` demande au résolveur, pour chaque case
+direction est indépendante. `RiposteModel` demande au résolveur, pour chaque case
 libre, chaque tir différent (face, lames, lames bleues) une seule fois, avec une
 pierre qui n'attaque que dans cette direction (`make_shot`), puis additionne les
 tirs de chaque carte. Le coût dépend du nombre de tirs différents, qui plafonne,
 et non du nombre de cartes. Les captures de chaque tir sont aussi calculées une
 fois sur l'état reçu : pour un coup évalué, seuls les tirs dont la ligne traverse
 une case changée (pose, captures, auras, défenses) sont redemandés au résolveur.
-Sur le plateau 4×4, avec 40 cartes possibles, le niveau 3 réfléchit en moyenne
-0,06 s sur PC (0,3 s au plus). Le calcul exact, lui, pose chaque carte possible :
-il est limité à deux cases, où il reste court.
+Ces données restent propres à une recherche, sans cache global. Les tests
+comparent directement `RiposteModel` à un recalcul complet.
+
+`EndgameSearch` est un service sans état : il reçoit la simulation et la taille
+de la main cachée. L'exploration des placements restants est complète, mais la
+main reste supposée et le hasard échantillonné. La borne de coupure conservée
+dans le tour de l'IA ne coupe aucune branche avec le seuil actuel de deux cases.
+Relever ce seuil demanderait de nouveaux tests et de nouvelles mesures.
+
+La comparaison avant/après la séparation rejoue 18 parties à graines fixes
+(132 décisions), avec les six familles et 0, 1 ou 2 cases bloquées. Les coups,
+captures, pouvoirs et états du hasard restent identiques. Sur ce lot et ce PC,
+les décisions de niveau 3 prennent environ 50 ms en moyenne, avec une variabilité
+entre exécutions ; ce chiffre n'est pas une mesure Android.
 
 Avec `anticipation` (niveau 3), la valeur d'un coup gagne aussi 0,3 capture par
 lame d'aura d'Essaim obtenue (`AURA_WEIGHT`) : l'aura reste et sert aux coups
@@ -233,10 +261,13 @@ exact de fin de partie pose réellement les cartes.
 
 `AIPlayer` définit le contrat : `start_search(état)` rend une `MoveSearch`, dont
 `step(budget)` évalue les tirages un par un, puis `chosen_move()` donne le coup.
-`AITurnRunner` l'avance de 4 ms par image dans `_process`, sans minuteur ni `await`,
+`AITurnRunner` lui accorde environ 4 ms par image dans `_process`, sans minuteur ni `await`,
 et joue quand la réflexion est finie et le délai écoulé. Une partie relancée ou
 une scène fermée abandonne la réflexion. `choose_move()` réfléchit d'un bloc pour
 les tests.
+Le budget est vérifié entre deux évaluations et ne couvre pas la préparation
+synchrone du modèle de riposte : un calcul individuel peut donc le dépasser.
+Les mesures doivent inclure le total, la préparation et le plus long appel à `step()`.
 
 ## Ajouter un pouvoir
 
@@ -257,9 +288,9 @@ transition avant/après. `CombatResolver` garde uniquement l'ordre général des
 Le Miasme est le second système continu : `WeaknessSystem.update_miasma()` recalcule
 après les captures de chaque coup le malus `BattleStone.miasma_weakness` et émet un
 `WEAKEN` par pierre plus affaiblie ou un `WEAKNESS_EXPIRED` par pierre soulagée.
-`BoardAnimationController` anime une traînée par source et fusionne les malus d'une
-même cible. Les deux systèmes appliquent la règle des dieux de
-`StoneLoader.is_power_active_for_god()` : une carte de famille n'agit que dans le
+`BoardEffectGeometry` fusionne les malus par cible et prépare les groupes par
+source ; `BoardAnimationController` lance leurs traînées. Les deux systèmes
+continus appliquent la règle unique de `CombatBoard.has_active_power()` : une carte de famille n'agit que dans le
 camp dont le dieu est le sien (`GameState.god_of()`).
 
 ## Vérification
@@ -272,6 +303,8 @@ de deck utilisent également ces assertions locales : aucune installation de GUT
 
 `AnimatedMatchChecks` rejoue chaque coup en simulation et en présentation réelle
 pour les six familles, puis compare le plateau, le hasard et tous les états de pouvoir.
+Les dieux sont équipés dans les deux camps, et des ouvertures dédiées garantissent
+que les comparaisons Déclin et Essaim déclenchent réellement leurs auras.
 `TurnSequenceChecks` vérifie aussi les fins retardées et l'annulation des présentations.
 
 Les lanceurs chargent les suites à l'exécution et enregistrent `tests/support/TestLog.gd`

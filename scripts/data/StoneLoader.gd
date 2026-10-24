@@ -180,22 +180,19 @@ func default_god_id() -> String:
 
 
 func is_stone_available_to_god(stone_id: String, god_id: String) -> bool:
-	var stone: Dictionary = _stones.get(stone_id, {})
-	if stone.is_empty() or not _gods.has(god_id):
+	if not _gods.has(god_id):
 		return false
-	var affinity := str(stone.get("god_id", "neutral"))
-	return affinity == "neutral" or affinity == god_id
+	var affinity := stone_affinity(stone_id)
+	return affinity != "" and (affinity == "neutral" or affinity == god_id)
 
 
-## Règle des dieux pour les pouvoirs continus (Essaim, Miasme) : une carte de
-## famille n'agit que dans le camp dont le dieu est le sien. Une carte neutre
-## agit partout. Une pierre capturée par un autre dieu perd donc son pouvoir.
-func is_power_active_for_god(stone_id: String, god_id: String) -> bool:
+## Lecture du catalogue sans copie : famille de la pierre, ou "" si inconnue.
+## L'activation d'un pouvoir posé appartient à CombatBoard, pas au catalogue.
+func stone_affinity(stone_id: String) -> String:
 	var stone: Dictionary = _stones.get(stone_id, {})
 	if stone.is_empty():
-		return false
-	var affinity := str(stone.get("god_id", "neutral"))
-	return affinity == "neutral" or affinity == god_id
+		return ""
+	return str(stone.get("god_id", "neutral"))
 
 
 func get_stones_for_god(god_id: String) -> Array:

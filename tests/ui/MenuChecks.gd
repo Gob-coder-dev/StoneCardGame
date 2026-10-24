@@ -1,7 +1,5 @@
 extends "res://tests/support/CombatTestSuite.gd"
 
-const SwarmSystemScript := preload("res://scripts/engine/effects/SwarmSystem.gd")
-
 func run() -> void:
 	await _test_god_selector_ui()
 	await _test_rules_legends()
@@ -60,7 +58,7 @@ func _test_rules_legends() -> void:
 			texts.append(row.get_child(1).text)
 	var all_text := "\n".join(texts)
 	_check(not all_text.contains("{") and all_text.contains("coûte %s point" % UIFormat.cost(StoneCostRules.LONG_BLADE_COST))
-		and all_text.contains("jusqu'à +%d" % SwarmSystemScript.SWARM_CAP),
+		and all_text.contains("jusqu'à +%d" % StoneEffects.SWARM_CAP),
 		"les règles affichent les valeurs lues dans le code")
 	page.queue_free()
 	await get_tree().process_frame
@@ -69,17 +67,25 @@ func _test_rules_legends() -> void:
 func _test_cost_format() -> void:
 	_check(UIFormat.cost(11.5) == "11,5" and UIFormat.cost(8.0) == "8",
 		"les coûts s'affichent avec la virgule française, sans décimale inutile")
+	_check(UIFormat.cost(1.25) == "1,25" and UIFormat.cost(3.75) == "3,75"
+		and UIFormat.cost(8.25) == "8,25", "les quarts de point ne sont jamais arrondis à un dixième")
+	_check(UIFormat.cost(StoneLoader.stone_cost("hayabusa")) == "3,75"
+		and UIFormat.cost(StoneLoader.stone_cost("tengu")) == "10,75",
+		"les coûts des cartes Horizon affichent exactement le coût du catalogue")
 
 
 func _test_hand_keeps_remaining_cards() -> void:
 	var hand := HandView.new()
 	add_child(hand)
+	var full_height := hand.custom_minimum_size.y
+	_check(hand.columns == UITheme.DECK_COLUMNS and is_equal_approx(full_height, 468.0),
+		"la main réserve deux rangées de quatre cartes à sa construction")
 	hand.refresh(["fx_plain", "fx_attack2", "fx_wall"])
 	var kept_first: StoneCard = hand.get_child(0).get_child(0)
 	var kept_last: StoneCard = hand.get_child(2).get_child(0)
 	hand.refresh(["fx_plain", "fx_wall"])
 	_check(hand.get_child_count() == 2 and hand.get_child(0).get_child(0) == kept_first
-		and hand.get_child(1).get_child(0) == kept_last,
+		and hand.get_child(1).get_child(0) == kept_last and hand.custom_minimum_size.y == full_height,
 		"jouer une carte retire seulement celle-ci de la main")
 	hand.refresh(["fx_target"])
 	_check(hand.get_child_count() == 1 and hand.get_child(0).get_child(0).get_stone_id() == "fx_target",

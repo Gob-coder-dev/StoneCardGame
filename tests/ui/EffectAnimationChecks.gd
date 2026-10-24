@@ -1,9 +1,56 @@
 extends "res://tests/support/CombatTestSuite.gd"
 
+const Geometry := preload("res://scripts/ui/combat/BoardEffectGeometry.gd")
+
 func run() -> void:
 	await _test_pillage_view_animation()
 	await _test_pillage_closed_gate()
 	await _test_weakness_view_animation()
+	await _test_weakness_groups()
+
+
+## Deux sources et une cible partagée : un seul aperçu doit porter toute la
+## transition de cette cible, tandis que chaque source garde sa traînée.
+func _test_weakness_groups() -> void:
+	var state := _state_with_hands([], [])
+	_force_instance(state, 0, 1, "fx_weaken_local", GameState.PLAYER_HUMAN)
+	_force_instance(state, 2, 1, "fx_weaken_local", GameState.PLAYER_HUMAN)
+	_force_instance(state, 1, 1, "fx_wall", GameState.PLAYER_AI)
+	_force_instance(state, 0, 0, "fx_wall", GameState.PLAYER_AI)
+	_force_instance(state, 2, 0, "fx_wall", GameState.PLAYER_AI)
+	state.get_cell(1, 1)["stone"].miasma_weakness = 2
+	state.get_cell(0, 0)["stone"].miasma_weakness = 1
+	state.get_cell(2, 0)["stone"].miasma_weakness = 1
+	var events := [
+		CombatEvents.weakness(CombatEvents.WEAKEN, 1, 1, 0, 1, 0, 1),
+		CombatEvents.weakness(CombatEvents.WEAKEN, 1, 1, 1, 2, 2, 1),
+		CombatEvents.weakness(CombatEvents.WEAKEN, 0, 0, 0, 1, 0, 1),
+		CombatEvents.weakness(CombatEvents.WEAKEN, 2, 0, 0, 1, 2, 1)]
+	var saved_events := events.duplicate(true)
+	var view := BoardView.new()
+	view.size = Vector2(900, 900)
+	add_child(view)
+	view.build()
+	view.refresh(state)
+	var groups := Geometry.new(view).weakness_groups(events)
+	_check(groups.size() == 2 and groups[0]["source"] == view.card_at(0, 1)
+		and groups[1]["source"] == view.card_at(2, 1),
+		"la géométrie prépare un groupe visuel par source de poison")
+	var shared: Dictionary = groups[0]["targets"][0]
+	_check(groups[0]["targets"].size() == 2 and groups[1]["targets"].size() == 1
+		and shared["card"] == view.card_at(1, 1) and shared["before"] == 0 and shared["after"] == 2
+		and events == saved_events,
+		"une cible commune fusionne du premier avant au dernier après sans modifier les événements")
+	view.animations.animate_effects(events, 0.55)
+	_check(view.animations.get_child_count() == 2 and view.card_at(1, 1).displayed_weakness() == 0,
+		"deux sources animent leur poison sans révéler trop tôt la cible commune")
+	await get_tree().create_timer(0.60).timeout
+	_check(view.card_at(1, 1).displayed_weakness() == 2
+		and view.card_at(0, 0).displayed_weakness() == 1 and view.card_at(2, 0).displayed_weakness() == 1
+		and view.card_at(1, 1)._visual_weakness_override == -1,
+		"les deux animations révèlent leurs malus et libèrent les aperçus")
+	view.queue_free()
+	await get_tree().process_frame
 
 
 ## Capture par la droite : la recherche ne parcourt que les trois autres conduits.

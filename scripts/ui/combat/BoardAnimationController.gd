@@ -186,42 +186,12 @@ func animate_effects(events: Array, duration: float = 0.0) -> void:
 ## dans le même coup. Une cible touchée deux fois n'a qu'un seul aperçu, du
 ## premier « avant » au dernier « après », pour éviter deux animations rivales.
 func _animate_weakening(events: Array, duration: float) -> void:
-	var merged := {}
-	var order: Array = []
-	for event in events:
-		var key := "%d:%d" % [event["row"], event["col"]]
-		if merged.has(key):
-			merged[key]["weakness_after"] = event["weakness_after"]
-			continue
-		merged[key] = event.duplicate()
-		order.append(key)
-	var by_source := {}
-	var sources: Array = []
-	for key in order:
-		var event: Dictionary = merged[key]
-		var source_key := "%d:%d" % [int(event.get("source_row", -1)), int(event.get("source_col", -1))]
-		if not by_source.has(source_key):
-			by_source[source_key] = []
-			sources.append(source_key)
-		by_source[source_key].append(event)
-	for source_key in sources:
-		var group: Array = by_source[source_key]
-		var first: Dictionary = group[0]
-		var source_row := int(first.get("source_row", -1))
-		var source_col := int(first.get("source_col", -1))
-		if source_row < 0 or source_col < 0:
-			continue
-		var source: StoneCard = _board.card_at(source_row, source_col)
-		if source == null:
-			continue
-		var targets := _geometry.weakness_targets(group)
-		if targets.is_empty():
-			continue
+	for group in _geometry.weakness_groups(events):
 		var animation := WeaknessReveal.new()
 		animation.name = "WeaknessReveal"
 		add_child(animation)
 		_track(animation)
-		animation.play_weakening(source, targets, maxf(0.1, duration))
+		animation.play_weakening(group["source"], group["targets"], maxf(0.1, duration))
 
 
 func _animate_weakness_repair(events: Array, duration: float) -> void:

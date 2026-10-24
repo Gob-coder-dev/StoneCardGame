@@ -13,6 +13,11 @@ const SWARM := "swarm"
 ## Pillage : la force vaincue devient des boucliers sur la pierre attaquante.
 const SHIELD_THEFT := "shield_theft"
 
+## Valeurs de gameplay partagées par les systèmes et leurs légendes visuelles.
+const CORROSION_AMOUNT := 2
+const SWARM_CAP := 4
+const BLADES_PER_ALLY := 2
+
 ## Pouvoirs de la famille Déclin : une carte n'en porte qu'un seul.
 const DECLINE: Array[String] = [WEAKEN_ADJACENT, WEAKEN_ON_FAILED_ATTACK]
 const ALL: Array[String] = [WEAKEN_ADJACENT, WEAKEN_ON_FAILED_ATTACK, SWARM, SHIELD_THEFT]

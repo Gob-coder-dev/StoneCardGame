@@ -3,6 +3,8 @@ extends "res://tests/support/CombatTestSuite.gd"
 const AIProfileModel := preload("res://scripts/ai/AIProfile.gd")
 const ProfileAIModel := preload("res://scripts/ai/ProfileAI.gd")
 const MoveEvaluatorModel := preload("res://scripts/ai/MoveEvaluator.gd")
+const RiposteModel := preload("res://scripts/ai/RiposteModel.gd")
+const EndgameSearch := preload("res://scripts/ai/EndgameSearch.gd")
 const Opponent := preload("res://scripts/ai/OpponentModel.gd")
 
 ## Les trois profils des adversaires, plus une IA précise sans anticipation.
@@ -220,7 +222,7 @@ func _test_threat_by_direction() -> void:
 					var long_count: int = int(stone.long_blades.get(side, 0))
 					if normal_count + long_count > 0:
 						by_direction += CombatResolverModel.find_captures(state, cell["row"], cell["col"],
-							GameState.PLAYER_HUMAN, MoveEvaluatorModel.make_shot(side, normal_count, long_count)).size()
+							GameState.PLAYER_HUMAN, RiposteModel.make_shot(side, normal_count, long_count)).size()
 				same = same and by_direction == CombatResolverModel.find_captures(state, cell["row"], cell["col"],
 					GameState.PLAYER_HUMAN, stone).size()
 	_check(same, "compter la riposte direction par direction donne les captures de la carte entière")
@@ -239,17 +241,20 @@ func _test_threat_reuse() -> void:
 	_force_instance(state, 2, 2, "yamabushi", GameState.PLAYER_HUMAN)
 	_force_instance(state, 3, 0, "fx_wall", GameState.PLAYER_AI)
 	state.apply_blocked_cells([[2, 0]])
-	CombatResolverModel.recalculate_swarm(state)
-	var view := state.clone_for_ai()
-	var reused := MoveEvaluatorModel.new(view, true)
-	var same := true
-	var moves := RulesEngine.get_valid_moves(view, GameState.PLAYER_AI)
-	for move in moves:
-		var simulation := view.clone()
-		CombatResolverModel.apply_move(simulation, move["row"], move["col"], move["stone_id"], GameState.PLAYER_AI)
-		var fresh := MoveEvaluatorModel.new(simulation, true)
-		same = same and is_equal_approx(reused.threat(simulation), fresh.threat(simulation))
-	_check(same and moves.size() > 40, "réutiliser les tirs inchangés donne la même riposte que tout recalculer")
+	for god_id in ["okuninushi", "izanami"]:
+		state.ai_god_id = god_id
+		CombatResolverModel.recalculate_swarm(state)
+		var view := state.clone_for_ai()
+		var reused := RiposteModel.new(view)
+		var same := true
+		var moves := RulesEngine.get_valid_moves(view, GameState.PLAYER_AI)
+		for move in moves:
+			var simulation := view.clone()
+			CombatResolverModel.apply_move(simulation, move["row"], move["col"], move["stone_id"], GameState.PLAYER_AI)
+			var fresh := RiposteModel.new(simulation)
+			same = same and is_equal_approx(reused.threat(simulation), fresh.threat(simulation))
+		_check(same and moves.size() > 40,
+			"réutiliser les tirs inchangés donne la même riposte que tout recalculer (dieu %s)" % god_id)
 
 
 ## Les mêmes tirages de l'IA donnent le même coup, quelle que soit la vraie main.
@@ -298,6 +303,14 @@ func _test_endgame() -> void:
 		"le calcul exact pose la riposte et compte son aura d'Essaim (écart final divisé par deux)")
 	_check(_ai(CAREFUL).choose_move(aura.clone_for_ai()) == {"row": 0, "col": 1, "stone_id": "fx_ranged_target"},
 		"en fin de partie, l'IA occupe la case où la riposte aurait reçu une aura")
+	var after_move := aura.clone_for_ai()
+	CombatResolverModel.apply_move(after_move, 0, 1, "fx_ranged_target", GameState.PLAYER_AI)
+	after_move.human_hand = Opponent.possible_cards(after_move)
+	var random_before := after_move.random_state
+	_check(is_equal_approx(EndgameSearch.evaluate(after_move, 1), 2.5)
+		and after_move.human_hand == ["fx_swarm_bottom"] and after_move.random_state == random_before
+		and after_move.empty_playable_cells == 1,
+		"le service de fin de partie calcule la riposte sans modifier l'état reçu")
 	_restore_catalog(catalog)
 
 

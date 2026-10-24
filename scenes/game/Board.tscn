@@ -60,7 +60,7 @@ horizontal_alignment = 1
 
 [node name="HandView" type="GridContainer" parent="Root"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 560)
+custom_minimum_size = Vector2(0, 468)
 size_flags_vertical = 0
-columns = 3
+columns = 4
 script = ExtResource("5_handview")

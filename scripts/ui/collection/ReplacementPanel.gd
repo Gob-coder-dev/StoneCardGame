@@ -13,14 +13,9 @@ var _deck: Array = []
 var _incoming_id: String = ""
 
 
-## Le deck de 8 pierres tient sur deux rangées de 4.
-const COLUMNS := 4
-const CARD_SIZE := 220.0
-
-
 func _ready() -> void:
 	cancel_button.pressed.connect(close_panel)
-	deck_grid.columns = COLUMNS
+	deck_grid.columns = UITheme.DECK_COLUMNS
 	visible = false
 
 
@@ -52,10 +47,10 @@ func _rebuild() -> void:
 
 	for old_id in _deck:
 		var wrapper := VBoxContainer.new()
-		wrapper.custom_minimum_size = Vector2(CARD_SIZE + 8.0, CARD_SIZE + 70.0)
+		wrapper.custom_minimum_size = Vector2(UITheme.CARD_REPLACEMENT + 8.0, UITheme.CARD_REPLACEMENT + 70.0)
 		wrapper.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		wrapper.add_theme_constant_override("separation", 6)
-		var card := _make_card(StoneLoader.get_stone(old_id), StoneCard.OWNER_HUMAN, CARD_SIZE)
+		var card := _make_card(StoneLoader.get_stone(old_id), StoneCard.OWNER_HUMAN, UITheme.CARD_REPLACEMENT)
 		card.card_pressed.connect(_on_target_pressed)
 		var new_cost := DeckRules.replacement_cost(_deck, old_id, _incoming_id)
 		var valid := DeckRules.can_replace(_deck, old_id, _incoming_id, PlayerData.player_god_id)

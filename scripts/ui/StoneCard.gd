@@ -417,13 +417,21 @@ func _draw_cost_badge(frame_rect: Rect2, square_side: float) -> void:
 	var cost := StoneLoader.stone_cost(get_stone_id())
 	var radius := square_side * 0.085
 	var center := frame_rect.position + Vector2(radius * 0.35, radius * 0.35)
-	draw_circle(center, radius, Color("#6f1717"))
-	draw_arc(center, radius, 0, TAU, 24, COL_FRAME_LIGHT, max(2.0, square_side * 0.012))
 	var font := ThemeDB.fallback_font
 	var font_size := clampi(int(radius * 1.15), 12, 30)
 	var value := UIFormat.cost(cost)
 	var text_size := font.get_string_size(value, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size)
-	draw_string(font, center + Vector2(-text_size.x * 0.5, text_size.y * 0.32), value,
+	# Un coût en quarts de point peut avoir cinq caractères : le badge s'élargit
+	# plutôt que de réduire la police ou de laisser le texte dépasser du cercle.
+	var badge := Rect2(center - Vector2.ONE * radius,
+		Vector2(maxf(radius * 2.0, text_size.x + radius * 0.7), radius * 2.0))
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color("#6f1717")
+	style.border_color = COL_FRAME_LIGHT
+	style.set_border_width_all(maxi(2, int(square_side * 0.012)))
+	style.set_corner_radius_all(int(radius))
+	draw_style_box(style, badge)
+	draw_string(font, badge.get_center() + Vector2(-text_size.x * 0.5, text_size.y * 0.32), value,
 		HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color.WHITE)
 
 

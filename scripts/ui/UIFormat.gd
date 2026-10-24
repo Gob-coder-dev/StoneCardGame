@@ -2,8 +2,8 @@
 class_name UIFormat
 extends RefCounted
 
-## Points sans décimale inutile, avec la virgule française : « 12 » ou « 12,5 ».
+## Coûts en quarts de point, sans zéro final : « 12 », « 12,5 », « 12,75 ».
 static func cost(value: float) -> String:
 	if is_equal_approx(value, round(value)):
 		return str(int(round(value)))
-	return ("%.1f" % value).replace(".", ",")
+	return ("%.2f" % value).trim_suffix("0").replace(".", ",")

@@ -2,8 +2,7 @@
 extends Control
 
 const Badge := preload("res://scripts/ui/PowerBadge.gd")
-const Swarm := preload("res://scripts/engine/effects/SwarmSystem.gd")
-const Weakness := preload("res://scripts/engine/effects/WeaknessSystem.gd")
+const Effects := preload("res://scripts/domain/StoneEffects.gd")
 
 const GOD_RULES := {
 	"inari": [
@@ -67,9 +66,9 @@ static func _rule_values() -> Dictionary:
 		"random_cost": UIFormat.cost(StoneCostRules.RANDOM_BLADE_COST),
 		"shield_cost": UIFormat.cost(StoneCostRules.SHIELD_COST),
 		"long_cost": UIFormat.cost(StoneCostRules.LONG_BLADE_COST),
-		"swarm_cap": Swarm.SWARM_CAP,
-		"swarm_per_ally": Swarm.BLADES_PER_ALLY,
-		"corrosion": Weakness.CORROSION_AMOUNT,
+		"swarm_cap": Effects.SWARM_CAP,
+		"swarm_per_ally": Effects.BLADES_PER_ALLY,
+		"corrosion": Effects.CORROSION_AMOUNT,
 		"max_markers": BattleStone.MAX_MARKERS_PER_SIDE,
 	}
 

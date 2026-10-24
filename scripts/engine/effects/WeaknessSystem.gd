@@ -6,9 +6,6 @@ const SIDES = StoneSide.ALL
 const Board := preload("res://scripts/engine/combat/CombatBoard.gd")
 const Effects := preload("res://scripts/domain/StoneEffects.gd")
 
-## Force retirée sur chaque face par un Échec corrosif.
-const CORROSION_AMOUNT := 2
-
 ## Miasme : aura continue. Chaque pierre adverse voisine d'une pierre Miasme
 ## active perd 1 force sur chaque face, cumulée par pierre Miasme voisine.
 ## Recalculée après les captures de chaque coup : une carte posée à côté
@@ -26,7 +23,7 @@ static func update_miasma(state: GameState, source_row: int, source_col: int) ->
 	var needs_update := false
 	for index in range(state.board.size()):
 		var cell: Dictionary = state.board[index]
-		if _is_active_miasma(state, cell):
+		if Board.has_active_power(state, cell, Effects.WEAKEN_ADJACENT):
 			active[index] = 1
 			needs_update = true
 		else:
@@ -69,15 +66,8 @@ static func update_miasma(state: GameState, source_row: int, source_col: int) ->
 	return events
 
 
-static func _is_active_miasma(state: GameState, cell: Dictionary) -> bool:
-	var owner := int(cell["owner"])
-	var stone := Board.stone_at(cell)
-	return owner != GameState.PLAYER_NONE and stone != null \
-		and StoneLoader.has_effect(stone.stone_id, Effects.WEAKEN_ADJACENT) \
-		and StoneLoader.is_power_active_for_god(stone.stone_id, state.god_of(owner))
-
 ## Échec corrosif : chaque pierre adverse qui a résisté à l'attaque, de près
-## ou à distance, perd CORROSION_AMOUNT de force jusqu'à la fin du prochain
+## ou à distance, perd Effects.CORROSION_AMOUNT de force jusqu'à la fin du prochain
 ## coup du lanceur. Les pierres capturées, non attaquées ou hors de portée ne
 ## sont pas touchées.
 static func apply_failed_attack(state: GameState, row: int, col: int, player: int, attacks: Array) -> Array:
@@ -91,7 +81,7 @@ static func apply_failed_attack(state: GameState, row: int, col: int, player: in
 			if target == null or cell["owner"] == player or cell["owner"] == GameState.PLAYER_NONE:
 				continue
 			var weakness_before := target.weakness()
-			target.temporary_weakness += CORROSION_AMOUNT
+			target.temporary_weakness += Effects.CORROSION_AMOUNT
 			target.temporary_weakness_owner = player
 			effects.append(CombatEvents.weakness(CombatEvents.TEMPORARY_WEAKEN,
 				int(hit["row"]), int(hit["col"]), weakness_before, target.weakness(),

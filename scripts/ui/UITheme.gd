@@ -32,8 +32,11 @@ const HUD_PLATE_HEIGHT: int = 150  ## hauteur fixe des plaques joueur / adversai
 const HUD_CENTER_WIDTH: int = 90   ## zone fixe du symbole central
 const FONT_HUD_CENTER: int = 56    ## flèche du joueur actif ou « VS »
 
-## ─── Tailles des cartes dans les menus ──────────────────────────────────────
-const CARD_DECK: int = 210  ## 4 emplacements par rangée pour un deck de 8
+## ─── Disposition et tailles des cartes ──────────────────────────────────────
+const DECK_COLUMNS: int = 4
+const CARD_HAND: int = 220
+const CARD_REPLACEMENT: int = 220  ## Indépendante de la taille des cartes en main.
+const CARD_DECK: int = 210
 const CARD_COLLECTION: int = 300
 const CARD_INFO: int = 700
 

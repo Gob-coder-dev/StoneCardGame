@@ -2,8 +2,6 @@
 extends RefCounted
 signal card_requested(stone_id: String, wrapper: VBoxContainer, source: int)
 const Layout := preload("res://scripts/ui/collection/CardGridLayout.gd")
-## Emplacements du deck par rangée : deux rangées de 4 pour un deck de 8.
-const SLOTS_PER_ROW := 4
 var deck_rows: VBoxContainer
 var _current_deck: Array = []
 
@@ -18,7 +16,7 @@ func _refresh_deck() -> void:
 	Layout.clear_children(deck_rows)
 	var row: HBoxContainer = null
 	for index in range(DeckRules.DECK_SIZE):
-		if index % SLOTS_PER_ROW == 0:
+		if index % UITheme.DECK_COLUMNS == 0:
 			row = Layout.make_card_row()
 			deck_rows.add_child(row)
 		row.add_child(_make_deck_slot(index, true))

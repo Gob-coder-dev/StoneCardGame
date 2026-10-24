@@ -25,6 +25,44 @@ func _attack_point(row: int, col: int, side: String) -> Vector2:
 	var slot: Panel = _board.slot_at(row, col)
 	return slot.position + slot.size * 0.5 - FACE_DIRECTIONS[side] * slot.size.x * 0.48
 
+## Fusionne une cible du premier état avant au dernier état après, puis
+## prépare un groupe visuel par source. Les événements du moteur restent intacts.
+func weakness_groups(events: Array) -> Array:
+	var merged := {}
+	var order: Array = []
+	for event in events:
+		var key := "%d:%d" % [event["row"], event["col"]]
+		if merged.has(key):
+			merged[key]["weakness_after"] = event["weakness_after"]
+			continue
+		merged[key] = event.duplicate()
+		order.append(key)
+	var by_source := {}
+	var sources: Array = []
+	for key in order:
+		var event: Dictionary = merged[key]
+		var source_key := "%d:%d" % [int(event.get("source_row", -1)), int(event.get("source_col", -1))]
+		if not by_source.has(source_key):
+			by_source[source_key] = []
+			sources.append(source_key)
+		by_source[source_key].append(event)
+	var result: Array = []
+	for source_key in sources:
+		var group: Array = by_source[source_key]
+		var first: Dictionary = group[0]
+		var row := int(first.get("source_row", -1))
+		var col := int(first.get("source_col", -1))
+		if row < 0 or col < 0:
+			continue
+		var source := _board.card_at(row, col)
+		if source == null:
+			continue
+		var targets := weakness_targets(group)
+		if not targets.is_empty():
+			result.append({"source": source, "targets": targets})
+	return result
+
+
 func weakness_targets(events: Array) -> Array:
 	var targets: Array = []
 	for event in events:

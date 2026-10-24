@@ -13,7 +13,7 @@
       "name": "Izanami",
       "family_name": "Déclin",
       "color": "#9b6bc7",
-      "description": "Affaiblit les pierres déjà en jeu : définitivement autour de la pierre posée, ou jusqu'à la fin du prochain coup du lanceur pour celles qui résistent à son attaque."
+      "description": "Le Miasme affaiblit de 1 les voisines adverses tant que son aura est active ; l'Échec corrosif retire 2 de force aux pierres qui résistent à l'attaque, jusqu'à la fin du prochain coup du lanceur."
     },
     {
       "id": "hachiman",

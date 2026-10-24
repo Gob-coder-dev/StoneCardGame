@@ -80,7 +80,7 @@ au doigt et à la souris. Elle ne sauvegarde aucun
 changement de deck ou de statistiques.
 
 Chaque suite se termine par un résumé, par exemple
-`GOD_SYSTEM_CHECKS: 300 passed, 0 failed, 0 Godot errors` ou
+`GOD_SYSTEM_CHECKS: 319 passed, 0 failed, 0 Godot errors` ou
 `TACTILE : 50 vérifications, 0 échec(s), 0 erreur(s) Godot.`, et renvoie le code
 de sortie 1 en cas de problème. Sont comptés comme problèmes : une vérification
 ratée, une suite qui ne compile pas, une erreur ou un avertissement Godot non
@@ -226,7 +226,7 @@ coûtent chacun 0,5 point, une lame longue 1,25 point, et le pouvoir de famille
 ajoute le supplément `power_cost` déclaré sur la carte dans `stones.json`
 (depuis l'équilibrage 4×4 : 1 pour Pillage, 0,5 pour Essaim et Rempart, 0 pour
 Déclin ; Fortune et Horizon paient déjà leurs lames roses et bleues). Un deck de huit pierres
-ne peut pas dépasser `DECK_BUDGET = 80` points. Les demi-points sont conservés par
+ne peut pas dépasser `DECK_BUDGET = 80` points. Les quarts de point sont conservés par
 les règles et affichés sans arrondi dans les menus.
 
 ## Les 6 NPCs
@@ -252,7 +252,12 @@ Une seule IA joue tous les adversaires, réglée par le champ `"ai"` de `npcs.js
   coup qui capture le plus ; sinon une erreur crédible, tirée au sort en
   favorisant les coups qui rapportent ;
 - niveau 3, `{"precision": 1.0, "anticipation": true}` : retire de chaque coup la
-  riposte attendue du joueur, puis calcule exactement les deux derniers coups.
+  riposte attendue du joueur, puis explore les placements des deux derniers coups.
+
+`MoveEvaluator` coordonne la simulation et sa valeur ; `RiposteModel` prépare
+les tirs adverses et réutilise ceux qui n'ont pas changé ; `EndgameSearch`
+explore la fin de partie. La main adverse reste supposée et le hasard est
+échantillonné, même lorsque les placements restants sont tous explorés.
 
 L'IA ne voit ni la main du joueur ni le prochain tirage réel : elle suppose les
 cartes de son dieu et les neutres, moins celles déjà posées. D'autres niveaux se
