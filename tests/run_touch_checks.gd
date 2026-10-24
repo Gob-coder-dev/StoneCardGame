@@ -56,6 +56,7 @@ func _run() -> void:
 	await _check_rules_scroll()
 	await _check_deck_slots()
 	await _check_collection()
+	await _check_evolution_inputs()
 	await _check_button_inputs()
 	await _check_main_menu()
 	await _check_other_menus()
@@ -203,6 +204,67 @@ func _check_collection() -> void:
 		_check(scroll.scroll_vertical == modal_scroll, "fenêtre : les gestes ne traversent pas le fond modal")
 		await _tap(Vector2(200, 100))
 		_check(not page.info_sheet.visible, "fenêtre : toucher le fond ferme la fiche")
+	await _remove(page)
+
+
+func _check_evolution_inputs() -> void:
+	var page := await _open_scene("res://scenes/menus/CollectionScreen.tscn")
+	page._select_deck(1)
+	await _settle()
+	var scroll: ScrollContainer = page.scroll
+	scroll.ensure_control_visible(page.level_button)
+	await _settle()
+	await _tap(_center(page.level_button))
+	_check(page.level_menu.visible, "niveaux : le bouton global ouvre ses quatre choix au toucher")
+	var fourth: Button = page.get_node("Content/Scroll/Page/LevelMenu/Levels").get_child(3)
+	scroll.ensure_control_visible(fourth)
+	await _settle()
+	var before := scroll.scroll_vertical
+	await _swipe(_center(fourth), Vector2(0, -150))
+	_check(page._preview_level == 1 and scroll.scroll_vertical > before + 50,
+		"niveaux : glisser depuis un choix fait défiler sans l'activer")
+	await _reset_scroll(scroll)
+	scroll.ensure_control_visible(fourth)
+	await _settle()
+	await _tap(_center(fourth))
+	_check(page._preview_level == 4 and not page.level_menu.visible and PlayerData.get_active_deck().is_empty(),
+		"niveaux : sélectionner quatre modifie uniquement l'aperçu de collection")
+	var card: StoneCard = null
+	for wrapper in page.collection_rows.get_child(0).get_children():
+		if wrapper.get_child(0).get_stone_id() == "seed_balanced_n4":
+			card = wrapper.get_child(0)
+	if card == null:
+		_check(false, "niveaux : la forme quatre est disponible dans la collection")
+		await _remove(page)
+		return
+	scroll.ensure_control_visible(card)
+	await _settle()
+	await _tap(_center(card))
+	var info_button: Button = page._action_drawer.info_button
+	scroll.ensure_control_visible(info_button)
+	await _settle()
+	await _tap(_center(info_button))
+	var info: StoneInfoSheet = page.info_sheet
+	_check(info.visible and info._shown_variant == "seed_balanced_n4", "niveaux : Infos ouvre au toucher la forme affichée")
+	var second: Button = info.get_node("InfoPanel/InfoContent/Levels").get_child(1)
+	await _tap(_center(second))
+	_check(info._shown_variant == "seed_balanced_n2" and PlayerData.get_active_deck().is_empty(),
+		"niveaux : toucher deux dans Infos consulte ce niveau sans l'équiper")
+	info.description_label.custom_minimum_size.y = 900
+	await _settle()
+	var info_scroll: ScrollContainer = info.get_node("InfoPanel/InfoContent/Scroll")
+	var underlying := scroll.scroll_vertical
+	await _swipe(_point(info_scroll, Vector2(100, 300)), Vector2(0, -180))
+	_check(info_scroll.scroll_vertical > 60 and scroll.scroll_vertical == underlying,
+		"niveaux : une fiche longue défile au doigt sans déplacer la collection derrière")
+	await _swipe(_center(info.use_button), Vector2(0, -120))
+	_check(info.visible and PlayerData.get_active_deck().is_empty(), "niveaux : glisser sur Utiliser n'équipe pas la carte")
+	await _tap(_center(info.use_button))
+	_check(not info.visible and PlayerData.get_active_deck() == ["seed_balanced_n2"]
+		and PlayerData.get_deck("inari", 0) == ProfileFixture.DECK,
+		"niveaux : Utiliser enregistre une seule fois le niveau consulté dans le bon emplacement")
+	PlayerData.set_player_deck([])
+	page._select_deck(0)
 	await _remove(page)
 
 

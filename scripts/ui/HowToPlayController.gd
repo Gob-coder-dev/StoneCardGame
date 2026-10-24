@@ -136,4 +136,8 @@ En cas d'[color=#f0d88a]égalité[/color], personne ne capture. Une pierre peut 
 
 Tu équipes un dieu dans le menu Cartes. Ton deck peut contenir les cartes neutres et les cartes propres à sa famille. Chaque dieu possède trois decks indépendants, accessibles par les boutons 1, 2 et 3. Chaque modification est sauvegardée automatiquement. Changer de dieu retrouve son dernier deck sélectionné, sans modifier les decks des autres dieux. Le deck sélectionné est celui utilisé en combat ; il doit être complet et respecter le budget.
 
+[color=#e8c050][b]Formes et niveaux[/b][/color]
+Les nouvelles lignées ont plusieurs formes : quatre niveaux pour une commune, trois pour une rare, deux pour une épique et un pour une légendaire. Les anciennes cartes restent disponibles à leur niveau unique pendant la transition du catalogue.
+Le bouton « Afficher : niveau » change uniquement l'aperçu de la collection. Une carte qui n'a pas ce niveau reste affichée à son maximum. Dans Infos, les boutons numérotés permettent de consulter chaque forme. « Utiliser » équipe précisément la forme consultée, si le budget le permet. Un même monstre ne peut apparaître qu'une fois dans un deck, tous niveaux confondus. Les formes sont actuellement disponibles sans système de déblocage.
+
 Le contour de chaque pierre reprend la couleur de sa famille. Les logos en haut à droite annoncent ses pouvoirs. Voici les mêmes pictogrammes et leur fonctionnement :"""

@@ -16,8 +16,11 @@ const GODS_PATH: String = "res://data/gods.json"
 ## Dictionnaire indexé par stone_id -> dict complet de la pierre
 var _stones: Dictionary = {}
 
-## Liste ordonnée de toutes les pierres (pour affichage collection)
+## Liste ordonnée de toutes les formes ; la collection les regroupe par lignée.
 var _stones_list: Array = []
+## Une lignée contient ses identifiants de formes dans l'ordre des niveaux.
+var _lineages: Dictionary = {}
+var _legacy_ids: Dictionary = {}
 
 ## Dictionnaire indexé par npc_id -> dict complet du NPC
 var _npcs: Dictionary = {}
@@ -52,10 +55,45 @@ func _load_stones() -> void:
 		return
 
 	for stone in parsed["stones"]:
-		_stones[stone["id"]] = stone
-		_stones_list.append(stone)
+		_index_stone(stone, str(stone["id"]), 1, 1)
+	for lineage in parsed.get("lineages", []):
+		_index_lineage(lineage)
+	_legacy_ids = parsed.get("legacy_ids", {}).duplicate()
 
 	print("StoneLoader: %d pierres chargées." % _stones_list.size())
+
+
+func _index_stone(definition: Dictionary, lineage: String, level: int, maximum: int) -> void:
+	var stone := definition.duplicate(true)
+	stone["lineage_id"] = lineage
+	stone["level"] = level
+	stone["max_level"] = maximum
+	_stones[stone["id"]] = stone
+	_stones_list.append(stone)
+	if not _lineages.has(lineage):
+		_lineages[lineage] = []
+	_lineages[lineage].append(stone["id"])
+
+
+func _index_lineage(lineage: Dictionary) -> void:
+	var problems := ContentChecks.lineage_problems(lineage)
+	if problems.is_empty():
+		for form in lineage["levels"]:
+			if _stones.has(str(form["id"])):
+				problems.append("identifiant de forme déjà utilisé '%s'." % form["id"])
+	if _lineages.has(str(lineage.get("id", ""))):
+		problems.append("lignée déjà utilisée '%s'." % lineage.get("id", ""))
+	if not problems.is_empty():
+		for problem in problems:
+			push_error("StoneLoader: " + problem)
+		return
+	var common := lineage.duplicate(true)
+	common.erase("levels")
+	var forms: Array = lineage["levels"]
+	for index in range(forms.size()):
+		var definition := common.duplicate(true)
+		definition.merge(forms[index], true)
+		_index_stone(definition, str(lineage["id"]), index + 1, forms.size())
 
 
 func _load_npcs() -> void:
@@ -105,6 +143,36 @@ func get_stone(stone_id: String) -> Dictionary:
 ## reste protégé.
 func has_stone(stone_id: String) -> bool:
 	return _stones.has(stone_id)
+
+
+func stone_lineage(stone_id: String) -> String:
+	return str(_stones.get(stone_id, {}).get("lineage_id", stone_id))
+
+
+func stone_level(stone_id: String) -> int:
+	return int(_stones.get(stone_id, {}).get("level", 1))
+
+
+func lineage_max_level(lineage_id: String) -> int:
+	return _lineages.get(lineage_id, []).size()
+
+
+func variant_id(lineage_id: String, level: int) -> String:
+	var forms: Array = _lineages.get(lineage_id, [])
+	return str(forms[level - 1]) if StoneEvolutionRules.is_valid_level(level, forms.size()) else ""
+
+
+func variant_ids(lineage_id: String) -> Array:
+	return _lineages.get(lineage_id, []).duplicate()
+
+
+func preview_variant(stone_id: String, requested: int) -> String:
+	var lineage := stone_lineage(stone_id)
+	return variant_id(lineage, StoneEvolutionRules.preview_level(requested, lineage_max_level(lineage)))
+
+
+func resolve_saved_id(stone_id: String) -> String:
+	return stone_id if has_stone(stone_id) else str(_legacy_ids.get(stone_id, stone_id))
 
 
 func has_effect(stone_id: String, effect: String) -> bool:
@@ -203,6 +271,18 @@ func get_stones_for_god(god_id: String) -> Array:
 	return result
 
 
+## Une seule entrée par monstre ; les formes sont consultées via variant_id().
+func get_lineages_for_god(god_id: String) -> Array:
+	var result: Array = []
+	var seen := {}
+	for stone in get_stones_for_god(god_id):
+		var lineage := stone_lineage(str(stone["id"]))
+		if not seen.has(lineage):
+			seen[lineage] = true
+			result.append(stone)
+	return result
+
+
 ## Migration des sauvegardes antérieures au système de dieux : choisit le dieu
 ## qui rend le plus de cartes de l'ancien deck encore accessibles.
 func best_god_for_deck(stone_ids: Array) -> String:
@@ -212,7 +292,7 @@ func best_god_for_deck(stone_ids: Array) -> String:
 		var god_id := str(god.get("id", ""))
 		var available := 0
 		for raw_id in stone_ids:
-			if is_stone_available_to_god(str(raw_id), god_id):
+			if is_stone_available_to_god(resolve_saved_id(str(raw_id)), god_id):
 				available += 1
 		if available > best_count:
 			best_count = available

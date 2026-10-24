@@ -31,8 +31,8 @@ static func deck_cost(stone_ids: Array) -> float:
 static func sanitize_deck(stone_ids: Array, god_id: String = "") -> Array:
 	var clean: Array = []
 	for raw_id in stone_ids:
-		var stone_id := str(raw_id)
-		if not StoneLoader.has_stone(stone_id) or clean.has(stone_id):
+		var stone_id := StoneLoader.resolve_saved_id(str(raw_id))
+		if not StoneLoader.has_stone(stone_id) or lineage_index(clean, StoneLoader.stone_lineage(stone_id)) >= 0:
 			continue
 		if god_id != "" and not StoneLoader.is_stone_available_to_god(stone_id, god_id):
 			continue
@@ -49,7 +49,7 @@ static func validate_deck(stone_ids: Array, require_full: bool = true, god_id: S
 		var stone_id := str(raw_id)
 		if not StoneLoader.has_stone(stone_id):
 			return {"valid": false, "reason": "Pierre inconnue : %s" % stone_id}
-		if unique.has(stone_id):
+		if lineage_index(unique, StoneLoader.stone_lineage(stone_id)) >= 0:
 			return {"valid": false, "reason": "Une pierre ne peut apparaître qu'une fois."}
 		if god_id != "" and not StoneLoader.is_stone_available_to_god(stone_id, god_id):
 			return {"valid": false, "reason": "Cette pierre appartient à un autre dieu."}
@@ -79,7 +79,7 @@ static func try_add(stone_ids: Array, stone_id: String, god_id: String = "") -> 
 	var deck := stone_ids.duplicate()
 	if not StoneLoader.has_stone(stone_id):
 		return _operation_result(false, deck, REASON_UNKNOWN)
-	if deck.has(stone_id):
+	if lineage_index(deck, StoneLoader.stone_lineage(stone_id)) >= 0:
 		return _operation_result(false, deck, REASON_DUPLICATE)
 	if god_id != "" and not StoneLoader.is_stone_available_to_god(stone_id, god_id):
 		return _operation_result(false, deck, REASON_GOD)
@@ -109,13 +109,29 @@ static func try_replace(stone_ids: Array, old_id: String, new_id: String, god_id
 		return _operation_result(false, deck, REASON_UNKNOWN)
 	if god_id != "" and not StoneLoader.is_stone_available_to_god(new_id, god_id):
 		return _operation_result(false, deck, REASON_GOD)
-	if new_id != old_id and deck.has(new_id):
+	var duplicate_index := lineage_index(deck, StoneLoader.stone_lineage(new_id))
+	if duplicate_index >= 0 and duplicate_index != index:
 		return _operation_result(false, deck, REASON_DUPLICATE)
 	deck[index] = new_id
 	var cost := deck_cost(deck)
 	if cost > DECK_BUDGET:
 		return _operation_result(false, stone_ids.duplicate(), REASON_BUDGET, cost)
 	return _operation_result(true, deck, "", cost)
+
+
+static func lineage_index(stone_ids: Array, lineage_id: String) -> int:
+	for index in range(stone_ids.size()):
+		if StoneLoader.stone_lineage(str(stone_ids[index])) == lineage_id:
+			return index
+	return -1
+
+
+static func try_set_level(stone_ids: Array, lineage_id: String, level: int, god_id: String = "") -> Dictionary:
+	var index := lineage_index(stone_ids, lineage_id)
+	if index < 0:
+		return _operation_result(false, stone_ids.duplicate(), REASON_MISSING)
+	var variant := StoneLoader.variant_id(lineage_id, level)
+	return try_replace(stone_ids, str(stone_ids[index]), variant, god_id)
 
 
 static func _operation_result(success: bool, deck: Array, reason: String, cost: float = -1.0) -> Dictionary:

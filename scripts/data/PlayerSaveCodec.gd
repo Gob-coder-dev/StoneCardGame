@@ -1,6 +1,6 @@
 ## Format de sauvegarde et migration des profils, sans lecture/écriture disque.
 extends RefCounted
-const VERSION := 2
+const VERSION := 3
 
 static func default_stats() -> Dictionary:
 	return {"games_played": 0, "wins": 0, "losses": 0, "draws": 0,

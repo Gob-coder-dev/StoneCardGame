@@ -24,7 +24,7 @@ conserve uniquement les informations temporaires du combat.
 data/                  Définitions complètes : cartes, dieux et adversaires
 scripts/
   data/                Catalogue, validation, profil sauvegardé et BattleContext
-  domain/              DeckRules, StoneCostRules, StoneSide et StoneEffects
+  domain/              DeckRules, StoneEvolutionRules, coûts, faces et pouvoirs
   engine/              État, tours, validation et résolution générale
     combat/            Attaques, événements et ticket de présentation
     effects/           Pose, Fortune, Déclin, Pillage et Essaim
@@ -81,8 +81,8 @@ profil et d'interface écrivent dans des fichiers temporaires dédiés, puis les
 suppriment ; la sauvegarde personnelle du joueur reste intacte.
 
 Chaque suite se termine par un résumé, par exemple
-`GOD_SYSTEM_CHECKS: 354 passed, 0 failed, 0 Godot errors` ou
-`TACTILE : 55 vérifications, 0 échec(s), 0 erreur(s) Godot.`, et renvoie le code
+`GOD_SYSTEM_CHECKS: 393 passed, 0 failed, 0 Godot errors` ou
+`TACTILE : 63 vérifications, 0 échec(s), 0 erreur(s) Godot.`, et renvoie le code
 de sortie 1 en cas de problème. Sont comptés comme problèmes : une vérification
 ratée, une suite qui ne compile pas, une erreur ou un avertissement Godot non
 annoncé par le test, et un dépassement du temps limite (300 s et 120 s de jeu).
@@ -158,7 +158,8 @@ page Profil & Stats, où ce pseudo peut être modifié (2 à 16 caractères).
 Dans l'écran Cartes, le deck et la collection appartiennent au même défilement.
 La collection montre seulement les cartes absentes du deck : une carte retirée
 du deck y revient à sa place. Elle est triée par FAMILLE par défaut (les cartes
-du dieu, puis les neutres, chaque groupe par nom), ou par coût, rareté ou nom ;
+du dieu, puis les neutres, chaque groupe du moins cher au plus cher), ou par
+coût, rareté ou nom ;
 les ex aequo sont toujours rangés par nom.
 Le panneau supérieur permet de choisir l'un des six dieux. Chacun possède trois
 decks indépendants, sélectionnés par les boutons **1, 2, 3** sous le choix du dieu.
@@ -175,14 +176,43 @@ mais le combat exige huit pierres et un coût de 80 points au maximum.
 
 L'accueil et le combat utilisent le deck sélectionné. Les cartes des dix-huit
 emplacements, le dieu actif et le numéro choisi pour chaque dieu sont conservés
-dans `user://savegame.json`. Le format version 2 migre l'ancien deck vers
+dans `user://savegame.json`. Le format version 3 conserve les identifiants de
+formes et les niveaux choisis. Il migre toujours l'ancien deck vers
 l'emplacement 1 de son dieu ; pseudo et statistiques sont conservés, les autres
 emplacements démarrent vides. En cas d'échec d'écriture, la modification est
 annulée et un message d'erreur apparaît.
 
+## Lignées et évolutions
+
+Le catalogue conserve ses 107 cartes historiques à niveau unique pendant la
+transition. Huit lignées de départ ajoutent 24 formes : Germe de pierre (neutre),
+Dévoracle et Biface (Fortune), Éclat cuirassé (Rempart), Longuépine (Horizon),
+Porte-fièvre (Déclin), Nœud vivant (Essaim) et Collecteur Zéro (Pillage).
+Les illustrations définitives restent à créer ; chaque niveau dispose déjà de
+son propre champ `asset`.
+
+Les nouvelles communes ont quatre niveaux, les rares trois, les épiques deux et
+les légendaires un seul. Les anciennes « peu communes » sont conservées telles
+quelles jusqu'à la définition du catalogue final. Toutes les formes des nouvelles
+lignées sont disponibles ; aucun système d'expérience ou de déblocage n'est ajouté.
+
+Le bouton **Afficher : niveau 1 à 4** change seulement l'aperçu de la collection.
+Le niveau affiché sature au maximum de chaque lignée. La collection conserve
+une seule entrée par monstre ; ses nœuds sont actualisés et réordonnés selon le
+coût de la forme affichée.
+
+Dans **Infos**, les boutons numérotés consultent les formes existantes et
+**Utiliser** équipe exactement celle montrée. Si la lignée est déjà équipée,
+son niveau change au même emplacement. Un deck accepte une seule forme de chaque
+lignée. Un deck complet ouvre le remplacement avec la forme choisie ; budget et
+écriture disque restent vérifiés avant toute modification effective.
+
+La direction visuelle future est décrite dans
+[Direction artistique — Bestiaire d'horreur](docs/DIRECTION_ARTISTIQUE_MONSTRES.md).
+
 ---
 
-## Les 107 pierres (par rareté)
+## Les 107 pierres historiques (par rareté)
 
 | Rareté    | Pierres |
 |-----------|---------|

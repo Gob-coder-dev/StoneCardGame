@@ -16,11 +16,11 @@ static func possible_cards(state: GameState) -> Array[String]:
 	var placed := {}
 	for cell in state.board:
 		if cell["placed_by"] == GameState.PLAYER_HUMAN:
-			placed[cell["stone_id"]] = true
+			placed[StoneLoader.stone_lineage(str(cell["stone_id"]))] = true
 	var result: Array[String] = []
 	for definition in definitions:
 		var stone_id := str(definition["id"])
-		if not placed.has(stone_id):
+		if not placed.has(StoneLoader.stone_lineage(stone_id)):
 			result.append(stone_id)
 	return result
 
@@ -51,6 +51,56 @@ static func expected_best(ranked_values: Array[float], weights: PackedFloat64Arr
 	for rank in range(mini(ranked_values.size(), weights.size())):
 		total += ranked_values[rank] * weights[rank]
 	return total
+
+
+## Hypothèse explicite : lignées équiprobables sans remise, puis un niveau
+## équiprobable par lignée. Une main ne contient jamais deux formes du même être.
+## La distribution du meilleur résultat est calculée exactement, sans énumérer
+## les mains : coefficient de degré h du produit ∏(1 + F_lignée * t).
+static func expected_from_variants(card_ids: Array, values: Array[float], hand_size: int, prefer_high: bool = true) -> float:
+	if card_ids.is_empty() or hand_size <= 0:
+		return 0.0
+	var groups := {}
+	var group_ids: Array[String] = []
+	for card in card_ids:
+		var group := StoneLoader.stone_lineage(str(card))
+		group_ids.append(group)
+		groups[group] = int(groups.get(group, 0)) + 1
+	var held := mini(hand_size, groups.size())
+	var order: Array[int] = []
+	for index in range(card_ids.size()):
+		order.append(index)
+	order.sort_custom(func(a: int, b: int): return values[a] < values[b] if prefer_high else values[a] > values[b])
+	# Le cas historique garde son calcul et son coût, sans polynôme supplémentaire.
+	if groups.size() == card_ids.size():
+		var ranked: Array[float] = []
+		for index in order:
+			ranked.push_front(values[index])
+		return expected_best(ranked, rank_weights(ranked.size(), held))
+	var denominator := 1.0
+	for index in range(1, held + 1):
+		denominator *= float(groups.size() - held + index) / index
+	var coefficients := PackedFloat64Array()
+	coefficients.resize(held + 1)
+	coefficients[0] = 1.0
+	var fractions := {}
+	var previous_probability := 0.0
+	var expected := 0.0
+	for index in order:
+		var group := group_ids[index]
+		var previous_fraction := float(fractions.get(group, 0.0))
+		var next_fraction := previous_fraction + 1.0 / int(groups[group])
+		# Retirer l'ancien facteur puis ajouter le nouveau, en O(taille de main).
+		var quotient_previous := 1.0
+		for degree in range(1, held + 1):
+			var quotient := coefficients[degree] - previous_fraction * quotient_previous
+			coefficients[degree] = quotient + next_fraction * quotient_previous
+			quotient_previous = quotient
+		fractions[group] = next_fraction
+		var probability := clampf(coefficients[held] / denominator, previous_probability, 1.0)
+		expected += values[index] * (probability - previous_probability)
+		previous_probability = probability
+	return expected
 
 
 ## Pierres prêtes à attaquer, une liste d'orientations par carte. Un pile ou

@@ -13,7 +13,7 @@ var _possible_cards: Array[String] = []
 var _shots: Array[BattleStoneModel] = []
 ## Par carte : les indices des tirs de chacune de ses orientations possibles.
 var _threat_cards: Array = []
-var _threat_weights := PackedFloat64Array()
+var _hand_size := 0
 var _shot_sides := PackedInt32Array()
 ## Par case et direction : les cases traversées jusqu'au bord.
 var _lines: Array = []
@@ -27,7 +27,7 @@ func _init(state: GameState) -> void:
 	_state = state
 	_possible_cards = Opponent.possible_cards(state)
 	_prepare_threats()
-	_threat_weights = Opponent.rank_weights(_possible_cards.size(), state.human_hand.size())
+	_hand_size = state.human_hand.size()
 
 
 func _prepare_threats() -> void:
@@ -98,7 +98,7 @@ static func make_shot(side: String, normal_count: int, long_count: int) -> Battl
 ## Espérance de la meilleure riposte d'une main cachée. Conserve exactement
 ## les mêmes poids et orientations que le calcul sans réutilisation des tirs.
 func threat(simulation: GameState) -> float:
-	if _threat_cards.is_empty() or _threat_weights.is_empty():
+	if _threat_cards.is_empty() or _hand_size <= 0:
 		return 0.0
 	var best := PackedFloat64Array()
 	best.resize(_threat_cards.size())
@@ -140,6 +140,4 @@ func threat(simulation: GameState) -> float:
 	var values: Array[float] = []
 	for value in best:
 		values.append(value)
-	values.sort()
-	values.reverse()
-	return Opponent.expected_best(values, _threat_weights)
+	return Opponent.expected_from_variants(_possible_cards, values, _hand_size)

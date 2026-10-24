@@ -10,11 +10,13 @@ const ACTION_DRAWER_SCENE := preload("res://scenes/ui/CardActionDrawer.tscn")
 const DeckPanelView := preload("res://scripts/ui/collection/DeckPanel.gd")
 const CollectionGridView := preload("res://scripts/ui/collection/CollectionGrid.gd")
 const GodSelectorView := preload("res://scripts/ui/collection/GodSelector.gd")
-const DeckSlotSelectorView := preload("res://scripts/ui/collection/DeckSlotSelector.gd")
+const NumberedSelector := preload("res://scripts/ui/collection/NumberedSelector.gd")
 var _deck_panel: RefCounted
 var _collection_grid: RefCounted
 var _god_selector: RefCounted
-var _deck_slot_selector: DeckSlotSelectorView
+var _deck_slot_selector: NumberedSelector
+var _level_selector: NumberedSelector
+var _preview_level := 1
 
 @onready var scroll: ScrollContainer = $Content/Scroll
 @onready var god_button: Button = $Content/Scroll/Page/GodPanel/GodContent/GodButton
@@ -30,6 +32,8 @@ var _deck_slot_selector: DeckSlotSelectorView
 @onready var status_label: Label = $Content/StatusLabel
 @onready var info_sheet: StoneInfoSheet = $StoneInfoSheet
 @onready var replacement_panel: ReplacementPanel = $ReplacementPanel
+@onready var level_button: Button = $Content/Scroll/Page/LevelButton
+@onready var level_menu: PanelContainer = $Content/Scroll/Page/LevelMenu
 
 var _current_deck: Array = []
 var _sort_mode: int = SortMode.FAMILY
@@ -46,11 +50,16 @@ func _ready() -> void:
 	_deck_panel = DeckPanelView.new(deck_rows)
 	_collection_grid = CollectionGridView.new(collection_rows)
 	_god_selector = GodSelectorView.new(god_button, god_description, god_menu, god_options)
-	_deck_slot_selector = DeckSlotSelectorView.new($Content/Scroll/Page/DeckSlots)
+	_deck_slot_selector = NumberedSelector.new($Content/Scroll/Page/DeckSlots, DeckRules.DECKS_PER_GOD, 0)
+	_level_selector = NumberedSelector.new($Content/Scroll/Page/LevelMenu/Levels, StoneEvolutionRules.MAX_PREVIEW_LEVEL)
 	_deck_panel.card_requested.connect(_open_card_actions)
 	_collection_grid.card_requested.connect(_open_card_actions)
 	_god_selector.god_selected.connect(_select_god)
-	_deck_slot_selector.slot_selected.connect(_select_deck)
+	_deck_slot_selector.value_selected.connect(_select_deck)
+	_level_selector.value_selected.connect(_select_preview_level)
+	_level_selector.refresh(_preview_level)
+	level_button.pressed.connect(_toggle_level_menu)
+	info_sheet.use_requested.connect(_request_use)
 	_setup_sort()
 	sort_button.pressed.connect(_toggle_sort_menu)
 	replacement_panel.replacement_requested.connect(_on_replacement_requested)
@@ -58,8 +67,27 @@ func _ready() -> void:
 	_refresh_all(false, true)
 
 
+func _toggle_level_menu() -> void:
+	_close_action_drawer()
+	god_menu.visible = false
+	sort_menu.visible = false
+	_update_sort_labels()
+	_refresh_god_panel()
+	level_menu.visible = not level_menu.visible
+
+
+func _select_preview_level(level: int) -> void:
+	_close_action_drawer()
+	_preview_level = level
+	level_menu.visible = false
+	level_button.text = "AFFICHER : NIVEAU %d ▼" % level
+	_level_selector.refresh(level)
+	_collection_grid.set_preview_level(level)
+
+
 func _toggle_god_menu() -> void:
 	_close_action_drawer()
+	level_menu.visible = false
 	sort_menu.visible = false
 	_update_sort_labels()
 	god_menu.visible = not god_menu.visible
@@ -102,6 +130,7 @@ func _close_card_panels() -> void:
 	info_sheet.close_sheet()
 	replacement_panel.close_panel()
 	_replacement_stone_id = ""
+	level_menu.visible = false
 
 
 func _setup_sort() -> void:
@@ -114,6 +143,7 @@ func _setup_sort() -> void:
 
 func _toggle_sort_menu() -> void:
 	_close_action_drawer()
+	level_menu.visible = false
 	god_menu.visible = false
 	_refresh_god_panel()
 	sort_menu.visible = not sort_menu.visible
@@ -179,6 +209,7 @@ func _open_card_actions(stone_id: String, wrapper: VBoxContainer, source: int) -
 		_close_action_drawer()
 		return
 	_close_action_drawer()
+	level_menu.visible = false
 	god_menu.visible = false
 	_refresh_god_panel()
 	sort_menu.visible = false
@@ -210,20 +241,32 @@ func _close_action_drawer() -> void:
 
 
 func _on_info_requested(stone_id: String) -> void:
-	info_sheet.open_for(StoneLoader.get_stone(stone_id))
+	info_sheet.open_for(stone_id, _current_deck)
 
 
 func _on_primary_requested(stone_id: String, source: CardActionDrawer.Source) -> void:
 	if source == CardActionDrawer.Source.DECK:
 		_commit_operation(DeckRules.try_remove(_current_deck, stone_id))
 		return
-	var operation := DeckRules.try_add(_current_deck, stone_id, PlayerData.player_god_id)
+	_request_use(stone_id)
+
+
+func _request_use(stone_id: String) -> void:
+	var lineage := StoneLoader.stone_lineage(stone_id)
+	var index := DeckRules.lineage_index(_current_deck, lineage)
+	var operation: Dictionary
+	if index >= 0:
+		operation = DeckRules.try_set_level(_current_deck, lineage, StoneLoader.stone_level(stone_id), PlayerData.player_god_id)
+	else:
+		operation = DeckRules.try_add(_current_deck, stone_id, PlayerData.player_god_id)
 	if operation["success"]:
-		_commit_operation(operation)
+		if _commit_operation(operation):
+			info_sheet.close_sheet()
 		return
 	match operation["reason"]:
 		DeckRules.REASON_FULL:
 			_close_action_drawer()
+			info_sheet.close_sheet()
 			_replacement_stone_id = stone_id
 			replacement_panel.open_for(_current_deck, stone_id)
 		DeckRules.REASON_BUDGET:
@@ -259,6 +302,9 @@ func _commit_operation(operation: Dictionary) -> bool:
 func _show_error(message: String) -> void:
 	if replacement_panel.visible:
 		replacement_panel.show_error(message)
+		return
+	if info_sheet.visible:
+		info_sheet.show_error(message)
 		return
 	status_label.text = message
 	status_label.add_theme_color_override("font_color", UITheme.COL_ERROR)

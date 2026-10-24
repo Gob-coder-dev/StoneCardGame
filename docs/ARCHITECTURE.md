@@ -18,6 +18,7 @@ Une IA appelle le même moteur sur une copie pour essayer un coup instantanémen
 | `BattleContext` | `record_result` | Adversaire sélectionné, premier joueur et dernier résultat |
 | `StoneCostRules` | `cost` | Règle du coût d'une carte |
 | `StoneEffects` | — | Identifiants et valeurs des pouvoirs (corrosion, renfort et plafond d'Essaim) |
+| `StoneEvolutionRules` | `max_level`, `preview_level`, `is_valid_level` | Limites par rareté et saturation des seuls aperçus |
 | `DeckRules` | `try_add`, `try_remove`, `try_replace` | Composition du deck et nombre d'emplacements par dieu (`DECKS_PER_GOD`) |
 | `UIFormat` | `cost` | Affichage des nombres dans l'interface |
 
@@ -27,7 +28,7 @@ renomme : une coupure ne laisse jamais un profil à moitié écrit. Un fichier
 illisible est renommé `savegame.json.unreadable` au lieu d'être écrasé, et un
 remplacement interrompu est récupéré au chargement suivant.
 
-Le format version 2 contient `decks_by_god` (trois tableaux de cartes par dieu),
+Le format version 3 contient `decks_by_god` (trois tableaux d'identifiants de formes par dieu),
 `selected_deck_by_god` (indices de 0 à 2), `player_god_id`, `player_name` et
 `stats`. Il ne conserve plus de copie séparée du deck actif. `PlayerSaveCodec`
 migre les profils sans version et la version 1 : l'ancien `player_deck` devient
@@ -52,6 +53,32 @@ les constantes de `StoneEffects`, y compris les valeurs numériques affichées
 dans les légendes : celles-ci ne chargent pas les systèmes du moteur.
 `ContentValidator` signale tout pouvoir ou axe
 de pile ou face inconnu dans `stones.json`.
+
+### Lignées et formes
+
+`stones.json` conserve les anciennes entrées `stones`, à une forme et un niveau.
+Le tableau `lineages` décrit les nouvelles lignées : identité commune et tableau
+`levels` de définitions explicites. Les quatre raretés modernes imposent 4/3/2/1
+formes. Chaque forme peut fournir ses statistiques, son nom, son texte et son
+image `asset` ; famille et rareté sont communes. Les nombres de symboles doivent
+être entiers et respecter la capacité de chaque face.
+
+`StoneLoader` valide puis indexe les définitions complètes une fois au chargement.
+`get_stone(form_id)` reste le contrat commun au moteur et aux vues.
+`stone_lineage`, `stone_level`, `lineage_max_level`, `variant_id` et `variant_ids`
+fournissent des lectures de l'index ; `get_lineages_for_god` fournit une entrée
+par monstre pour la collection. Une forme demandée hors limites est refusée ;
+seul `preview_variant` sature le niveau demandé. Le dictionnaire facultatif
+`legacy_ids` décrit les correspondances explicites d'anciens identifiants.
+La version 3 garde aussi les sauvegardes des versions 1 et 2 ; la transition
+actuelle conserve tous les identifiants historiques.
+
+Les decks restent des tableaux d'identifiants de formes. `DeckRules.lineage_index`
+centralise la recherche d'une lignée ; les validations et les opérations de
+remplacement interdisent deux formes du même monstre. `try_set_level` réutilise
+le remplacement et son calcul de budget. `CombatResolver`, `BattleStone` et
+`TurnManager` reçoivent directement les statistiques de la forme et n'appliquent
+aucun multiplicateur de niveau pendant le combat.
 
 ## Résolution d'un coup
 
@@ -179,16 +206,31 @@ Aucune animation ne change le plateau logique ni ne relance le hasard.
 ## Écran de collection
 
 `CollectionScreenController` coordonne les choix et enregistre les opérations.
-`GodSelector`, `DeckSlotSelector`, `DeckPanel` et `CollectionGrid` possèdent
-chacun leur vue. `DeckSlotSelector` affiche les trois boutons numérotés et émet
-`slot_selected` ; il ne connaît ni les cartes sauvegardées ni le disque.
+`GodSelector`, `NumberedSelector`, `DeckPanel` et `CollectionGrid` possèdent
+chacun leur vue. `NumberedSelector` partage les boutons tactiles des decks et
+des niveaux ; il émet `value_selected` et ignore les règles et la sauvegarde.
 Le contrôleur appelle `PlayerData.set_selected_deck()`, puis actualise le deck
 et les cartes masquées dans la collection, sans recréer celle-ci. Changer de
 contexte referme les panneaux de carte et annule tout remplacement en attente.
 L'interface reste silencieuse en cas de succès et affiche les erreurs d'écriture.
+
+Le niveau global de collection, le niveau consulté dans `StoneInfoSheet` et
+la forme sauvegardée dans le deck sont trois états distincts. Le contrôleur
+achemine le tiroir et `StoneInfoSheet.use_requested` vers `_request_use`, puis
+vers `DeckRules` et `PlayerData`. La fiche n'écrit jamais le profil. Sa carte
+est réutilisée entre niveaux ; son contenu peut défiler et son bouton Utiliser
+reste accessible. Les erreurs de budget ou d'écriture sont affichées dans le
+panneau ouvert. Le remplacement conserve l'identifiant précis choisi, sans
+relire le filtre global.
+
+`CollectionGrid.set_preview_level` actualise une carte par lignée et réordonne
+les mêmes nœuds selon le coût courant. Une lignée équipée est entièrement
+masquée. `StoneCard` affiche un petit repère de niveau pour les lignées évolutives
+et utilise leur champ `asset` existant ; le dessin procédural reste disponible.
 `CardGridLayout` crée les éléments visuels communs. Le tri est défini dans `CollectionGrid`
-(`SortMode`, dans l'ordre des boutons du menu) : FAMILLE par défaut, puis coût,
-rareté et nom, avec le nom pour départager les ex aequo.
+(`SortMode`, dans l'ordre des boutons du menu) : FAMILLE par défaut (cartes du
+dieu puis neutres, chaque groupe par coût croissant), puis coût, rareté et nom,
+avec le nom pour départager les ex aequo.
 Les cartes du deck n'apparaissent pas dans la collection. `CollectionGrid` les
 garde construites mais masquées dans une `GridContainer`, qui referme les trous :
 un changement de deck reconstruit ses emplacements et masque ou réaffiche seulement
@@ -244,7 +286,7 @@ propres à l'IA. Avec `anticipation` :
 - la valeur retire la riposte attendue : pour chaque carte possible du joueur,
   ses meilleures captures immédiates depuis une case libre, puis la meilleure
   carte de sa main, en moyenne sur les mains possibles de sa taille
-  (`OpponentModel.rank_weights`) ;
+  (`OpponentModel.expected_from_variants`) ;
 - à deux cases libres ou moins, `EndgameSearch.evaluate()` pose chaque riposte possible
   jusqu'à la fin de la partie, avec la même moyenne sur les mains. Un coup
   aléatoire y est rejoué sur 2 tirages.
@@ -260,16 +302,30 @@ une case changée (pose, captures, auras, défenses) sont redemandés au résolv
 Ces données restent propres à une recherche, sans cache global. Les tests
 comparent directement `RiposteModel` à un recalcul complet.
 
+La main cachée est modélisée par des lignées équiprobables sans remise, puis un
+niveau équiprobable au sein de chaque lignée. Une lignée posée est entièrement
+exclue, même après capture. `OpponentModel.expected_from_variants` calcule la
+distribution du meilleur résultat via un polynôme de degré limité à la taille
+de main, sans énumérer les mains. Le cas à une forme par lignée garde
+`rank_weights`. `RiposteModel` et `EndgameSearch` partagent ce calcul ; une
+simulation de riposte retire aussi les autres formes de la lignée jouée.
+Il s'agit d'une hypothèse de composition, indépendante du véritable deck humain.
+
+Avec les 131 formes actuelles, un lot de 18 parties et 132 décisions mesure sur
+ce PC environ 57 ms en moyenne pour le niveau 3, une préparation maximale de
+6,7 ms et un appel `step()` maximal de 25,3 ms. Les mesures restent propres au
+PC et au lot ; le budget par image demeure une limite souple.
+
 `EndgameSearch` est un service sans état : il reçoit la simulation et la taille
 de la main cachée. L'exploration des placements restants est complète, mais la
 main reste supposée et le hasard échantillonné. La borne de coupure conservée
 dans le tour de l'IA ne coupe aucune branche avec le seuil actuel de deux cases.
 Relever ce seuil demanderait de nouveaux tests et de nouvelles mesures.
 
-La comparaison avant/après la séparation rejoue 18 parties à graines fixes
+Lors de l'audit précédent, la comparaison avant/après la séparation rejouait 18 parties à graines fixes
 (132 décisions), avec les six familles et 0, 1 ou 2 cases bloquées. Les coups,
-captures, pouvoirs et états du hasard restent identiques. Sur ce lot et ce PC,
-les décisions de niveau 3 prennent environ 50 ms en moyenne, avec une variabilité
+captures, pouvoirs et états du hasard restaient identiques. Sur ce lot et ce PC,
+les décisions de niveau 3 prenaient environ 50 ms en moyenne, avec une variabilité
 entre exécutions ; ce chiffre n'est pas une mesure Android.
 
 Avec `anticipation` (niveau 3), la valeur d'un coup gagne aussi 0,3 capture par

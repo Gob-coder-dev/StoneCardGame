@@ -36,11 +36,12 @@ static func evaluate(simulation: GameState, hand_size: int) -> float:
 		for cell in free_cells:
 			var child := simulation.clone()
 			Resolver.apply_move(child, cell["row"], cell["col"], card, GameState.PLAYER_HUMAN)
+			var used_lineage := StoneLoader.stone_lineage(str(card))
+			child.human_hand = child.human_hand.filter(func(other): return StoneLoader.stone_lineage(str(other)) != used_lineage)
 			# Seule une riposte plus forte que la meilleure trouvée pour cette carte compte.
 			best = minf(best, _ai_turn_value(child, hand_size - 1, -INF, best))
 		values.append(best)
-	values.sort()
-	return Opponent.expected_best(values, Opponent.rank_weights(cards.size(), hand_size))
+	return Opponent.expected_from_variants(cards, values, hand_size, false)
 
 ## Écart final divisé par deux : une capture change l'écart de deux points.
 static func _final_value(simulation: GameState) -> float:

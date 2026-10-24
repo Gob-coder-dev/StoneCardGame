@@ -2420,5 +2420,90 @@
       "power_cost": 1.0,
       "power_text": "Pillage : la force de la face vaincue devient des boucliers placés au hasard sur les trois autres faces de cette pierre."
     }
+  ],
+  "lineages": [
+    {
+      "id": "seed_balanced", "name": "Germe de pierre", "rarity": "common", "god_id": "neutral",
+      "description": "Une créature équilibrée qui grandit sur ses quatre faces.",
+      "kind": "creature", "body_color": "#8a8870", "asset": "", "effects": [],
+      "levels": [
+        {"id": "seed_balanced_n1", "blades": {"top": 1, "bottom": 1, "left": 1, "right": 1}},
+        {"id": "seed_balanced_n2", "blades": {"top": 2, "bottom": 2, "left": 2, "right": 2}},
+        {"id": "seed_balanced_n3", "blades": {"top": 3, "bottom": 3, "left": 3, "right": 3}},
+        {"id": "seed_balanced_n4", "blades": {"top": 4, "bottom": 4, "left": 4, "right": 4}}
+      ]
+    },
+    {
+      "id": "seed_random", "name": "Dévoracle", "rarity": "common", "god_id": "inari",
+      "description": "Ses lames apparaissent là où le hasard le décide.",
+      "power_text": "Fortune : les lames roses sont réparties au hasard à la pose.",
+      "kind": "creature", "body_color": "#d361a0", "asset": "", "effects": [],
+      "blades": {"top": 0, "bottom": 0, "left": 0, "right": 0},
+      "levels": [
+        {"id": "seed_random_n1", "random_blades": 2},
+        {"id": "seed_random_n2", "random_blades": 4},
+        {"id": "seed_random_n3", "random_blades": 6},
+        {"id": "seed_random_n4", "random_blades": 8}
+      ]
+    },
+    {
+      "id": "seed_coin", "name": "Biface", "rarity": "rare", "god_id": "inari",
+      "description": "Deux orientations pour une même créature.", "coin_flip": "vertical",
+      "power_text": "Pile ou face vertical : une chance sur deux d'échanger le haut et le bas.",
+      "kind": "creature", "body_color": "#af5080", "asset": "", "effects": [],
+      "levels": [
+        {"id": "seed_coin_n1", "blades": {"top": 2, "bottom": 0, "left": 1, "right": 1}},
+        {"id": "seed_coin_n2", "blades": {"top": 3, "bottom": 0, "left": 2, "right": 2}},
+        {"id": "seed_coin_n3", "blades": {"top": 4, "bottom": 0, "left": 3, "right": 3}}
+      ]
+    },
+    {
+      "id": "seed_shield", "name": "Éclat cuirassé", "rarity": "common", "god_id": "hachiman",
+      "description": "Sa coque se consolide à chaque évolution.", "power_text": "Les boucliers renforcent uniquement la défense.",
+      "kind": "creature", "body_color": "#80a6aa", "asset": "", "effects": [], "power_cost": 0.5,
+      "levels": [
+        {"id": "seed_shield_n1", "blades": {"top": 0, "bottom": 0, "left": 0, "right": 0}, "shields": {"top": 1, "bottom": 1, "left": 1, "right": 1}},
+        {"id": "seed_shield_n2", "blades": {"top": 1, "bottom": 1, "left": 1, "right": 1}, "shields": {"top": 1, "bottom": 1, "left": 1, "right": 1}},
+        {"id": "seed_shield_n3", "blades": {"top": 1, "bottom": 1, "left": 1, "right": 1}, "shields": {"top": 2, "bottom": 2, "left": 2, "right": 2}},
+        {"id": "seed_shield_n4", "blades": {"top": 2, "bottom": 2, "left": 2, "right": 2}, "shields": {"top": 2, "bottom": 2, "left": 2, "right": 2}}
+      ]
+    },
+    {
+      "id": "seed_lance", "name": "Longuépine", "rarity": "rare", "god_id": "tsukuyomi",
+      "description": "Un guetteur dont les armes naturelles s'allongent.", "power_text": "Les lames bleues traversent les ennemies capturées sur leur ligne.",
+      "kind": "creature", "body_color": "#648aca", "asset": "", "effects": [],
+      "levels": [
+        {"id": "seed_lance_n1", "blades": {"top": 0, "bottom": 1, "left": 1, "right": 0}, "long_blades": {"right": 2}},
+        {"id": "seed_lance_n2", "blades": {"top": 0, "bottom": 2, "left": 2, "right": 0}, "long_blades": {"right": 3}},
+        {"id": "seed_lance_n3", "blades": {"top": 0, "bottom": 3, "left": 3, "right": 0}, "long_blades": {"right": 4}}
+      ]
+    },
+    {
+      "id": "seed_miasma", "name": "Porte-fièvre", "rarity": "epic", "god_id": "izanami",
+      "description": "Son corps creux laisse échapper une aura contaminée.", "power_text": "Miasme : les voisines adverses perdent 1 force par face tant que l'aura agit.",
+      "kind": "creature", "body_color": "#9166aa", "asset": "", "effects": ["weaken_adjacent"],
+      "levels": [
+        {"id": "seed_miasma_n1", "blades": {"top": 0, "bottom": 0, "left": 0, "right": 0}},
+        {"id": "seed_miasma_n2", "blades": {"top": 1, "bottom": 1, "left": 1, "right": 1}}
+      ]
+    },
+    {
+      "id": "seed_swarm", "name": "Nœud vivant", "rarity": "rare", "god_id": "okuninushi",
+      "description": "Un organisme dont les fibres cherchent leur colonie.", "power_text": "Essaim : les membres connectés se renforcent, jusqu'à quatre lames d'aura.",
+      "kind": "creature", "body_color": "#79a752", "asset": "", "effects": ["swarm"], "power_cost": 0.5,
+      "levels": [
+        {"id": "seed_swarm_n1", "blades": {"top": 0, "bottom": 0, "left": 0, "right": 0}},
+        {"id": "seed_swarm_n2", "blades": {"top": 1, "bottom": 1, "left": 1, "right": 1}},
+        {"id": "seed_swarm_n3", "blades": {"top": 2, "bottom": 2, "left": 2, "right": 2}}
+      ]
+    },
+    {
+      "id": "seed_thief", "name": "Collecteur Zéro", "rarity": "legendary", "god_id": "susanoo",
+      "description": "Une machine complète dont chaque pièce provient d'une ancienne victime.", "power_text": "Pillage : récupère la force vaincue en boucliers sur les autres faces.",
+      "kind": "creature", "body_color": "#c98445", "asset": "", "effects": ["shield_theft"], "power_cost": 1.0,
+      "levels": [
+        {"id": "seed_thief_n1", "blades": {"top": 3, "bottom": 1, "left": 0, "right": 4}}
+      ]
+    }
   ]
 }

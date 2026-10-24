@@ -374,6 +374,16 @@ func _draw() -> void:
 		draw_rect(art_rect, COL_ART_BG, true)
 		_draw_character(art_rect)
 	_draw_power_badges(art_rect, square_side, family_color)
+	# Le niveau appartient à la définition affichée, jamais à un filtre global.
+	if int(_stone.get("max_level", 1)) > 1:
+		var level_font := ThemeDB.fallback_font
+		var level_size := maxi(12, int(square_side * 0.07))
+		var level_text := "N%d" % int(_stone.get("level", 1))
+		var level_extent := Vector2(square_side * 0.19, square_side * 0.10)
+		var level_rect := Rect2(art_rect.end - level_extent, level_extent)
+		draw_rect(level_rect, COL_NAME_BG)
+		draw_string(level_font, level_rect.position + Vector2(3, level_rect.size.y * 0.82), level_text,
+			HORIZONTAL_ALIGNMENT_LEFT, -1, level_size, Color.WHITE)
 
 	# 5. Bandeau de nom
 	var name_rect := Rect2(

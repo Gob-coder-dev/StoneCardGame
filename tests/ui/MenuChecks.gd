@@ -240,19 +240,19 @@ func _test_collection_incremental_refresh() -> void:
 	await get_tree().process_frame
 	var cards := _collection_cards(page)
 	var expected: Array = []
-	for definition in StoneLoader.get_stones_for_god("inari"):
+	for definition in StoneLoader.get_lineages_for_god("inari"):
 		if not PlayerData.get_active_deck().has(definition["id"]):
 			expected.append(definition["id"])
 	var shown := _shown_collection_ids(page)
 	var shown_sorted := shown.duplicate()
 	shown_sorted.sort()
 	expected.sort()
-	_check(cards.size() == StoneLoader.get_stones_for_god("inari").size() and shown_sorted == expected,
+	_check(cards.size() == StoneLoader.get_lineages_for_god("inari").size() and shown_sorted == expected,
 		"la collection n'affiche pas les cartes déjà dans le deck")
-	# Tri FAMILLE par défaut : Bakeneko est la première carte d'Inari par son nom.
+	# Tri FAMILLE par défaut : la première carte est la moins chère d'Inari.
 	_check(page._sort_mode == 0 and page.sort_button.text.begins_with("TRIER : FAMILLE")
-		and shown[0] == "bakeneko" and _is_family_order(shown, "inari"),
-		"par défaut, les cartes du dieu passent avant les neutres, chacune par ordre alphabétique")
+		and str(StoneLoader.get_stone(shown[0])["god_id"]) == "inari" and _is_family_order(shown, "inari"),
+		"par défaut, les cartes du dieu passent avant les neutres, chaque groupe par coût puis par nom")
 	var kappa: StoneCard = cards["kappa"]
 	var identity := kappa.get_instance_id()
 	var without_kappa: Array = PlayerData.get_active_deck()
@@ -262,8 +262,8 @@ func _test_collection_incremental_refresh() -> void:
 	await get_tree().process_frame
 	var grid: GridContainer = page.collection_rows.get_child(0)
 	shown = _shown_collection_ids(page)
-	# Kappa revient entre Kamaitachi et Maneki-neko.
-	_check(shown.find("kappa") == shown.find("kamaitachi") + 1 and _is_family_order(shown, "inari")
+	# Kappa revient à la place que lui donnent son coût et son nom.
+	_check(shown.has("kappa") and _is_family_order(shown, "inari")
 		and is_instance_valid(kappa) and kappa.get_instance_id() == identity and not kappa._selected,
 		"une carte retirée du deck revient à sa place dans la collection, sans recréer de carte")
 	page._select_sort(3)
@@ -291,14 +291,15 @@ func _test_collection_incremental_refresh() -> void:
 	await get_tree().process_frame
 
 
-## Toutes les cartes du dieu d'abord, puis les neutres, chaque groupe par nom.
+## Toutes les cartes du dieu d'abord, puis les neutres, chaque groupe par
+## coût croissant puis par nom.
 func _is_family_order(ids: Array, god_id: String) -> bool:
 	var seen_neutral := false
 	var group: Array = []
 	for stone_id in ids:
 		var neutral := str(StoneLoader.get_stone(stone_id).get("god_id", "neutral")) == "neutral"
 		if neutral and not seen_neutral:
-			if not _names_ascending(group):
+			if not _cost_then_name_ascending(group):
 				return false
 			group = []
 			seen_neutral = true
@@ -307,7 +308,18 @@ func _is_family_order(ids: Array, god_id: String) -> bool:
 		if not neutral and str(StoneLoader.get_stone(stone_id)["god_id"]) != god_id:
 			return false
 		group.append(stone_id)
-	return _names_ascending(group)
+	return _cost_then_name_ascending(group)
+
+
+func _cost_then_name_ascending(ids: Array) -> bool:
+	for index in range(1, ids.size()):
+		var previous_cost := StoneLoader.stone_cost(ids[index - 1])
+		var current_cost := StoneLoader.stone_cost(ids[index])
+		if previous_cost > current_cost:
+			return false
+		if is_equal_approx(previous_cost, current_cost) and not _names_ascending([ids[index - 1], ids[index]]):
+			return false
+	return true
 
 
 func _names_ascending(ids: Array) -> bool:

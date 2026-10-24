@@ -10,6 +10,7 @@ const TIME_LIMIT := 300.0
 ## Chargées à l'exécution : une suite cassée est signalée sans bloquer les autres.
 const SUITES: Array[String] = [
 	"res://tests/combat/PlayerDataChecks.gd",
+	"res://tests/combat/EvolutionChecks.gd",
 	"res://tests/test_rules_engine.gd",
 	"res://tests/test_deck_rules.gd",
 	"res://tests/combat/CatalogChecks.gd",
@@ -20,6 +21,7 @@ const SUITES: Array[String] = [
 	"res://tests/combat/PillageChecks.gd",
 	"res://tests/ai/AIChecks.gd",
 	"res://tests/ui/MenuChecks.gd",
+	"res://tests/ui/EvolutionMenuChecks.gd",
 	"res://tests/ui/PreparationAnimationChecks.gd",
 	"res://tests/ui/EffectAnimationChecks.gd",
 	"res://tests/ui/SwarmAnimationChecks.gd",

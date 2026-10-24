@@ -159,6 +159,24 @@ custom_minimum_size = Vector2(420, 100)
 theme_override_font_sizes/font_size = 31
 text = "TRIER : ORDRE ▼"
 
+[node name="LevelButton" type="Button" parent="Content/Scroll/Page"]
+layout_mode = 2
+script = ExtResource("7_touch_button")
+custom_minimum_size = Vector2(0, 92)
+theme_override_font_sizes/font_size = 32
+text = "AFFICHER : NIVEAU 1 ▼"
+
+[node name="LevelMenu" type="PanelContainer" parent="Content/Scroll/Page"]
+visible = false
+layout_mode = 2
+mouse_filter = 1
+
+[node name="Levels" type="HBoxContainer" parent="Content/Scroll/Page/LevelMenu"]
+layout_mode = 2
+mouse_filter = 1
+alignment = 1
+theme_override_constants/separation = 18
+
 [node name="SortMenu" type="PanelContainer" parent="Content/Scroll/Page"]
 visible = false
 layout_mode = 2
