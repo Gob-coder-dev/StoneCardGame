@@ -3,7 +3,10 @@
 ## construites mais masquées, et la grille referme les trous sans recréer de carte.
 extends RefCounted
 signal card_requested(stone_id: String, wrapper: VBoxContainer, source: int)
-enum SortMode { ORIGINAL, COST, RARITY, NAME }
+## FAMILY : les cartes du dieu, puis les neutres. Chaque tri départage les
+## ex aequo par le nom, pour un ordre toujours identique.
+enum SortMode { FAMILY, COST, RARITY, NAME }
+const RARITY_ORDER := {"legendary": 0, "epic": 1, "rare": 2, "uncommon": 3, "common": 4}
 const CARDS_PER_ROW := 3
 ## Espace entre deux cartes, horizontalement et verticalement.
 const CARD_SPACING := 18
@@ -11,7 +14,7 @@ const Layout := preload("res://scripts/ui/collection/CardGridLayout.gd")
 var collection_rows: VBoxContainer
 var _grid: GridContainer = null
 var _current_deck: Array = []
-var _sort_mode: SortMode = SortMode.ORIGINAL
+var _sort_mode: SortMode = SortMode.FAMILY
 var _god_id: String = ""
 
 func _init(rows: VBoxContainer) -> void:
@@ -37,14 +40,7 @@ func update_deck(deck: Array) -> void:
 func _populate_collection() -> void:
 	Layout.clear_children(collection_rows)
 	var stones: Array = StoneLoader.get_stones_for_god(_god_id)
-	match _sort_mode:
-		SortMode.COST:
-			stones.sort_custom(func(a, b): return StoneLoader.stone_cost(a["id"]) < StoneLoader.stone_cost(b["id"]))
-		SortMode.RARITY:
-			var rarity_order := {"legendary": 0, "epic": 1, "rare": 2, "uncommon": 3, "common": 4}
-			stones.sort_custom(func(a, b): return rarity_order.get(a["rarity"], 9) < rarity_order.get(b["rarity"], 9))
-		SortMode.NAME:
-			stones.sort_custom(func(a, b): return str(a["name"]).naturalnocasecmp_to(str(b["name"])) < 0)
+	stones.sort_custom(_sorts_before)
 
 	# Une grille ignore ses cartes masquées : les suivantes remontent à leur place.
 	_grid = GridContainer.new()
@@ -61,3 +57,22 @@ func _populate_collection() -> void:
 		wrapper.add_child(card)
 		wrapper.visible = not _current_deck.has(stone["id"])
 		_grid.add_child(wrapper)
+
+
+## Comparaison du tri choisi ; le nom départage les égalités.
+func _sorts_before(a: Dictionary, b: Dictionary) -> bool:
+	var key_a := 0.0
+	var key_b := 0.0
+	match _sort_mode:
+		SortMode.FAMILY:
+			key_a = 1.0 if str(a.get("god_id", "neutral")) == "neutral" else 0.0
+			key_b = 1.0 if str(b.get("god_id", "neutral")) == "neutral" else 0.0
+		SortMode.COST:
+			key_a = StoneLoader.stone_cost(a["id"])
+			key_b = StoneLoader.stone_cost(b["id"])
+		SortMode.RARITY:
+			key_a = RARITY_ORDER.get(a.get("rarity", ""), 9)
+			key_b = RARITY_ORDER.get(b.get("rarity", ""), 9)
+	if key_a != key_b:
+		return key_a < key_b
+	return str(a["name"]).naturalnocasecmp_to(str(b["name"])) < 0

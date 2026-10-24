@@ -14,7 +14,10 @@
         "yamabushi",
         "sumo",
         "naginata_monk",
-        "kitsune"
+        "kitsune",
+        "monban",
+        "kumigashira",
+        "hyakusho"
       ],
       "god_id": "hachiman"
     },
@@ -32,7 +35,10 @@
         "kunoichi",
         "yasha",
         "naginata_monk",
-        "kitsune"
+        "kitsune",
+        "yurei",
+        "gaki",
+        "nure_onna"
       ],
       "god_id": "izanami"
     },
@@ -50,7 +56,10 @@
         "tanuki",
         "ronin",
         "naginata_monk",
-        "raijin"
+        "raijin",
+        "bakuto",
+        "inugami",
+        "maneki_neko"
       ],
       "god_id": "inari"
     },
@@ -68,7 +77,10 @@
         "jorogumo",
         "oni_major",
         "kitsune",
-        "tatsu"
+        "tatsu",
+        "kodama",
+        "tsuchigumo",
+        "nue"
       ],
       "god_id": "okuninushi"
     },
@@ -86,7 +98,10 @@
         "tengu",
         "fujin",
         "raijin",
-        "tatsu"
+        "tatsu",
+        "tsuki_yumi",
+        "raiju",
+        "hayabusa"
       ],
       "god_id": "tsukuyomi"
     },
@@ -104,7 +119,10 @@
         "samurai_blue",
         "susanoo",
         "amaterasu",
-        "izanagi"
+        "izanagi",
+        "orochi",
+        "sanzoku",
+        "akuma"
       ],
       "god_id": "susanoo"
     }

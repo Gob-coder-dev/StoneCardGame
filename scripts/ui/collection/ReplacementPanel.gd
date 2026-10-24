@@ -13,8 +13,14 @@ var _deck: Array = []
 var _incoming_id: String = ""
 
 
+## Le deck de 8 pierres tient sur deux rangées de 4.
+const COLUMNS := 4
+const CARD_SIZE := 220.0
+
+
 func _ready() -> void:
 	cancel_button.pressed.connect(close_panel)
+	deck_grid.columns = COLUMNS
 	visible = false
 
 
@@ -46,9 +52,10 @@ func _rebuild() -> void:
 
 	for old_id in _deck:
 		var wrapper := VBoxContainer.new()
-		wrapper.custom_minimum_size = Vector2(285, 350)
+		wrapper.custom_minimum_size = Vector2(CARD_SIZE + 8.0, CARD_SIZE + 70.0)
+		wrapper.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		wrapper.add_theme_constant_override("separation", 6)
-		var card := _make_card(StoneLoader.get_stone(old_id), StoneCard.OWNER_HUMAN, 275.0)
+		var card := _make_card(StoneLoader.get_stone(old_id), StoneCard.OWNER_HUMAN, CARD_SIZE)
 		card.card_pressed.connect(_on_target_pressed)
 		var new_cost := DeckRules.replacement_cost(_deck, old_id, _incoming_id)
 		var valid := DeckRules.can_replace(_deck, old_id, _incoming_id, PlayerData.player_god_id)
@@ -60,7 +67,9 @@ func _rebuild() -> void:
 			UIFormat.cost(incoming_cost), UIFormat.cost(new_cost), DeckRules.DECK_BUDGET
 		]
 		formula.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		formula.add_theme_font_size_override("font_size", 24)
+		# Quatre colonnes étroites : le calcul passe à la ligne au besoin.
+		formula.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		formula.add_theme_font_size_override("font_size", 22)
 		formula.add_theme_color_override("font_color", UITheme.COL_SUCCESS if valid else UITheme.COL_ERROR)
 		wrapper.add_child(card)
 		wrapper.add_child(formula)

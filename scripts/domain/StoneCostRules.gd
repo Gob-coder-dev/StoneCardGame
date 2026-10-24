@@ -7,7 +7,8 @@ const RANDOM_BLADE_COST := 0.5
 const SHIELD_COST := 0.5
 ## Une lame longue reste une lame en combat rapproché et gagne une attaque
 ## de ligne : son coût est volontairement supérieur à une lame normale.
-const LONG_BLADE_COST := 1.5
+## Ramené de 1,5 à 1,25 après le tournoi d'équilibrage des dieux (Horizon à 41 %).
+const LONG_BLADE_COST := 1.25
 
 static func cost(stone: Dictionary) -> float:
 	if stone.is_empty():

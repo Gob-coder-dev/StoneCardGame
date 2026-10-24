@@ -80,7 +80,7 @@ au doigt et à la souris. Elle ne sauvegarde aucun
 changement de deck ou de statistiques.
 
 Chaque suite se termine par un résumé, par exemple
-`GOD_SYSTEM_CHECKS: 282 passed, 0 failed, 0 Godot errors` ou
+`GOD_SYSTEM_CHECKS: 300 passed, 0 failed, 0 Godot errors` ou
 `TACTILE : 50 vérifications, 0 échec(s), 0 erreur(s) Godot.`, et renvoie le code
 de sortie 1 en cas de problème. Sont comptés comme problèmes : une vérification
 ratée, une suite qui ne compile pas, une erreur ou un avertissement Godot non
@@ -113,8 +113,8 @@ appuis natifs, le clavier et la souris physique.
 
 ## Règles du jeu
 
-- Plateau 3×3 avec 0 ou 1 case bloquée (aléatoire)
-- Chaque joueur équipe un dieu puis choisit 5 pierres parmi les cartes neutres
+- Plateau 4×4 avec 0, 1 ou 2 cases bloquées (aléatoires)
+- Chaque joueur équipe un dieu puis choisit 8 pierres parmi les cartes neutres
   et celles de la famille de ce dieu
 - Les joueurs posent à tour de rôle (tirage pile/face pour le premier)
 - Pour poser une carte : la toucher puis toucher une case, ou la glisser jusqu'à
@@ -127,12 +127,18 @@ appuis natifs, le clavier et la souris physique.
 - Les logos en haut à droite annoncent les pouvoirs ; les lames roses de Fortune
   sont révélées à la pose, les boucliers défendent et les grandes lames bleues
   peuvent attaquer à distance
-- Le Miasme de Déclin affaiblit les voisines après les tentatives de capture ;
-  l'Échec corrosif affaiblit seulement les pierres adverses qui ont résisté à
-  l'attaque, jusqu'à la fin du prochain coup du lanceur
+- Le Miasme de Déclin est une aura continue : chaque pierre adverse voisine
+  perd 1 force par pierre Miasme voisine, y compris une carte posée plus tard
+  (elle attaque d'abord, puis subit le malus) ; l'aura s'éteint si la pierre
+  Miasme passe chez un autre dieu. L'Échec corrosif retire 2 de force aux seules
+  pierres adverses qui ont résisté à l'attaque, jusqu'à la fin du prochain coup
+  du lanceur
+- Règle des dieux : les pouvoirs continus (Essaim, Miasme) d'une carte de
+  famille n'agissent que dans le camp dont le dieu est le sien
 - Les auras de Déclin révèlent le malus à l'impact et brisent visuellement les
   lames neutralisées, tandis que les boucliers restent intacts
-- Essaim entretient une aura de groupe et Pillage remplit avec de nouveaux
+- Essaim entretient une aura de groupe (+2 lames par autre membre, jusqu'à +4)
+  et Pillage remplit avec de nouveaux
   boucliers les emplacements libres des faces autres que celle qui a capturé
 - Les changements d'Essaim propagent une impulsion entre les cartes puis font
   pousser ou rétracter exactement les lames calculées par le moteur
@@ -150,7 +156,9 @@ page Profil & Stats, où ce pseudo peut être modifié (2 à 16 caractères).
 
 Dans l'écran Cartes, le deck et la collection appartiennent au même défilement.
 La collection montre seulement les cartes absentes du deck : une carte retirée
-du deck y revient à sa place.
+du deck y revient à sa place. Elle est triée par FAMILLE par défaut (les cartes
+du dieu, puis les neutres, chaque groupe par nom), ou par coût, rareté ou nom ;
+les ex aequo sont toujours rangés par nom.
 Le panneau supérieur permet de choisir l'un des six dieux ; la collection est
 alors filtrée et les cartes incompatibles sont retirées du deck avec un message.
 Toucher une pierre ouvre ses informations et son action. Si le deck est plein,
@@ -159,25 +167,34 @@ chaque possibilité. Toute modification valide est enregistrée automatiquement.
 
 ---
 
-## Les 25 pierres (par rareté)
+## Les 107 pierres (par rareté)
 
 | Rareté    | Pierres |
 |-----------|---------|
-| Common    | Ashigaru, Yumi Archer, Naginata Monk, Kappa, Tanuki, Shinobi |
-| Uncommon  | Samurai Red, Kitsune, Oni Mineur, Rōnin, Yamabushi, Tengu, Kunoichi, Rikishi |
-| Rare      | Samurai Blue, Jōrōgumo, Raijin, Tatsu, Fūjin, Grand Oni |
-| Epic      | Yasha, Ryūjin, Susanoo, Amaterasu |
-| Legendary | Izanagi (4/4/4/4) |
+| Common    | Ashigaru, Yumi Archer, Naginata Monk, Kappa, Tanuki, Shinobi, Maneki-neko, Bakeneko, Bakuto, Yūrei, Gaki, Rokurokubi, Monban, Kumigashira, Hayabusa, Archère lunaire, Kodama, Hotaru, Mukade, Kage, Wakō, Hyakushō, Hikyaku, Matagi, Kakashi, Chōchin-obake, Kasa-obake, Ashinaga, Tenaga, Kenshi, Bugyō, Saikoro, Omikuji, Kamaitachi, Nobusuma, Hoshi, Nopperabō, Ubume, Onryō, Suzume, Kaeru, Suzumebachi, Kusa, Kaizoku, Nusubito |
+| Uncommon  | Samurai Red, Kitsune, Oni Mineur, Rōnin, Yamabushi, Tengu, Kunoichi, Rikishi, Inugami, Hannya, Nure-onna, Sōhei, Hatamoto, Nagayari, Lapin de la lune, Tsuchigumo, Nue, Kabuki-mono, Sanzoku, Komainu, Baku, Umibōzu, Yamauba, Ittan-momen, Shōjō, Yoriki, Dōshin, Karō, Ebisu, Tsukikage, Kuchisake-onna, Kawauso, Hitokiri |
+| Rare      | Samurai Blue, Jōrōgumo, Raijin, Tatsu, Fūjin, Grand Oni, Daikoku, Ō-yoroi, Hōō, Orochi, Kirin, Ōkami, Daimyō, Shugo, Nekomata, Benzaiten, Raijū, Kaminari, Shuten-dōji, Ushi-oni, Akuma |
+| Epic      | Yasha, Ryūjin, Susanoo, Amaterasu, Shōgun, Gashadokuro |
+| Legendary | Izanagi (4/4/4/4), Bishamon |
+
+Les cartes de chaque famille suivent son pouvoir : petites cartes Fortune
+couvertes de lames roses ou très déséquilibrées sur l'axe de leur pile ou face,
+cartes faibles pour le Déclin et l'Essaim (l'aura pousse dans les emplacements
+libres), assassins forts sur une ou deux faces pour le Pillage, lames bleues
+groupées sur une ou deux faces pour l'Horizon, murs et attaquants protégés pour
+le Rempart. Les nouvelles cartes réutilisent les dessins existants.
 
 ## Dieux, familles et budget
 
 Les six styles jouables sont Inari/Fortune, Izanami/Déclin,
 Hachiman/Rempart, Tsukuyomi/Horizon, Ōkuninushi/Essaim et Susanoo/Pillage.
-Chaque famille possède trois pierres exclusives ; sept pierres restent neutres.
+Chaque famille possède 13 ou 14 pierres exclusives (14 pour Inari et Hachiman) ;
+27 pierres restent neutres. Chaque dieu voit donc 40 ou 41 cartes dans sa collection.
 
-Les cartes Fortune utilisent un seul pouvoir : Kappa révèle deux lames
-aléatoires (badge ×2), Tanuki lance un pile ou face horizontal et Ronin un
-pile ou face vertical. La pièce s'affiche au-dessus de la carte : ✓ échange
+Une carte Fortune utilise un seul pouvoir : des lames roses aléatoires (badge
+×N, comme Kappa ×2 ou Maneki-neko ×3 ; Saikoro et Omikuji n'ont que des lames
+roses), ou un pile ou face horizontal (Tanuki, Inugami, Nekomata) ou vertical
+(Rōnin, Bakeneko, Kamaitachi). La pièce s'affiche au-dessus de la carte : ✓ échange
 les faces prévues, ✕ conserve leur disposition. Les boucliers sont représentés
 par des demi-cercles, avec une base plate contre la pierre.
 
@@ -205,16 +222,18 @@ effectives via `CombatPresentation`.
 Les animations révèlent le plan calculé et n'altèrent ni le plateau ni le hasard.
 
 Le coût part de la somme des lames normales. Une lame aléatoire et un bouclier
-coûtent chacun 0,5 point, une lame longue 1,5 point, et les pouvoirs continus ont
-un supplément déclaré sur la carte dans `stones.json`. Un deck de cinq pierres
-ne peut pas dépasser `DECK_BUDGET = 50` points. Les demi-points sont conservés par
+coûtent chacun 0,5 point, une lame longue 1,25 point, et le pouvoir de famille
+ajoute le supplément `power_cost` déclaré sur la carte dans `stones.json`
+(depuis l'équilibrage 4×4 : 1 pour Pillage, 0,5 pour Essaim et Rempart, 0 pour
+Déclin ; Fortune et Horizon paient déjà leurs lames roses et bleues). Un deck de huit pierres
+ne peut pas dépasser `DECK_BUDGET = 80` points. Les demi-points sont conservés par
 les règles et affichés sans arrondi dans les menus.
 
 ## Les 6 NPCs
 
 Chaque adversaire possède désormais un dieu et un deck cohérent avec sa famille.
-Les decks des adversaires ne sont pas soumis au plafond de 50 points du joueur :
-Yuki, Raiko et Kaguya le dépassent. Au chargement, `ContentValidator` vérifie
+Les decks des adversaires ne sont pas soumis au plafond de 80 points du joueur :
+Kaguya le dépasse. Au chargement, `ContentValidator` vérifie
 seulement leur taille, leur famille et leur profil d'IA.
 
 | NPC | Difficulté | IA | Dieu / famille |
@@ -233,7 +252,7 @@ Une seule IA joue tous les adversaires, réglée par le champ `"ai"` de `npcs.js
   coup qui capture le plus ; sinon une erreur crédible, tirée au sort en
   favorisant les coups qui rapportent ;
 - niveau 3, `{"precision": 1.0, "anticipation": true}` : retire de chaque coup la
-  riposte attendue du joueur, puis calcule exactement les trois derniers coups.
+  riposte attendue du joueur, puis calcule exactement les deux derniers coups.
 
 L'IA ne voit ni la main du joueur ni le prochain tirage réel : elle suppose les
 cartes de son dieu et les neutres, moins celles déjà posées. D'autres niveaux se

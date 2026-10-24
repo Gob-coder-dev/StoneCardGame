@@ -44,7 +44,7 @@ func build() -> void:
 	var board_side: float = size.x
 	if size.y > 0.0 and board_side > size.y:
 		board_side = size.y
-	var cell_size: float = (board_side - GAP * 2.0) / float(GameState.BOARD_SIZE)
+	var cell_size: float = (board_side - GAP * float(GameState.BOARD_SIZE - 1)) / float(GameState.BOARD_SIZE)
 	var origin := Vector2((size.x - board_side) * 0.5, 0.0)
 
 	for row in range(GameState.BOARD_SIZE):

@@ -9,16 +9,26 @@
 ## évalué en moyenne sur plusieurs tirages, sans jamais lire le hasard réel.
 extends RefCounted
 
+const BattleStoneModel := preload("res://scripts/engine/BattleStone.gd")
 const Resolver := preload("res://scripts/engine/CombatResolver.gd")
 const Opponent := preload("res://scripts/ai/OpponentModel.gd")
 
-## Tirages d'un coup aléatoire (Fortune, Pillage…), hors fin de partie.
-const RANDOM_SAMPLES := 8
+## Tirages d'un coup aléatoire (Fortune, Pillage…), hors fin de partie. Sur le
+## plateau 4×4, ces coups représentaient l'essentiel des réflexions les plus
+## longues : 4 tirages suffisent pour classer les coups.
+const RANDOM_SAMPLES := 4
 ## En fin de partie, chaque tirage explore tout l'arbre restant.
 const ENDGAME_RANDOM_SAMPLES := 2
-const ENDGAME_CELLS := 3
+## Le calcul exact pose réellement chaque carte possible de l'adversaire : son
+## coût grandit avec la collection. À deux cases, il reste court ; à trois, il
+## coûtait déjà 0,2 s sur PC avec 20 cartes possibles, sans gain mesuré.
+const ENDGAME_CELLS := 2
 ## Poids de la riposte : une capture subie compte autant qu'une capture gagnée.
 const RISK_WEIGHT := 1.0
+## Valeur, en captures, d'une lame d'aura d'Essaim gagnée par l'IA : l'aura
+## reste tant que le groupe tient et servira aux coups suivants. Sans ce bonus,
+## l'IA ne la comptait que pour la capture ou la défense immédiates.
+const AURA_WEIGHT := 0.3
 
 var _state: GameState
 var _anticipation := false
@@ -26,9 +36,29 @@ var _endgame := false
 ## Cartes que l'adversaire peut avoir, et nombre de cartes de sa main.
 var _possible_cards: Array[String] = []
 var _hand_size := 0
-## Orientations possibles de chaque carte adverse, préparées une seule fois.
-var _threats: Array = []
+## Riposte immédiate, préparée une seule fois. Une attaque est un plan pur où
+## chaque direction est un tir indépendant (AttackResolver). Chaque carte
+## possible est donc découpée en tirs (face, lames, lames bleues) : un même tir
+## sert à toutes les cartes qui le partagent. Le calcul dépend du nombre de tirs
+## différents, qui plafonne (14 par face), plutôt que du nombre de cartes.
+var _shots: Array[BattleStoneModel] = []
+## Par carte possible : ses orientations (deux pour un pile ou face), chacune
+## donnée par les indices de ses tirs dans _shots.
+var _threat_cards: Array = []
 var _threat_weights := PackedFloat64Array()
+## Aura d'Essaim de l'IA avant le coup évalué.
+var _aura_before := 0
+## Réutilisation entre les coups : un coup ne change que quelques cases (la
+## pose, ses captures, les auras et défenses touchées). Un tir ne regarde que
+## sa propre ligne, dans sa propre direction : si aucune case de cette ligne
+## n'a changé, ses captures sont celles déjà comptées sur l'état reçu.
+var _shot_sides := PackedInt32Array()
+## Par case : pour chaque face (ordre de StoneSide.ALL), les cases de sa ligne.
+var _lines: Array = []
+## Signature de chaque case de l'état reçu (voir _cell_signature).
+var _base_signatures: Array = []
+## Par case libre de l'état reçu : les captures de chaque tir.
+var _base_hits := {}
 
 
 func _init(state: GameState, anticipation: bool) -> void:
@@ -40,8 +70,80 @@ func _init(state: GameState, anticipation: bool) -> void:
 	_hand_size = state.human_hand.size()
 	_endgame = state.empty_playable_cells <= ENDGAME_CELLS
 	if not _endgame:
-		_threats = Opponent.attack_variants(_possible_cards)
+		_aura_before = aura_blades(state)
+		_prepare_threats()
 		_threat_weights = Opponent.rank_weights(_possible_cards.size(), _hand_size)
+
+
+func _prepare_threats() -> void:
+	var shot_indices := {}
+	for variants in Opponent.attack_variants(_possible_cards):
+		var orientations: Array = []
+		for stone in variants:
+			var shots := PackedInt32Array()
+			for side in StoneSide.ALL:
+				var normal_count: int = stone.normal_blades(side)
+				var long_count: int = int(stone.long_blades.get(side, 0))
+				if normal_count + long_count == 0:
+					continue
+				var key := "%s:%d:%d" % [side, normal_count, long_count]
+				if not shot_indices.has(key):
+					shot_indices[key] = _shots.size()
+					_shots.append(make_shot(side, normal_count, long_count))
+					_shot_sides.append(StoneSide.ALL.find(side))
+				shots.append(shot_indices[key])
+			orientations.append(shots)
+		_threat_cards.append(orientations)
+	_prepare_lines()
+	for index in range(_state.board.size()):
+		_base_signatures.append(_cell_signature(_state.board[index]))
+	for cell in RulesEngine.get_free_cells(_state):
+		_base_hits[GameState.cell_index(cell["row"], cell["col"])] = _shot_hits(_state, cell["row"], cell["col"])
+
+
+## Cases rencontrées depuis chaque case vers chaque face, jusqu'au bord.
+func _prepare_lines() -> void:
+	for index in range(GameState.total_cells()):
+		var row := index / GameState.BOARD_SIZE
+		var col := index % GameState.BOARD_SIZE
+		var per_side: Array = []
+		for side in StoneSide.ALL:
+			var delta: Vector2i = StoneSide.GRID[side]
+			var line := PackedInt32Array()
+			var r := row + delta.x
+			var c := col + delta.y
+			while r >= 0 and r < GameState.BOARD_SIZE and c >= 0 and c < GameState.BOARD_SIZE:
+				line.append(GameState.cell_index(r, c))
+				r += delta.x
+				c += delta.y
+			per_side.append(line)
+		_lines.append(per_side)
+
+
+## Ce qu'un tir peut lire d'une case : son type, son camp et la défense de
+## chaque face de sa pierre.
+static func _cell_signature(cell: Dictionary) -> Array:
+	var signature: Array = [cell["cell_type"], cell["owner"]]
+	var stone = cell["stone"]
+	for side in StoneSide.ALL:
+		signature.append(stone.defense(side) if stone is BattleStoneModel else 0)
+	return signature
+
+
+## Captures de chaque tir depuis une case, demandées au résolveur.
+func _shot_hits(state: GameState, row: int, col: int) -> PackedInt32Array:
+	var hits := PackedInt32Array()
+	hits.resize(_shots.size())
+	for index in range(_shots.size()):
+		hits[index] = Resolver.find_captures(state, row, col, GameState.PLAYER_HUMAN, _shots[index]).size()
+	return hits
+
+
+## Pierre qui n'attaque que dans une direction, avec ces lames et lames bleues.
+static func make_shot(side: String, normal_count: int, long_count: int) -> BattleStoneModel:
+	var shot: BattleStoneModel = BattleStoneModel.new()
+	shot.configure("", {"blades": {side: normal_count}, "long_blades": {side: long_count}})
+	return shot
 
 
 func is_endgame() -> bool:
@@ -73,7 +175,19 @@ func evaluate(move: Dictionary, sample: int) -> Dictionary:
 		value = float(result.get("captures", []).size())
 		if _anticipation:
 			value -= RISK_WEIGHT * threat(simulation)
+			value += AURA_WEIGHT * (aura_blades(simulation) - _aura_before)
 	return {"value": value, "random": used_random}
+
+
+## Lames d'aura d'Essaim portées par les pierres de l'IA.
+static func aura_blades(state: GameState) -> int:
+	var total := 0
+	for cell in state.board:
+		var stone = cell["stone"]
+		if cell["owner"] == GameState.PLAYER_AI and stone is BattleStoneModel:
+			for side in StoneSide.ALL:
+				total += int(stone.swarm_blades[side])
+	return total
 
 
 ## Riposte attendue : pour chaque carte possible, le plus grand nombre de
@@ -81,19 +195,48 @@ func evaluate(move: Dictionary, sample: int) -> Dictionary:
 ## orientations d'un pile ou face comptent chacune pour moitié), puis la
 ## meilleure de ces valeurs dans la main adverse, en moyenne sur ses mains possibles.
 func threat(simulation: GameState) -> float:
-	if _threats.is_empty() or _threat_weights.is_empty():
+	if _threat_cards.is_empty() or _threat_weights.is_empty():
 		return 0.0
-	var free_cells := RulesEngine.get_free_cells(simulation)
-	var values: Array[float] = []
-	for variants in _threats:
-		var best := 0.0
-		for cell in free_cells:
+	var best := PackedFloat64Array()
+	best.resize(_threat_cards.size())
+	var hits := PackedInt32Array()
+	hits.resize(_shots.size())
+	var changed := PackedByteArray()
+	changed.resize(simulation.board.size())
+	for index in range(simulation.board.size()):
+		changed[index] = 1 if _cell_signature(simulation.board[index]) != _base_signatures[index] else 0
+	var dirty_sides := PackedByteArray()
+	dirty_sides.resize(StoneSide.ALL.size())
+	for cell in RulesEngine.get_free_cells(simulation):
+		var cell_index := GameState.cell_index(cell["row"], cell["col"])
+		var lines: Array = _lines[cell_index]
+		for side in range(lines.size()):
+			dirty_sides[side] = 0
+			for crossed in lines[side]:
+				if changed[crossed] == 1:
+					dirty_sides[side] = 1
+					break
+		var base: PackedInt32Array = _base_hits[cell_index]
+		var any_hit := false
+		for index in range(_shots.size()):
+			if dirty_sides[_shot_sides[index]] == 1:
+				hits[index] = Resolver.find_captures(simulation, cell["row"], cell["col"],
+					GameState.PLAYER_HUMAN, _shots[index]).size()
+			else:
+				hits[index] = base[index]
+			any_hit = any_hit or hits[index] > 0
+		if not any_hit:
+			continue
+		for card in range(_threat_cards.size()):
+			var orientations: Array = _threat_cards[card]
 			var total := 0
-			for stone in variants:
-				total += Resolver.find_captures(simulation, cell["row"], cell["col"],
-					GameState.PLAYER_HUMAN, stone).size()
-			best = maxf(best, float(total) / variants.size())
-		values.append(best)
+			for shots in orientations:
+				for index in shots:
+					total += hits[index]
+			best[card] = maxf(best[card], float(total) / orientations.size())
+	var values: Array[float] = []
+	for value in best:
+		values.append(value)
 	values.sort()
 	values.reverse()
 	return Opponent.expected_best(values, _threat_weights)

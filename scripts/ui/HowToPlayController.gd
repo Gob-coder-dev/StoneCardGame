@@ -3,6 +3,7 @@ extends Control
 
 const Badge := preload("res://scripts/ui/PowerBadge.gd")
 const Swarm := preload("res://scripts/engine/effects/SwarmSystem.gd")
+const Weakness := preload("res://scripts/engine/effects/WeaknessSystem.gd")
 
 const GOD_RULES := {
 	"inari": [
@@ -14,10 +15,10 @@ const GOD_RULES := {
 			"text": "Même lancer, mais ✓ échange le haut et le bas. L'échange est révélé avant les captures. Une carte Fortune possède un seul de ces trois pouvoirs."}
 	],
 	"izanami": [
-		{"kind": "weaken_miss", "title": "Échec corrosif −1",
-			"text": "Quand cette carte attaque une pierre adverse sans réussir à la capturer, de près ou avec une lame bleue, un poison atteint cette pierre et lui retire 1 force sur chaque face. Les pierres capturées, non attaquées ou hors de portée ne sont pas touchées. Le malus reste actif pendant le tour adverse puis pendant votre coup suivant, et expire après ce coup. Les lames neutralisées apparaissent fissurées ; les boucliers restent fonctionnels."},
+		{"kind": "weaken_miss", "title": "Échec corrosif −{corrosion}",
+			"text": "Quand cette carte attaque une pierre adverse sans réussir à la capturer, de près ou avec une lame bleue, un poison atteint cette pierre et lui retire {corrosion} de force sur chaque face. Les pierres capturées, non attaquées ou hors de portée ne sont pas touchées. Le malus reste actif pendant le tour adverse puis pendant votre coup suivant, et expire après ce coup. Les lames neutralisées apparaissent fissurées ; les boucliers restent fonctionnels."},
 		{"kind": "weaken_adjacent", "title": "Miasme autour de la pierre",
-			"text": "Le point central et ses quatre voisins représentent les cases adjacentes. Après toutes les tentatives de capture, une aura violette atteint chaque pierre voisine, alliée ou adverse, et lui retire définitivement 1 force sur chaque face, y compris après une capture. Chaque niveau de faiblesse brise visuellement une lame par face, sans affecter les boucliers. Une carte Déclin ne possède qu'un seul pouvoir."}
+			"text": "Le point central et ses quatre voisins représentent les cases adjacentes. Tant que la carte reste dans le camp d'Izanami, une aura violette retire 1 force sur chaque face à chaque pierre adverse voisine, y compris à une carte posée plus tard à côté : celle-ci attaque d'abord normalement, puis subit le malus. Deux pierres Miasme voisines retirent 2 de force. Si la carte Miasme est capturée par un autre dieu, ou si la voisine passe dans ton camp, le malus disparaît. Chaque niveau de faiblesse brise visuellement une lame par face, sans affecter les boucliers. Une carte Déclin ne possède qu'un seul pouvoir."}
 	],
 	"hachiman": [
 		{"kind": "shield", "title": "Rempart : le demi-cercle",
@@ -29,7 +30,7 @@ const GOD_RULES := {
 	],
 	"okuninushi": [
 		{"kind": "swarm", "title": "Essaim : les trois points reliés",
-			"text": "Les pierres Essaim alliées reliées par leurs côtés forment un groupe. Plusieurs lianes vertes croisées restent visibles entre toute la largeur de leurs bords, puis une impulsion y fait pousser leurs lames d'aura. Chaque membre reçoit une lame par autre membre, jusqu'à +{swarm_cap}, dans ses emplacements libres. Exemple : un groupe de 3 renforce chacune de ses pierres de 2 lames. Capturer un maillon coupe les lianes concernées et rétracte les bonus perdus."}
+			"text": "Les pierres Essaim alliées reliées par leurs côtés forment un groupe. Plusieurs lianes vertes croisées restent visibles entre toute la largeur de leurs bords, puis une impulsion y fait pousser leurs lames d'aura. Chaque membre reçoit {swarm_per_ally} lames par autre membre du groupe, jusqu'à +{swarm_cap}, dans ses emplacements libres. Exemple : deux pierres reliées gagnent chacune 2 lames, trois pierres ou plus 4 lames chacune. Seul un joueur dont le dieu est Ōkuninushi relie ses pierres Essaim : une pierre capturée par un autre dieu perd son aura et ne renforce pas l'adversaire. Capturer un maillon coupe les lianes concernées et rétracte les bonus perdus."}
 	],
 	"susanoo": [
 		{"kind": "theft", "title": "Pillage : le cercle avec un +",
@@ -59,6 +60,7 @@ Regarde les côtés faibles déjà exposés et garde une pierre capable de les a
 ## Valeurs lues dans les règles du code, pour que les textes ne s'en écartent pas.
 static func _rule_values() -> Dictionary:
 	return {
+		"board_size": GameState.BOARD_SIZE,
 		"deck_size": DeckRules.DECK_SIZE,
 		"deck_budget": DeckRules.DECK_BUDGET,
 		"normal_cost": UIFormat.cost(StoneCostRules.NORMAL_BLADE_COST),
@@ -66,6 +68,8 @@ static func _rule_values() -> Dictionary:
 		"shield_cost": UIFormat.cost(StoneCostRules.SHIELD_COST),
 		"long_cost": UIFormat.cost(StoneCostRules.LONG_BLADE_COST),
 		"swarm_cap": Swarm.SWARM_CAP,
+		"swarm_per_ally": Swarm.BLADES_PER_ALLY,
+		"corrosion": Weakness.CORROSION_AMOUNT,
 		"max_markers": BattleStone.MAX_MARKERS_PER_SIDE,
 	}
 
@@ -85,7 +89,7 @@ func _add_god_rules(god: Dictionary, values: Dictionary) -> void:
 		badge.custom_minimum_size = Vector2(132 if badge.count > 0 else 76, 76)
 		badge.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 		row.add_child(badge)
-		row.add_child(_make_text("[b]%s[/b]\n%s" % [rule["title"], str(rule["text"]).format(values)]))
+		row.add_child(_make_text("[b]%s[/b]\n%s" % [str(rule["title"]).format(values), str(rule["text"]).format(values)]))
 		god_rules.add_child(row)
 
 
@@ -109,7 +113,7 @@ Contrôler le plus de pierres possible sur le plateau quand toutes les cases son
 
 [color=#ffe060][font_size=44]Le plateau[/font_size][/color]
 
-Une grille de 3×3. Certaines parties comportent une case bloquée (marquée ✕) où personne ne peut jouer.
+Une grille de {board_size}×{board_size}. Certaines parties comportent une ou deux cases bloquées (marquées ✕) où personne ne peut jouer.
 
 [color=#ffe060][font_size=44]Les pierres[/font_size][/color]
 

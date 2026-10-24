@@ -3,6 +3,7 @@
 extends RefCounted
 
 const Effects := preload("res://scripts/domain/StoneEffects.gd")
+const Weakness := preload("res://scripts/engine/effects/WeaknessSystem.gd")
 
 const FORTUNE := Color("#ff55c8")
 const SHIELD := Color("#92e7f2")
@@ -97,7 +98,7 @@ static func draw_icon(canvas: CanvasItem, center: Vector2, radius: float, kind: 
 				inner.append(point.lerp(center, 0.38))
 			canvas.draw_colored_polygon(inner, GOLD)
 		"weaken_miss":
-			draw_text(canvas, center, radius, "-1", Color("#e889d4"))
+			draw_text(canvas, center, radius, "-%d" % Weakness.CORROSION_AMOUNT, Color("#e889d4"))
 		"weaken_adjacent":
 			canvas.draw_circle(center, radius * 0.25, Color("#e889d4"))
 			for direction in [Vector2.UP, Vector2.DOWN, Vector2.LEFT, Vector2.RIGHT]:

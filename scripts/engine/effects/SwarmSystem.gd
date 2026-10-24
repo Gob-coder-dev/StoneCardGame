@@ -4,21 +4,31 @@ const BattleStoneModel := preload("res://scripts/engine/BattleStone.gd")
 const SIDES = StoneSide.ALL
 const Board := preload("res://scripts/engine/combat/CombatBoard.gd")
 const Effects := preload("res://scripts/domain/StoneEffects.gd")
-const SWARM_CAP := 2
+## Lames d'aura au plus par pierre : une paire reçoit +2, un groupe de trois
+## ou plus atteint le plafond de +4.
+const SWARM_CAP := 4
+## Lames d'aura qu'apporte chaque autre membre du groupe, jusqu'à SWARM_CAP.
+const BLADES_PER_ALLY := 2
 
-## Seules les pierres Essaim reçoivent des lames d'aura, et une pierre posée le
-## reste jusqu'à la fin du match : sans elles, il n'y a rien à recalculer.
+## Seules les pierres Essaim d'un camp dont le dieu est celui de la carte
+## reçoivent des lames d'aura. Une pierre Essaim capturée par un autre dieu
+## perd donc son aura. Sans pierre Essaim, il n'y a rien à recalculer.
 static func recalculate(state: GameState) -> void:
 	var is_member := {}
+	var has_swarm_stone := false
 	for index in range(state.board.size()):
-		if _is_swarm_cell(state.board[index]):
-			is_member[index] = true
-	if is_member.is_empty():
-		return
-	for index in is_member:
-		var stone := Board.stone_at(state.board[index])
+		var cell: Dictionary = state.board[index]
+		var stone := Board.stone_at(cell)
+		if stone == null or not StoneLoader.has_effect(stone.stone_id, Effects.SWARM):
+			continue
+		has_swarm_stone = true
+		# Une pierre devenue inactive doit aussi perdre ses anciennes lames.
 		for side in SIDES:
 			stone.swarm_blades[side] = 0
+		if _is_swarm_cell(state, cell):
+			is_member[index] = true
+	if not has_swarm_stone or is_member.is_empty():
+		return
 	var visited := {}
 	for index in range(state.board.size()):
 		if visited.has(index) or not is_member.has(index):
@@ -39,7 +49,7 @@ static func recalculate(state: GameState) -> void:
 				if state.board[next_index]["owner"] == owner and is_member.has(next_index):
 					visited[next_index] = true
 					pending.append(next_index)
-		var bonus_count := mini(SWARM_CAP, component.size() - 1)
+		var bonus_count := mini(SWARM_CAP, (component.size() - 1) * BLADES_PER_ALLY)
 		for member_index in component:
 			var member := Board.stone_at(state.board[member_index])
 			var contributor := 0
@@ -49,12 +59,16 @@ static func recalculate(state: GameState) -> void:
 				var other := Board.stone_at(state.board[other_index])
 				var pair_key := "%d:%d" % [mini(member.instance_id, other.instance_id), maxi(member.instance_id, other.instance_id)]
 				var start := absi(hash(pair_key + ":" + str(member.instance_id))) % SIDES.size()
-				for offset in range(SIDES.size()):
-					var side := SIDES[(start + offset) % SIDES.size()]
-					if member.free_marker_slots(side) > 0:
-						member.swarm_blades[side] = int(member.swarm_blades[side]) + 1
-						contributor += 1
+				# Chaque lame d'un même allié part de la face suivante : l'aura se répartit.
+				for blade in range(BLADES_PER_ALLY):
+					if contributor >= bonus_count:
 						break
+					for offset in range(SIDES.size()):
+						var side := SIDES[(start + blade + offset) % SIDES.size()]
+						if member.free_marker_slots(side) > 0:
+							member.swarm_blades[side] = int(member.swarm_blades[side]) + 1
+							contributor += 1
+							break
 
 
 ## Capture les seules données nécessaires à la présentation de l'Essaim.
@@ -67,7 +81,7 @@ static func snapshot(state: GameState) -> Dictionary:
 	var links := {}
 	for index in range(state.board.size()):
 		var cell: Dictionary = state.board[index]
-		if not _is_swarm_cell(cell):
+		if not _is_swarm_cell(state, cell):
 			continue
 		var stone := Board.stone_at(cell)
 		var instance_id := int(stone.instance_id)
@@ -86,7 +100,7 @@ static func snapshot(state: GameState) -> Dictionary:
 			if next_row >= GameState.BOARD_SIZE or next_col >= GameState.BOARD_SIZE:
 				continue
 			var other_cell := state.get_cell(next_row, next_col)
-			if int(other_cell["owner"]) != int(member["owner"]) or not _is_swarm_cell(other_cell):
+			if int(other_cell["owner"]) != int(member["owner"]) or not _is_swarm_cell(state, other_cell):
 				continue
 			var other := Board.stone_at(other_cell)
 			var other_id := int(other.instance_id)
@@ -205,8 +219,11 @@ static func _empty_side_map() -> Dictionary:
 	return {"top": 0, "bottom": 0, "left": 0, "right": 0}
 
 
-static func _is_swarm_cell(cell: Dictionary) -> bool:
+## Membre actif d'un réseau : pierre Essaim dans un camp dont le dieu
+## correspond à la carte (règle des dieux de StoneLoader).
+static func _is_swarm_cell(state: GameState, cell: Dictionary) -> bool:
 	if cell["owner"] == GameState.PLAYER_NONE:
 		return false
 	var stone := Board.stone_at(cell)
-	return stone != null and StoneLoader.has_effect(stone.stone_id, Effects.SWARM)
+	return stone != null and StoneLoader.has_effect(stone.stone_id, Effects.SWARM) \
+		and StoneLoader.is_power_active_for_god(stone.stone_id, state.god_of(int(cell["owner"])))

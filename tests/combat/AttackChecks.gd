@@ -81,7 +81,7 @@ func _test_attack_paths() -> void:
 	ray = result["attacks"][0]
 	_check(result["captures"].size() == 2 and ray["hits"][0]["attack"] == 3 and ray["hits"][1]["attack"] == 1,
 		"l'attaque combinée capture au contact puis les bleues continuent seules")
-	_check(ray["endpoint"]["type"] == "exit" and ray["endpoint"]["col"] == 3,
+	_check(ray["endpoint"]["type"] == "exit" and ray["endpoint"]["col"] == GameState.BOARD_SIZE,
 		"le tir sort du plateau après sa dernière capture")
 
 	var resistance := _state_with_hands(["fx_mixed_ranged"], [])

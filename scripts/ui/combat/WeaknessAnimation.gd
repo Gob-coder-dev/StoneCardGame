@@ -28,7 +28,7 @@ func _init() -> void:
 
 
 ## Une traînée de poison part de la pierre posée vers chaque pierre affaiblie :
-## ses voisines pour le Miasme, les pierres qui ont résisté pour l'Échec corrosif.
+## ses voisines adverses pour le Miasme, celles qui ont résisté pour l'Échec corrosif.
 func play_weakening(source: StoneCard, targets: Array, duration: float) -> void:
 	mode = CombatEvents.WEAKEN
 	_source = source

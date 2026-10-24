@@ -58,7 +58,7 @@ CombatResolver.resolve_attacks()
 CombatResolver.finish_move()
   ├─ application des captures du plan
   ├─ PostAttackEffectResolver.resolve(plan d'attaque)
-  │    ├─ WeaknessSystem.apply_miasma()          voisines de la pierre posée
+  │    ├─ WeaknessSystem.update_miasma()         aura continue, recalculée à chaque coup
   │    ├─ ShieldTheftSystem.resolve()             autres faces que celle qui a capturé
   │    ├─ WeaknessSystem.expire_for_player()
   │    └─ WeaknessSystem.apply_failed_attack()    pierres qui ont résisté à l'attaque
@@ -150,7 +150,9 @@ Aucune animation ne change le plateau logique ni ne relance le hasard.
 
 `CollectionScreenController` coordonne les choix et enregistre les opérations.
 `GodSelector`, `DeckPanel` et `CollectionGrid` possèdent chacun leur vue.
-`CardGridLayout` crée les éléments visuels communs. Le tri est défini dans `CollectionGrid`.
+`CardGridLayout` crée les éléments visuels communs. Le tri est défini dans `CollectionGrid`
+(`SortMode`, dans l'ordre des boutons du menu) : FAMILLE par défaut, puis coût,
+rareté et nom, avec le nom pour départager les ex aequo.
 Les cartes du deck n'apparaissent pas dans la collection. `CollectionGrid` les
 garde construites mais masquées dans une `GridContainer`, qui referme les trous :
 un changement de deck reconstruit ses emplacements et masque ou réaffiche seulement
@@ -195,16 +197,32 @@ propre à l'IA (`ProfileAI.rng`, fixé par les tests).
 
 `MoveEvaluator` mesure un coup en captures, en le jouant avec
 `CombatResolver.apply_move()` sur une copie de l'état. Un coup dont la simulation
-consomme du hasard (Fortune, Pillage) est rejoué sur 8 tirages, avec des graines
+consomme du hasard (Fortune, Pillage) est rejoué sur 4 tirages, avec des graines
 propres à l'IA. Avec `anticipation` :
 
 - la valeur retire la riposte attendue : pour chaque carte possible du joueur,
   ses meilleures captures immédiates depuis une case libre, puis la meilleure
   carte de sa main, en moyenne sur les mains possibles de sa taille
   (`OpponentModel.rank_weights`) ;
-- à trois cases libres ou moins, un calcul exact joue toutes les fins de partie
-  (élagage alpha-bêta sur les coups de l'IA), avec la même moyenne sur les mains
-  pour chaque riposte. Un coup aléatoire y est rejoué sur 2 tirages.
+- à deux cases libres ou moins, un calcul exact pose chaque riposte possible
+  jusqu'à la fin de la partie, avec la même moyenne sur les mains. Un coup
+  aléatoire y est rejoué sur 2 tirages.
+
+La riposte immédiate est découpée en tirs : une attaque est un plan pur où chaque
+direction est indépendante. `MoveEvaluator` demande au résolveur, pour chaque case
+libre, chaque tir différent (face, lames, lames bleues) une seule fois, avec une
+pierre qui n'attaque que dans cette direction (`make_shot`), puis additionne les
+tirs de chaque carte. Le coût dépend du nombre de tirs différents, qui plafonne,
+et non du nombre de cartes. Les captures de chaque tir sont aussi calculées une
+fois sur l'état reçu : pour un coup évalué, seuls les tirs dont la ligne traverse
+une case changée (pose, captures, auras, défenses) sont redemandés au résolveur.
+Sur le plateau 4×4, avec 40 cartes possibles, le niveau 3 réfléchit en moyenne
+0,06 s sur PC (0,3 s au plus). Le calcul exact, lui, pose chaque carte possible :
+il est limité à deux cases, où il reste court.
+
+Avec `anticipation` (niveau 3), la valeur d'un coup gagne aussi 0,3 capture par
+lame d'aura d'Essaim obtenue (`AURA_WEIGHT`) : l'aura reste et sert aux coups
+suivants, ce qui pousse l'IA à relier ses pierres Essaim.
 
 `OpponentModel` déduit les cartes possibles du dieu du joueur et des poses déjà
 faites (`placed_by`) : `clone_for_ai()` cache la main humaine et le prochain tirage
@@ -236,6 +254,13 @@ pas leurs pouvoirs de pose, à part le pile ou face.
 
 Un nouveau système continu peut suivre `SwarmSystem`, avec un instantané et une
 transition avant/après. `CombatResolver` garde uniquement l'ordre général des phases.
+Le Miasme est le second système continu : `WeaknessSystem.update_miasma()` recalcule
+après les captures de chaque coup le malus `BattleStone.miasma_weakness` et émet un
+`WEAKEN` par pierre plus affaiblie ou un `WEAKNESS_EXPIRED` par pierre soulagée.
+`BoardAnimationController` anime une traînée par source et fusionne les malus d'une
+même cible. Les deux systèmes appliquent la règle des dieux de
+`StoneLoader.is_power_active_for_god()` : une carte de famille n'agit que dans le
+camp dont le dieu est le sien (`GameState.god_of()`).
 
 ## Vérification
 

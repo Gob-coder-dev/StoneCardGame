@@ -4,8 +4,10 @@
 class_name DeckRules
 extends RefCounted
 
-const DECK_SIZE: int = 5
-const DECK_BUDGET: int = 50
+## Plateau 4×4 : sans case bloquée, chaque joueur pose 8 pierres.
+const DECK_SIZE: int = 8
+## 10 points en moyenne par pierre.
+const DECK_BUDGET: int = 80
 
 const REASON_UNKNOWN: String = "unknown_stone"
 const REASON_DUPLICATE: String = "duplicate"

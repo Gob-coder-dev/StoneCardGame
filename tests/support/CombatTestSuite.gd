@@ -27,8 +27,6 @@ func _register_test_stones() -> void:
 	_register("fx_mixed_ranged", 0, 0, 0, 2, {"long_blades": {"top": 0, "bottom": 0, "left": 0, "right": 2}})
 	_register("fx_strong_wall", 4, 4, 4, 4)
 	_register("fx_ranged_target", 0, 0, 0, 0)
-	# Défense 2 à gauche seulement : seules les fortes lames de droite la capturent par là.
-	_register("fx_left2", 0, 0, 2, 0)
 	_register("fx_target", 0, 0, 1, 0, {"shields": {"top": 0, "bottom": 0, "left": 1, "right": 0}})
 	_register("fx_weaken_local", 0, 0, 0, 0, {"effects": [StoneEffects.WEAKEN_ADJACENT]})
 	_register("fx_weaken_attack1", 0, 0, 0, 1, {"effects": [StoneEffects.WEAKEN_ADJACENT]})
@@ -44,6 +42,12 @@ func _register_test_stones() -> void:
 	_register("fx_swarm_c", 1, 1, 1, 1, {"effects": [StoneEffects.SWARM]})
 	# Seule la face du bas a de la place : sa lame d'Essaim y pousse toujours.
 	_register("fx_swarm_bottom", 4, 0, 4, 4, {"effects": [StoneEffects.SWARM]})
+	# Cartes de famille : leur pouvoir continu suit la règle des dieux.
+	_register("fx_swarm_okuni_a", 1, 1, 1, 1, {"effects": [StoneEffects.SWARM], "god_id": "okuninushi"})
+	_register("fx_swarm_okuni_b", 1, 1, 1, 1, {"effects": [StoneEffects.SWARM], "god_id": "okuninushi"})
+	_register("fx_miasma_izanami", 0, 0, 0, 0, {"effects": [StoneEffects.WEAKEN_ADJACENT], "god_id": "izanami"})
+	# Défend ses flancs avec 1 : résiste à une lame, cède à deux.
+	_register("fx_miasma_guard", 0, 0, 1, 1, {"effects": [StoneEffects.WEAKEN_ADJACENT], "god_id": "izanami"})
 	_register("fx_thief", 3, 3, 3, 3, {"effects": [StoneEffects.SHIELD_THEFT]})
 	# Seule la face droite a de la place : c'est aussi elle qui attaque.
 	_register("fx_thief_right_open", 4, 4, 4, 2, {"effects": [StoneEffects.SHIELD_THEFT]})
@@ -53,6 +57,22 @@ func _register(id: String, top: int, bottom: int, left: int, right: int, extras:
 	var definition := {"god_id": "neutral", "effects": []}
 	definition.merge(extras, true)
 	StoneLoader.register_stone(id, top, bottom, left, right, definition)
+
+
+## L'IA déduit les cartes possibles de l'adversaire du catalogue réel, qui va
+## grandir. Un test aux valeurs calculées à la main le remplace par des
+## fixtures le temps du calcul, puis le rend avec _restore_catalog().
+func _use_catalog(stone_ids: Array) -> Array:
+	var previous: Array = StoneLoader._stones_list
+	var fixtures: Array = []
+	for stone_id in stone_ids:
+		fixtures.append(StoneLoader._stones[stone_id])
+	StoneLoader._stones_list = fixtures
+	return previous
+
+
+func _restore_catalog(previous: Array) -> void:
+	StoneLoader._stones_list = previous
 
 
 func _state_with_hands(human: Array, ai: Array) -> GameState:

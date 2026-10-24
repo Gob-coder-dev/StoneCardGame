@@ -12,7 +12,7 @@ const BattleStoneModel := preload("res://scripts/engine/BattleStone.gd")
 
 ## Constantes du plateau. BOARD_SIZE est la seule valeur à changer pour
 ## agrandir le terrain ; tout le reste en dérive.
-const BOARD_SIZE: int = 3
+const BOARD_SIZE: int = 4
 
 ## Identifiants des joueurs
 const PLAYER_HUMAN: int = 1
@@ -155,6 +155,15 @@ static func get_adjacent_positions(row: int, col: int) -> Array:
 
 func hand_of(player: int) -> Array:
 	return human_hand if player == PLAYER_HUMAN else ai_hand
+
+
+## Dieu équipé par un camp ("" pour une case neutre ou un dieu inconnu).
+func god_of(player: int) -> String:
+	if player == PLAYER_HUMAN:
+		return human_god_id
+	if player == PLAYER_AI:
+		return ai_god_id
+	return ""
 
 
 ## ─── Copie pour l'IA ──────────────────────────────────────────────────────────

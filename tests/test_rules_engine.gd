@@ -59,12 +59,12 @@ func test_placement_valid_on_empty_cell() -> void:
 func test_placement_invalid_out_of_bounds_row() -> void:
 	var state := _make_state()
 	state.human_hand = ["t_1111"]
-	assert_false(PlacementRules.is_valid(state, 3, 0, "t_1111", GameState.PLAYER_HUMAN))
+	assert_false(PlacementRules.is_valid(state, GameState.BOARD_SIZE, 0, "t_1111", GameState.PLAYER_HUMAN))
 
 func test_placement_invalid_out_of_bounds_col() -> void:
 	var state := _make_state()
 	state.human_hand = ["t_1111"]
-	assert_false(PlacementRules.is_valid(state, 0, 3, "t_1111", GameState.PLAYER_HUMAN))
+	assert_false(PlacementRules.is_valid(state, 0, GameState.BOARD_SIZE, "t_1111", GameState.PLAYER_HUMAN))
 
 func test_placement_invalid_on_blocked_cell() -> void:
 	var state := _make_state()
@@ -187,29 +187,24 @@ func test_score_human_wins() -> void:
 	assert_eq(score["human"], 2)
 	assert_eq(score["ai"], 1)
 
+## Donne les first premières cases à l'humain et toutes les suivantes à l'IA.
+func _split_board(state: GameState, first: int) -> void:
+	for i in range(state.board.size()):
+		state.board[i]["owner"] = GameState.PLAYER_HUMAN if i < first else GameState.PLAYER_AI
+
 func test_winner_human() -> void:
 	var state := _make_state()
-	for i in range(5):
-		state.board[i]["owner"] = GameState.PLAYER_HUMAN
-	for i in range(5, 9):
-		state.board[i]["owner"] = GameState.PLAYER_AI
+	_split_board(state, GameState.total_cells() / 2 + 1)
 	assert_eq(RulesEngine.determine_winner(state), GameState.PLAYER_HUMAN)
 
 func test_winner_ai() -> void:
 	var state := _make_state()
-	for i in range(4):
-		state.board[i]["owner"] = GameState.PLAYER_HUMAN
-	for i in range(4, 9):
-		state.board[i]["owner"] = GameState.PLAYER_AI
+	_split_board(state, GameState.total_cells() / 2 - 1)
 	assert_eq(RulesEngine.determine_winner(state), GameState.PLAYER_AI)
 
 func test_winner_tie() -> void:
 	var state := _make_state()
-	state.board[8]["cell_type"] = GameState.CELL_BLOCKED
-	for i in range(4):
-		state.board[i]["owner"] = GameState.PLAYER_HUMAN
-	for i in range(4, 8):
-		state.board[i]["owner"] = GameState.PLAYER_AI
+	_split_board(state, GameState.total_cells() / 2)
 	assert_eq(RulesEngine.determine_winner(state), GameState.PLAYER_NONE)
 
 
@@ -228,10 +223,10 @@ func test_adjacent_edge_has_3_neighbors() -> void:
 ## ─── Coups valides ───────────────────────────────────────────────────────────
 
 func test_valid_moves_count() -> void:
-	## 9 cases libres × 2 pierres = 18 coups
+	## Chaque case libre × 2 pierres
 	var state := _make_state()
 	state.ai_hand = ["t_1111", "t_4444"]
-	assert_eq(RulesEngine.get_valid_moves(state, GameState.PLAYER_AI).size(), 18)
+	assert_eq(RulesEngine.get_valid_moves(state, GameState.PLAYER_AI).size(), GameState.total_cells() * 2)
 
 func run() -> void:
 	before_all()

@@ -8,8 +8,9 @@ const Effects := preload("res://scripts/domain/StoneEffects.gd")
 static func resolve(state: GameState, source: BattleStone, row: int, col: int, player: int, attack_plan: Dictionary) -> Array:
 	var events: Array = []
 	var captures: Array = attack_plan.get("captures", [])
-	if StoneLoader.has_effect(source.stone_id, Effects.WEAKEN_ADJACENT):
-		events.append_array(Weakness.apply_miasma(state, row, col))
+	# L'aura du Miasme est continue : chaque coup peut l'étendre (pose à côté
+	# d'une pierre Miasme) ou la réduire (capture), quelle que soit la carte posée.
+	events.append_array(Weakness.update_miasma(state, row, col))
 	if StoneLoader.has_effect(source.stone_id, Effects.SHIELD_THEFT):
 		events.append_array(Theft.resolve(state, source, row, col, captures))
 	# Le coup profite encore de l'ancien malus avant son expiration.

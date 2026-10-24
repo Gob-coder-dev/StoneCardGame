@@ -12,14 +12,21 @@ signal card_press_started(stone_id: String, card: StoneCard, pointer: int, canva
 
 const DragGesture := preload("res://scripts/ui/input/DragGesture.gd")
 
+## La main complète tient sur deux rangées (4 colonnes pour un deck de 8).
+const ROWS := 2
+## Côté d'une carte de la main, en pixels du canevas 1080 de large.
+const CARD_SIZE := 220
+
 var _cards: Array[StoneCard] = []  ## cartes affichées, dans l'ordre de la main
 var _selected_id: String = ""
 
 
 func _ready() -> void:
-	columns = 3
+	columns = ceili(float(DeckRules.DECK_SIZE) / ROWS)
 	add_theme_constant_override("h_separation", UITheme.GAP_MEDIUM)
 	add_theme_constant_override("v_separation", UITheme.GAP_MEDIUM)
+	# La hauteur suit la taille du deck : le plateau garde tout le reste de l'écran.
+	custom_minimum_size.y = ROWS * CARD_SIZE + (ROWS - 1) * UITheme.GAP_MEDIUM
 
 
 ## Synchronise la main avec la liste de stone_id du moteur. Pendant un match,
@@ -55,7 +62,7 @@ func _rebuild(stone_ids: Array) -> void:
 		wrapper.stretch_mode = AspectRatioContainer.STRETCH_FIT
 		wrapper.alignment_horizontal = AspectRatioContainer.ALIGNMENT_CENTER
 		wrapper.alignment_vertical = AspectRatioContainer.ALIGNMENT_CENTER
-		wrapper.custom_minimum_size = Vector2(0, 250)
+		wrapper.custom_minimum_size = Vector2(0, CARD_SIZE)
 		wrapper.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
 		var card := StoneCard.new()

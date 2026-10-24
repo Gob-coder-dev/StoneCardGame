@@ -22,8 +22,9 @@ func _test_swarm_view_animation() -> void:
 		and _sum(second.displayed_stone().swarm_blades) == 0,
 		"les filaments masquent les nouvelles lames jusqu'à l'arrivée de l'impulsion")
 	await get_tree().create_timer(0.37).timeout
-	_check(_sum(first.displayed_stone().swarm_blades) == 1
-		and _sum(second.displayed_stone().swarm_blades) == 1,
+	# Une paire reliée : chaque carte reçoit 2 lames de son seul allié.
+	_check(_sum(first.displayed_stone().swarm_blades) == 2
+		and _sum(second.displayed_stone().swarm_blades) == 2,
 		"l'impulsion fait pousser les bonus exacts sur les deux cartes")
 	await get_tree().create_timer(0.28).timeout
 	_check(view.animations.get_node_or_null("SwarmReveal") == null
@@ -50,8 +51,9 @@ func _test_swarm_view_animation() -> void:
 	view.animations.animate_swarm(result["swarm_events"], 0.55)
 	animation = view.animations.get_node("SwarmReveal")
 	first = view.get_node("cell_1_0").get_child(0)
+	# Groupe de trois : chaque carte portait le plafond de 4 lames avant la rupture.
 	_check(animation._links_before.size() == 2 and animation._links_after.is_empty()
-		and _sum(first.displayed_stone().swarm_blades) == 2,
+		and _sum(first.displayed_stone().swarm_blades) == 4,
 		"la rupture conserve brièvement l'ancien réseau et ses lames visibles")
 	await get_tree().create_timer(0.20).timeout
 	var retracted := true

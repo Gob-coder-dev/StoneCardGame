@@ -33,7 +33,7 @@ const HUD_CENTER_WIDTH: int = 90   ## zone fixe du symbole central
 const FONT_HUD_CENTER: int = 56    ## flèche du joueur actif ou « VS »
 
 ## ─── Tailles des cartes dans les menus ──────────────────────────────────────
-const CARD_DECK: int = 265
+const CARD_DECK: int = 210  ## 4 emplacements par rangée pour un deck de 8
 const CARD_COLLECTION: int = 300
 const CARD_INFO: int = 700
 

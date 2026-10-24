@@ -3,10 +3,10 @@
 ## les textes ; ContentValidator signale tout identifiant absent de ALL.
 extends RefCounted
 
-## Déclin : Miasme, affaiblit définitivement les voisines après les attaques.
+## Déclin : Miasme, aura continue qui affaiblit de 1 les voisines adverses.
 const WEAKEN_ADJACENT := "weaken_adjacent"
 ## Déclin : Échec corrosif, chaque pierre adverse qui résiste à l'attaque perd
-## 1 force jusqu'à la fin du prochain coup du lanceur.
+## 2 de force jusqu'à la fin du prochain coup du lanceur.
 const WEAKEN_ON_FAILED_ATTACK := "weaken_on_failed_attack"
 ## Essaim : aura de groupe entre pierres Essaim alliées reliées.
 const SWARM := "swarm"

@@ -18,7 +18,9 @@ var random_blades: Dictionary = {}
 var long_blades: Dictionary = {}
 var shields: Dictionary = {}
 var swarm_blades: Dictionary = {}
-var permanent_weakness: int = 0
+## Malus continu du Miasme : nombre de pierres Miasme adverses actives voisines,
+## recalculé après chaque coup par WeaknessSystem.update_miasma().
+var miasma_weakness: int = 0
 var temporary_weakness: int = 0
 var temporary_weakness_owner: int = 0
 var coin_flipped: bool = false
@@ -44,7 +46,7 @@ func clone():
 	result.long_blades = long_blades.duplicate()
 	result.shields = shields.duplicate()
 	result.swarm_blades = swarm_blades.duplicate()
-	result.permanent_weakness = permanent_weakness
+	result.miasma_weakness = miasma_weakness
 	result.temporary_weakness = temporary_weakness
 	result.temporary_weakness_owner = temporary_weakness_owner
 	result.coin_flipped = coin_flipped
@@ -70,7 +72,7 @@ func free_marker_slots(side: String) -> int:
 
 
 func weakness() -> int:
-	return permanent_weakness + temporary_weakness
+	return miasma_weakness + temporary_weakness
 
 
 func attack(side: String) -> int:

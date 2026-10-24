@@ -2,16 +2,21 @@
 ## L'écran d'avant-combat anime le résultat ; il ne tire rien lui-même.
 class_name BoardSetupGenerator
 extends RefCounted
-const CHANCE_NO_BLOCK := 45
+## Chances, en pourcentage, d'un plateau sans case bloquée puis avec une seule ;
+## le reste du temps, deux cases différentes sont bloquées.
+const CHANCE_NO_BLOCK := 40
+const CHANCE_ONE_BLOCK := 35
 
 static func generate() -> Array:
-	if randi() % 100 < CHANCE_NO_BLOCK:
-		return []  ## plateau ouvert
-	## Une case bloquée, à une position aléatoire du terrain.
-	var size := GameState.BOARD_SIZE
-	var row := randi() % size
-	var col := randi() % size
-	return [[row, col]]
+	var roll := randi() % 100
+	var count := 0 if roll < CHANCE_NO_BLOCK else (1 if roll < CHANCE_NO_BLOCK + CHANCE_ONE_BLOCK else 2)
+	var cells: Array = []
+	for index in range(GameState.total_cells()):
+		cells.append([index / GameState.BOARD_SIZE, index % GameState.BOARD_SIZE])
+	var blocked: Array = []
+	for i in range(count):
+		blocked.append(cells.pop_at(randi() % cells.size()))
+	return blocked
 
 
 ## Pile ou face du premier joueur : une chance sur deux pour chaque camp.

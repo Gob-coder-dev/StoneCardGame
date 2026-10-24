@@ -2,6 +2,8 @@
 extends RefCounted
 signal card_requested(stone_id: String, wrapper: VBoxContainer, source: int)
 const Layout := preload("res://scripts/ui/collection/CardGridLayout.gd")
+## Emplacements du deck par rangée : deux rangées de 4 pour un deck de 8.
+const SLOTS_PER_ROW := 4
 var deck_rows: VBoxContainer
 var _current_deck: Array = []
 
@@ -14,23 +16,12 @@ func refresh(deck: Array) -> void:
 
 func _refresh_deck() -> void:
 	Layout.clear_children(deck_rows)
-	var first_row := Layout.make_card_row()
-	deck_rows.add_child(first_row)
-	for index in range(3):
-		first_row.add_child(_make_deck_slot(index, true))
-
-	var second_row := Layout.make_card_row()
-	deck_rows.add_child(second_row)
-	var left_spacer := Control.new()
-	left_spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	left_spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	second_row.add_child(left_spacer)
-	for index in range(3, DeckRules.DECK_SIZE):
-		second_row.add_child(_make_deck_slot(index, false))
-	var right_spacer := Control.new()
-	right_spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	right_spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	second_row.add_child(right_spacer)
+	var row: HBoxContainer = null
+	for index in range(DeckRules.DECK_SIZE):
+		if index % SLOTS_PER_ROW == 0:
+			row = Layout.make_card_row()
+			deck_rows.add_child(row)
+		row.add_child(_make_deck_slot(index, true))
 
 func _make_deck_slot(index: int, expand: bool) -> Control:
 	var wrapper := Layout.make_card_wrapper(expand, UITheme.CARD_DECK)

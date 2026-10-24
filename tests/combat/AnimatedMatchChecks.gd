@@ -15,7 +15,7 @@ func _compare_animated_and_instant(npc: Dictionary) -> void:
 	var simulation := manager.get_state().clone()
 	var consistent := true
 	var moves := 0
-	while not manager.get_state().is_game_over and moves < 9:
+	while not manager.get_state().is_game_over and moves < GameState.total_cells():
 		var state := manager.get_state()
 		var player := state.current_player
 		var choices := RulesEngine.get_valid_moves(state, player)
@@ -29,7 +29,7 @@ func _compare_animated_and_instant(npc: Dictionary) -> void:
 			await get_tree().process_frame
 		consistent = consistent and _same_board(simulation, manager.get_state())
 		moves += 1
-	_check(consistent and moves == 9 and manager.get_state().is_game_over,
+	_check(consistent and moves == GameState.total_cells() and manager.get_state().is_game_over,
 		"partie animée et simulation identiques pour la famille de %s" % npc["name"])
 	manager.queue_free()
 	await get_tree().process_frame
@@ -46,7 +46,7 @@ func _same_board(first: GameState, second: GameState) -> bool:
 		if a["stone"] == null:
 			continue
 		for field in ["base_blades", "random_blades", "long_blades", "shields", "swarm_blades",
-			"permanent_weakness", "temporary_weakness", "temporary_weakness_owner", "coin_flipped"]:
+			"miasma_weakness", "temporary_weakness", "temporary_weakness_owner", "coin_flipped"]:
 			if a["stone"].get(field) != b["stone"].get(field):
 				return false
 	return true

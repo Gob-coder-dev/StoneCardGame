@@ -4,7 +4,8 @@ extends Control
 
 const SortMode = CollectionGridView.SortMode
 
-const SORT_LABELS: Array[String] = ["ORDRE", "COÛT", "RARETÉ", "NOM"]
+## Dans l'ordre de SortMode et des boutons du menu de tri.
+const SORT_LABELS: Array[String] = ["FAMILLE", "COÛT", "RARETÉ", "NOM"]
 const ACTION_DRAWER_SCENE := preload("res://scenes/ui/CardActionDrawer.tscn")
 const DeckPanelView := preload("res://scripts/ui/collection/DeckPanel.gd")
 const CollectionGridView := preload("res://scripts/ui/collection/CollectionGrid.gd")
@@ -29,7 +30,7 @@ var _god_selector: RefCounted
 @onready var replacement_panel: ReplacementPanel = $ReplacementPanel
 
 var _current_deck: Array = []
-var _sort_mode: int = SortMode.ORIGINAL
+var _sort_mode: int = SortMode.FAMILY
 var _action_drawer: CardActionDrawer = null
 var _action_card: StoneCard = null
 var _action_stone_id: String = ""

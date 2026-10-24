@@ -16,7 +16,7 @@ func _test_god_selector_ui() -> void:
 	var saved_deck: Array = PlayerData.player_deck.duplicate()
 	var saved_god: String = PlayerData.player_god_id
 	PlayerData.player_god_id = "inari"
-	PlayerData.player_deck = ["kappa", "tanuki", "ronin", "naginata_monk", "kitsune"]
+	PlayerData.player_deck = ["kappa", "tanuki", "ronin", "naginata_monk", "kitsune", "bakuto", "maneki_neko", "saikoro"]
 	var scene: PackedScene = load("res://scenes/menus/CollectionScreen.tscn")
 	var page: Control = scene.instantiate()
 	add_child(page)
@@ -135,27 +135,49 @@ func _test_collection_incremental_refresh() -> void:
 	var saved_deck: Array = PlayerData.player_deck.duplicate()
 	var saved_god: String = PlayerData.player_god_id
 	PlayerData.player_god_id = "inari"
-	PlayerData.player_deck = ["kappa", "tanuki", "ronin", "naginata_monk", "kitsune"]
+	PlayerData.player_deck = ["kappa", "tanuki", "ronin", "naginata_monk", "kitsune", "bakuto", "maneki_neko", "saikoro"]
 	var scene: PackedScene = load("res://scenes/menus/CollectionScreen.tscn")
 	var page: Control = scene.instantiate()
 	add_child(page)
 	await get_tree().process_frame
 	var cards := _collection_cards(page)
+	var expected: Array = []
+	for definition in StoneLoader.get_stones_for_god("inari"):
+		if not PlayerData.player_deck.has(definition["id"]):
+			expected.append(definition["id"])
 	var shown := _shown_collection_ids(page)
-	shown.sort()
-	_check(cards.size() == 10 and shown == ["amaterasu", "izanagi", "raijin", "ryujin", "tatsu"],
+	var shown_sorted := shown.duplicate()
+	shown_sorted.sort()
+	expected.sort()
+	_check(cards.size() == StoneLoader.get_stones_for_god("inari").size() and shown_sorted == expected,
 		"la collection n'affiche pas les cartes déjà dans le deck")
+	# Tri FAMILLE par défaut : Bakeneko est la première carte d'Inari par son nom.
+	_check(page._sort_mode == 0 and page.sort_button.text.begins_with("TRIER : FAMILLE")
+		and shown[0] == "bakeneko" and _is_family_order(shown, "inari"),
+		"par défaut, les cartes du dieu passent avant les neutres, chacune par ordre alphabétique")
 	var kappa: StoneCard = cards["kappa"]
 	var identity := kappa.get_instance_id()
-	page._current_deck = ["tanuki", "ronin", "naginata_monk", "kitsune"]
+	var without_kappa: Array = PlayerData.player_deck.duplicate()
+	without_kappa.erase("kappa")
+	page._current_deck = without_kappa
 	page._refresh_all()
 	await get_tree().process_frame
 	var grid: GridContainer = page.collection_rows.get_child(0)
-	# Dans l'ordre d'origine, Kappa précède toutes les cartes encore affichées.
-	_check(_shown_collection_ids(page) == ["kappa", "raijin", "tatsu", "ryujin", "amaterasu", "izanagi"]
+	shown = _shown_collection_ids(page)
+	# Kappa revient entre Kamaitachi et Maneki-neko.
+	_check(shown.find("kappa") == shown.find("kamaitachi") + 1 and _is_family_order(shown, "inari")
 		and is_instance_valid(kappa) and kappa.get_instance_id() == identity and not kappa._selected,
 		"une carte retirée du deck revient à sa place dans la collection, sans recréer de carte")
-	page._current_deck = ["tanuki", "ronin", "naginata_monk", "kitsune", "izanagi"]
+	page._select_sort(3)
+	await get_tree().process_frame
+	var by_name := _shown_collection_ids(page)
+	_check(page.sort_button.text.begins_with("TRIER : NOM")
+		and _names_ascending(by_name) and not _is_family_order(by_name, "inari"),
+		"le tri par nom mélange de nouveau cartes du dieu et neutres")
+	page._select_sort(0)
+	await get_tree().process_frame
+	grid = page.collection_rows.get_child(0)
+	page._current_deck = without_kappa + ["izanagi"]
 	page._refresh_all()
 	await get_tree().process_frame
 	var visible_wrappers: Array = []
@@ -163,7 +185,7 @@ func _test_collection_incremental_refresh() -> void:
 		if wrapper.visible:
 			visible_wrappers.append(wrapper)
 	# Izanagi masqué, les cartes visibles restent alignées sur trois colonnes.
-	_check(not _shown_collection_ids(page).has("izanagi") and visible_wrappers.size() == 5
+	_check(not _shown_collection_ids(page).has("izanagi") and visible_wrappers.size() == expected.size()
 		and is_equal_approx(visible_wrappers[3].position.x, visible_wrappers[0].position.x)
 		and visible_wrappers[3].position.y > visible_wrappers[0].position.y,
 		"une carte ajoutée au deck disparaît et la grille referme le trou")
@@ -171,6 +193,34 @@ func _test_collection_incremental_refresh() -> void:
 	await get_tree().process_frame
 	PlayerData.player_deck = saved_deck
 	PlayerData.player_god_id = saved_god
+
+
+## Toutes les cartes du dieu d'abord, puis les neutres, chaque groupe par nom.
+func _is_family_order(ids: Array, god_id: String) -> bool:
+	var seen_neutral := false
+	var group: Array = []
+	for stone_id in ids:
+		var neutral := str(StoneLoader.get_stone(stone_id).get("god_id", "neutral")) == "neutral"
+		if neutral and not seen_neutral:
+			if not _names_ascending(group):
+				return false
+			group = []
+			seen_neutral = true
+		elif not neutral and seen_neutral:
+			return false
+		if not neutral and str(StoneLoader.get_stone(stone_id)["god_id"]) != god_id:
+			return false
+		group.append(stone_id)
+	return _names_ascending(group)
+
+
+func _names_ascending(ids: Array) -> bool:
+	for index in range(1, ids.size()):
+		var previous := str(StoneLoader.get_stone(ids[index - 1])["name"])
+		var current := str(StoneLoader.get_stone(ids[index])["name"])
+		if previous.naturalnocasecmp_to(current) > 0:
+			return false
+	return true
 
 
 func _collection_cards(page: Control) -> Dictionary:

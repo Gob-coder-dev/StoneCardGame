@@ -24,6 +24,7 @@
         "left": 0,
         "right": 1
       },
+      "power_cost": 0.5,
       "power_text": "Rempart : +1 défense en haut et à droite."
     },
     {
@@ -102,8 +103,8 @@
       "weapon": "none",
       "body_color": "#6a4a2a",
       "blades": {
-        "top": 2,
-        "bottom": 2,
+        "top": 3,
+        "bottom": 3,
         "left": 2,
         "right": 0
       },
@@ -133,8 +134,8 @@
       "effects": [
         "weaken_on_failed_attack"
       ],
-      "power_cost": 1.0,
-      "power_text": "Échec corrosif : chaque pierre adverse qui résiste à son attaque perd 1 force jusqu'à la fin de votre prochain coup."
+      "power_cost": 0.0,
+      "power_text": "Échec corrosif : chaque pierre adverse qui résiste à son attaque perd 2 de force jusqu'à la fin de votre prochain coup."
     },
     {
       "id": "samurai_red",
@@ -198,8 +199,8 @@
       "effects": [
         "swarm"
       ],
-      "power_cost": 1.0,
-      "power_text": "Swarm : chaque allié Swarm connecté ajoute une lame à chaque pierre du groupe, jusqu'à +2 par pierre."
+      "power_cost": 0.5,
+      "power_text": "Swarm : chaque autre pierre Swarm du groupe ajoute deux lames à chaque membre, jusqu'à +4 par pierre. Seul le camp d'Ōkuninushi se relie."
     },
     {
       "id": "ronin",
@@ -246,6 +247,7 @@
         "left": 1,
         "right": 1
       },
+      "power_cost": 0.5,
       "power_text": "Rempart équilibré : +1 défense sur chaque face."
     },
     {
@@ -294,8 +296,8 @@
       "effects": [
         "weaken_adjacent"
       ],
-      "power_cost": 1.0,
-      "power_text": "Miasme : après les tentatives de capture, retire définitivement 1 force à chaque face des voisines, alliées ou ennemies."
+      "power_cost": 0.0,
+      "power_text": "Miasme : aura continue, chaque voisine ennemie perd 1 force sur chaque face, même posée plus tard. Active dans le camp d'Izanami."
     },
     {
       "id": "sumo",
@@ -321,6 +323,7 @@
         "left": 1,
         "right": 1
       },
+      "power_cost": 0.5,
       "power_text": "Forteresse basse : +2 défense en bas, +1 sur les flancs."
     },
     {
@@ -366,7 +369,7 @@
       "effects": [
         "swarm"
       ],
-      "power_cost": 1.0,
+      "power_cost": 0.5,
       "power_text": "Swarm : tisse une aura commune avec les pierres Swarm alliées connectées."
     },
     {
@@ -453,8 +456,8 @@
       "effects": [
         "swarm"
       ],
-      "power_cost": 1.0,
-      "power_text": "Swarm : dirige un groupe dont le bonus continu atteint au maximum +2 par pierre."
+      "power_cost": 0.5,
+      "power_text": "Swarm : dirige un groupe dont le bonus continu atteint au maximum +4 par pierre."
     },
     {
       "id": "yasha",
@@ -476,8 +479,8 @@
       "effects": [
         "weaken_adjacent"
       ],
-      "power_cost": 1.0,
-      "power_text": "Miasme : après les tentatives de capture, retire définitivement 1 force à chaque face des voisines, alliées ou ennemies."
+      "power_cost": 0.0,
+      "power_text": "Miasme : aura continue, chaque voisine ennemie perd 1 force sur chaque face, même posée plus tard. Active dans le camp d'Izanami."
     },
     {
       "id": "ryujin",
@@ -509,9 +512,9 @@
       "body_color": "#2a6a8a",
       "blades": {
         "top": 4,
-        "bottom": 3,
-        "left": 3,
-        "right": 4
+        "bottom": 2,
+        "left": 2,
+        "right": 1
       },
       "asset": "",
       "god_id": "susanoo",
@@ -558,6 +561,1864 @@
       "asset": "",
       "god_id": "neutral",
       "effects": []
+    },
+    {
+      "id": "maneki_neko",
+      "name": "Maneki-neko",
+      "name_jp": "招き猫",
+      "description": "Le chat porte-bonheur attire la chance d'une patte levée.",
+      "rarity": "common",
+      "kind": "creature",
+      "weapon": "none",
+      "body_color": "#e8dcc8",
+      "blades": {
+        "top": 1,
+        "bottom": 0,
+        "left": 0,
+        "right": 1
+      },
+      "asset": "",
+      "god_id": "inari",
+      "effects": [],
+      "random_blades": 3,
+      "power_text": "Fortune : 3 lames roses sont réparties aléatoirement à la pose."
+    },
+    {
+      "id": "bakeneko",
+      "name": "Bakeneko",
+      "name_jp": "化け猫",
+      "description": "Le chat-démon retombe toujours sur ses pattes, mais rarement du même côté.",
+      "rarity": "common",
+      "kind": "creature",
+      "weapon": "none",
+      "body_color": "#6a5a7a",
+      "blades": {
+        "top": 4,
+        "bottom": 0,
+        "left": 1,
+        "right": 1
+      },
+      "asset": "",
+      "god_id": "inari",
+      "effects": [],
+      "coin_flip": "vertical",
+      "power_text": "Pile ou face vertical : peut échanger haut et bas à la pose."
+    },
+    {
+      "id": "bakuto",
+      "name": "Bakuto",
+      "name_jp": "博徒",
+      "description": "Joueur de dés des tripots, il mise tout sur un lancer.",
+      "rarity": "common",
+      "kind": "human",
+      "weapon": "tanto",
+      "body_color": "#7a3a4a",
+      "blades": {
+        "top": 2,
+        "bottom": 1,
+        "left": 1,
+        "right": 0
+      },
+      "asset": "",
+      "god_id": "inari",
+      "effects": [],
+      "random_blades": 2,
+      "power_text": "Fortune : 2 lames roses sont réparties aléatoirement à la pose."
+    },
+    {
+      "id": "inugami",
+      "name": "Inugami",
+      "name_jp": "犬神",
+      "description": "L'esprit-chien mord d'un côté ou de l'autre, au gré du sort.",
+      "rarity": "uncommon",
+      "kind": "creature",
+      "weapon": "none",
+      "body_color": "#b8864a",
+      "blades": {
+        "top": 2,
+        "bottom": 1,
+        "left": 4,
+        "right": 0
+      },
+      "asset": "",
+      "god_id": "inari",
+      "effects": [],
+      "coin_flip": "horizontal",
+      "power_text": "Pile ou face horizontal : peut échanger gauche et droite à la pose."
+    },
+    {
+      "id": "daikoku",
+      "name": "Daikoku",
+      "name_jp": "大黒",
+      "description": "Le dieu de la prospérité sème la fortune autour de lui.",
+      "rarity": "rare",
+      "kind": "deity",
+      "weapon": "kanabo",
+      "body_color": "#3a3a6a",
+      "blades": {
+        "top": 3,
+        "bottom": 2,
+        "left": 3,
+        "right": 2
+      },
+      "asset": "",
+      "god_id": "inari",
+      "effects": [],
+      "random_blades": 3,
+      "power_text": "Fortune : 3 lames roses sont réparties aléatoirement à la pose."
+    },
+    {
+      "id": "yurei",
+      "name": "Yūrei",
+      "name_jp": "幽霊",
+      "description": "Une âme errante dont le contact glace les vivants.",
+      "rarity": "common",
+      "kind": "human",
+      "weapon": "none",
+      "body_color": "#c8ccd8",
+      "blades": {
+        "top": 1,
+        "bottom": 1,
+        "left": 1,
+        "right": 1
+      },
+      "asset": "",
+      "god_id": "izanami",
+      "effects": [
+        "weaken_on_failed_attack"
+      ],
+      "power_cost": 0.0,
+      "power_text": "Échec corrosif : chaque pierre adverse qui résiste à son attaque perd 2 de force jusqu'à la fin de votre prochain coup."
+    },
+    {
+      "id": "gaki",
+      "name": "Gaki",
+      "name_jp": "餓鬼",
+      "description": "Un esprit affamé qui ronge tout ce qui l'entoure.",
+      "rarity": "common",
+      "kind": "creature",
+      "weapon": "none",
+      "body_color": "#7a8a5a",
+      "blades": {
+        "top": 0,
+        "bottom": 1,
+        "left": 1,
+        "right": 0
+      },
+      "asset": "",
+      "god_id": "izanami",
+      "effects": [
+        "weaken_adjacent"
+      ],
+      "power_cost": 0.0,
+      "power_text": "Miasme : aura continue, chaque voisine ennemie perd 1 force sur chaque face, même posée plus tard. Active dans le camp d'Izanami."
+    },
+    {
+      "id": "rokurokubi",
+      "name": "Rokurokubi",
+      "name_jp": "ろくろ首",
+      "description": "Son cou s'étire pour mordre là où on ne l'attend pas.",
+      "rarity": "common",
+      "kind": "creature",
+      "weapon": "none",
+      "body_color": "#d8b8a8",
+      "blades": {
+        "top": 3,
+        "bottom": 0,
+        "left": 1,
+        "right": 1
+      },
+      "asset": "",
+      "god_id": "izanami",
+      "effects": [
+        "weaken_on_failed_attack"
+      ],
+      "power_cost": 0.0,
+      "power_text": "Échec corrosif : chaque pierre adverse qui résiste à son attaque perd 2 de force jusqu'à la fin de votre prochain coup."
+    },
+    {
+      "id": "hannya",
+      "name": "Hannya",
+      "name_jp": "般若",
+      "description": "Le masque de la jalousie empoisonne ses voisins.",
+      "rarity": "uncommon",
+      "kind": "oni",
+      "weapon": "tanto",
+      "body_color": "#a8324a",
+      "blades": {
+        "top": 2,
+        "bottom": 2,
+        "left": 1,
+        "right": 2
+      },
+      "asset": "",
+      "god_id": "izanami",
+      "effects": [
+        "weaken_adjacent"
+      ],
+      "power_cost": 0.0,
+      "power_text": "Miasme : aura continue, chaque voisine ennemie perd 1 force sur chaque face, même posée plus tard. Active dans le camp d'Izanami."
+    },
+    {
+      "id": "nure_onna",
+      "name": "Nure-onna",
+      "name_jp": "濡女",
+      "description": "La femme-serpent surgit des eaux noires par en bas.",
+      "rarity": "uncommon",
+      "kind": "creature",
+      "weapon": "none",
+      "body_color": "#3a6a5a",
+      "blades": {
+        "top": 1,
+        "bottom": 3,
+        "left": 0,
+        "right": 1
+      },
+      "asset": "",
+      "god_id": "izanami",
+      "effects": [
+        "weaken_on_failed_attack"
+      ],
+      "power_cost": 0.0,
+      "power_text": "Échec corrosif : chaque pierre adverse qui résiste à son attaque perd 2 de force jusqu'à la fin de votre prochain coup."
+    },
+    {
+      "id": "monban",
+      "name": "Monban",
+      "name_jp": "門番",
+      "description": "Le gardien de la porte ne frappe jamais, mais il ne recule pas.",
+      "rarity": "common",
+      "kind": "human",
+      "weapon": "yari",
+      "body_color": "#6a6a5a",
+      "blades": {
+        "top": 0,
+        "bottom": 0,
+        "left": 0,
+        "right": 0
+      },
+      "asset": "",
+      "god_id": "hachiman",
+      "effects": [],
+      "shields": {
+        "top": 2,
+        "bottom": 2,
+        "left": 2,
+        "right": 2
+      },
+      "power_cost": 0.5,
+      "power_text": "Rempart : +2 défense sur chaque face, sans aucune attaque."
+    },
+    {
+      "id": "kumigashira",
+      "name": "Kumigashira",
+      "name_jp": "組頭",
+      "description": "Le chef d'escouade garde son flanc gauche en avançant.",
+      "rarity": "common",
+      "kind": "human",
+      "weapon": "yari",
+      "body_color": "#7a5a3a",
+      "blades": {
+        "top": 1,
+        "bottom": 1,
+        "left": 0,
+        "right": 2
+      },
+      "asset": "",
+      "god_id": "hachiman",
+      "effects": [],
+      "shields": {
+        "top": 1,
+        "bottom": 0,
+        "left": 2,
+        "right": 0
+      },
+      "power_cost": 0.5,
+      "power_text": "Rempart : +2 défense à gauche et +1 en haut."
+    },
+    {
+      "id": "sohei",
+      "name": "Sōhei",
+      "name_jp": "僧兵",
+      "description": "Moine guerrier : un coup terrible vers le haut, une garde solide ailleurs.",
+      "rarity": "uncommon",
+      "kind": "human",
+      "weapon": "naginata",
+      "body_color": "#8a4a2a",
+      "blades": {
+        "top": 4,
+        "bottom": 1,
+        "left": 1,
+        "right": 1
+      },
+      "asset": "",
+      "god_id": "hachiman",
+      "effects": [],
+      "shields": {
+        "top": 0,
+        "bottom": 2,
+        "left": 1,
+        "right": 1
+      },
+      "power_cost": 0.5,
+      "power_text": "Rempart : +2 défense en bas, +1 sur les flancs."
+    },
+    {
+      "id": "hatamoto",
+      "name": "Hatamoto",
+      "name_jp": "旗本",
+      "description": "Le garde du seigneur tranche à gauche comme à droite.",
+      "rarity": "uncommon",
+      "kind": "human",
+      "weapon": "katana",
+      "body_color": "#5a4a8a",
+      "blades": {
+        "top": 1,
+        "bottom": 1,
+        "left": 3,
+        "right": 2
+      },
+      "asset": "",
+      "god_id": "hachiman",
+      "effects": [],
+      "shields": {
+        "top": 1,
+        "bottom": 2,
+        "left": 0,
+        "right": 0
+      },
+      "power_cost": 0.5,
+      "power_text": "Rempart : +1 défense en haut et +2 en bas."
+    },
+    {
+      "id": "oyoroi",
+      "name": "Ō-yoroi",
+      "name_jp": "大鎧",
+      "description": "Un samouraï en grande armure, redoutable en haut et à gauche.",
+      "rarity": "rare",
+      "kind": "human",
+      "weapon": "katana_legendary",
+      "body_color": "#9a7a2a",
+      "blades": {
+        "top": 4,
+        "bottom": 1,
+        "left": 4,
+        "right": 1
+      },
+      "asset": "",
+      "god_id": "hachiman",
+      "effects": [],
+      "shields": {
+        "top": 0,
+        "bottom": 1,
+        "left": 0,
+        "right": 2
+      },
+      "power_cost": 0.5,
+      "power_text": "Rempart : +1 défense en bas, +2 à droite."
+    },
+    {
+      "id": "hayabusa",
+      "name": "Hayabusa",
+      "name_jp": "隼",
+      "description": "Le faucon de la lune pique de très haut.",
+      "rarity": "common",
+      "kind": "creature",
+      "weapon": "none",
+      "body_color": "#7a8aa8",
+      "blades": {
+        "top": 0,
+        "bottom": 0,
+        "left": 0,
+        "right": 0
+      },
+      "asset": "",
+      "god_id": "tsukuyomi",
+      "effects": [],
+      "long_blades": {
+        "top": 3,
+        "bottom": 0,
+        "left": 0,
+        "right": 0
+      },
+      "power_text": "Horizon : 3 lames bleues attaquent à distance vers le haut."
+    },
+    {
+      "id": "tsuki_yumi",
+      "name": "Archère lunaire",
+      "name_jp": "月弓",
+      "description": "Elle tire vers la droite, aussi loin que porte la lune.",
+      "rarity": "common",
+      "kind": "human",
+      "weapon": "yumi",
+      "body_color": "#4a5a8a",
+      "blades": {
+        "top": 0,
+        "bottom": 1,
+        "left": 1,
+        "right": 0
+      },
+      "asset": "",
+      "god_id": "tsukuyomi",
+      "effects": [],
+      "long_blades": {
+        "top": 0,
+        "bottom": 0,
+        "left": 0,
+        "right": 3
+      },
+      "power_text": "Horizon : 3 lames bleues attaquent à distance vers la droite."
+    },
+    {
+      "id": "nagayari",
+      "name": "Nagayari",
+      "name_jp": "長槍",
+      "description": "Sa longue lance perce la colonne de haut en bas.",
+      "rarity": "uncommon",
+      "kind": "human",
+      "weapon": "yari",
+      "body_color": "#5a6a7a",
+      "blades": {
+        "top": 0,
+        "bottom": 0,
+        "left": 1,
+        "right": 1
+      },
+      "asset": "",
+      "god_id": "tsukuyomi",
+      "effects": [],
+      "long_blades": {
+        "top": 2,
+        "bottom": 2,
+        "left": 0,
+        "right": 0
+      },
+      "power_text": "Horizon : 2 lames bleues attaquent à distance vers le haut et 2 vers le bas."
+    },
+    {
+      "id": "tsuki_usagi",
+      "name": "Lapin de la lune",
+      "name_jp": "月兎",
+      "description": "Le lapin lunaire bondit d'un bord à l'autre de la ligne.",
+      "rarity": "uncommon",
+      "kind": "creature",
+      "weapon": "none",
+      "body_color": "#e8e8f0",
+      "blades": {
+        "top": 1,
+        "bottom": 0,
+        "left": 0,
+        "right": 0
+      },
+      "asset": "",
+      "god_id": "tsukuyomi",
+      "effects": [],
+      "long_blades": {
+        "top": 0,
+        "bottom": 0,
+        "left": 2,
+        "right": 2
+      },
+      "power_text": "Horizon : 2 lames bleues attaquent à distance vers la gauche et 2 vers la droite."
+    },
+    {
+      "id": "hoo",
+      "name": "Hōō",
+      "name_jp": "鳳凰",
+      "description": "Le phénix céleste foudroie toute la colonne au-dessus de lui.",
+      "rarity": "rare",
+      "kind": "creature",
+      "weapon": "none",
+      "body_color": "#d86a3a",
+      "blades": {
+        "top": 1,
+        "bottom": 2,
+        "left": 2,
+        "right": 2
+      },
+      "asset": "",
+      "god_id": "tsukuyomi",
+      "effects": [],
+      "long_blades": {
+        "top": 3,
+        "bottom": 0,
+        "left": 0,
+        "right": 0
+      },
+      "power_text": "Horizon : 3 lames bleues attaquent à distance vers le haut."
+    },
+    {
+      "id": "kodama",
+      "name": "Kodama",
+      "name_jp": "木霊",
+      "description": "Un petit esprit des arbres, bien plus fort en forêt.",
+      "rarity": "common",
+      "kind": "creature",
+      "weapon": "none",
+      "body_color": "#8ab86a",
+      "blades": {
+        "top": 1,
+        "bottom": 1,
+        "left": 1,
+        "right": 1
+      },
+      "asset": "",
+      "god_id": "okuninushi",
+      "effects": [
+        "swarm"
+      ],
+      "power_cost": 0.5,
+      "power_text": "Swarm : chaque autre pierre Swarm du groupe ajoute deux lames à chaque membre, jusqu'à +4 par pierre. Seul le camp d'Ōkuninushi se relie."
+    },
+    {
+      "id": "hotaru",
+      "name": "Hotaru",
+      "name_jp": "蛍",
+      "description": "Une luciole seule ne brille guère ; en essaim, elle aveugle.",
+      "rarity": "common",
+      "kind": "creature",
+      "weapon": "none",
+      "body_color": "#c8d84a",
+      "blades": {
+        "top": 0,
+        "bottom": 1,
+        "left": 1,
+        "right": 1
+      },
+      "asset": "",
+      "god_id": "okuninushi",
+      "effects": [
+        "swarm"
+      ],
+      "power_cost": 0.5,
+      "power_text": "Swarm : chaque autre pierre Swarm du groupe ajoute deux lames à chaque membre, jusqu'à +4 par pierre. Seul le camp d'Ōkuninushi se relie."
+    },
+    {
+      "id": "mukade",
+      "name": "Mukade",
+      "name_jp": "百足",
+      "description": "Le mille-pattes géant mord par le bas et par la droite.",
+      "rarity": "common",
+      "kind": "creature",
+      "weapon": "none",
+      "body_color": "#8a3a2a",
+      "blades": {
+        "top": 0,
+        "bottom": 3,
+        "left": 0,
+        "right": 2
+      },
+      "asset": "",
+      "god_id": "okuninushi",
+      "effects": [
+        "swarm"
+      ],
+      "power_cost": 0.5,
+      "power_text": "Swarm : chaque autre pierre Swarm du groupe ajoute deux lames à chaque membre, jusqu'à +4 par pierre. Seul le camp d'Ōkuninushi se relie."
+    },
+    {
+      "id": "tsuchigumo",
+      "name": "Tsuchigumo",
+      "name_jp": "土蜘蛛",
+      "description": "Le clan des terres se bat toujours en bande.",
+      "rarity": "uncommon",
+      "kind": "oni",
+      "weapon": "kanabo",
+      "body_color": "#6a5a3a",
+      "blades": {
+        "top": 2,
+        "bottom": 2,
+        "left": 2,
+        "right": 1
+      },
+      "asset": "",
+      "god_id": "okuninushi",
+      "effects": [
+        "swarm"
+      ],
+      "power_cost": 0.5,
+      "power_text": "Swarm : chaque autre pierre Swarm du groupe ajoute deux lames à chaque membre, jusqu'à +4 par pierre. Seul le camp d'Ōkuninushi se relie."
+    },
+    {
+      "id": "nue",
+      "name": "Nue",
+      "name_jp": "鵺",
+      "description": "La chimère au cri sinistre mène les petits yokai.",
+      "rarity": "uncommon",
+      "kind": "creature",
+      "weapon": "none",
+      "body_color": "#5a4a3a",
+      "blades": {
+        "top": 2,
+        "bottom": 2,
+        "left": 2,
+        "right": 2
+      },
+      "asset": "",
+      "god_id": "okuninushi",
+      "effects": [
+        "swarm"
+      ],
+      "power_cost": 0.5,
+      "power_text": "Swarm : chaque autre pierre Swarm du groupe ajoute deux lames à chaque membre, jusqu'à +4 par pierre. Seul le camp d'Ōkuninushi se relie."
+    },
+    {
+      "id": "kage",
+      "name": "Kage",
+      "name_jp": "影",
+      "description": "Une ombre qui ne frappe qu'une fois, vers le haut.",
+      "rarity": "common",
+      "kind": "human",
+      "weapon": "kunai",
+      "body_color": "#2a2a3a",
+      "blades": {
+        "top": 3,
+        "bottom": 1,
+        "left": 0,
+        "right": 1
+      },
+      "asset": "",
+      "god_id": "susanoo",
+      "effects": [
+        "shield_theft"
+      ],
+      "power_cost": 1.0,
+      "power_text": "Pillage : la force de la face vaincue devient des boucliers placés au hasard sur les trois autres faces de cette pierre."
+    },
+    {
+      "id": "wako",
+      "name": "Wakō",
+      "name_jp": "倭寇",
+      "description": "Pirate des côtes, il attaque par le haut et par la gauche.",
+      "rarity": "common",
+      "kind": "human",
+      "weapon": "katana",
+      "body_color": "#6a4a3a",
+      "blades": {
+        "top": 3,
+        "bottom": 0,
+        "left": 3,
+        "right": 0
+      },
+      "asset": "",
+      "god_id": "susanoo",
+      "effects": [
+        "shield_theft"
+      ],
+      "power_cost": 1.0,
+      "power_text": "Pillage : la force de la face vaincue devient des boucliers placés au hasard sur les trois autres faces de cette pierre."
+    },
+    {
+      "id": "kabukimono",
+      "name": "Kabuki-mono",
+      "name_jp": "傾奇者",
+      "description": "Un voyou flamboyant qui frappe en bas et à droite.",
+      "rarity": "uncommon",
+      "kind": "human",
+      "weapon": "dual_swords",
+      "body_color": "#c84a8a",
+      "blades": {
+        "top": 1,
+        "bottom": 3,
+        "left": 0,
+        "right": 2
+      },
+      "asset": "",
+      "god_id": "susanoo",
+      "effects": [
+        "shield_theft"
+      ],
+      "power_cost": 1.0,
+      "power_text": "Pillage : la force de la face vaincue devient des boucliers placés au hasard sur les trois autres faces de cette pierre."
+    },
+    {
+      "id": "sanzoku",
+      "name": "Sanzoku",
+      "name_jp": "山賊",
+      "description": "Le bandit des montagnes tombe sur sa proie en haut et à droite.",
+      "rarity": "uncommon",
+      "kind": "oni",
+      "weapon": "kanabo",
+      "body_color": "#7a5a2a",
+      "blades": {
+        "top": 3,
+        "bottom": 1,
+        "left": 0,
+        "right": 2
+      },
+      "asset": "",
+      "god_id": "susanoo",
+      "effects": [
+        "shield_theft"
+      ],
+      "power_cost": 1.0,
+      "power_text": "Pillage : la force de la face vaincue devient des boucliers placés au hasard sur les trois autres faces de cette pierre."
+    },
+    {
+      "id": "orochi",
+      "name": "Orochi",
+      "name_jp": "大蛇",
+      "description": "Le serpent à huit têtes que Susanoo terrassa.",
+      "rarity": "rare",
+      "kind": "dragon",
+      "weapon": "none",
+      "body_color": "#4a7a3a",
+      "blades": {
+        "top": 4,
+        "bottom": 1,
+        "left": 3,
+        "right": 1
+      },
+      "asset": "",
+      "god_id": "susanoo",
+      "effects": [
+        "shield_theft"
+      ],
+      "power_cost": 1.0,
+      "power_text": "Pillage : la force de la face vaincue devient des boucliers placés au hasard sur les trois autres faces de cette pierre."
+    },
+    {
+      "id": "hyakusho",
+      "name": "Hyakushō",
+      "name_jp": "百姓",
+      "description": "Un paysan qui défend ses rizières avec ce qu'il trouve.",
+      "rarity": "common",
+      "kind": "human",
+      "weapon": "bo",
+      "body_color": "#8a7a5a",
+      "blades": {
+        "top": 1,
+        "bottom": 1,
+        "left": 1,
+        "right": 1
+      },
+      "asset": "",
+      "god_id": "neutral",
+      "effects": []
+    },
+    {
+      "id": "hikyaku",
+      "name": "Hikyaku",
+      "name_jp": "飛脚",
+      "description": "Le messager court vite et frappe en passant.",
+      "rarity": "common",
+      "kind": "human",
+      "weapon": "tanto",
+      "body_color": "#a88a5a",
+      "blades": {
+        "top": 2,
+        "bottom": 0,
+        "left": 0,
+        "right": 2
+      },
+      "asset": "",
+      "god_id": "neutral",
+      "effects": []
+    },
+    {
+      "id": "matagi",
+      "name": "Matagi",
+      "name_jp": "マタギ",
+      "description": "Le chasseur des montagnes vise en haut et en bas.",
+      "rarity": "common",
+      "kind": "human",
+      "weapon": "yumi",
+      "body_color": "#5a6a3a",
+      "blades": {
+        "top": 3,
+        "bottom": 3,
+        "left": 0,
+        "right": 0
+      },
+      "asset": "",
+      "god_id": "neutral",
+      "effects": []
+    },
+    {
+      "id": "komainu",
+      "name": "Komainu",
+      "name_jp": "狛犬",
+      "description": "Le chien-lion garde l'entrée des sanctuaires.",
+      "rarity": "uncommon",
+      "kind": "creature",
+      "weapon": "none",
+      "body_color": "#c8a86a",
+      "blades": {
+        "top": 2,
+        "bottom": 2,
+        "left": 2,
+        "right": 0
+      },
+      "asset": "",
+      "god_id": "neutral",
+      "effects": []
+    },
+    {
+      "id": "baku",
+      "name": "Baku",
+      "name_jp": "獏",
+      "description": "Le mangeur de rêves écrase ce qui se trouve sous lui.",
+      "rarity": "uncommon",
+      "kind": "creature",
+      "weapon": "none",
+      "body_color": "#6a7a9a",
+      "blades": {
+        "top": 0,
+        "bottom": 4,
+        "left": 1,
+        "right": 1
+      },
+      "asset": "",
+      "god_id": "neutral",
+      "effects": []
+    },
+    {
+      "id": "kakashi",
+      "name": "Kakashi",
+      "name_jp": "案山子",
+      "description": "L'épouvantail des rizières n'effraie que les corbeaux.",
+      "rarity": "common",
+      "kind": "human",
+      "weapon": "bo",
+      "body_color": "#a89a6a",
+      "blades": {
+        "top": 1,
+        "bottom": 0,
+        "left": 1,
+        "right": 0
+      },
+      "asset": "",
+      "god_id": "neutral",
+      "effects": []
+    },
+    {
+      "id": "chochin_obake",
+      "name": "Chōchin-obake",
+      "name_jp": "提灯お化け",
+      "description": "La lanterne hantée mord ceux qui passent dessous.",
+      "rarity": "common",
+      "kind": "creature",
+      "weapon": "none",
+      "body_color": "#e8a83a",
+      "blades": {
+        "top": 0,
+        "bottom": 2,
+        "left": 0,
+        "right": 1
+      },
+      "asset": "",
+      "god_id": "neutral",
+      "effects": []
+    },
+    {
+      "id": "kasa_obake",
+      "name": "Kasa-obake",
+      "name_jp": "傘お化け",
+      "description": "Le parapluie à un œil bondit sur ce qui est au-dessus.",
+      "rarity": "common",
+      "kind": "creature",
+      "weapon": "none",
+      "body_color": "#c84a3a",
+      "blades": {
+        "top": 3,
+        "bottom": 0,
+        "left": 0,
+        "right": 0
+      },
+      "asset": "",
+      "god_id": "neutral",
+      "effects": []
+    },
+    {
+      "id": "ashinaga",
+      "name": "Ashinaga",
+      "name_jp": "足長",
+      "description": "Ses longues jambes frappent vers le bas.",
+      "rarity": "common",
+      "kind": "human",
+      "weapon": "none",
+      "body_color": "#8a6a4a",
+      "blades": {
+        "top": 0,
+        "bottom": 3,
+        "left": 1,
+        "right": 0
+      },
+      "asset": "",
+      "god_id": "neutral",
+      "effects": []
+    },
+    {
+      "id": "tenaga",
+      "name": "Tenaga",
+      "name_jp": "手長",
+      "description": "Ses bras démesurés frappent loin à gauche.",
+      "rarity": "common",
+      "kind": "human",
+      "weapon": "none",
+      "body_color": "#7a5a4a",
+      "blades": {
+        "top": 1,
+        "bottom": 0,
+        "left": 3,
+        "right": 1
+      },
+      "asset": "",
+      "god_id": "neutral",
+      "effects": []
+    },
+    {
+      "id": "umibozu",
+      "name": "Umibōzu",
+      "name_jp": "海坊主",
+      "description": "Le géant des mers surgit de trois côtés à la fois.",
+      "rarity": "uncommon",
+      "kind": "creature",
+      "weapon": "none",
+      "body_color": "#2a3a5a",
+      "blades": {
+        "top": 2,
+        "bottom": 2,
+        "left": 0,
+        "right": 2
+      },
+      "asset": "",
+      "god_id": "neutral",
+      "effects": []
+    },
+    {
+      "id": "yamauba",
+      "name": "Yamauba",
+      "name_jp": "山姥",
+      "description": "La sorcière des montagnes griffe en bas et à gauche.",
+      "rarity": "uncommon",
+      "kind": "human",
+      "weapon": "none",
+      "body_color": "#6a5a6a",
+      "blades": {
+        "top": 0,
+        "bottom": 3,
+        "left": 3,
+        "right": 0
+      },
+      "asset": "",
+      "god_id": "neutral",
+      "effects": []
+    },
+    {
+      "id": "ittan_momen",
+      "name": "Ittan-momen",
+      "name_jp": "一反木綿",
+      "description": "Une bande de tissu volante qui enserre ses proies.",
+      "rarity": "uncommon",
+      "kind": "creature",
+      "weapon": "none",
+      "body_color": "#e8e0c8",
+      "blades": {
+        "top": 3,
+        "bottom": 1,
+        "left": 3,
+        "right": 0
+      },
+      "asset": "",
+      "god_id": "neutral",
+      "effects": []
+    },
+    {
+      "id": "shojo",
+      "name": "Shōjō",
+      "name_jp": "猩々",
+      "description": "L'esprit-singe ivre frappe surtout vers le bas.",
+      "rarity": "uncommon",
+      "kind": "creature",
+      "weapon": "none",
+      "body_color": "#c85a3a",
+      "blades": {
+        "top": 2,
+        "bottom": 3,
+        "left": 2,
+        "right": 1
+      },
+      "asset": "",
+      "god_id": "neutral",
+      "effects": []
+    },
+    {
+      "id": "kirin",
+      "name": "Kirin",
+      "name_jp": "麒麟",
+      "description": "La licorne sacrée frappe en haut et à gauche.",
+      "rarity": "rare",
+      "kind": "creature",
+      "weapon": "none",
+      "body_color": "#d8c86a",
+      "blades": {
+        "top": 3,
+        "bottom": 2,
+        "left": 3,
+        "right": 1
+      },
+      "asset": "",
+      "god_id": "neutral",
+      "effects": []
+    },
+    {
+      "id": "okami",
+      "name": "Ōkami",
+      "name_jp": "狼",
+      "description": "Le loup des montagnes attaque en haut et à gauche.",
+      "rarity": "rare",
+      "kind": "creature",
+      "weapon": "none",
+      "body_color": "#7a7a8a",
+      "blades": {
+        "top": 4,
+        "bottom": 1,
+        "left": 4,
+        "right": 1
+      },
+      "asset": "",
+      "god_id": "neutral",
+      "effects": []
+    },
+    {
+      "id": "daimyo",
+      "name": "Daimyō",
+      "name_jp": "大名",
+      "description": "Le seigneur de province, solide de tous côtés.",
+      "rarity": "rare",
+      "kind": "human",
+      "weapon": "katana",
+      "body_color": "#8a2a4a",
+      "blades": {
+        "top": 3,
+        "bottom": 3,
+        "left": 2,
+        "right": 2
+      },
+      "asset": "",
+      "god_id": "neutral",
+      "effects": []
+    },
+    {
+      "id": "shogun",
+      "name": "Shōgun",
+      "name_jp": "将軍",
+      "description": "Le chef des armées frappe fort en haut et à droite.",
+      "rarity": "epic",
+      "kind": "human",
+      "weapon": "katana_legendary",
+      "body_color": "#5a1a2a",
+      "blades": {
+        "top": 4,
+        "bottom": 3,
+        "left": 1,
+        "right": 3
+      },
+      "asset": "",
+      "god_id": "neutral",
+      "effects": []
+    },
+    {
+      "id": "gashadokuro",
+      "name": "Gashadokuro",
+      "name_jp": "餓者髑髏",
+      "description": "Le squelette géant né des âmes affamées.",
+      "rarity": "epic",
+      "kind": "creature",
+      "weapon": "none",
+      "body_color": "#d8d0b8",
+      "blades": {
+        "top": 4,
+        "bottom": 4,
+        "left": 3,
+        "right": 2
+      },
+      "asset": "",
+      "god_id": "neutral",
+      "effects": []
+    },
+    {
+      "id": "bishamon",
+      "name": "Bishamon",
+      "name_jp": "毘沙門",
+      "description": "Le dieu guerrier, presque sans faiblesse.",
+      "rarity": "legendary",
+      "kind": "deity",
+      "weapon": "yari",
+      "body_color": "#c89a3a",
+      "blades": {
+        "top": 4,
+        "bottom": 3,
+        "left": 4,
+        "right": 4
+      },
+      "asset": "",
+      "god_id": "neutral",
+      "effects": []
+    },
+    {
+      "id": "yoriki",
+      "name": "Yoriki",
+      "name_jp": "与力",
+      "description": "L'officier écrase ce qui est en dessous et garde le haut.",
+      "rarity": "uncommon",
+      "kind": "human",
+      "weapon": "bo",
+      "body_color": "#4a6a7a",
+      "blades": {
+        "top": 1,
+        "bottom": 3,
+        "left": 0,
+        "right": 1
+      },
+      "asset": "",
+      "god_id": "hachiman",
+      "effects": [],
+      "shields": {
+        "top": 1,
+        "bottom": 0,
+        "left": 1,
+        "right": 1
+      },
+      "power_cost": 0.5,
+      "power_text": "Rempart : +1 défense en haut et sur les flancs."
+    },
+    {
+      "id": "doshin",
+      "name": "Dōshin",
+      "name_jp": "同心",
+      "description": "Le policier frappe à gauche et tient les autres côtés.",
+      "rarity": "uncommon",
+      "kind": "human",
+      "weapon": "tanto",
+      "body_color": "#5a5a7a",
+      "blades": {
+        "top": 1,
+        "bottom": 1,
+        "left": 4,
+        "right": 1
+      },
+      "asset": "",
+      "god_id": "hachiman",
+      "effects": [],
+      "shields": {
+        "top": 1,
+        "bottom": 1,
+        "left": 0,
+        "right": 1
+      },
+      "power_cost": 0.5,
+      "power_text": "Rempart : +1 défense en haut, en bas et à droite."
+    },
+    {
+      "id": "kenshi",
+      "name": "Kenshi",
+      "name_jp": "剣士",
+      "description": "Un escrimeur prudent qui frappe à droite.",
+      "rarity": "common",
+      "kind": "human",
+      "weapon": "katana",
+      "body_color": "#6a7a5a",
+      "blades": {
+        "top": 0,
+        "bottom": 1,
+        "left": 0,
+        "right": 3
+      },
+      "asset": "",
+      "god_id": "hachiman",
+      "effects": [],
+      "shields": {
+        "top": 1,
+        "bottom": 1,
+        "left": 2,
+        "right": 0
+      },
+      "power_cost": 0.5,
+      "power_text": "Rempart : +2 défense à gauche, +1 en haut et en bas."
+    },
+    {
+      "id": "karo",
+      "name": "Karō",
+      "name_jp": "家老",
+      "description": "L'intendant tient ses flancs et frappe en haut comme en bas.",
+      "rarity": "uncommon",
+      "kind": "human",
+      "weapon": "naginata",
+      "body_color": "#7a4a5a",
+      "blades": {
+        "top": 3,
+        "bottom": 3,
+        "left": 1,
+        "right": 1
+      },
+      "asset": "",
+      "god_id": "hachiman",
+      "effects": [],
+      "shields": {
+        "top": 0,
+        "bottom": 0,
+        "left": 2,
+        "right": 2
+      },
+      "power_cost": 0.5,
+      "power_text": "Rempart : +2 défense à gauche et à droite."
+    },
+    {
+      "id": "bugyo",
+      "name": "Bugyō",
+      "name_jp": "奉行",
+      "description": "Un magistrat modeste mais bien protégé.",
+      "rarity": "common",
+      "kind": "human",
+      "weapon": "bo",
+      "body_color": "#6a6a4a",
+      "blades": {
+        "top": 2,
+        "bottom": 1,
+        "left": 1,
+        "right": 1
+      },
+      "asset": "",
+      "god_id": "hachiman",
+      "effects": [],
+      "shields": {
+        "top": 0,
+        "bottom": 1,
+        "left": 1,
+        "right": 1
+      },
+      "power_cost": 0.5,
+      "power_text": "Rempart : +1 défense en bas et sur les flancs."
+    },
+    {
+      "id": "shugo",
+      "name": "Shugo",
+      "name_jp": "守護",
+      "description": "Le gouverneur militaire frappe en haut derrière ses boucliers.",
+      "rarity": "rare",
+      "kind": "human",
+      "weapon": "katana_legendary",
+      "body_color": "#3a5a8a",
+      "blades": {
+        "top": 4,
+        "bottom": 2,
+        "left": 2,
+        "right": 2
+      },
+      "asset": "",
+      "god_id": "hachiman",
+      "effects": [],
+      "shields": {
+        "top": 0,
+        "bottom": 1,
+        "left": 2,
+        "right": 2
+      },
+      "power_cost": 0.5,
+      "power_text": "Rempart : +1 défense en bas, +2 sur les flancs."
+    },
+    {
+      "id": "saikoro",
+      "name": "Saikoro",
+      "name_jp": "賽子",
+      "description": "Un dé vivant : tout dépend du lancer.",
+      "rarity": "common",
+      "kind": "creature",
+      "weapon": "none",
+      "body_color": "#f0f0e8",
+      "blades": {
+        "top": 0,
+        "bottom": 0,
+        "left": 0,
+        "right": 0
+      },
+      "asset": "",
+      "god_id": "inari",
+      "effects": [],
+      "random_blades": 6,
+      "power_text": "Fortune : 6 lames roses sont réparties aléatoirement à la pose."
+    },
+    {
+      "id": "omikuji",
+      "name": "Omikuji",
+      "name_jp": "おみくじ",
+      "description": "Un papier de fortune : bonne ou mauvaise, la chance décide.",
+      "rarity": "common",
+      "kind": "human",
+      "weapon": "none",
+      "body_color": "#e8d8b8",
+      "blades": {
+        "top": 0,
+        "bottom": 0,
+        "left": 0,
+        "right": 0
+      },
+      "asset": "",
+      "god_id": "inari",
+      "effects": [],
+      "random_blades": 5,
+      "power_text": "Fortune : 5 lames roses sont réparties aléatoirement à la pose."
+    },
+    {
+      "id": "kamaitachi",
+      "name": "Kamaitachi",
+      "name_jp": "鎌鼬",
+      "description": "La belette-faux tranche vers le bas, ou vers le haut.",
+      "rarity": "common",
+      "kind": "creature",
+      "weapon": "none",
+      "body_color": "#a87a4a",
+      "blades": {
+        "top": 0,
+        "bottom": 3,
+        "left": 1,
+        "right": 1
+      },
+      "asset": "",
+      "god_id": "inari",
+      "effects": [],
+      "coin_flip": "vertical",
+      "power_text": "Pile ou face vertical : peut échanger haut et bas à la pose."
+    },
+    {
+      "id": "nekomata",
+      "name": "Nekomata",
+      "name_jp": "猫又",
+      "description": "Le chat à deux queues griffe d'un côté ou de l'autre.",
+      "rarity": "rare",
+      "kind": "creature",
+      "weapon": "none",
+      "body_color": "#4a3a3a",
+      "blades": {
+        "top": 3,
+        "bottom": 3,
+        "left": 4,
+        "right": 0
+      },
+      "asset": "",
+      "god_id": "inari",
+      "effects": [],
+      "coin_flip": "horizontal",
+      "power_text": "Pile ou face horizontal : peut échanger gauche et droite à la pose."
+    },
+    {
+      "id": "ebisu",
+      "name": "Ebisu",
+      "name_jp": "恵比寿",
+      "description": "Le dieu des pêcheurs ramène toujours quelque chose.",
+      "rarity": "uncommon",
+      "kind": "deity",
+      "weapon": "yari",
+      "body_color": "#3a8aa8",
+      "blades": {
+        "top": 2,
+        "bottom": 2,
+        "left": 1,
+        "right": 1
+      },
+      "asset": "",
+      "god_id": "inari",
+      "effects": [],
+      "random_blades": 2,
+      "power_text": "Fortune : 2 lames roses sont réparties aléatoirement à la pose."
+    },
+    {
+      "id": "benzaiten",
+      "name": "Benzaiten",
+      "name_jp": "弁財天",
+      "description": "La déesse des talents comble ceux qui tentent leur chance.",
+      "rarity": "rare",
+      "kind": "deity",
+      "weapon": "tessen",
+      "body_color": "#c86a9a",
+      "blades": {
+        "top": 3,
+        "bottom": 3,
+        "left": 2,
+        "right": 2
+      },
+      "asset": "",
+      "god_id": "inari",
+      "effects": [],
+      "random_blades": 4,
+      "power_text": "Fortune : 4 lames roses sont réparties aléatoirement à la pose."
+    },
+    {
+      "id": "raiju",
+      "name": "Raijū",
+      "name_jp": "雷獣",
+      "description": "La bête du tonnerre foudroie vers le bas et vers la gauche.",
+      "rarity": "rare",
+      "kind": "creature",
+      "weapon": "none",
+      "body_color": "#6a7ad8",
+      "blades": {
+        "top": 1,
+        "bottom": 0,
+        "left": 0,
+        "right": 1
+      },
+      "asset": "",
+      "god_id": "tsukuyomi",
+      "effects": [],
+      "long_blades": {
+        "top": 0,
+        "bottom": 3,
+        "left": 2,
+        "right": 0
+      },
+      "power_text": "Horizon : 3 lames bleues attaquent à distance vers le bas et 2 vers la gauche."
+    },
+    {
+      "id": "kaminari",
+      "name": "Kaminari",
+      "name_jp": "雷",
+      "description": "L'archer de l'orage tire en bas et à gauche.",
+      "rarity": "rare",
+      "kind": "human",
+      "weapon": "yumi",
+      "body_color": "#4a5aa8",
+      "blades": {
+        "top": 1,
+        "bottom": 1,
+        "left": 1,
+        "right": 1
+      },
+      "asset": "",
+      "god_id": "tsukuyomi",
+      "effects": [],
+      "long_blades": {
+        "top": 0,
+        "bottom": 2,
+        "left": 2,
+        "right": 0
+      },
+      "power_text": "Horizon : 2 lames bleues attaquent à distance vers le bas et 2 vers la gauche."
+    },
+    {
+      "id": "nobusuma",
+      "name": "Nobusuma",
+      "name_jp": "野衾",
+      "description": "L'écureuil volant plane vers la gauche.",
+      "rarity": "common",
+      "kind": "creature",
+      "weapon": "none",
+      "body_color": "#8a7a6a",
+      "blades": {
+        "top": 0,
+        "bottom": 0,
+        "left": 0,
+        "right": 0
+      },
+      "asset": "",
+      "god_id": "tsukuyomi",
+      "effects": [],
+      "long_blades": {
+        "top": 0,
+        "bottom": 0,
+        "left": 3,
+        "right": 0
+      },
+      "power_text": "Horizon : 3 lames bleues attaquent à distance vers la gauche."
+    },
+    {
+      "id": "hoshi",
+      "name": "Hoshi",
+      "name_jp": "星",
+      "description": "Une étoile filante qui tombe vers le bas.",
+      "rarity": "common",
+      "kind": "creature",
+      "weapon": "none",
+      "body_color": "#d8d8f0",
+      "blades": {
+        "top": 0,
+        "bottom": 0,
+        "left": 1,
+        "right": 0
+      },
+      "asset": "",
+      "god_id": "tsukuyomi",
+      "effects": [],
+      "long_blades": {
+        "top": 0,
+        "bottom": 2,
+        "left": 0,
+        "right": 0
+      },
+      "power_text": "Horizon : 2 lames bleues attaquent à distance vers le bas."
+    },
+    {
+      "id": "tsukikage",
+      "name": "Tsukikage",
+      "name_jp": "月影",
+      "description": "L'ombre de la lune vise à droite et en bas.",
+      "rarity": "uncommon",
+      "kind": "human",
+      "weapon": "kunai",
+      "body_color": "#3a4a6a",
+      "blades": {
+        "top": 1,
+        "bottom": 0,
+        "left": 0,
+        "right": 0
+      },
+      "asset": "",
+      "god_id": "tsukuyomi",
+      "effects": [],
+      "long_blades": {
+        "top": 0,
+        "bottom": 1,
+        "left": 0,
+        "right": 2
+      },
+      "power_text": "Horizon : 2 lames bleues attaquent à distance vers la droite et 1 vers le bas."
+    },
+    {
+      "id": "nopperabo",
+      "name": "Nopperabō",
+      "name_jp": "のっぺらぼう",
+      "description": "Un visage sans traits qui glace ceux qui le touchent.",
+      "rarity": "common",
+      "kind": "human",
+      "weapon": "none",
+      "body_color": "#d8c8b8",
+      "blades": {
+        "top": 1,
+        "bottom": 0,
+        "left": 1,
+        "right": 0
+      },
+      "asset": "",
+      "god_id": "izanami",
+      "effects": [
+        "weaken_on_failed_attack"
+      ],
+      "power_cost": 0.0,
+      "power_text": "Échec corrosif : chaque pierre adverse qui résiste à son attaque perd 2 de force jusqu'à la fin de votre prochain coup."
+    },
+    {
+      "id": "ubume",
+      "name": "Ubume",
+      "name_jp": "産女",
+      "description": "Un spectre en pleurs qui épuise ses voisins.",
+      "rarity": "common",
+      "kind": "human",
+      "weapon": "none",
+      "body_color": "#b8b8c8",
+      "blades": {
+        "top": 0,
+        "bottom": 0,
+        "left": 1,
+        "right": 1
+      },
+      "asset": "",
+      "god_id": "izanami",
+      "effects": [
+        "weaken_adjacent"
+      ],
+      "power_cost": 0.0,
+      "power_text": "Miasme : aura continue, chaque voisine ennemie perd 1 force sur chaque face, même posée plus tard. Active dans le camp d'Izanami."
+    },
+    {
+      "id": "onryo",
+      "name": "Onryō",
+      "name_jp": "怨霊",
+      "description": "Un esprit vengeur dont chaque échec empoisonne.",
+      "rarity": "common",
+      "kind": "creature",
+      "weapon": "none",
+      "body_color": "#8a6a9a",
+      "blades": {
+        "top": 1,
+        "bottom": 1,
+        "left": 2,
+        "right": 0
+      },
+      "asset": "",
+      "god_id": "izanami",
+      "effects": [
+        "weaken_on_failed_attack"
+      ],
+      "power_cost": 0.0,
+      "power_text": "Échec corrosif : chaque pierre adverse qui résiste à son attaque perd 2 de force jusqu'à la fin de votre prochain coup."
+    },
+    {
+      "id": "kuchisake_onna",
+      "name": "Kuchisake-onna",
+      "name_jp": "口裂け女",
+      "description": "Son sourire fendu ronge tout autour d'elle.",
+      "rarity": "uncommon",
+      "kind": "human",
+      "weapon": "tanto",
+      "body_color": "#8a3a4a",
+      "blades": {
+        "top": 2,
+        "bottom": 1,
+        "left": 1,
+        "right": 2
+      },
+      "asset": "",
+      "god_id": "izanami",
+      "effects": [
+        "weaken_adjacent"
+      ],
+      "power_cost": 0.0,
+      "power_text": "Miasme : aura continue, chaque voisine ennemie perd 1 force sur chaque face, même posée plus tard. Active dans le camp d'Izanami."
+    },
+    {
+      "id": "shuten_doji",
+      "name": "Shuten-dōji",
+      "name_jp": "酒呑童子",
+      "description": "Le roi des oni répand la corruption autour de lui.",
+      "rarity": "rare",
+      "kind": "oni",
+      "weapon": "kanabo_large",
+      "body_color": "#6a2a5a",
+      "blades": {
+        "top": 3,
+        "bottom": 2,
+        "left": 2,
+        "right": 2
+      },
+      "asset": "",
+      "god_id": "izanami",
+      "effects": [
+        "weaken_adjacent"
+      ],
+      "power_cost": 0.0,
+      "power_text": "Miasme : aura continue, chaque voisine ennemie perd 1 force sur chaque face, même posée plus tard. Active dans le camp d'Izanami."
+    },
+    {
+      "id": "suzume",
+      "name": "Suzume",
+      "name_jp": "雀",
+      "description": "Un moineau des rizières, jamais seul.",
+      "rarity": "common",
+      "kind": "creature",
+      "weapon": "none",
+      "body_color": "#a88a5a",
+      "blades": {
+        "top": 1,
+        "bottom": 0,
+        "left": 1,
+        "right": 0
+      },
+      "asset": "",
+      "god_id": "okuninushi",
+      "effects": [
+        "swarm"
+      ],
+      "power_cost": 0.5,
+      "power_text": "Swarm : chaque autre pierre Swarm du groupe ajoute deux lames à chaque membre, jusqu'à +4 par pierre. Seul le camp d'Ōkuninushi se relie."
+    },
+    {
+      "id": "kaeru",
+      "name": "Kaeru",
+      "name_jp": "蛙",
+      "description": "Une grenouille des mares qui chante en chœur.",
+      "rarity": "common",
+      "kind": "creature",
+      "weapon": "none",
+      "body_color": "#6aa84a",
+      "blades": {
+        "top": 0,
+        "bottom": 1,
+        "left": 0,
+        "right": 1
+      },
+      "asset": "",
+      "god_id": "okuninushi",
+      "effects": [
+        "swarm"
+      ],
+      "power_cost": 0.5,
+      "power_text": "Swarm : chaque autre pierre Swarm du groupe ajoute deux lames à chaque membre, jusqu'à +4 par pierre. Seul le camp d'Ōkuninushi se relie."
+    },
+    {
+      "id": "suzumebachi",
+      "name": "Suzumebachi",
+      "name_jp": "雀蜂",
+      "description": "Le frelon géant pique en bas, mieux encore en nuée.",
+      "rarity": "common",
+      "kind": "creature",
+      "weapon": "none",
+      "body_color": "#d8a82a",
+      "blades": {
+        "top": 1,
+        "bottom": 2,
+        "left": 1,
+        "right": 0
+      },
+      "asset": "",
+      "god_id": "okuninushi",
+      "effects": [
+        "swarm"
+      ],
+      "power_cost": 0.5,
+      "power_text": "Swarm : chaque autre pierre Swarm du groupe ajoute deux lames à chaque membre, jusqu'à +4 par pierre. Seul le camp d'Ōkuninushi se relie."
+    },
+    {
+      "id": "kawauso",
+      "name": "Kawauso",
+      "name_jp": "川獺",
+      "description": "La loutre-yokai chasse toujours en bande.",
+      "rarity": "uncommon",
+      "kind": "creature",
+      "weapon": "none",
+      "body_color": "#7a5a3a",
+      "blades": {
+        "top": 2,
+        "bottom": 1,
+        "left": 2,
+        "right": 1
+      },
+      "asset": "",
+      "god_id": "okuninushi",
+      "effects": [
+        "swarm"
+      ],
+      "power_cost": 0.5,
+      "power_text": "Swarm : chaque autre pierre Swarm du groupe ajoute deux lames à chaque membre, jusqu'à +4 par pierre. Seul le camp d'Ōkuninushi se relie."
+    },
+    {
+      "id": "ushi_oni",
+      "name": "Ushi-oni",
+      "name_jp": "牛鬼",
+      "description": "Le démon-taureau mène la horde.",
+      "rarity": "rare",
+      "kind": "oni",
+      "weapon": "kanabo",
+      "body_color": "#4a3a2a",
+      "blades": {
+        "top": 3,
+        "bottom": 2,
+        "left": 2,
+        "right": 2
+      },
+      "asset": "",
+      "god_id": "okuninushi",
+      "effects": [
+        "swarm"
+      ],
+      "power_cost": 0.5,
+      "power_text": "Swarm : chaque autre pierre Swarm du groupe ajoute deux lames à chaque membre, jusqu'à +4 par pierre. Seul le camp d'Ōkuninushi se relie."
+    },
+    {
+      "id": "kusa",
+      "name": "Kusa",
+      "name_jp": "草",
+      "description": "Un espion caché dans les herbes, qui frappe à gauche.",
+      "rarity": "common",
+      "kind": "human",
+      "weapon": "kunai",
+      "body_color": "#3a4a2a",
+      "blades": {
+        "top": 1,
+        "bottom": 0,
+        "left": 3,
+        "right": 1
+      },
+      "asset": "",
+      "god_id": "susanoo",
+      "effects": [
+        "shield_theft"
+      ],
+      "power_cost": 1.0,
+      "power_text": "Pillage : la force de la face vaincue devient des boucliers placés au hasard sur les trois autres faces de cette pierre."
+    },
+    {
+      "id": "kaizoku",
+      "name": "Kaizoku",
+      "name_jp": "海賊",
+      "description": "Un pirate qui monte à l'abordage par le bas.",
+      "rarity": "common",
+      "kind": "human",
+      "weapon": "katana",
+      "body_color": "#5a3a2a",
+      "blades": {
+        "top": 0,
+        "bottom": 3,
+        "left": 1,
+        "right": 1
+      },
+      "asset": "",
+      "god_id": "susanoo",
+      "effects": [
+        "shield_theft"
+      ],
+      "power_cost": 1.0,
+      "power_text": "Pillage : la force de la face vaincue devient des boucliers placés au hasard sur les trois autres faces de cette pierre."
+    },
+    {
+      "id": "nusubito",
+      "name": "Nusubito",
+      "name_jp": "盗人",
+      "description": "Un voleur qui frappe en bas et à droite.",
+      "rarity": "common",
+      "kind": "human",
+      "weapon": "tanto",
+      "body_color": "#4a4a4a",
+      "blades": {
+        "top": 0,
+        "bottom": 3,
+        "left": 0,
+        "right": 3
+      },
+      "asset": "",
+      "god_id": "susanoo",
+      "effects": [
+        "shield_theft"
+      ],
+      "power_cost": 1.0,
+      "power_text": "Pillage : la force de la face vaincue devient des boucliers placés au hasard sur les trois autres faces de cette pierre."
+    },
+    {
+      "id": "hitokiri",
+      "name": "Hitokiri",
+      "name_jp": "人斬り",
+      "description": "Un tueur à gages : un coup terrible en haut, une feinte à gauche.",
+      "rarity": "uncommon",
+      "kind": "human",
+      "weapon": "katana",
+      "body_color": "#6a1a1a",
+      "blades": {
+        "top": 3,
+        "bottom": 0,
+        "left": 2,
+        "right": 1
+      },
+      "asset": "",
+      "god_id": "susanoo",
+      "effects": [
+        "shield_theft"
+      ],
+      "power_cost": 1.0,
+      "power_text": "Pillage : la force de la face vaincue devient des boucliers placés au hasard sur les trois autres faces de cette pierre."
+    },
+    {
+      "id": "akuma",
+      "name": "Akuma",
+      "name_jp": "悪魔",
+      "description": "Le démon pillard frappe en bas et à gauche.",
+      "rarity": "rare",
+      "kind": "oni",
+      "weapon": "kanabo",
+      "body_color": "#8a2a1a",
+      "blades": {
+        "top": 1,
+        "bottom": 3,
+        "left": 3,
+        "right": 0
+      },
+      "asset": "",
+      "god_id": "susanoo",
+      "effects": [
+        "shield_theft"
+      ],
+      "power_cost": 1.0,
+      "power_text": "Pillage : la force de la face vaincue devient des boucliers placés au hasard sur les trois autres faces de cette pierre."
     }
   ]
 }

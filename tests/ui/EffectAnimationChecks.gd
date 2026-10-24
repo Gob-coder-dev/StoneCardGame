@@ -71,7 +71,8 @@ func _test_weakness_view_animation() -> void:
 	view.animations.animate_effects(result["effects"], 0.55)
 	var animation: Control = view.animations.get_node("WeaknessReveal")
 	var target: StoneCard = view.get_node("cell_1_2").get_child(0)
-	_check(animation._targets.size() == 2
+	# La voisine alliée en (1,0) est épargnée : seule la voisine adverse est visée.
+	_check(animation._targets.size() == 1
 		and target.displayed_weakness() == 0,
 		"le Miasme masque les fissures jusqu'à l'arrivée de l'aura locale")
 	await get_tree().create_timer(0.34).timeout
@@ -83,7 +84,30 @@ func _test_weakness_view_animation() -> void:
 		"l'impact brise une lame par face sans désactiver le bouclier")
 	await get_tree().create_timer(0.30).timeout
 	_check(view.animations.get_node_or_null("WeaknessReveal") == null and target._visual_weakness_override == -1,
-		"l'aura locale nettoie son aperçu sans retirer le malus permanent")
+		"l'aura locale nettoie son aperçu sans retirer le malus d'aura")
+	view.queue_free()
+	await get_tree().process_frame
+
+	# Une carte posée entre deux pierres Miasme : un seul aperçu, malus total 2.
+	state = _state_with_hands([], ["fx_wall"])
+	state.human_god_id = "izanami"
+	_force_instance(state, 1, 1, "fx_miasma_guard", GameState.PLAYER_HUMAN)
+	_force_instance(state, 1, 3, "fx_miasma_guard", GameState.PLAYER_HUMAN)
+	result = CombatResolverModel.apply_move(state, 1, 2, "fx_wall", GameState.PLAYER_AI)
+	view = BoardView.new()
+	view.size = Vector2(900, 900)
+	add_child(view)
+	view.build()
+	view.refresh(state)
+	view.animations.animate_effects(result["effects"], 0.55)
+	var reveals := 0
+	for child in view.animations.get_children():
+		if str(child.name).begins_with("WeaknessReveal"):
+			reveals += 1
+	animation = view.animations.get_node("WeaknessReveal")
+	_check(reveals == 1 and animation._targets.size() == 1
+		and int(animation._targets[0]["after"]) == 2,
+		"une carte posée près de deux pierres Miasme reçoit un seul aperçu de son malus total")
 	view.queue_free()
 	await get_tree().process_frame
 
@@ -105,7 +129,8 @@ func _test_weakness_view_animation() -> void:
 		and target.displayed_weakness() == 0,
 		"l'échec corrosif envoie son poison vers la seule pierre qui a résisté")
 	await get_tree().create_timer(0.39).timeout
-	_check(target.displayed_weakness() == 1 and target.broken_blade_count("left") == 1
+	# Échec corrosif −2 sur une face d'une seule lame : une lame brisée.
+	_check(target.displayed_weakness() == 2 and target.broken_blade_count("left") == 1
 		and far_card.displayed_weakness() == 0,
 		"le poison révèle les lames brisées à son impact, sans toucher les autres pierres")
 	view.queue_free()
@@ -120,7 +145,7 @@ func _test_weakness_view_animation() -> void:
 	view.refresh(state)
 	view.animations.animate_effects(expiry["effects"], 0.35)
 	target = view.get_node("cell_1_2").get_child(0)
-	_check(target.displayed_weakness() == 1 and view.animations.get_node_or_null("WeaknessRepair") != null,
+	_check(target.displayed_weakness() == 2 and view.animations.get_node_or_null("WeaknessRepair") != null,
 		"une faiblesse expirée conserve brièvement ses fissures pour la réparation")
 	await get_tree().create_timer(0.20).timeout
 	_check(target.displayed_weakness() == 0 and target.broken_blade_count("top") == 0,

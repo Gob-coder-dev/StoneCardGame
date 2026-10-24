@@ -54,8 +54,8 @@ func _test_pillage_turn_sequence() -> void:
 
 	var last_move := _animated_manager()
 	last_move.start_game(["fx_thief"], [], [], "", GameState.PLAYER_HUMAN)
-	for row in range(3):
-		for col in range(3):
+	for row in range(GameState.BOARD_SIZE):
+		for col in range(GameState.BOARD_SIZE):
 			if row == 1 and col == 1:
 				continue
 			_force_instance(last_move.get_state(), row, col, "fx_wall", GameState.PLAYER_AI)
@@ -97,10 +97,10 @@ func _test_attack_turn_sequence() -> void:
 	manager.human_play(1, 1, "fx_weaken_attack1")
 	await manager.attacks_started
 	var target: BattleStoneModel = manager.get_state().get_cell(1, 2)["stone"]
-	_check(target.permanent_weakness == 0 and not manager.human_play(0, 0, "fx_plain"),
+	_check(target.miasma_weakness == 0 and not manager.human_play(0, 0, "fx_plain"),
 		"les attaques se jouent avant le Miasme et interdisent un second coup")
 	await manager.turn_started
-	_check(target.permanent_weakness == 1 and manager.get_state().get_cell(1, 2)["owner"] == GameState.PLAYER_AI,
+	_check(target.miasma_weakness == 1 and manager.get_state().get_cell(1, 2)["owner"] == GameState.PLAYER_AI,
 		"le Miasme est appliqué après l'impact raté puis le tour avance")
 	manager.queue_free()
 	await get_tree().process_frame
@@ -167,11 +167,12 @@ func _test_swarm_pillage_presentation() -> void:
 	await manager.effects_resolved
 	await get_tree().process_frame
 	var pillage: Node = board.animations.get_node_or_null("PillageReveal")
-	_check(gained[0] == 1 and pillage != null and pillage._transfers.size() == 1
-		and pillage._transfers[0]["kind"] == "swarm",
-		"le Pillage anime la lame d'Essaim réellement volée")
-	_check(_sum(victim.displayed_stone().swarm_blades) == 1
-		and _sum(partner.displayed_stone().swarm_blades) == 1
+	# La paire Essaim porte 2 lames d'aura chacune, en bas : la face vaincue en défend 2.
+	_check(gained[0] == 2 and pillage != null and pillage._transfers.size() == 2
+		and pillage._transfers[0]["kind"] == "swarm" and pillage._transfers[1]["kind"] == "swarm",
+		"le Pillage anime les lames d'Essaim réellement volées")
+	_check(_sum(victim.displayed_stone().swarm_blades) == 2
+		and _sum(partner.displayed_stone().swarm_blades) == 2
 		and _sum(victim.get_battle_stone().swarm_blades) == 0,
 		"les lames d'Essaim restent visibles pendant le Pillage, avant leur rétraction")
 	await manager.turn_started
