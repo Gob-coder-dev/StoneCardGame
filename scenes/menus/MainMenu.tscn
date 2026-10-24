@@ -82,8 +82,9 @@ vertical_alignment = 1
 [node name="DeckStatus" type="Label" parent="Content/Hero" unique_id=1503925981]
 layout_mode = 2
 theme_override_font_sizes/font_size = 34
-text = "0/5 pierres • 0/50 points"
+text = "Deck 1 • 0/8 pierres • 0/80 points"
 horizontal_alignment = 1
+autowrap_mode = 2
 
 [node name="PlayButton" type="Button" parent="Content/Hero" unique_id=1162903087]
 custom_minimum_size = Vector2(760, 180)

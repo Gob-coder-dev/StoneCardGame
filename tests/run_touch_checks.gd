@@ -4,6 +4,7 @@
 extends Node
 
 const TestLog := preload("res://tests/support/TestLog.gd")
+const ProfileFixture := preload("res://tests/support/PlayerProfileFixture.gd")
 ## Secondes de jeu : avec --fixed-fps 60, la limite ne dépend pas de la machine.
 const TIME_LIMIT := 120.0
 
@@ -11,6 +12,7 @@ var _checks: int = 0
 var _failures: Array[String] = []
 var _log: TestLog = TestLog.new()
 var _finished := false
+var _profile: ProfileFixture
 
 @onready var root: Window = get_tree().root
 
@@ -32,6 +34,8 @@ func _finish() -> void:
 	if _finished:
 		return
 	_finished = true
+	if _profile != null:
+		_profile.restore()
 	OS.remove_logger(_log)
 	TestLog.current = null
 	var problems: Array[String] = _log.problems()
@@ -48,11 +52,9 @@ func _run() -> void:
 	# Donne au serveur headless le même indicateur tactile qu'Android.
 	Input.emulate_touch_from_mouse = true
 	Input.use_accumulated_input = false
-	var saved_deck: Array = PlayerData.player_deck.duplicate()
-	var saved_god: String = PlayerData.player_god_id
-	PlayerData.player_god_id = "inari"
-	PlayerData.player_deck = ["kappa", "tanuki", "ronin", "naginata_monk", "kitsune", "bakuto", "maneki_neko", "saikoro"]
+	_profile = ProfileFixture.new()
 	await _check_rules_scroll()
+	await _check_deck_slots()
 	await _check_collection()
 	await _check_button_inputs()
 	await _check_main_menu()
@@ -60,8 +62,6 @@ func _run() -> void:
 	await _check_buffered_input()
 	await _check_battle_touch()
 	await _check_battle_drag()
-	PlayerData.player_deck = saved_deck
-	PlayerData.player_god_id = saved_god
 	_finish()
 
 
@@ -78,6 +78,29 @@ func _check_rules_scroll() -> void:
 	var before := scroll.scroll_vertical
 	await _swipe(_center(badge), Vector2(0, -220))
 	_check(scroll.scroll_vertical > before + 60, "règles : glisser depuis un logo fait aussi défiler")
+	await _remove(page)
+
+
+func _check_deck_slots() -> void:
+	var page := await _open_scene("res://scenes/menus/CollectionScreen.tscn")
+	var scroll: ScrollContainer = page.get_node("Content/Scroll")
+	var slots: HBoxContainer = scroll.get_node("Page/DeckSlots")
+	var second: Button = slots.get_child(1)
+	await _swipe(_center(second), Vector2(0, -180))
+	_check(scroll.scroll_vertical > 60 and PlayerData.get_selected_deck() == 0,
+		"decks : glisser depuis un numéro fait défiler sans changer de deck")
+	await _reset_scroll(scroll)
+	await _tap(_center(second))
+	_check(PlayerData.get_selected_deck() == 1 and second.button_pressed
+		and page._current_deck.is_empty(), "decks : un toucher sélectionne une seule fois le deuxième emplacement")
+	_check(second.get_theme_stylebox("hover") == second.get_theme_stylebox("normal"),
+		"decks : actualiser la sélection ne réactive pas le survol pendant un geste tactile")
+	await _tap(_center(second))
+	_check(second.button_pressed and PlayerData.get_selected_deck() == 1,
+		"decks : retoucher le numéro actif conserve sa sélection")
+	await _tap(_center(slots.get_child(0)))
+	_check(PlayerData.get_active_deck() == ProfileFixture.DECK and not page.status_label.visible,
+		"decks : revenir au premier deck restaure ses cartes sans message de sauvegarde")
 	await _remove(page)
 
 

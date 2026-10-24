@@ -10,9 +10,11 @@ const ACTION_DRAWER_SCENE := preload("res://scenes/ui/CardActionDrawer.tscn")
 const DeckPanelView := preload("res://scripts/ui/collection/DeckPanel.gd")
 const CollectionGridView := preload("res://scripts/ui/collection/CollectionGrid.gd")
 const GodSelectorView := preload("res://scripts/ui/collection/GodSelector.gd")
+const DeckSlotSelectorView := preload("res://scripts/ui/collection/DeckSlotSelector.gd")
 var _deck_panel: RefCounted
 var _collection_grid: RefCounted
 var _god_selector: RefCounted
+var _deck_slot_selector: DeckSlotSelectorView
 
 @onready var scroll: ScrollContainer = $Content/Scroll
 @onready var god_button: Button = $Content/Scroll/Page/GodPanel/GodContent/GodButton
@@ -39,16 +41,16 @@ var _replacement_stone_id: String = ""
 
 
 func _ready() -> void:
-	_current_deck = DeckRules.sanitize_deck(PlayerData.player_deck, PlayerData.player_god_id)
-	if _current_deck != PlayerData.player_deck:
-		PlayerData.set_player_deck(_current_deck)
+	_current_deck = PlayerData.get_active_deck()
 	god_button.pressed.connect(_toggle_god_menu)
 	_deck_panel = DeckPanelView.new(deck_rows)
 	_collection_grid = CollectionGridView.new(collection_rows)
 	_god_selector = GodSelectorView.new(god_button, god_description, god_menu, god_options)
+	_deck_slot_selector = DeckSlotSelectorView.new($Content/Scroll/Page/DeckSlots)
 	_deck_panel.card_requested.connect(_open_card_actions)
 	_collection_grid.card_requested.connect(_open_card_actions)
 	_god_selector.god_selected.connect(_select_god)
+	_deck_slot_selector.slot_selected.connect(_select_deck)
 	_setup_sort()
 	sort_button.pressed.connect(_toggle_sort_menu)
 	replacement_panel.replacement_requested.connect(_on_replacement_requested)
@@ -69,14 +71,37 @@ func _select_god(next_god_id: String) -> void:
 		god_menu.visible = false
 		_refresh_god_panel()
 		return
-	var removed := PlayerData.set_player_god(next_god_id)
-	_current_deck = PlayerData.player_deck.duplicate()
+	if not PlayerData.set_player_god(next_god_id):
+		_show_error("Impossible de changer de dieu : la sauvegarde a échoué.")
+		return
+	_close_card_panels()
+	_current_deck = PlayerData.get_active_deck()
 	god_menu.visible = false
-	if removed.is_empty():
-		_set_status("Dieu équipé. La collection a été mise à jour.")
-	else:
-		_set_status("Dieu équipé : %d carte(s) incompatible(s) retirée(s)." % removed.size(), true)
+	sort_menu.visible = false
+	_update_sort_labels()
+	_clear_status()
 	_refresh_all(true, true)
+
+
+func _select_deck(slot: int) -> void:
+	if not PlayerData.set_selected_deck(slot):
+		_show_error("Impossible de changer de deck : la sauvegarde a échoué.")
+		_refresh_god_panel()
+		return
+	_close_card_panels()
+	_current_deck = PlayerData.get_active_deck()
+	god_menu.visible = false
+	sort_menu.visible = false
+	_update_sort_labels()
+	_clear_status()
+	_refresh_all()
+
+
+func _close_card_panels() -> void:
+	_close_action_drawer()
+	info_sheet.close_sheet()
+	replacement_panel.close_panel()
+	_replacement_stone_id = ""
 
 
 func _setup_sort() -> void:
@@ -135,6 +160,7 @@ func _refresh_all(preserve_scroll: bool = true, rebuild_collection: bool = false
 
 func _refresh_god_panel() -> void:
 	_god_selector.refresh(PlayerData.player_god_id)
+	_deck_slot_selector.refresh(PlayerData.get_selected_deck())
 
 
 func _refresh_deck() -> void:
@@ -189,11 +215,11 @@ func _on_info_requested(stone_id: String) -> void:
 
 func _on_primary_requested(stone_id: String, source: CardActionDrawer.Source) -> void:
 	if source == CardActionDrawer.Source.DECK:
-		_commit_operation(DeckRules.try_remove(_current_deck, stone_id), "Pierre retirée du deck.")
+		_commit_operation(DeckRules.try_remove(_current_deck, stone_id))
 		return
 	var operation := DeckRules.try_add(_current_deck, stone_id, PlayerData.player_god_id)
 	if operation["success"]:
-		_commit_operation(operation, "Pierre ajoutée au deck.")
+		_commit_operation(operation)
 		return
 	match operation["reason"]:
 		DeckRules.REASON_FULL:
@@ -201,9 +227,9 @@ func _on_primary_requested(stone_id: String, source: CardActionDrawer.Source) ->
 			_replacement_stone_id = stone_id
 			replacement_panel.open_for(_current_deck, stone_id)
 		DeckRules.REASON_BUDGET:
-			_set_status("Budget dépassé : %s/%d points." % [
+			_show_error("Budget dépassé : %s/%d points." % [
 				UIFormat.cost(operation["cost"]), DeckRules.DECK_BUDGET
-			], true)
+			])
 
 
 func _on_replacement_requested(old_id: String) -> void:
@@ -212,27 +238,36 @@ func _on_replacement_requested(old_id: String) -> void:
 		if operation["reason"] == DeckRules.REASON_BUDGET:
 			replacement_panel.show_budget_error(operation["cost"])
 		return
-	if _commit_operation(operation, "Pierre remplacée. Deck enregistré."):
+	if _commit_operation(operation):
 		replacement_panel.close_panel()
 		_replacement_stone_id = ""
 
 
-func _commit_operation(operation: Dictionary, success_message: String) -> bool:
+func _commit_operation(operation: Dictionary) -> bool:
 	if not operation.get("success", false):
 		return false
 	var new_deck: Array = operation["deck"]
 	if not PlayerData.set_player_deck(new_deck):
-		_set_status("Impossible d'enregistrer ce deck.", true)
+		_show_error("Impossible de modifier ce deck : la sauvegarde a échoué.")
 		return false
 	_current_deck = new_deck.duplicate()
-	_set_status(success_message)
+	_clear_status()
 	_refresh_all()
 	return true
 
 
-func _set_status(message: String, is_error: bool = false) -> void:
+func _show_error(message: String) -> void:
+	if replacement_panel.visible:
+		replacement_panel.show_error(message)
+		return
 	status_label.text = message
-	status_label.add_theme_color_override("font_color", UITheme.COL_ERROR if is_error else UITheme.COL_WARNING)
+	status_label.add_theme_color_override("font_color", UITheme.COL_ERROR)
+	status_label.visible = true
+
+
+func _clear_status() -> void:
+	status_label.text = ""
+	status_label.visible = false
 
 
 func _restore_scroll_deferred(value: int) -> void:

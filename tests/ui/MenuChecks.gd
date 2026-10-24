@@ -1,7 +1,10 @@
 extends "res://tests/support/CombatTestSuite.gd"
+const ProfileFixture := preload("res://tests/support/PlayerProfileFixture.gd")
 
 func run() -> void:
+	var fixture := ProfileFixture.new()
 	await _test_god_selector_ui()
+	await _test_deck_slots()
 	await _test_rules_legends()
 	await _test_collection_incremental_refresh()
 	_test_cost_format()
@@ -9,12 +12,9 @@ func run() -> void:
 	await _test_hand_keeps_remaining_cards()
 	_test_first_player_draw()
 	await _test_prebattle_reveals_draw()
+	fixture.restore()
 
 func _test_god_selector_ui() -> void:
-	var saved_deck: Array = PlayerData.player_deck.duplicate()
-	var saved_god: String = PlayerData.player_god_id
-	PlayerData.player_god_id = "inari"
-	PlayerData.player_deck = ["kappa", "tanuki", "ronin", "naginata_monk", "kitsune", "bakuto", "maneki_neko", "saikoro"]
 	var scene: PackedScene = load("res://scenes/menus/CollectionScreen.tscn")
 	var page: Control = scene.instantiate()
 	add_child(page)
@@ -32,8 +32,6 @@ func _test_god_selector_ui() -> void:
 		"ouvrir le menu des dieux referme le tri et remet sa flèche vers le bas")
 	page.queue_free()
 	await get_tree().process_frame
-	PlayerData.player_deck = saved_deck
-	PlayerData.player_god_id = saved_god
 
 
 func _test_rules_legends() -> void:
@@ -62,6 +60,104 @@ func _test_rules_legends() -> void:
 		"les règles affichent les valeurs lues dans le code")
 	page.queue_free()
 	await get_tree().process_frame
+
+
+func _test_deck_slots() -> void:
+	var page: Control = (load("res://scenes/menus/CollectionScreen.tscn") as PackedScene).instantiate()
+	add_child(page)
+	await get_tree().process_frame
+	var slots: HBoxContainer = page.get_node("Content/Scroll/Page/DeckSlots")
+	_check(slots.get_child_count() == 3 and slots.get_child(0).text == "1"
+		and slots.get_child(1).text == "2" and slots.get_child(2).text == "3"
+		and slots.get_child(0).button_pressed and not page.status_label.visible,
+		"la collection affiche seulement trois boutons numérotés, avec le deck actif sélectionné")
+	var cards := _collection_cards(page)
+	slots.get_child(1).pressed.emit()
+	await get_tree().process_frame
+	_check(PlayerData.get_selected_deck() == 1 and page._current_deck.is_empty()
+		and slots.get_child(1).button_pressed and not slots.get_child(0).button_pressed,
+		"choisir un numéro ouvre un deck vide et déplace la sélection")
+	page._on_primary_requested("kappa", CardActionDrawer.Source.COLLECTION)
+	await get_tree().process_frame
+	_check(PlayerData.get_active_deck() == ["kappa"] and not _shown_collection_ids(page).has("kappa")
+		and not page.status_label.visible and _collection_cards(page)["kappa"] == cards["kappa"]
+		and PlayerData.get_deck("inari", 0) == ProfileFixture.DECK,
+		"modifier le deuxième deck masque sa carte sans recréer la collection ni afficher de message de succès")
+	page._on_primary_requested("kappa", CardActionDrawer.Source.DECK)
+	_check(PlayerData.get_active_deck().is_empty() and _shown_collection_ids(page).has("kappa"),
+		"retirer une carte agit seulement sur le deck sélectionné")
+	page._select_deck(0)
+	page._on_primary_requested("izanagi", CardActionDrawer.Source.COLLECTION)
+	_check(page.replacement_panel.visible, "un deck complet ouvre le remplacement depuis le deck sélectionné")
+	page._on_replacement_requested("kappa")
+	_check(not page.replacement_panel.visible and PlayerData.get_active_deck().has("izanagi")
+		and not PlayerData.get_active_deck().has("kappa") and PlayerData.get_deck("inari", 1).is_empty(),
+		"le remplacement immédiat enregistre uniquement l'emplacement courant")
+	# Restaurer la composition initiale, puis vérifier les changements de contexte.
+	page._commit_operation(DeckRules.try_replace(page._current_deck, "izanagi", "kappa", "inari"))
+	page._select_deck(2)
+	page._on_primary_requested("tanuki", CardActionDrawer.Source.COLLECTION)
+	page._select_god("susanoo")
+	_check(page._current_deck.is_empty() and PlayerData.get_selected_deck() == 0,
+		"changer de dieu ouvre sa banque sans copier le deck précédent")
+	page._select_deck(1)
+	page._on_primary_requested("samurai_red", CardActionDrawer.Source.COLLECTION)
+	page._select_god("inari")
+	_check(page._current_deck == ["tanuki"] and PlayerData.get_selected_deck() == 2
+		and PlayerData.get_deck("susanoo", 1) == ["samurai_red"],
+		"revenir à un dieu retrouve son dernier deck et préserve les autres banques")
+	var menu: Control = (load("res://scenes/menus/MainMenu.tscn") as PackedScene).instantiate()
+	add_child(menu)
+	_check(menu.deck_status.text.contains("Deck 3") and menu.deck_status.text.contains("1/8")
+		and menu.play_button.text == "COMPLÉTER MON DECK", "l'accueil lit le numéro actif et refuse un deck incomplet")
+	menu.queue_free()
+	# Un ancien panneau ne doit jamais pouvoir modifier le nouveau deck.
+	page._replacement_stone_id = "kitsune"
+	page.replacement_panel.open_for(page._current_deck, "kitsune")
+	page._select_deck(0)
+	_check(not page.replacement_panel.visible and page._replacement_stone_id == "",
+		"changer d'emplacement ferme le remplacement et annule sa carte en attente")
+	var save_path: String = PlayerData._save_path
+	PlayerData._save_path = save_path + "/missing/profile.json"
+	_expect_log("PlayerData: profil non enregistré")
+	page._select_deck(2)
+	_check(page.status_label.visible and page.status_label.text.contains("échoué")
+		and PlayerData.get_selected_deck() == 0 and slots.get_child(0).button_pressed
+		and page._current_deck == ProfileFixture.DECK, "une erreur disque est visible et conserve le deck précédent dans l'interface")
+	PlayerData._save_path = save_path
+	# Les tests suivants retrouvent le même profil de départ.
+	page._select_deck(1)
+	PlayerData.set_player_deck([])
+	page._select_deck(2)
+	PlayerData.set_player_deck([])
+	page._select_deck(0)
+	page.queue_free()
+	await get_tree().process_frame
+	await _test_battle_uses_selected_deck()
+
+
+func _test_battle_uses_selected_deck() -> void:
+	var saved_npc := BattleContext.selected_npc_id
+	var saved_first := BattleContext.forced_first_player
+	PlayerData.set_selected_deck(2)
+	var reordered := ProfileFixture.DECK.duplicate()
+	reordered.reverse()
+	PlayerData.set_player_deck(reordered)
+	BattleContext.selected_npc_id = "hiro"
+	BattleContext.forced_first_player = GameState.PLAYER_HUMAN
+	var board: Control = (load("res://scenes/game/Board.tscn") as PackedScene).instantiate()
+	add_child(board)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var state: GameState = board.turn_manager.get_state()
+	_check(state.hand_of(GameState.PLAYER_HUMAN) == reordered and state.god_of(GameState.PLAYER_HUMAN) == "inari",
+		"un vrai combat reçoit les huit cartes du troisième deck et le dieu sélectionné")
+	board.queue_free()
+	await get_tree().process_frame
+	BattleContext.selected_npc_id = saved_npc
+	BattleContext.forced_first_player = saved_first
+	PlayerData.set_player_deck([])
+	PlayerData.set_selected_deck(0)
 
 
 func _test_cost_format() -> void:
@@ -136,12 +232,8 @@ func _test_hud_game_over() -> void:
 
 
 ## Les cartes du deck sont absentes de la collection ; une carte retirée du
-## deck y revient. Le deck change sans être enregistré : la sauvegarde reste intacte.
+## deck y revient. Ces changements visuels ne modifient pas le profil.
 func _test_collection_incremental_refresh() -> void:
-	var saved_deck: Array = PlayerData.player_deck.duplicate()
-	var saved_god: String = PlayerData.player_god_id
-	PlayerData.player_god_id = "inari"
-	PlayerData.player_deck = ["kappa", "tanuki", "ronin", "naginata_monk", "kitsune", "bakuto", "maneki_neko", "saikoro"]
 	var scene: PackedScene = load("res://scenes/menus/CollectionScreen.tscn")
 	var page: Control = scene.instantiate()
 	add_child(page)
@@ -149,7 +241,7 @@ func _test_collection_incremental_refresh() -> void:
 	var cards := _collection_cards(page)
 	var expected: Array = []
 	for definition in StoneLoader.get_stones_for_god("inari"):
-		if not PlayerData.player_deck.has(definition["id"]):
+		if not PlayerData.get_active_deck().has(definition["id"]):
 			expected.append(definition["id"])
 	var shown := _shown_collection_ids(page)
 	var shown_sorted := shown.duplicate()
@@ -163,7 +255,7 @@ func _test_collection_incremental_refresh() -> void:
 		"par défaut, les cartes du dieu passent avant les neutres, chacune par ordre alphabétique")
 	var kappa: StoneCard = cards["kappa"]
 	var identity := kappa.get_instance_id()
-	var without_kappa: Array = PlayerData.player_deck.duplicate()
+	var without_kappa: Array = PlayerData.get_active_deck()
 	without_kappa.erase("kappa")
 	page._current_deck = without_kappa
 	page._refresh_all()
@@ -197,8 +289,6 @@ func _test_collection_incremental_refresh() -> void:
 		"une carte ajoutée au deck disparaît et la grille referme le trou")
 	page.queue_free()
 	await get_tree().process_frame
-	PlayerData.player_deck = saved_deck
-	PlayerData.player_god_id = saved_god
 
 
 ## Toutes les cartes du dieu d'abord, puis les neutres, chaque groupe par nom.

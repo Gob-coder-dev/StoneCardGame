@@ -33,9 +33,13 @@ func close_panel() -> void:
 
 
 func show_budget_error(cost: float) -> void:
-	status_label.text = "Ce remplacement dépasse le budget : %s/%d points." % [
+	show_error("Ce remplacement dépasse le budget : %s/%d points." % [
 		UIFormat.cost(cost), DeckRules.DECK_BUDGET
-	]
+	])
+
+
+func show_error(message: String) -> void:
+	status_label.text = message
 	status_label.add_theme_color_override("font_color", UITheme.COL_ERROR)
 
 

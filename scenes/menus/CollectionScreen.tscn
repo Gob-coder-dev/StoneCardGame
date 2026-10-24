@@ -42,12 +42,14 @@ text = "CARTES"
 horizontal_alignment = 1
 
 [node name="StatusLabel" type="Label" parent="Content"]
+visible = false
 layout_mode = 2
 custom_minimum_size = Vector2(0, 42)
 theme_override_colors/font_color = Color(0.83, 0.72, 0.5, 1)
 theme_override_font_sizes/font_size = 27
-text = "Le deck est enregistré automatiquement."
+text = ""
 horizontal_alignment = 1
+autowrap_mode = 2
 
 [node name="Scroll" type="ScrollContainer" parent="Content"]
 layout_mode = 2
@@ -99,6 +101,12 @@ mouse_filter = 1
 layout_mode = 2
 theme_override_constants/separation = 10
 
+[node name="DeckSlots" type="HBoxContainer" parent="Content/Scroll/Page"]
+layout_mode = 2
+mouse_filter = 1
+theme_override_constants/separation = 18
+alignment = 1
+
 [node name="DeckPanel" type="PanelContainer" parent="Content/Scroll/Page"]
 layout_mode = 2
 mouse_filter = 1
@@ -119,7 +127,7 @@ text = "MON DECK"
 [node name="DeckCount" type="Label" parent="Content/Scroll/Page/DeckPanel/DeckContent/DeckHeader"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 32
-text = "0/5 • 0/50 pts"
+text = "0/8 • 0/80 pts"
 horizontal_alignment = 2
 
 [node name="DeckHint" type="Label" parent="Content/Scroll/Page/DeckPanel/DeckContent"]

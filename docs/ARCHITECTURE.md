@@ -12,13 +12,13 @@ Une IA appelle le même moteur sur une copie pour essayer un coup instantanémen
 | `data/npcs.json` | — | Adversaires, decks, dieux et profils d'IA |
 | `StoneLoader` | `get_stone`, `has_stone`, `has_effect`, `stone_affinity`, `get_god`, `get_npc` | Charge les catalogues, fournit des copies et des lectures sans copie |
 | `ContentValidator` | `find_problems` | Liste les incohérences des catalogues ; `StoneLoader` les signale au démarrage |
-| `PlayerData` | `load_save`, `save`, `set_player_deck` | Pseudo, dieu, deck et statistiques persistants |
+| `PlayerData` | `get_active_deck`, `get_deck`, `get_selected_deck`, `set_player_deck`, `set_player_god`, `set_selected_deck`, `load_save`, `save` | Profil et trois decks persistants par dieu |
 | `PlayerSaveCodec` | `encode`, `decode` | Format et migration du profil sans accès disque |
 | `PlayerSaveStorage` | `write`, `read` | Écriture sûre du profil sur le disque |
 | `BattleContext` | `record_result` | Adversaire sélectionné, premier joueur et dernier résultat |
 | `StoneCostRules` | `cost` | Règle du coût d'une carte |
 | `StoneEffects` | — | Identifiants et valeurs des pouvoirs (corrosion, renfort et plafond d'Essaim) |
-| `DeckRules` | `try_add`, `try_remove`, `try_replace` | Composition du deck |
+| `DeckRules` | `try_add`, `try_remove`, `try_replace` | Composition du deck et nombre d'emplacements par dieu (`DECKS_PER_GOD`) |
 | `UIFormat` | `cost` | Affichage des nombres dans l'interface |
 
 Le fichier `user://savegame.json` reste compatible avec les profils antérieurs.
@@ -26,6 +26,24 @@ Le fichier `user://savegame.json` reste compatible avec les profils antérieurs.
 renomme : une coupure ne laisse jamais un profil à moitié écrit. Un fichier
 illisible est renommé `savegame.json.unreadable` au lieu d'être écrasé, et un
 remplacement interrompu est récupéré au chargement suivant.
+
+Le format version 2 contient `decks_by_god` (trois tableaux de cartes par dieu),
+`selected_deck_by_god` (indices de 0 à 2), `player_god_id`, `player_name` et
+`stats`. Il ne conserve plus de copie séparée du deck actif. `PlayerSaveCodec`
+migre les profils sans version et la version 1 : l'ancien `player_deck` devient
+l'emplacement 1 du dieu équipé, ou du dieu déduit des cartes si nécessaire.
+Chaque emplacement est nettoyé dans sa propre famille ; les autres emplacements
+commencent vides. Un chargement seul ne réécrit pas le fichier.
+
+`PlayerData` possède les banques et renvoie des copies via ses lectures. Les
+modifications du deck, du dieu et du numéro sélectionné sont validées et
+enregistrées immédiatement ; en cas d'erreur disque, elles restaurent l'état
+précédent et renvoient `false`. Une sélection de dieu retrouve sa propre banque
+et son dernier numéro, sans filtrer le deck précédent. Un deck incomplet est
+valide pour la sauvegarde, mais pas pour le combat. `MainMenu` et
+`BoardController` lisent `get_active_deck()` ; le moteur reçoit uniquement la
+composition sélectionnée et ne connaît pas les emplacements sauvegardés.
+
 `get_stone()` renvoie une copie modifiable. Les questions répétées pendant les
 simulations (`has_stone`, `has_effect`, `stone_cost`) lisent l'index du catalogue
 sans copie. Les coûts unitaires sont des constantes de `StoneCostRules`, reprises
@@ -161,7 +179,13 @@ Aucune animation ne change le plateau logique ni ne relance le hasard.
 ## Écran de collection
 
 `CollectionScreenController` coordonne les choix et enregistre les opérations.
-`GodSelector`, `DeckPanel` et `CollectionGrid` possèdent chacun leur vue.
+`GodSelector`, `DeckSlotSelector`, `DeckPanel` et `CollectionGrid` possèdent
+chacun leur vue. `DeckSlotSelector` affiche les trois boutons numérotés et émet
+`slot_selected` ; il ne connaît ni les cartes sauvegardées ni le disque.
+Le contrôleur appelle `PlayerData.set_selected_deck()`, puis actualise le deck
+et les cartes masquées dans la collection, sans recréer celle-ci. Changer de
+contexte referme les panneaux de carte et annule tout remplacement en attente.
+L'interface reste silencieuse en cas de succès et affiche les erreurs d'écriture.
 `CardGridLayout` crée les éléments visuels communs. Le tri est défini dans `CollectionGrid`
 (`SortMode`, dans l'ordre des boutons du menu) : FAMILLE par défaut, puis coût,
 rareté et nom, avec le nom pour départager les ex aequo.
@@ -297,6 +321,10 @@ camp dont le dieu est le sien (`GameState.god_of()`).
 
 Les scènes `GodSystemChecks.tscn` et `TouchInputChecks.tscn` sont les points d'entrée.
 Les assertions et fixtures sont dans `tests/support/CombatTestSuite.gd`.
+`PlayerProfileFixture` redirige les écritures des tests d'interface vers un
+fichier dédié, puis restaure le profil en mémoire et le chemin initial.
+`PlayerDataChecks` vérifie aussi les banques, leur migration, les modifications
+automatiques, le rechargement et le retour à l'état précédent en cas d'erreur.
 Les suites de règles, de séquençage, d'IA et d'interface sont réparties dans
 `tests/combat/`, `tests/ai/` et `tests/ui/`. Les anciennes suites de placement et
 de deck utilisent également ces assertions locales : aucune installation de GUT nécessaire.

@@ -29,8 +29,9 @@ func _ready() -> void:
 	_connect_signals()
 	## Construire le plateau une fois la taille connue (point 7).
 	board_view.build.call_deferred()
-	if DeckRules.is_deck_valid(PlayerData.player_deck, PlayerData.player_god_id) and BattleContext.selected_npc_id != "":
-		call_deferred("_start_battle", PlayerData.player_deck, BattleContext.selected_npc_id)
+	var deck := PlayerData.get_active_deck()
+	if DeckRules.is_deck_valid(deck, PlayerData.player_god_id) and BattleContext.selected_npc_id != "":
+		call_deferred("_start_battle", deck, BattleContext.selected_npc_id)
 	else:
 		call_deferred("_return_to_cards")
 

@@ -11,8 +11,10 @@ extends Node
 const SaveCodec := preload("res://scripts/data/PlayerSaveCodec.gd")
 const SaveStorage := preload("res://scripts/data/PlayerSaveStorage.gd")
 
-## Deck courant du joueur (Array de stone_id String)
-var player_deck: Array = []
+## Source unique des decks : trois emplacements par dieu, indices de 0 à 2.
+## Les lectures renvoient des copies ; les écritures passent par les méthodes ci-dessous.
+var _decks_by_god: Dictionary = {}
+var _selected_deck_by_god: Dictionary = {}
 
 ## Dieu équipé : il détermine les familles de cartes accessibles au deck.
 var player_god_id: String = ""
@@ -91,28 +93,38 @@ func npc_record(npc_id: String) -> Dictionary:
 ## ─── Persistance ─────────────────────────────────────────────────────────────
 
 const SAVE_PATH: String = "user://savegame.json"
+var _save_path: String
 
 
-func save() -> void:
-	var data := SaveCodec.encode(player_deck, player_god_id, player_name, stats)
-	var error := SaveStorage.write(SAVE_PATH, data)
+## Le chemin peut être fourni à une instance isolée pour les tests.
+func _init(save_path: String = SAVE_PATH) -> void:
+	_save_path = save_path
+
+
+func get_profile() -> Dictionary:
+	return SaveCodec.encode(_decks_by_god, _selected_deck_by_god, player_god_id, player_name, stats)
+
+
+func save() -> Error:
+	var error := SaveStorage.write(_save_path, get_profile())
 	if error != OK:
 		push_error("PlayerData: profil non enregistré (%s)." % error_string(error))
+	return error
 
 
 func load_save() -> void:
-	var raw := SaveStorage.read(SAVE_PATH)
-	if raw.is_empty():
-		return
-	var profile := SaveCodec.decode(raw)
-	player_deck = profile["player_deck"]
+	_apply_profile(SaveCodec.decode(SaveStorage.read(_save_path)))
+
+
+func _apply_profile(profile: Dictionary) -> void:
+	_decks_by_god = profile["decks_by_god"].duplicate(true)
+	_selected_deck_by_god = profile["selected_deck_by_god"].duplicate()
 	player_god_id = profile["player_god_id"]
 	player_name = profile["player_name"]
 	stats = profile["stats"]
 
 
 func _ready() -> void:
-	player_god_id = StoneLoader.default_god_id()
 	load_save()
 
 
@@ -126,27 +138,59 @@ func set_player_name(value: String) -> bool:
 	return true
 
 
-## Remplace le deck persistant après validation. Les decks incomplets sont
-## acceptés dans l'éditeur, mais jamais les doublons, inconnues ou dépassements.
+## Copie du deck sélectionné, utilisée par la collection, l'accueil et le combat.
+func get_active_deck() -> Array:
+	return get_deck(player_god_id, get_selected_deck())
+
+
+func get_deck(god_id: String, slot: int) -> Array:
+	if not _decks_by_god.has(god_id) or slot < 0 or slot >= DeckRules.DECKS_PER_GOD:
+		return []
+	return _decks_by_god[god_id][slot].duplicate()
+
+
+func get_selected_deck(god_id: String = "") -> int:
+	return int(_selected_deck_by_god.get(player_god_id if god_id == "" else god_id, 0))
+
+
+## Chaque opération est enregistrée avant d'être annoncée comme réussie.
+## En cas d'échec d'écriture, l'état précédent reste actif.
 func set_player_deck(value: Array) -> bool:
-	if not DeckRules.validate_deck(value, false, player_god_id)["valid"]:
+	if not _decks_by_god.has(player_god_id) or not DeckRules.validate_deck(value, false, player_god_id)["valid"]:
 		return false
-	player_deck = value.duplicate()
-	save()
+	var slot := get_selected_deck()
+	var previous := get_active_deck()
+	if previous == value:
+		return true
+	_decks_by_god[player_god_id][slot] = value.duplicate()
+	if save() != OK:
+		_decks_by_god[player_god_id][slot] = previous
+		return false
 	return true
 
 
-## Change de dieu et retire du deck les cartes devenues inaccessibles.
-## Retourne la liste des cartes retirées pour que l'interface puisse l'annoncer.
-func set_player_god(god_id: String) -> Array:
-	if StoneLoader.get_god(god_id).is_empty():
-		return []
-	var previous := player_deck.duplicate()
+## Ouvre la banque du dieu et retrouve son dernier emplacement sélectionné.
+func set_player_god(god_id: String) -> bool:
+	if not _decks_by_god.has(god_id):
+		return false
+	if god_id == player_god_id:
+		return true
+	var previous := player_god_id
 	player_god_id = god_id
-	player_deck = DeckRules.sanitize_deck(player_deck, player_god_id)
-	var removed: Array = []
-	for stone_id in previous:
-		if not player_deck.has(stone_id):
-			removed.append(stone_id)
-	save()
-	return removed
+	if save() != OK:
+		player_god_id = previous
+		return false
+	return true
+
+
+func set_selected_deck(slot: int) -> bool:
+	if not _decks_by_god.has(player_god_id) or slot < 0 or slot >= DeckRules.DECKS_PER_GOD:
+		return false
+	var previous := get_selected_deck()
+	if slot == previous:
+		return true
+	_selected_deck_by_god[player_god_id] = slot
+	if save() != OK:
+		_selected_deck_by_god[player_god_id] = previous
+		return false
+	return true

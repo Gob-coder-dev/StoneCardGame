@@ -8,6 +8,8 @@ extends RefCounted
 const DECK_SIZE: int = 8
 ## 10 points en moyenne par pierre.
 const DECK_BUDGET: int = 80
+## Emplacements indépendants sauvegardés pour chaque dieu.
+const DECKS_PER_GOD: int = 3
 
 const REASON_UNKNOWN: String = "unknown_stone"
 const REASON_DUPLICATE: String = "duplicate"

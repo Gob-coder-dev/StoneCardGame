@@ -43,6 +43,7 @@ const CARD_INFO: int = 700
 ## ─── Boutons ─────────────────────────────────────────────────────────────────
 const BUTTON_HEIGHT: int = 120     ## hauteur standard d'un bouton
 const BUTTON_WIDTH: int = 640      ## largeur standard d'un bouton de menu
+const DECK_SLOT_BUTTON_SIZE := Vector2(128, 112)
 
 ## ─── Couleurs récurrentes ────────────────────────────────────────────────────
 const COL_GOLD := Color("#e8c050")

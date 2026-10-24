@@ -30,7 +30,7 @@ scripts/
     effects/           Pose, Fortune, Déclin, Pillage et Essaim
   ai/                  IA à profils, évaluation des coups et AITurnRunner
   ui/                  Écrans, plateau, main et StoneCard
-    collection/        Sélecteur de dieu, deck, grille et panneaux
+    collection/        Sélecteurs de dieu et de deck, grille et panneaux
     combat/            Présentation, géométrie et animations
       animations/      Fortune, pièce et Pillage
     input/             Gestes et défilement tactiles
@@ -76,12 +76,13 @@ Cette suite injecte les événements par `Input`, avec l'émulation et le routag
 GUI de Godot. Elle couvre le défilement sur le texte, les cartes et les boutons,
 l'annulation des appuis, l'inertie, le multitouch, les fenêtres, la souris,
 le clavier et la pose d'une carte pendant un combat, par appuis ou par glissement
-au doigt et à la souris. Elle ne sauvegarde aucun
-changement de deck ou de statistiques.
+au doigt et à la souris, ainsi que les boutons des trois decks. Les tests de
+profil et d'interface écrivent dans des fichiers temporaires dédiés, puis les
+suppriment ; la sauvegarde personnelle du joueur reste intacte.
 
 Chaque suite se termine par un résumé, par exemple
-`GOD_SYSTEM_CHECKS: 319 passed, 0 failed, 0 Godot errors` ou
-`TACTILE : 50 vérifications, 0 échec(s), 0 erreur(s) Godot.`, et renvoie le code
+`GOD_SYSTEM_CHECKS: 354 passed, 0 failed, 0 Godot errors` ou
+`TACTILE : 55 vérifications, 0 échec(s), 0 erreur(s) Godot.`, et renvoie le code
 de sortie 1 en cas de problème. Sont comptés comme problèmes : une vérification
 ratée, une suite qui ne compile pas, une erreur ou un avertissement Godot non
 annoncé par le test, et un dépassement du temps limite (300 s et 120 s de jeu).
@@ -159,11 +160,25 @@ La collection montre seulement les cartes absentes du deck : une carte retirée
 du deck y revient à sa place. Elle est triée par FAMILLE par défaut (les cartes
 du dieu, puis les neutres, chaque groupe par nom), ou par coût, rareté ou nom ;
 les ex aequo sont toujours rangés par nom.
-Le panneau supérieur permet de choisir l'un des six dieux ; la collection est
-alors filtrée et les cartes incompatibles sont retirées du deck avec un message.
+Le panneau supérieur permet de choisir l'un des six dieux. Chacun possède trois
+decks indépendants, sélectionnés par les boutons **1, 2, 3** sous le choix du dieu.
+Changer de dieu retrouve son dernier emplacement sélectionné et sa collection,
+sans modifier les decks des autres dieux. Une même carte peut figurer dans
+plusieurs decks. Seules les cartes du deck actuellement sélectionné sont
+masquées dans la collection.
 Toucher une pierre ouvre ses informations et son action. Si le deck est plein,
 le jeu demande quelle pierre remplacer et affiche le calcul du budget pour
-chaque possibilité. Toute modification valide est enregistrée automatiquement.
+chaque possibilité. Toute modification valide est enregistrée automatiquement,
+sans bouton de sauvegarde ni message de succès. Les boutons numérotés n'affichent
+aucun indicateur de remplissage. Un deck vide ou incomplet reste enregistré,
+mais le combat exige huit pierres et un coût de 80 points au maximum.
+
+L'accueil et le combat utilisent le deck sélectionné. Les cartes des dix-huit
+emplacements, le dieu actif et le numéro choisi pour chaque dieu sont conservés
+dans `user://savegame.json`. Le format version 2 migre l'ancien deck vers
+l'emplacement 1 de son dieu ; pseudo et statistiques sont conservés, les autres
+emplacements démarrent vides. En cas d'échec d'écriture, la modification est
+annulée et un message d'erreur apparaît.
 
 ---
 

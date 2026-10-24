@@ -106,7 +106,7 @@ func _test_catalog_and_decks() -> void:
 	var inari_deck := ["kappa", "tanuki", "ronin", "naginata_monk", "kitsune", "bakuto", "maneki_neko", "saikoro"]
 	_check(DeckRules.is_deck_valid(inari_deck, "inari"), "un deck dieu + neutres est valide")
 	_check(not DeckRules.is_deck_valid(inari_deck, "hachiman"), "le même deck est refusé par un autre dieu")
-	_check(DeckRules.sanitize_deck(inari_deck, "hachiman") == ["naginata_monk", "kitsune"], "le changement de dieu retire seulement les exclusives")
+	_check(DeckRules.sanitize_deck(inari_deck, "hachiman") == ["naginata_monk", "kitsune"], "le nettoyage d'un deck incompatible conserve les cartes neutres")
 	var npc_decks_valid := true
 	for npc in StoneLoader.get_npcs_ordered():
 		npc_decks_valid = npc_decks_valid and npc["deck"].size() == DeckRules.DECK_SIZE

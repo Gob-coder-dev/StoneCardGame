@@ -134,6 +134,6 @@ En cas d'[color=#f0d88a]égalité[/color], personne ne capture. Une pierre peut 
 
 [color=#ffe060][font_size=44]Dieux et logos des pouvoirs[/font_size][/color]
 
-Tu équipes un dieu dans le menu Cartes. Ton deck peut contenir les cartes neutres et les cartes propres à sa famille. Changer de dieu retire du deck les cartes incompatibles.
+Tu équipes un dieu dans le menu Cartes. Ton deck peut contenir les cartes neutres et les cartes propres à sa famille. Chaque dieu possède trois decks indépendants, accessibles par les boutons 1, 2 et 3. Chaque modification est sauvegardée automatiquement. Changer de dieu retrouve son dernier deck sélectionné, sans modifier les decks des autres dieux. Le deck sélectionné est celui utilisé en combat ; il doit être complet et respecter le budget.
 
 Le contour de chaque pierre reprend la couleur de sa famille. Les logos en haut à droite annoncent ses pouvoirs. Voici les mêmes pictogrammes et leur fonctionnement :"""
