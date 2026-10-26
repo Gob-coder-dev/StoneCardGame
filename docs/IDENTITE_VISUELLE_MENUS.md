@@ -37,9 +37,8 @@ Le décor est redessiné au chargement et au redimensionnement, sans boucle
 par tween ; elle ne redessine pas les formes à chaque image. Le décor utilise
 des positions fixes et ne consomme aucun hasard de combat.
 
-Les six portraits existants sont copiés sans retouche dans `assets/gods/`.
-Le champ `asset` de `data/gods.json` en fournit le chemin ; Godot réutilise ses
-ressources chargées. Le jeu ne charge pas de fichier depuis `docs/designs/`.
+Les six portraits sont fournis dans `assets/gods/`. Le champ `asset` de
+`data/gods.json` en fournit le chemin ; Godot réutilise leurs ressources chargées.
 
 ## Déclinaison par écran
 
@@ -114,19 +113,13 @@ toute la largeur à son texte.
 
 Les suites `GodSystemChecks` et `TouchInputChecks` couvrent les parcours
 existants. `MenuChecks` vérifie en plus le chargement des six portraits et le
-passage des gestes à travers le décor de l'accueil. Le contrôle graphique doit
-inclure les différents dieux, les fiches, les menus ouverts, les tiroirs et un
-écran moins haut. Les essais utilisent un profil temporaire, restauré ensuite.
+passage des gestes à travers le décor de l'accueil. Les essais utilisent un profil
+temporaire, restauré ensuite.
 
-Validation après les corrections de lisibilité : 433 contrôles généraux et 63 contrôles tactiles
-réussis, sans échec ni erreur Godot comptabilisée. Le rendu PC a été capturé
-sur 19 vues, dont les six dieux, les panneaux ouverts et une composition de
-1080 × 1600 pour l'accueil moins haut. Les derniers réglages des symboles,
-textes et badges ont aussi été contrôlés sur 12 captures ciblées, notamment un
-deck Horizon, son tiroir ouvert et des fiches avec nom long ou coût décimal.
-Une planche supplémentaire vérifie ensemble les quatre raretés, les deux camps
-et deux cases interdites à la taille réelle du plateau mobile.
-Les 203 PNG des cartes sont identiques
-à ceux du début de la refonte ; les six portraits conservent les octets de
-leurs sources. Un essai sur téléphone réel reste nécessaire pour juger le
-confort final et le rendu sur son écran.
+Au dernier contrôle automatisé, 433 vérifications générales et 63 vérifications
+tactiles ont réussi sans échec ni erreur Godot. Une validation visuelle doit
+compléter ces suites après chaque changement de composition : chaque dieu, les
+fiches de cartes, les tiroirs ouverts, les quatre raretés, les deux propriétaires
+du plateau et les cases interdites doivent être relus à la taille mobile. Un essai
+sur téléphone réel reste nécessaire pour juger le confort final des gestes et le
+rendu sur l'écran cible.

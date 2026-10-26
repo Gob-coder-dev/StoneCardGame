@@ -1,339 +1,166 @@
-# Direction artistique — Bestiaire d’horreur
+# Direction artistique — Bestiaire d'horreur
+
+Ce document est la référence visuelle active de **SamStone**. L'ancien univers
+japonais a été remplacé par un bestiaire horrifique organisé autour de six dieux,
+de leurs familles de cartes et de monstres neutres.
+
+L'objectif est un jeu sombre et inquiétant, mais lisible, accueillant et rapide à
+comprendre sur un écran mobile. L'horreur vient des silhouettes, des matières et
+des détails narratifs ; elle ne doit jamais nuire à la lecture des cartes ni des
+symboles de combat.
+
+## Principes généraux
+
+- Les illustrations sont des PNG pixel art détaillés, conservés à leur résolution
+  de production. Elles ne sont pas réduites à des sprites 48 × 48 ou 64 × 64.
+- Chaque monstre se lit d'abord par une silhouette, un geste et un point focal
+  clair. Les petits détails complètent la lecture sans la remplacer.
+- Les ombres restent profondes, mais les valeurs intermédiaires doivent permettre
+  de distinguer l'anatomie sur téléphone.
+- Une famille se reconnaît par ses matières et ses motifs, pas seulement par sa
+  couleur de cadre.
+- Les dieux doivent être plus imposants et plus immédiatement reconnaissables que
+  les créatures de leurs cartes.
+- Les cartes neutres partagent la même ambiance, sans reprendre les signes
+  distinctifs d'une famille.
+
+## Familles et dieux
+
+| Dieu | Famille | Vocabulaire visuel | Palette dominante |
+| --- | --- | --- | --- |
+| **Véskar, le Manipulateur** | Les Aléators | Casino maudit, dés vivants, cartes, roulette, mains trop nombreuses. | Rose vif, ivoire, noir, accents rouges. |
+| **Nérava, la Mère des Fièvres** | Les Flétris | Infection, chairs sèches, spores, cloches funéraires, fissures contaminées. | Violet, cendre, chair pâle. |
+| **Kharûn, la Muraille** | Les Remparts | Golems, basalte, armures hantées, os et débris incrustés. | Ivoire, charbon, turquoise. |
+| **Ilyr, le Guetteur Éternel** | Les Veilleurs | Regard, observatoire vivant, lances organiques, membres allongés. | Bleu profond, argent, nuit. |
+| **Sylkha, la Mère-Ruche** | L'Essaim | Insectes, racines, nids, filaments et colonie vivante. | Vert, ambre, brun sombre. |
+| **Énigma, la Machine Première** | Les Assimilateurs | Machines vivantes, câbles, outils, récupération et matière absorbée. | Cuivre, orange, os sombre. |
+
+### Véskar — Les Aléators
+
+Véskar est une tête de dé aux grands yeux ouverts et au sourire maléfique. Il n'a
+pas de torse : de nombreuses mains émergent directement sous sa tête et portent
+un jeu de cartes, une roulette, des jetons et une machine à sous. Son regard doit
+donner l'impression d'une invitation dangereusement séduisante.
+
+Les cartes Fortune utilisent un seul motif de jeu par illustration. Lorsqu'un
+monstre montre des cartes, les quatre couleurs doivent être cohérentes et les
+cartes doivent être réellement tenues. Les dés respectent leur logique de faces,
+et une machine à sous affiche des symboles de casino plausibles — 7, cloches,
+cerises — plutôt que des couleurs de cartes.
+
+### Nérava — Les Flétris
+
+Les Flétris sont des corps desséchés, malades ou parasités. Les spores, fissures
+et excroissances racontent une contamination qui progresse. Nérava est une figure
+desséchée sous un voile de spores, accompagnée d'excroissances proches de cloches
+funéraires.
+
+La famille doit évoquer l'affaiblissement et la propagation. Elle ne doit pas se
+confondre avec l'Essaim : ici, les liens sont une maladie qui envahit ; ils ne
+forment pas une colonie fonctionnelle.
+
+### Kharûn — Les Remparts
+
+Les Remparts sont lourds, stables et construits autour de volumes protecteurs.
+Kharûn est un titan de basalte : une petite tête de pierre est encaissée entre des
+épaules massives, des orbites creuses et une gueule noire verticale. Os et fragments
+d'armure sont à la fois enchâssés dans le corps et utilisés comme protections.
+
+Les créatures de cette famille privilégient les masses, l'ancrage et les surfaces
+de défense. Elles se distinguent des Assimilateurs par une construction unifiée,
+minérale ou cérémonielle, sans mécanisme de récupération apparent.
+
+### Ilyr — Les Veilleurs
+
+Les Veilleurs ont des silhouettes hautes ou suspendues, des yeux centraux et des
+membres qui deviennent des armes de projection. Ilyr est un observatoire vivant :
+une grande tête à œil horizontal, encadrée par deux appendices courbes comme une
+arbalète organique, se prolonge par trois formes effilées plutôt que par des jambes
+humaines.
+
+La distance et la précision doivent se lire dans la pose. Les lances organiques,
+les lignes tendues et le regard dirigé vers une cible sont plus importants qu'une
+accumulation de petits détails.
+
+### Sylkha — L'Essaim
+
+L'Essaim mêle insectes, racines et fibres vivantes. Sylkha est une reine abeille
+végétale : thorax dressé, abdomen rayé vert sombre et ambre, couronne de pétales
+rigides, ailes à nervures végétales et traîne de racines distincte de ses membres.
+
+Les cartes doivent varier les espèces et fonctions : fourmis, insectes volants,
+larves, tisseurs, porteurs et organismes de nid. Les filaments et lianes indiquent
+la coopération ; ils sont coupés lorsque les membres changent de camp dans le jeu.
+
+### Énigma — Les Assimilateurs
+
+Les Assimilateurs sont des machines horrifiques qui absorbent la matière vaincue
+pour se renforcer. Énigma est un buste industriel monumental sur quatre appuis,
+avec une grande pince, un bras d'aspiration, un masque sévère et des plaques de
+récupération unifiées.
+
+Les mécanismes de cette famille restent lisibles à petite taille : une grande pince,
+un tube d'aspiration ou un module de collecte vaut mieux qu'un assemblage de pièces
+minuscules. Les appuis et membres arrière doivent toujours être reliés au corps.
 
-Projet : **SamStone**, nom actuel du jeu.
+## Monstres neutres
 
-Référence de conception du **24 octobre 2026**.
+Les neutres sont des monstres indépendants : esprits, enveloppes habitées,
+prédateurs nocturnes, créatures de cave et corps irrationnels. Ils peuvent être
+aussi rares ou dangereux que les cartes de famille, mais ne portent ni code de
+casino, ni contamination Flétrie, ni réseau d'Essaim, ni technologie
+d'Assimilateur dominante.
 
-Ce document conserve les choix discutés pour préparer les futures illustrations
-des cartes, les portraits des dieux et l’identité des menus. Les noms sont des
-noms de travail. Les propositions encore ouvertes sont signalées comme telles.
+**Avortons des caves** est une règle d'évolution représentative : trois créatures
+chaotiques sont visibles au niveau 1, puis leur nombre augmente avec les niveaux.
+L'image doit montrer une montée en puissance, pas seulement une version plus
+détaillée du même dessin.
 
-## 1. Intention générale
+## Évolutions et raretés
 
-Le nouvel univers repose sur des **monstres horrifiques**, répartis entre six
-familles aux identités visuelles distinctes, et des monstres neutres indépendants.
-Il remplacera l’univers samouraï et japonais actuel.
+Une évolution doit traduire l'augmentation de puissance par un changement visible :
+taille, silhouette, posture, anatomie, fonction ou menace. Ajouter du détail sans
+modifier la créature ne suffit pas.
 
-Chaque famille exprime une forme d’horreur liée à son gameplay :
+- Commune : quatre niveaux, avec des transformations lisibles à chaque étape.
+- Rare : trois niveaux, avec une progression concentrée mais nette.
+- Épique : deux niveaux, dont le second est une transformation majeure.
+- Légendaire : une forme unique, immédiatement mémorable.
 
-- **Fortune** : le hasard malveillant, les jeux d’argent et le casino maudit.
-- **Déclin** : l’infection, la décomposition et les organismes contaminés.
-- **Rempart** : les golems, les armures hantées et les corps fortifiés.
-- **Horizon** : les guetteurs et les prédateurs aux armes organiques longues.
-- **Essaim** : les colonies vivantes, les insectes et les réseaux organiques.
-- **Pillage** : les machines terrifiantes qui récupèrent et assimilent la matière.
+Les légendaires doivent être originaux. Une référence peut servir à décrire une
+ambiance ou un type d'horreur, mais une légère modification de nom ou de design ne
+rend pas une adaptation exploitable. Les silhouettes, noms et histoires doivent
+être créés pour SamStone.
 
-La famille doit pouvoir se reconnaître dans la silhouette, les matières et les
-motifs de ses créatures, en complément de sa couleur.
+## Cohérence de production
 
-Une base d’univers envisagée est un monde de ruines et de lieux maudits : casino
-abandonné, cité contaminée, forteresse vide, observatoire, forêt colonisée et usine
-interdite. L’origine des dieux et leurs relations restent à développer.
+Avant d'intégrer une illustration, vérifier :
 
-## 2. Familles et dieux
+1. la cohérence anatomique d'une même créature : nombre de doigts, pouces,
+   griffes, pattes et appendices ;
+2. la cohérence logique des accessoires : faces de dés, symboles de cartes,
+   roulette, machine à sous, outils et pièces mécaniques ;
+3. la lisibilité à la taille de la carte dans le deck et sur le plateau ;
+4. l'équilibre de luminosité avec les autres cartes de sa famille ;
+5. la différence manifeste avec le niveau précédent ;
+6. l'absence de référence directe à une œuvre, une marque ou un personnage tiers.
 
-| Pouvoir actuel | Famille retenue comme base de travail | Dieu |
-| --- | --- | --- |
-| Fortune | Les Aléators | **Véskar, le Manipulateur** |
-| Déclin | Les Flétris | **Nérava, la Mère des Fièvres** |
-| Rempart | Les Remparts | **Kharûn, la Muraille** |
-| Horizon | Les Veilleurs | **Ilyr, le Guetteur Éternel** |
-| Essaim | L’Essaim | **Sylkha, la Mère-Ruche** |
-| Pillage | Les Assimilateurs | **Énigma, la Machine Première** |
+Les portraits de dieux sont enregistrés dans le dossier assets/gods. Les cartes
+sont dans assets/cards, et leur association au jeu se fait par le champ asset de
+data/stones.json. Une image de niveau peut remplacer l'illustration commune de sa
+lignée sans changer ses statistiques, ses identifiants ou les sauvegardes.
 
-Le terme **dieu** reste utilisé dans cette référence. « Entité » reste une
-possibilité de vocabulaire pour la présentation du futur univers.
+Le jeu contient actuellement 203 PNG de cartes ; les 96 lignées ont une
+illustration N1. Les images de niveaux supérieurs sont intégrées progressivement.
 
-### Fortune — Les Aléators
+## Interface et symboles
 
-**Identité de la famille**
+Les illustrations ne portent pas seules toutes les informations de jeu :
 
-Des monstres qui évoquent le hasard, les dés, les cartes à jouer, les roulettes,
-les jetons, les machines à sous et les jeux d’argent. Leurs expressions et leur
-attitude peuvent donner l’impression d’une invitation séduisante et malveillante.
+- le cadre minéral sombre identifie la famille ;
+- le liseré intérieur identifie la rareté ;
+- le pictogramme intérieur en haut à droite identifie le pouvoir ;
+- la case du plateau indique le propriétaire actuel.
 
-Les corps peuvent être asymétriques, dédoublés ou construits autour d’un objet de
-jeu. Les motifs de casino doivent rester lisibles à petite taille : un motif
-principal fort par créature est préférable à une accumulation de détails.
-
-Exemples de pistes : dé vivant dont les points sont des yeux, croupier aux doigts
-articulés comme des pattes, machine à sous organique, jumeaux représentant les
-deux faces d’une pièce, créature évoquant une figure de carte à jouer.
-
-**Véskar, le Manipulateur — description choisie par l’utilisateur**
-
-- Un monstre à **tête de dé**.
-- Des **yeux grands ouverts**.
-- Un **sourire terrifiant et maléfique**.
-- Son expression doit faire comprendre, sans paroles : « Viens jouer au casino,
-  viens, n’aie pas peur. »
-- **Aucun corps ni torse** : de nombreuses mains émergent sous la tête, au niveau
-  du cou.
-- Plusieurs de ces mains tiennent des **cartes**, une **roulette**, des **jetons
-  de casino** et une **machine à sous**.
-
-La tête, le regard et le sourire sont les points de lecture prioritaires. La
-disposition des mains et des accessoires devra préserver cette expression.
-
-**Palette de travail :** rose vif, ivoire et noir, avec des accents de casino à
-définir lors des recherches graphiques.
-
-**Nom encore ouvert :** « Les Aléators » constitue la base actuelle. Alternatives
-discutées : « Les Aléatroces » (aléatoire + atroce) et « Les Casinistres »
-(casino + sinistre).
-
-### Déclin — Les Flétris
-
-**Identité de la famille**
-
-Silhouettes desséchées, fissures contaminées, spores, excroissances et chairs
-altérées. Des zombies et des monstres infectés constituent des références
-d’ambiance, notamment l’horreur fongique évoquée par *The Last of Us*.
-
-La décomposition et la maladie doivent se lire dans leur anatomie. Les pouvoirs
-d’affaiblissement prolongent visuellement cette contamination.
-
-Exemples de pistes : porteur de cloche malade, bête creuse laissant échapper du
-poison, créature dont les articulations sont envahies par une croissance parasite.
-
-**Nérava, la Mère des Fièvres**
-
-Une créature desséchée sous un immense voile de spores, avec des excroissances
-qui ressemblent à des cloches funéraires.
-
-**Palette de travail :** violet, cendre et chair pâle.
-
-### Rempart — Les Remparts
-
-**Identité de la famille**
-
-Golems, chevaliers fantômes et monstres à armure. Des corps massifs, protégés par
-la pierre, la céramique, le métal ou des enveloppes habitées.
-
-Leur silhouette doit évoquer la stabilité et la résistance : grands volumes,
-surfaces protectrices, poids et ancrage.
-
-**Kharûn, la Muraille — description choisie par l’utilisateur**
-
-- Un **gros golem de pierre**.
-- Son corps est rempli de **morceaux d’armure et d’os**.
-- Une partie des éléments forme une protection portée comme une armure.
-- D’autres morceaux sont **brisés ou plantés dans la pierre**, comme des débris
-  incrustés dans son corps.
-- Des **yeux sans âme et sans expression**.
-- Un visage immobile, impassible, qui renforce son aspect de masse inarrêtable.
-
-La pierre constitue la structure principale de son corps. Les os et les morceaux
-d’armure doivent se lire à la fois comme des protections et comme des fragments
-enchâssés ou enfoncés en lui.
-
-Révision validée le 25 octobre : titan d'ossuaire en grands volumes de basalte,
-petite tête de pierre enfoncée entre des épaules immenses, orbites creuses et
-gueule noire verticale. Deux poings énormes et deux appuis courts donnent le
-sentiment d'une muraille qui avance. Les os et fragments d'armure restent enchâssés.
-
-**Palette de travail :** ivoire, charbon et touches turquoise.
-
-### Horizon — Les Veilleurs
-
-**Identité de la famille**
-
-Silhouettes hautes, membres effilés, yeux et organes de projection. Certaines
-créatures possèdent de **longues lances organiques à la place des mains et des
-bras**. Leur anatomie exprime la portée de leurs attaques.
-
-Exemples de pistes : échassier aveugle doté d’un œil flottant, sentinelle aux bras
-démesurés, prédateur dont les membres se prolongent en armes naturelles.
-
-**Ilyr, le Guetteur Éternel**
-
-Un **observatoire vivant** colossal et suspendu. Une énorme tête enchâssée dans
-le haut du corps porte un œil horizontal à pupille verticale, encadré de paupières
-de cartilage ivoire et surmontant une petite bouche aux dents serrées.
-Deux grands appendices courbés, reliés aux épaules, encadrent le visage comme
-une arbalète organique. Le corps se resserre en trois prolongements effilés,
-sans jambes humaines. Sa posture immobile et son regard direct doivent évoquer
-une présence consciente qui a déjà choisi sa cible.
-
-Le dessin conserve les bleus profonds et les volumes ivoire éclairés des Veilleurs.
-Le regard, les deux arcs et le corps suspendu restent lisibles en miniature.
-
-**Palette de travail :** bleu, argent et nuit.
-
-### Essaim — L’Essaim
-
-**Identité de la famille**
-
-Organismes coloniaux mêlant insectes, racines et fibres vivantes. Les liens entre
-les créatures font partie de leur identité : filaments, nerfs, lianes, toiles et
-structures de nid.
-
-Leur renfort mutuel doit évoquer un réseau vivant. Les liaisons organiques déjà
-présentes dans les animations du jeu constituent une base visuelle à conserver.
-
-Exemples de pistes : porteur de nid, mante reliée à ses semblables par des
-filaments, organisme composé de plusieurs petits êtres interdépendants.
-
-**Sylkha, la Mère-Ruche**
-
-Une reine mêlant insecte et racines, dont le corps abrite des nids et prolonge
-ses nerfs jusque dans ses serviteurs.
-
-Révision validée le 25 octobre : une **reine abeille végétale** à thorax dressé,
-abdomen rayé vert sombre/ambre, couronne de pétales rigides et grandes ailes à
-nervures végétales. Ses six membres se distinguent de la traîne de racines.
-Sa silhouette souveraine doit dépasser la présence des mantes et nourrices.
-
-**Palette de travail :** vert, ambre et brun sombre.
-
-### Pillage — Les Assimilateurs
-
-**Identité de la famille**
-
-Robots et machines terrifiants qui récupèrent la matière de leurs victimes pour
-renforcer leur propre structure. Articulations exposées, outils, câbles et pièces
-disparates traduisent leur fonctionnement.
-
-L’animation actuelle de répartition des symboles volés évoque un programme :
-l’aspiration devient une récupération de matière, puis la machine choisit les
-emplacements à renforcer.
-
-Exemples de pistes : collecteur de protections, machine portant des membres
-récupérés, carcasse industrielle équipée d’outils de prélèvement.
-
-**Énigma, la Machine Première**
-
-Une intelligence enfermée dans une carcasse industrielle, entourée de membres
-et de protections provenant d’autres machines.
-
-Révision validée le 25 octobre : buste industriel monumental sur quatre appuis
-articulés, une grande pince et un bras d'aspiration dominants, masque sévère et
-grandes plaques de récupération. Une structure unifiée et imposante distingue
-le dieu des petites machines et de la légendaire basse aux dépouilles suspendues.
-
-« Énigma » est utilisé comme nom du dieu. « Les Assimilateurs » constitue la
-proposition principale pour la famille ; « Les Spoliateurs » et « Les
-Déchiqueteurs » restent des alternatives discutées.
-
-**Palette de travail :** cuivre, orange et os sombre, associés aux matières
-industrielles des créatures.
-
-## 3. Distinguer les familles proches
-
-### Flétris et Essaim
-
-- Les **Flétris** évoquent la décomposition, la maladie et des corps envahis par
-  une infection.
-- L’**Essaim** évoque des organismes vivants, organisés et reliés en colonie.
-
-Les champignons, filaments et parasites devront être dessinés en fonction de
-cette différence pour préserver la reconnaissance des deux familles.
-
-### Remparts et Assimilateurs
-
-- Les **Remparts** sont massifs, stables et construits autour de grandes surfaces
-  protectrices.
-- Les **Assimilateurs** montrent des articulations, des mécanismes et des pièces
-  récupérées, souvent disparates.
-
-Une armure hantée et un robot récupérateur doivent rester reconnaissables par
-leur construction, même sans leur couleur de famille.
-
-## 4. Cartes neutres
-
-Les neutres sont simplement des **monstres indépendants**, sans appartenance à
-l’une des six familles. Ils n’ont pas besoin d’une organisation ou d’une
-civilisation commune supplémentaire.
-
-Pistes : ogres, bêtes cavernicoles, géants, créatures des greniers, prédateurs
-nocturnes et autres monstres sauvages.
-
-Leur dessin doit éviter de reprendre les signes visuels dominants qui désignent
-explicitement une famille. Ils conservent cependant le même traitement graphique
-et la même ambiance que le reste du bestiaire.
-
-Une carte neutre peut être impressionnante, puissante ou légendaire.
-
-La révision du 25 octobre remplace six quadrupèdes redondants : Le Drapé du seuil
-(N06), Le Nœud hurlant (N12), La Veuve suspendue (N13), Le Porte-visages (N19),
-Le Replié (N20) et Le Sac à murmures (N24). Les neutres couvrent ainsi les esprits,
-les enveloppes habitées et les corps irrationnels, en complément des bêtes.
-N01 devient **Avortons des caves** : trois petits gobelins trapus et chaotiques
-au N1, puis davantage d'individus jusqu'à une armée qui s'écrase sur la carte.
-
-## 5. Raretés et monstres légendaires
-
-Les légendaires doivent marquer par leur **concept, leur silhouette, leur nom et
-leur histoire**. Elles peuvent devenir les grandes légendes propres à cet univers.
-
-L’envie de références à des monstres connus a été évoquée : Demogorgon de
-*Stranger Things*, créatures de *DOORS* et des Backrooms. Ces références servent
-à identifier des sensations et des types d’horreur à explorer.
-
-**Un léger changement de nom ou de dessin ne garantit pas l’absence de droits
-sur une adaptation.** La piste de travail privilégiée consiste à développer
-des créatures originales à partir d’idées générales d’horreur. Toute réutilisation
-d’une création existante demande de vérifier les autorisations et les licences
-applicables à cette création précise.
-
-Exemples originaux proposés, encore à explorer :
-
-| Nom de travail | Concept |
-| --- | --- |
-| Le Jardin Affamé | Un quadrupède dont les côtes abritent une serre de graines dentées. |
-| Le Dernier Locataire | Une silhouette portant un manteau couvert de fenêtres, derrière lesquelles quelque chose bouge. |
-| La Banque Vivante | Un coffre colossal qui conserve les perdants dans ses compartiments. |
-| Le Collecteur Zéro | Un assemblage cérémoniel dont chaque plaque conserve une trace de son ancien propriétaire. |
-
-Références pour les questions de droits :
-
-- [INPI — Le droit d’auteur](https://www.inpi.fr/ressources/propriete-intellectuelle/droit-dauteur).
-- [Guide de licence du wiki Backrooms](https://backrooms-wiki.wikidot.com/licensing-guide),
-  à consulter pour les contenus de ce wiki et les adaptations concernées.
-
-## 6. Illustrations, cartes et menus
-
-La production utilise des illustrations de personnages à la place des dessins
-procéduraux. Le traitement retenu est un pixel art horrifique détaillé, aux ombres
-marquées et aux silhouettes expressives. Les PNG sont conservés à la résolution
-originale du générateur ; la réduction en 48 × 48 pour les cartes et 64 × 64 pour
-les dieux est abandonnée, car elle détruisait les détails appréciés dans les essais.
-Leur affichage dans le jeu devra être testé sur le plateau mobile.
-
-Principes de travail :
-
-- Une silhouette identifiable et un point d’attention principal par illustration.
-- Des grandes formes et des détails secondaires contrôlés, vérifiés à la taille
-  réelle du plateau. Une légendaire et un dieu restent lisibles sur téléphone.
-- Un éclairage cohérent avec la première vague de chaque famille : ombres
-  profondes et tons intermédiaires suffisamment éclairés pour lire le corps.
-- Un traitement graphique commun aux six familles et aux neutres.
-- Des portraits de dieux qui résument visuellement leur famille.
-- Une distinction lisible entre **famille** et **propriétaire actuel** d’une
-  carte, pour que les captures restent compréhensibles.
-- Des symboles de combat et de pouvoir lisibles par-dessus les illustrations.
-- Une vérification au format réel de la carte, dans le deck et sur le plateau.
-
-Les formats envisagés sont le **PNG pour les illustrations texturées** et le
-**SVG pour les éléments vectoriels**, comme les emblèmes et les ornements.
-Les illustrations de travail sont regroupées dans la
-[galerie des originaux](designs/bestiaire-pixel-art-01/index.html). Les consignes
-de [cohérence visuelle](designs/bestiaire-pixel-art-01/COHERENCE_VISUELLE.md)
-précisent l’anatomie, les accessoires de casino et la diversité de l’Essaim.
-
-Pour les menus, une base commune de pierre sombre et de métal usé a été proposée,
-avec les portraits des dieux et les accents propres aux familles. Les couleurs,
-les matières et la composition détaillée restent à mettre au point.
-
-## 7. Prochaine étape de conception
-
-Avant de produire toutes les illustrations :
-
-1. Choisir le traitement graphique et le degré d’horreur souhaités.
-2. Dessiner un dieu et deux cartes de sa famille, puis une carte neutre.
-3. Tester ces illustrations à leur taille réelle sur le plateau et dans les menus.
-4. Ajuster les silhouettes, les contrastes et les palettes.
-5. Fixer une référence graphique commune avant de décliner le reste du catalogue.
-
-Les descriptions de **Véskar, le Manipulateur** et de **Kharûn, la Muraille**
-ci-dessus constituent les références à suivre pour leurs premiers croquis.
+Les règles complètes de cette hiérarchie visuelle, de la palette et des menus sont
+dans [Identité des menus](IDENTITE_VISUELLE_MENUS.md).

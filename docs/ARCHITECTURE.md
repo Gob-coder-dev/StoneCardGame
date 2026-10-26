@@ -66,17 +66,13 @@ image `asset` ; famille et rareté sont communes. Les nombres de symboles doiven
 
 Les PNG de production sont dans `assets/cards/<famille>/<forme>.png`. Le champ
 `asset` commun d'une lignée fournit son illustration N1 aux niveaux sans image
-spécifique ; un `asset` défini sur une forme a priorité. Le Porte-fièvre N4 utilise
-ainsi son dessin propre. Les 96 lignées disposent maintenant d'une illustration N1 ;
-le dessin provisoire reste disponible lorsqu'une définition ne fournit pas d'image.
-Les onze lignées reconstruites possèdent une image explicite par niveau au-delà
-du N1 commun. Réaffecter un ancien dessin à une forme finale modifie seulement
-les références `asset` et les PNG correspondants, sans changer l'index des formes,
-les statistiques ou les sauvegardes. Le [comparatif](designs/bestiaire-pixel-art-01/reconstruction-lignees/index.html)
-documente la répartition retenue.
-Le manifeste de la galerie pointe vers les mêmes PNG, sans copie concurrente
-dans `docs/designs/`. Les originaux restent à leur résolution complète ; les
-options d'import sans perte et les mipmaps sont enregistrés dans `.png.import`.
+spécifique ; un `asset` défini sur une forme a priorité. Les 96 lignées disposent
+d'une illustration N1 ; les formes de niveau supérieur peuvent progressivement
+recevoir leur propre image. Réaffecter une illustration modifie seulement les
+références `asset` et les PNG correspondants, sans changer l'index des formes,
+les statistiques ou les sauvegardes. Les originaux restent à leur résolution
+complète ; les options d'import sans perte et les mipmaps sont enregistrés dans
+`.png.import`.
 
 `StoneCard._load_texture_if_any()` charge la ressource partagée par Godot au
 changement de définition. `_illustration_rect()` calcule le rectangle proportionnel
@@ -374,23 +370,16 @@ de main, sans énumérer les mains. Le cas à une forme par lignée garde
 simulation de riposte retire aussi les autres formes de la lignée jouée.
 Il s'agit d'une hypothèse de composition, indépendante du véritable deck humain.
 
-Avec les 275 formes du catalogue de monstres, un lot de 18 parties et 132 décisions
-mesure sur ce PC environ 79 ms en moyenne pour le niveau 3, une préparation
-maximale de 10,4 ms et un appel `step()` maximal de 48,9 ms. Les mesures restent
-propres au PC et au lot ; le budget par image demeure une limite souple,
-avec des pointes qui demandent encore une mesure sur téléphone.
+Les performances de l'IA dépendent du catalogue, du plateau, du profil et de la
+machine. Toute modification de l'évaluation, des pouvoirs ou du nombre de cases
+doit donc être mesurée sur ordinateur et sur téléphone ; les valeurs historiques
+ne sont pas des objectifs de performance ni des garanties.
 
 `EndgameSearch` est un service sans état : il reçoit la simulation et la taille
 de la main cachée. L'exploration des placements restants est complète, mais la
 main reste supposée et le hasard échantillonné. La borne de coupure conservée
 dans le tour de l'IA ne coupe aucune branche avec le seuil actuel de deux cases.
 Relever ce seuil demanderait de nouveaux tests et de nouvelles mesures.
-
-Lors de l'audit précédent, la comparaison avant/après la séparation rejouait 18 parties à graines fixes
-(132 décisions), avec les six familles et 0, 1 ou 2 cases bloquées. Les coups,
-captures, pouvoirs et états du hasard restaient identiques. Sur ce lot et ce PC,
-les décisions de niveau 3 prenaient environ 50 ms en moyenne, avec une variabilité
-entre exécutions ; ce chiffre n'est pas une mesure Android.
 
 Avec `anticipation` (niveau 3), la valeur d'un coup gagne aussi 0,3 capture par
 lame d'aura d'Essaim obtenue (`AURA_WEIGHT`) : l'aura reste et sert aux coups
