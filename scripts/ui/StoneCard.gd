@@ -4,7 +4,7 @@
 ##   - cadre à la couleur de la famille
 ##   - lames triangulaires sur les 4 côtés (le nombre = la valeur du côté)
 ##   - bordure colorée selon le propriétaire (joueur / IA / neutre)
-##   - silhouette placeholder + arme (dessins génériques originaux)
+##   - illustration PNG, ou silhouette provisoire quand l'image manque
 ##   - bandeau de nom
 ##
 ## Si la pierre a un champ "asset" non vide pointant vers une image existante,
@@ -34,6 +34,7 @@ const COL_LONG_BLADE := Color("#4fa9ff")
 const COL_SWARM_BLADE := Color("#83d85d")
 const COL_SHIELD := Color("#92e7f2")
 const COL_ART_BG := Color("#d8c8a8")
+const COL_ILLUSTRATION_BG := Color("#151319")
 const COL_NAME_BG := Color("#2a1a0e")
 const COL_NAME_TEXT := Color("#f0e0c0")
 const COL_BORDER_HUMAN := Color("#3a7ad0")
@@ -80,6 +81,7 @@ func _init() -> void:
 	# Les cartes restent interactives et laissent les gestes atteindre
 	# le ScrollContainer parent, y compris lorsqu'ils débutent sur l'image.
 	mouse_filter = Control.MOUSE_FILTER_PASS
+	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 
 
 func setup(stone: Dictionary, owner: int = OWNER_NONE, battle_stone = null) -> void:
@@ -300,7 +302,7 @@ func _load_texture_if_any() -> void:
 	_texture = null
 	var path: String = _stone.get("asset", "")
 	if path != "" and ResourceLoader.exists(path):
-		_texture = load(path)
+		_texture = load(path) as Texture2D
 
 
 ## ─── Entrée tactile / clic ────────────────────────────────────────────────────
@@ -369,7 +371,8 @@ func _draw() -> void:
 	)
 
 	if _texture != null:
-		draw_texture_rect(_texture, art_rect, false)
+		draw_rect(art_rect, COL_ILLUSTRATION_BG, true)
+		draw_texture_rect(_texture, _illustration_rect(art_rect), false)
 	else:
 		draw_rect(art_rect, COL_ART_BG, true)
 		_draw_character(art_rect)
@@ -404,6 +407,15 @@ func _draw() -> void:
 		_draw_cost_badge(frame_rect, square_side)
 	if displayed_weakness() > 0:
 		_draw_weakness_badge(frame_rect, square_side)
+
+
+## La texture reste partagée par ResourceLoader ; seules ses dimensions dessinées
+## changent entre la fiche, la collection et le plateau.
+func _illustration_rect(bounds: Rect2) -> Rect2:
+	var image_size := _texture.get_size()
+	var ratio := minf(bounds.size.x / image_size.x, bounds.size.y / image_size.y)
+	var drawn_size := image_size * ratio
+	return Rect2(bounds.get_center() - drawn_size * 0.5, drawn_size)
 
 
 func _owner_color() -> Color:

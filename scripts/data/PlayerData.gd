@@ -93,7 +93,9 @@ func npc_record(npc_id: String) -> Dictionary:
 ## ─── Persistance ─────────────────────────────────────────────────────────────
 
 const SAVE_PATH: String = "user://savegame.json"
+const CATALOGUE_BACKUP_SUFFIX := ".before_monsters"
 var _save_path: String
+var _pending_catalogue_backup: Dictionary = {}
 
 
 ## Le chemin peut être fourni à une instance isolée pour les tests.
@@ -106,17 +108,28 @@ func get_profile() -> Dictionary:
 
 
 func save() -> Error:
+	if not _pending_catalogue_backup.is_empty() and not FileAccess.file_exists(_save_path + CATALOGUE_BACKUP_SUFFIX):
+		var backup_error := SaveStorage.write(_save_path + CATALOGUE_BACKUP_SUFFIX, _pending_catalogue_backup)
+		if backup_error != OK:
+			push_error("PlayerData: sauvegarde d'origine non conservée (%s)." % error_string(backup_error))
+			return backup_error
 	var error := SaveStorage.write(_save_path, get_profile())
 	if error != OK:
 		push_error("PlayerData: profil non enregistré (%s)." % error_string(error))
+	else:
+		_pending_catalogue_backup.clear()
 	return error
 
 
 func load_save() -> void:
-	_apply_profile(SaveCodec.decode(SaveStorage.read(_save_path)))
+	var raw := SaveStorage.read(_save_path)
+	_apply_profile(SaveCodec.decode(raw))
+	if SaveCodec.needs_catalogue_migration(raw):
+		_pending_catalogue_backup = raw.duplicate(true)
 
 
 func _apply_profile(profile: Dictionary) -> void:
+	_pending_catalogue_backup = {}
 	_decks_by_god = profile["decks_by_god"].duplicate(true)
 	_selected_deck_by_god = profile["selected_deck_by_god"].duplicate()
 	player_god_id = profile["player_god_id"]

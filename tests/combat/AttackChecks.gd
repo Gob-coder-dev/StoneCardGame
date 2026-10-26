@@ -12,7 +12,7 @@ func _test_shields() -> void:
 	_check(wall.attack("top") == 1, "un bouclier n'augmente pas l'attaque")
 	_check(wall.defense("top") == 2, "un bouclier ajoute un point de défense")
 	var rikishi := BattleStoneModel.new()
-	rikishi.configure("sumo", StoneLoader.get_stone("sumo"))
+	rikishi.configure("r04_n3", StoneLoader.get_stone("r04_n3"))
 	_check(rikishi.marker_count("bottom") == 4 and rikishi.attack("bottom") == 2 and rikishi.defense("bottom") == 4,
 		"Rikishi partage ses quatre emplacements du bas entre deux lames et deux boucliers")
 	var duel := _state_with_hands(["fx_attack2"], [])
@@ -23,7 +23,7 @@ func _test_shields() -> void:
 
 func _test_long_range() -> void:
 	var useful_catalog := true
-	for stone_id in ["yumi_archer", "tengu", "fujin"]:
+	for stone_id in ["h05_n1", "h05_n3", "h09_n2"]:
 		var definition := StoneLoader.get_stone(stone_id)
 		var strongest_long_face := 0
 		for value in definition.get("long_blades", {}).values():

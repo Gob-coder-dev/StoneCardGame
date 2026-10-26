@@ -3,45 +3,51 @@
   "gods": [
     {
       "id": "inari",
-      "name": "Inari",
-      "family_name": "Fortune",
+      "name": "Véskar",
+      "family_name": "Les Aléators",
       "color": "#e75aa8",
-      "description": "Des lames roses à demi-coût et des pierres qui jouent leur orientation à pile ou face."
+      "description": "Des lames roses à demi-coût et des pierres qui jouent leur orientation à pile ou face.",
+      "title": "le Manipulateur"
     },
     {
       "id": "izanami",
-      "name": "Izanami",
-      "family_name": "Déclin",
+      "name": "Nérava",
+      "family_name": "Les Flétris",
       "color": "#9b6bc7",
-      "description": "Le Miasme affaiblit de 1 les voisines adverses tant que son aura est active ; l'Échec corrosif retire 2 de force aux pierres qui résistent à l'attaque, jusqu'à la fin du prochain coup du lanceur."
+      "description": "Le Miasme affaiblit de 1 les voisines adverses tant que son aura est active ; l'Échec corrosif retire 2 de force aux pierres qui résistent à l'attaque, jusqu'à la fin du prochain coup du lanceur.",
+      "title": "la Mère des Fièvres"
     },
     {
       "id": "hachiman",
-      "name": "Hachiman",
-      "family_name": "Rempart",
+      "name": "Kharûn",
+      "family_name": "Les Remparts",
       "color": "#72c7d8",
-      "description": "Ajoute des boucliers : ils renforcent la défense sans augmenter l'attaque."
+      "description": "Ajoute des boucliers : ils renforcent la défense sans augmenter l'attaque.",
+      "title": "la Muraille"
     },
     {
       "id": "tsukuyomi",
-      "name": "Tsukuyomi",
-      "family_name": "Horizon",
+      "name": "Ilyr",
+      "family_name": "Les Veilleurs",
       "color": "#5fa8ff",
-      "description": "Projette des lames bleues sur une ligne, au-delà des alliés et des cases vides."
+      "description": "Projette des lames bleues sur une ligne, au-delà des alliés et des cases vides.",
+      "title": "le Guetteur Éternel"
     },
     {
       "id": "okuninushi",
-      "name": "Ōkuninushi",
-      "family_name": "Essaim",
+      "name": "Sylkha",
+      "family_name": "L’Essaim",
       "color": "#7fc95b",
-      "description": "Les pierres Swarm connectées se renforcent toutes tant qu'elles restent dans le même camp."
+      "description": "Les pierres Swarm connectées se renforcent toutes tant qu'elles restent dans le même camp.",
+      "title": "la Mère-Ruche"
     },
     {
       "id": "susanoo",
-      "name": "Susanoo",
-      "family_name": "Pillage",
+      "name": "Énigma",
+      "family_name": "Les Assimilateurs",
       "color": "#ef8b45",
-      "description": "Après une capture, transforme la force vaincue en boucliers répartis sur les autres faces de la pierre attaquante."
+      "description": "Après une capture, transforme la force vaincue en boucliers répartis sur les autres faces de la pierre attaquante.",
+      "title": "la Machine Première"
     }
   ]
 }

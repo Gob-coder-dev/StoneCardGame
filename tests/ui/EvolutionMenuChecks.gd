@@ -29,15 +29,15 @@ func _card(page: Control, lineage: String) -> StoneCard:
 
 func _test_preview(page: Control) -> void:
 	var before := PlayerData.get_profile()
-	var card := _card(page, "seed_balanced")
+	var card := _card(page, "n01")
 	page._select_preview_level(4)
-	_check(card == _card(page, "seed_balanced") and card.get_stone_id() == "seed_balanced_n4"
-		and _card(page, "seed_coin").get_stone_id() == "seed_coin_n3"
+	_check(card == _card(page, "n01") and card.get_stone_id() == "n01_n4"
+		and _card(page, "f08").get_stone_id() == "f08_n3"
 		and PlayerData.get_profile() == before, "le niveau global actualise les mêmes nœuds et sature chaque rareté sans modifier le profil")
 	page._select_god("izanami")
-	_check(_card(page, "seed_miasma").get_stone_id() == "seed_miasma_n2", "changer de dieu conserve le niveau d'aperçu et affiche le maximum épique")
+	_check(_card(page, "d09").get_stone_id() == "d09_n2", "changer de dieu conserve le niveau d'aperçu et affiche le maximum épique")
 	page._select_god("susanoo")
-	_check(_card(page, "seed_thief").get_stone_id() == "seed_thief_n1", "la légendaire reste visible au niveau un avec le filtre quatre")
+	_check(_card(page, "p11").get_stone_id() == "p11_n1", "la légendaire reste visible au niveau un avec le filtre quatre")
 	page._select_god("inari")
 	page._select_sort(1)
 	var previous_cost := -1.0
@@ -51,62 +51,62 @@ func _test_preview(page: Control) -> void:
 
 
 func _test_info_and_use(page: Control) -> void:
-	page._on_info_requested("seed_balanced_n4")
+	page._on_info_requested("n01_n4")
 	var info: StoneInfoSheet = page.info_sheet
 	var image_card := info.card_container.get_child(0)
-	_check(info.visible and info._shown_variant == "seed_balanced_n4"
+	_check(info.visible and info._shown_variant == "n01_n4"
 		and info.get_node("InfoPanel/InfoContent/Levels").get_child_count() == 4,
 		"Infos ouvre la forme touchée avec ses quatre boutons de niveau")
 	info._select_level(2)
-	_check(info._shown_variant == "seed_balanced_n2" and info.summary_label.text.contains("8 points")
+	_check(info._shown_variant == "n01_n2" and info.summary_label.text.contains("8 points")
 		and info.card_container.get_child(0) == image_card and PlayerData.get_active_deck().is_empty(),
 		"parcourir les niveaux met à jour coût et grande carte sans enregistrer ni recréer l'illustration")
 	info.use_button.pressed.emit()
-	_check(not info.visible and PlayerData.get_active_deck() == ["seed_balanced_n2"]
-		and Storage.read(Fixture.PATH)["decks_by_god"]["inari"][1] == ["seed_balanced_n2"]
-		and not _card(page, "seed_balanced").get_parent().visible,
+	_check(not info.visible and PlayerData.get_active_deck() == ["n01_n2"]
+		and Storage.read(Fixture.PATH)["decks_by_god"]["inari"][1] == ["n01_n2"]
+		and not _card(page, "n01").get_parent().visible,
 		"Utiliser enregistre exactement la forme consultée et masque sa lignée entière dans la collection")
 	var reloaded := PlayerModel.new(Fixture.PATH)
 	reloaded.load_save()
-	_check(reloaded.get_active_deck() == ["seed_balanced_n2"] and reloaded.get_selected_deck() == 1,
+	_check(reloaded.get_active_deck() == ["n01_n2"] and reloaded.get_selected_deck() == 1,
 		"un nouveau chargement du profil restaure le niveau réellement utilisé dans le bon deck")
 	reloaded.free()
-	page._on_info_requested("seed_balanced_n2")
+	page._on_info_requested("n01_n2")
 	_check(info.use_button.disabled, "Utiliser est désactivé pour la forme déjà équipée")
 	info._select_level(4)
 	info.close_sheet()
-	_check(PlayerData.get_active_deck() == ["seed_balanced_n2"], "fermer une fiche après consultation ne change pas le niveau équipé")
-	page._on_info_requested("seed_balanced_n2")
+	_check(PlayerData.get_active_deck() == ["n01_n2"], "fermer une fiche après consultation ne change pas le niveau équipé")
+	page._on_info_requested("n01_n2")
 	info._select_level(3)
 	info.use_button.pressed.emit()
-	_check(PlayerData.get_active_deck() == ["seed_balanced_n3"] and PlayerData.get_deck("inari", 0) == Fixture.DECK,
+	_check(PlayerData.get_active_deck() == ["n01_n3"] and PlayerData.get_deck("inari", 0) == Fixture.DECK,
 		"une autre forme remplace le même monstre au même emplacement dans le seul deck actif")
 
 
 func _test_replacement(page: Control) -> void:
 	page._commit_operation({"success": true, "deck": Fixture.DECK})
-	page._on_info_requested("seed_balanced_n4")
+	page._on_info_requested("n01_n4")
 	page.info_sheet.use_button.pressed.emit()
 	_check(page.replacement_panel.visible and not page.info_sheet.visible
-		and page._replacement_stone_id == "seed_balanced_n4", "un deck complet ouvre un unique panneau avec la forme exacte à insérer")
+		and page._replacement_stone_id == "n01_n4", "un deck complet ouvre un unique panneau avec la forme exacte à insérer")
 	page._select_preview_level(1)
-	page._on_replacement_requested("kappa")
-	_check(PlayerData.get_active_deck()[0] == "seed_balanced_n4" and not page.replacement_panel.visible,
+	page._on_replacement_requested("f03_n1")
+	_check(PlayerData.get_active_deck()[0] == "n01_n4" and not page.replacement_panel.visible,
 		"le remplacement conserve le niveau choisi même si le filtre global change entre-temps")
-	page._on_info_requested("seed_balanced_n4")
-	_check(page.info_sheet._shown_variant == "seed_balanced_n4", "Infos depuis le deck ouvre le niveau équipé, indépendamment de la collection")
+	page._on_info_requested("n01_n4")
+	_check(page.info_sheet._shown_variant == "n01_n4", "Infos depuis le deck ouvre le niveau équipé, indépendamment de la collection")
 	page._select_deck(2)
 	_check(not page.info_sheet.visible and page.info_sheet._shown_variant == "" and page._replacement_stone_id == "",
 		"changer d'emplacement annule les aperçus et les actions de l'ancien deck")
 
 
 func _test_errors(page: Control) -> void:
-	var deck := ["seed_balanced_n1"]
+	var deck := ["n01_n1"]
 	for index in range(7):
 		_register("evo_menu_budget_%d" % index, 4, 4, 2, 0)
 		deck.append("evo_menu_budget_%d" % index)
 	page._commit_operation({"success": true, "deck": deck})
-	page._on_info_requested("seed_balanced_n1")
+	page._on_info_requested("n01_n1")
 	var info: StoneInfoSheet = page.info_sheet
 	info._select_level(4)
 	info.use_button.pressed.emit()
@@ -121,7 +121,7 @@ func _test_errors(page: Control) -> void:
 		and PlayerData.get_active_deck() == deck, "une erreur disque reste visible dans Infos et n'équipe pas le nouveau niveau")
 	PlayerData._save_path = path
 	info.use_button.pressed.emit()
-	_check(not info.visible and PlayerData.get_active_deck()[0] == "seed_balanced_n2", "réessayer après une erreur enregistre la même forme sans action fantôme")
+	_check(not info.visible and PlayerData.get_active_deck()[0] == "n01_n2", "réessayer après une erreur enregistre la même forme sans action fantôme")
 
 
 func _test_battle_level() -> void:
@@ -135,10 +135,10 @@ func _test_battle_level() -> void:
 	await get_tree().process_frame
 	var state: GameState = board.turn_manager.get_state()
 	var cell: Dictionary = RulesEngine.get_free_cells(state)[0]
-	board.turn_manager.human_play(cell["row"], cell["col"], "seed_balanced_n2")
+	board.turn_manager.human_play(cell["row"], cell["col"], "n01_n2")
 	await get_tree().process_frame
 	var stone: BattleStone = state.get_cell(cell["row"], cell["col"])["stone"]
-	_check(stone != null and stone.stone_id == "seed_balanced_n2" and stone.base_blades["top"] == 2,
+	_check(stone != null and stone.stone_id == "n01_n2" and stone.base_blades["top"] == 2,
 		"le combat réel pose la forme sauvegardée avec ses statistiques exactes")
 	board.queue_free()
 	await get_tree().process_frame

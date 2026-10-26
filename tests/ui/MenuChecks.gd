@@ -77,34 +77,34 @@ func _test_deck_slots() -> void:
 	_check(PlayerData.get_selected_deck() == 1 and page._current_deck.is_empty()
 		and slots.get_child(1).button_pressed and not slots.get_child(0).button_pressed,
 		"choisir un numéro ouvre un deck vide et déplace la sélection")
-	page._on_primary_requested("kappa", CardActionDrawer.Source.COLLECTION)
+	page._on_primary_requested("f03_n1", CardActionDrawer.Source.COLLECTION)
 	await get_tree().process_frame
-	_check(PlayerData.get_active_deck() == ["kappa"] and not _shown_collection_ids(page).has("kappa")
-		and not page.status_label.visible and _collection_cards(page)["kappa"] == cards["kappa"]
+	_check(PlayerData.get_active_deck() == ["f03_n1"] and not _shown_collection_ids(page).has("f03_n1")
+		and not page.status_label.visible and _collection_cards(page)["f03_n1"] == cards["f03_n1"]
 		and PlayerData.get_deck("inari", 0) == ProfileFixture.DECK,
 		"modifier le deuxième deck masque sa carte sans recréer la collection ni afficher de message de succès")
-	page._on_primary_requested("kappa", CardActionDrawer.Source.DECK)
-	_check(PlayerData.get_active_deck().is_empty() and _shown_collection_ids(page).has("kappa"),
+	page._on_primary_requested("f03_n1", CardActionDrawer.Source.DECK)
+	_check(PlayerData.get_active_deck().is_empty() and _shown_collection_ids(page).has("f03_n1"),
 		"retirer une carte agit seulement sur le deck sélectionné")
 	page._select_deck(0)
-	page._on_primary_requested("izanagi", CardActionDrawer.Source.COLLECTION)
+	page._on_primary_requested("n01_n4", CardActionDrawer.Source.COLLECTION)
 	_check(page.replacement_panel.visible, "un deck complet ouvre le remplacement depuis le deck sélectionné")
-	page._on_replacement_requested("kappa")
-	_check(not page.replacement_panel.visible and PlayerData.get_active_deck().has("izanagi")
-		and not PlayerData.get_active_deck().has("kappa") and PlayerData.get_deck("inari", 1).is_empty(),
+	page._on_replacement_requested("f03_n1")
+	_check(not page.replacement_panel.visible and PlayerData.get_active_deck().has("n01_n4")
+		and not PlayerData.get_active_deck().has("f03_n1") and PlayerData.get_deck("inari", 1).is_empty(),
 		"le remplacement immédiat enregistre uniquement l'emplacement courant")
 	# Restaurer la composition initiale, puis vérifier les changements de contexte.
-	page._commit_operation(DeckRules.try_replace(page._current_deck, "izanagi", "kappa", "inari"))
+	page._commit_operation(DeckRules.try_replace(page._current_deck, "n01_n4", "f03_n1", "inari"))
 	page._select_deck(2)
-	page._on_primary_requested("tanuki", CardActionDrawer.Source.COLLECTION)
+	page._on_primary_requested("f07_n1", CardActionDrawer.Source.COLLECTION)
 	page._select_god("susanoo")
 	_check(page._current_deck.is_empty() and PlayerData.get_selected_deck() == 0,
 		"changer de dieu ouvre sa banque sans copier le deck précédent")
 	page._select_deck(1)
-	page._on_primary_requested("samurai_red", CardActionDrawer.Source.COLLECTION)
+	page._on_primary_requested("p08_n1", CardActionDrawer.Source.COLLECTION)
 	page._select_god("inari")
-	_check(page._current_deck == ["tanuki"] and PlayerData.get_selected_deck() == 2
-		and PlayerData.get_deck("susanoo", 1) == ["samurai_red"],
+	_check(page._current_deck == ["f07_n1"] and PlayerData.get_selected_deck() == 2
+		and PlayerData.get_deck("susanoo", 1) == ["p08_n1"],
 		"revenir à un dieu retrouve son dernier deck et préserve les autres banques")
 	var menu: Control = (load("res://scenes/menus/MainMenu.tscn") as PackedScene).instantiate()
 	add_child(menu)
@@ -112,8 +112,8 @@ func _test_deck_slots() -> void:
 		and menu.play_button.text == "COMPLÉTER MON DECK", "l'accueil lit le numéro actif et refuse un deck incomplet")
 	menu.queue_free()
 	# Un ancien panneau ne doit jamais pouvoir modifier le nouveau deck.
-	page._replacement_stone_id = "kitsune"
-	page.replacement_panel.open_for(page._current_deck, "kitsune")
+	page._replacement_stone_id = "n12_n2"
+	page.replacement_panel.open_for(page._current_deck, "n12_n2")
 	page._select_deck(0)
 	_check(not page.replacement_panel.visible and page._replacement_stone_id == "",
 		"changer d'emplacement ferme le remplacement et annule sa carte en attente")
@@ -165,8 +165,8 @@ func _test_cost_format() -> void:
 		"les coûts s'affichent avec la virgule française, sans décimale inutile")
 	_check(UIFormat.cost(1.25) == "1,25" and UIFormat.cost(3.75) == "3,75"
 		and UIFormat.cost(8.25) == "8,25", "les quarts de point ne sont jamais arrondis à un dixième")
-	_check(UIFormat.cost(StoneLoader.stone_cost("hayabusa")) == "3,75"
-		and UIFormat.cost(StoneLoader.stone_cost("tengu")) == "10,75",
+	_check(UIFormat.cost(StoneLoader.stone_cost("h06_n1")) == "3,75"
+		and UIFormat.cost(StoneLoader.stone_cost("h05_n3")) == "10,75",
 		"les coûts des cartes Horizon affichent exactement le coût du catalogue")
 
 
@@ -241,7 +241,7 @@ func _test_collection_incremental_refresh() -> void:
 	var cards := _collection_cards(page)
 	var expected: Array = []
 	for definition in StoneLoader.get_lineages_for_god("inari"):
-		if not PlayerData.get_active_deck().has(definition["id"]):
+		if DeckRules.lineage_index(PlayerData.get_active_deck(), StoneLoader.stone_lineage(definition["id"])) < 0:
 			expected.append(definition["id"])
 	var shown := _shown_collection_ids(page)
 	var shown_sorted := shown.duplicate()
@@ -253,17 +253,17 @@ func _test_collection_incremental_refresh() -> void:
 	_check(page._sort_mode == 0 and page.sort_button.text.begins_with("TRIER : FAMILLE")
 		and str(StoneLoader.get_stone(shown[0])["god_id"]) == "inari" and _is_family_order(shown, "inari"),
 		"par défaut, les cartes du dieu passent avant les neutres, chaque groupe par coût puis par nom")
-	var kappa: StoneCard = cards["kappa"]
+	var kappa: StoneCard = cards["f03_n1"]
 	var identity := kappa.get_instance_id()
 	var without_kappa: Array = PlayerData.get_active_deck()
-	without_kappa.erase("kappa")
+	without_kappa.erase("f03_n1")
 	page._current_deck = without_kappa
 	page._refresh_all()
 	await get_tree().process_frame
 	var grid: GridContainer = page.collection_rows.get_child(0)
 	shown = _shown_collection_ids(page)
 	# Kappa revient à la place que lui donnent son coût et son nom.
-	_check(shown.has("kappa") and _is_family_order(shown, "inari")
+	_check(shown.has("f03_n1") and _is_family_order(shown, "inari")
 		and is_instance_valid(kappa) and kappa.get_instance_id() == identity and not kappa._selected,
 		"une carte retirée du deck revient à sa place dans la collection, sans recréer de carte")
 	page._select_sort(3)
@@ -275,7 +275,7 @@ func _test_collection_incremental_refresh() -> void:
 	page._select_sort(0)
 	await get_tree().process_frame
 	grid = page.collection_rows.get_child(0)
-	page._current_deck = without_kappa + ["izanagi"]
+	page._current_deck = without_kappa + ["n01_n4"]
 	page._refresh_all()
 	await get_tree().process_frame
 	var visible_wrappers: Array = []
@@ -283,7 +283,7 @@ func _test_collection_incremental_refresh() -> void:
 		if wrapper.visible:
 			visible_wrappers.append(wrapper)
 	# Izanagi masqué, les cartes visibles restent alignées sur trois colonnes.
-	_check(not _shown_collection_ids(page).has("izanagi") and visible_wrappers.size() == expected.size()
+	_check(not _shown_collection_ids(page).has("n01_n1") and visible_wrappers.size() == expected.size()
 		and is_equal_approx(visible_wrappers[3].position.x, visible_wrappers[0].position.x)
 		and visible_wrappers[3].position.y > visible_wrappers[0].position.y,
 		"une carte ajoutée au deck disparaît et la grille referme le trou")

@@ -1,7 +1,7 @@
-# SamStone — 石の戦い
+# SamStone
 
 Jeu de cartes stratégique inspiré de Skystones (Skylanders Giants).
-Style : samouraï / yokai, univers japonais.
+Univers : bestiaire d'horreur, 96 lignées illustrées au niveau 1.
 Plateforme cible : Android (APK)
 Moteur : Godot 4 + GDScript
 
@@ -176,7 +176,7 @@ mais le combat exige huit pierres et un coût de 80 points au maximum.
 
 L'accueil et le combat utilisent le deck sélectionné. Les cartes des dix-huit
 emplacements, le dieu actif et le numéro choisi pour chaque dieu sont conservés
-dans `user://savegame.json`. Le format version 3 conserve les identifiants de
+dans `user://savegame.json`. Le format version 4 conserve les identifiants de
 formes et les niveaux choisis. Il migre toujours l'ancien deck vers
 l'emplacement 1 de son dieu ; pseudo et statistiques sont conservés, les autres
 emplacements démarrent vides. En cas d'échec d'écriture, la modification est
@@ -184,17 +184,43 @@ annulée et un message d'erreur apparaît.
 
 ## Lignées et évolutions
 
-Le catalogue conserve ses 107 cartes historiques à niveau unique pendant la
-transition. Huit lignées de départ ajoutent 24 formes : Germe de pierre (neutre),
-Dévoracle et Biface (Fortune), Éclat cuirassé (Rempart), Longuépine (Horizon),
-Porte-fièvre (Déclin), Nœud vivant (Essaim) et Collecteur Zéro (Pillage).
-Les illustrations définitives restent à créer ; chaque niveau dispose déjà de
-son propre champ `asset`.
+Le catalogue comprend **96 lignées et 275 formes** : 24 neutres et 12 pour chacun
+des six dieux. Les cartes japonaises et les huit prototypes ont été remplacés par
+le [catalogue de monstres](docs/CATALOGUE_CARTES_PROPOSITION.md), qui détaille les
+statistiques de chaque niveau et les pistes visuelles.
 
-Les nouvelles communes ont quatre niveaux, les rares trois, les épiques deux et
-les légendaires un seul. Les anciennes « peu communes » sont conservées telles
-quelles jusqu'à la définition du catalogue final. Toutes les formes des nouvelles
-lignées sont disponibles ; aucun système d'expérience ou de déblocage n'est ajouté.
+Les communes ont quatre niveaux, les rares trois, les épiques deux et les
+légendaires un seul. Toutes les formes sont disponibles ; aucun système
+d'expérience ou de déblocage n'est ajouté.
+
+Les illustrations de niveau 1 des **96 lignées sur 96** sont reliées au catalogue.
+Onze lignées prioritaires disposent de toutes leurs formes illustrées : voir le
+[comparatif des évolutions](docs/designs/bestiaire-pixel-art-01/reconstruction-lignees/index.html).
+Les **81 lignées évolutives sur 81** disposent aussi d'un N2 propre : voir le
+[comparatif N1/N2](docs/designs/bestiaire-pixel-art-01/evolutions-n2/index.html).
+Le bestiaire contient 203 PNG de cartes (96 N1, 81 N2, 22 N3 et 4 N4).
+Le [comparatif N1/N2/N3](docs/designs/bestiaire-pixel-art-01/evolutions-n3/index.html)
+présente les 22 N3 intégrés sur 65. Treize dessins de ce lot ont été retenus ;
+quatre essais trop proches du N2 sont à reprendre. La limite de génération
+interrompt le lot avec 43 dessins restants, dont les prompts sont conservés.
+Les quatre premiers essais N2 trop proches du N1 ont été remplacés.
+Les PNG retenus se trouvent dans
+`assets/cards/`, rangés par famille et nommés d'après l'identifiant de la forme.
+La [galerie](docs/designs/bestiaire-pixel-art-01/index.html) utilise ces mêmes
+fichiers : une retouche de l'image est visible dans le jeu et dans la galerie.
+
+Le champ `asset` d'une lignée fournit l'image commune à ses niveaux, en attendant
+leurs illustrations évolutives. Une entrée de `levels` peut définir son propre
+`asset` pour remplacer cette image. Les couvertures N1 et N2 sont complètes ;
+les 72 illustrations N3/N4 restantes sont suivies dans la galerie. Le choix de l'image ne change
+aucune statistique ni sauvegarde.
+
+`StoneCard` affiche le PNG entier, centré sur fond sombre et sans déformation,
+dans la collection, les fiches, la main et le plateau. Les PNG gardent leur
+résolution ; les retouches de luminosité sont tracées dans le manifeste et
+préservent leur alpha. Les fichiers `.png.import` utilisent la compression
+sans perte, aucune limite de taille et des mipmaps pour l'affichage réduit.
+Ces options suivent la [documentation d'import des images Godot](https://docs.godotengine.org/en/latest/tutorials/assets_pipeline/importing_images.html).
 
 Le bouton **Afficher : niveau 1 à 4** change seulement l'aperçu de la collection.
 Le niveau affiché sature au maximum de chaque lignée. La collection conserve
@@ -212,36 +238,33 @@ La direction visuelle future est décrite dans
 
 ---
 
-## Les 107 pierres historiques (par rareté)
+## Migration du catalogue
 
-| Rareté    | Pierres |
-|-----------|---------|
-| Common    | Ashigaru, Yumi Archer, Naginata Monk, Kappa, Tanuki, Shinobi, Maneki-neko, Bakeneko, Bakuto, Yūrei, Gaki, Rokurokubi, Monban, Kumigashira, Hayabusa, Archère lunaire, Kodama, Hotaru, Mukade, Kage, Wakō, Hyakushō, Hikyaku, Matagi, Kakashi, Chōchin-obake, Kasa-obake, Ashinaga, Tenaga, Kenshi, Bugyō, Saikoro, Omikuji, Kamaitachi, Nobusuma, Hoshi, Nopperabō, Ubume, Onryō, Suzume, Kaeru, Suzumebachi, Kusa, Kaizoku, Nusubito |
-| Uncommon  | Samurai Red, Kitsune, Oni Mineur, Rōnin, Yamabushi, Tengu, Kunoichi, Rikishi, Inugami, Hannya, Nure-onna, Sōhei, Hatamoto, Nagayari, Lapin de la lune, Tsuchigumo, Nue, Kabuki-mono, Sanzoku, Komainu, Baku, Umibōzu, Yamauba, Ittan-momen, Shōjō, Yoriki, Dōshin, Karō, Ebisu, Tsukikage, Kuchisake-onna, Kawauso, Hitokiri |
-| Rare      | Samurai Blue, Jōrōgumo, Raijin, Tatsu, Fūjin, Grand Oni, Daikoku, Ō-yoroi, Hōō, Orochi, Kirin, Ōkami, Daimyō, Shugo, Nekomata, Benzaiten, Raijū, Kaminari, Shuten-dōji, Ushi-oni, Akuma |
-| Epic      | Yasha, Ryūjin, Susanoo, Amaterasu, Shōgun, Gashadokuro |
-| Legendary | Izanagi (4/4/4/4), Bishamon |
+Les 131 anciens identifiants servent uniquement à convertir les sauvegardes,
+via `legacy_ids` dans `stones.json`. Ils ne sont plus jouables. La conversion
+conserve les emplacements, le dieu, le pseudo et les statistiques. Elle choisit
+des formes compatibles et des lignées distinctes, en ajustant si nécessaire le
+niveau ou la lignée pour respecter les huit cartes et les 80 points.
+Les identifiants techniques des dieux et des adversaires restent stables.
 
-Les cartes de chaque famille suivent son pouvoir : petites cartes Fortune
-couvertes de lames roses ou très déséquilibrées sur l'axe de leur pile ou face,
-cartes faibles pour le Déclin et l'Essaim (l'aura pousse dans les emplacements
-libres), assassins forts sur une ou deux faces pour le Pillage, lames bleues
-groupées sur une ou deux faces pour l'Horizon, murs et attaquants protégés pour
-le Rempart. Les nouvelles cartes réutilisent les dessins existants.
+Le chargement ne réécrit pas le profil. Avant la première modification d'un
+profil contenant ces cartes, son JSON d'origine est conservé dans
+`user://savegame.json.before_monsters`. Cette copie n'est jamais remplacée par
+les sauvegardes suivantes. Un échec de création de cette copie empêche la
+réécriture du profil.
 
 ## Dieux, familles et budget
 
-Les six styles jouables sont Inari/Fortune, Izanami/Déclin,
-Hachiman/Rempart, Tsukuyomi/Horizon, Ōkuninushi/Essaim et Susanoo/Pillage.
-Chaque famille possède 13 ou 14 pierres exclusives (14 pour Inari et Hachiman) ;
-27 pierres restent neutres. Chaque dieu voit donc 40 ou 41 cartes dans sa collection.
+Les six styles sont Véskar/Fortune (Les Aléators), Nérava/Déclin (Les Flétris),
+Kharûn/Rempart (Les Remparts), Ilyr/Horizon (Les Veilleurs), Sylkha/Essaim
+(L'Essaim) et Énigma/Pillage (Les Assimilateurs). Chaque dieu voit 36 lignées :
+ses 12 exclusives et les 24 neutres, soit 105 formes possibles.
 
-Une carte Fortune utilise un seul pouvoir : des lames roses aléatoires (badge
-×N, comme Kappa ×2 ou Maneki-neko ×3 ; Saikoro et Omikuji n'ont que des lames
-roses), ou un pile ou face horizontal (Tanuki, Inugami, Nekomata) ou vertical
-(Rōnin, Bakeneko, Kamaitachi). La pièce s'affiche au-dessus de la carte : ✓ échange
-les faces prévues, ✕ conserve leur disposition. Les boucliers sont représentés
-par des demi-cercles, avec une base plate contre la pierre.
+Une carte Fortune utilise un seul pouvoir : des lames roses aléatoires
+(badge ×N), un pile ou face horizontal ou un pile ou face vertical.
+La pièce s'affiche au-dessus de la carte : ✓ échange les faces prévues,
+✕ conserve leur disposition. Les boucliers sont représentés par des
+demi-cercles, avec une base plate contre la pierre.
 
 Après une capture Pillage, les symboles de la face vaincue se détachent et sont
 aspirés dans un entonnoir d'énergie. Ils repoussent ensuite sur la carte
@@ -277,18 +300,19 @@ les règles et affichés sans arrondi dans les menus.
 ## Les 6 NPCs
 
 Chaque adversaire possède désormais un dieu et un deck cohérent avec sa famille.
-Les decks des adversaires ne sont pas soumis au plafond de 80 points du joueur :
-Kaguya le dépasse. Au chargement, `ContentValidator` vérifie
-seulement leur taille, leur famille et leur profil d'IA.
+Les six decks proposés contiennent huit lignées distinctes, respectent leur
+famille et restent dans le budget de 80 points. Le validateur de contenu
+contrôle leur taille, leur famille et leur profil d'IA ; les tests contrôlent
+également leur budget et l'absence de doublons.
 
 | NPC | Difficulté | IA | Dieu / famille |
 |-----|-----------|-----|----------------|
-| Hiro le Novice | Facile | Niveau 1 | Hachiman / Rempart |
-| Mei la Kunoichi | Facile | Niveau 1 | Izanami / Déclin |
-| Tetsuo le Rōnin | Moyen | Niveau 2 | Inari / Fortune |
-| Yuki la Prêtresse | Moyen | Niveau 2 | Ōkuninushi / Essaim |
-| Raiko le Maître du Tonnerre | Difficile | Niveau 3 | Tsukuyomi / Horizon |
-| Kaguya la Sans-Nom | Difficile | Niveau 3 | Susanoo / Pillage |
+| Le Disciple de la Muraille | Facile | Niveau 1 | Kharûn / Rempart |
+| La Porteuse de fièvre | Facile | Niveau 1 | Nérava / Déclin |
+| Le Croupier ricanant | Moyen | Niveau 2 | Véskar / Fortune |
+| La Tisseuse de racines | Moyen | Niveau 2 | Sylkha / Essaim |
+| Le Guetteur du Lointain | Difficile | Niveau 3 | Ilyr / Horizon |
+| Le Maître des carcasses | Difficile | Niveau 3 | Énigma / Pillage |
 
 Une seule IA joue tous les adversaires, réglée par le champ `"ai"` de `npcs.json` :
 

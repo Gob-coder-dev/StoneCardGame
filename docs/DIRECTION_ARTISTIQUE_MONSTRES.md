@@ -127,6 +127,11 @@ La pierre constitue la structure principale de son corps. Les os et les morceaux
 d’armure doivent se lire à la fois comme des protections et comme des fragments
 enchâssés ou enfoncés en lui.
 
+Révision validée le 25 octobre : titan d'ossuaire en grands volumes de basalte,
+petite tête de pierre enfoncée entre des épaules immenses, orbites creuses et
+gueule noire verticale. Deux poings énormes et deux appuis courts donnent le
+sentiment d'une muraille qui avance. Les os et fragments d'armure restent enchâssés.
+
 **Palette de travail :** ivoire, charbon et touches turquoise.
 
 ### Horizon — Les Veilleurs
@@ -142,8 +147,16 @@ démesurés, prédateur dont les membres se prolongent en armes naturelles.
 
 **Ilyr, le Guetteur Éternel**
 
-Une créature très haute, presque immobile, avec des bras semblables à des lances
-et un visage dissimulé derrière une couronne de pointes.
+Un **observatoire vivant** colossal et suspendu. Une énorme tête enchâssée dans
+le haut du corps porte un œil horizontal à pupille verticale, encadré de paupières
+de cartilage ivoire et surmontant une petite bouche aux dents serrées.
+Deux grands appendices courbés, reliés aux épaules, encadrent le visage comme
+une arbalète organique. Le corps se resserre en trois prolongements effilés,
+sans jambes humaines. Sa posture immobile et son regard direct doivent évoquer
+une présence consciente qui a déjà choisi sa cible.
+
+Le dessin conserve les bleus profonds et les volumes ivoire éclairés des Veilleurs.
+Le regard, les deux arcs et le corps suspendu restent lisibles en miniature.
 
 **Palette de travail :** bleu, argent et nuit.
 
@@ -166,6 +179,11 @@ filaments, organisme composé de plusieurs petits êtres interdépendants.
 Une reine mêlant insecte et racines, dont le corps abrite des nids et prolonge
 ses nerfs jusque dans ses serviteurs.
 
+Révision validée le 25 octobre : une **reine abeille végétale** à thorax dressé,
+abdomen rayé vert sombre/ambre, couronne de pétales rigides et grandes ailes à
+nervures végétales. Ses six membres se distinguent de la traîne de racines.
+Sa silhouette souveraine doit dépasser la présence des mantes et nourrices.
+
 **Palette de travail :** vert, ambre et brun sombre.
 
 ### Pillage — Les Assimilateurs
@@ -187,6 +205,11 @@ récupérés, carcasse industrielle équipée d’outils de prélèvement.
 
 Une intelligence enfermée dans une carcasse industrielle, entourée de membres
 et de protections provenant d’autres machines.
+
+Révision validée le 25 octobre : buste industriel monumental sur quatre appuis
+articulés, une grande pince et un bras d'aspiration dominants, masque sévère et
+grandes plaques de récupération. Une structure unifiée et imposante distingue
+le dieu des petites machines et de la légendaire basse aux dépouilles suspendues.
 
 « Énigma » est utilisé comme nom du dieu. « Les Assimilateurs » constitue la
 proposition principale pour la famille ; « Les Spoliateurs » et « Les
@@ -231,6 +254,13 @@ et la même ambiance que le reste du bestiaire.
 
 Une carte neutre peut être impressionnante, puissante ou légendaire.
 
+La révision du 25 octobre remplace six quadrupèdes redondants : Le Drapé du seuil
+(N06), Le Nœud hurlant (N12), La Veuve suspendue (N13), Le Porte-visages (N19),
+Le Replié (N20) et Le Sac à murmures (N24). Les neutres couvrent ainsi les esprits,
+les enveloppes habitées et les corps irrationnels, en complément des bêtes.
+N01 devient **Avortons des caves** : trois petits gobelins trapus et chaotiques
+au N1, puis davantage d'individus jusqu'à une armée qui s'écrase sur la carte.
+
 ## 5. Raretés et monstres légendaires
 
 Les légendaires doivent marquer par leur **concept, leur silhouette, leur nom et
@@ -263,14 +293,20 @@ Références pour les questions de droits :
 
 ## 6. Illustrations, cartes et menus
 
-La future production utilisera des illustrations de personnages à la place des
-dessins procéduraux actuels. Le choix précis du traitement graphique reste ouvert :
-contours marqués, ombres franches, textures et niveau de détail devront être
-testés sur le plateau mobile.
+La production utilise des illustrations de personnages à la place des dessins
+procéduraux. Le traitement retenu est un pixel art horrifique détaillé, aux ombres
+marquées et aux silhouettes expressives. Les PNG sont conservés à la résolution
+originale du générateur ; la réduction en 48 × 48 pour les cartes et 64 × 64 pour
+les dieux est abandonnée, car elle détruisait les détails appréciés dans les essais.
+Leur affichage dans le jeu devra être testé sur le plateau mobile.
 
 Principes de travail :
 
 - Une silhouette identifiable et un point d’attention principal par illustration.
+- Des grandes formes et des détails secondaires contrôlés, vérifiés à la taille
+  réelle du plateau. Une légendaire et un dieu restent lisibles sur téléphone.
+- Un éclairage cohérent avec la première vague de chaque famille : ombres
+  profondes et tons intermédiaires suffisamment éclairés pour lire le corps.
 - Un traitement graphique commun aux six familles et aux neutres.
 - Des portraits de dieux qui résument visuellement leur famille.
 - Une distinction lisible entre **famille** et **propriétaire actuel** d’une
@@ -280,7 +316,10 @@ Principes de travail :
 
 Les formats envisagés sont le **PNG pour les illustrations texturées** et le
 **SVG pour les éléments vectoriels**, comme les emblèmes et les ornements.
-Le choix du format suivra le style finalement retenu.
+Les illustrations de travail sont regroupées dans la
+[galerie des originaux](designs/bestiaire-pixel-art-01/index.html). Les consignes
+de [cohérence visuelle](designs/bestiaire-pixel-art-01/COHERENCE_VISUELLE.md)
+précisent l’anatomie, les accessoires de casino et la diversité de l’Essaim.
 
 Pour les menus, une base commune de pierre sombre et de métal usé a été proposée,
 avec les portraits des dieux et les accents propres aux familles. Les couleurs,

@@ -17,7 +17,7 @@ const GOD_RULES := {
 		{"kind": "weaken_miss", "title": "Échec corrosif −{corrosion}",
 			"text": "Quand cette carte attaque une pierre adverse sans réussir à la capturer, de près ou avec une lame bleue, un poison atteint cette pierre et lui retire {corrosion} de force sur chaque face. Les pierres capturées, non attaquées ou hors de portée ne sont pas touchées. Le malus reste actif pendant le tour adverse puis pendant votre coup suivant, et expire après ce coup. Les lames neutralisées apparaissent fissurées ; les boucliers restent fonctionnels."},
 		{"kind": "weaken_adjacent", "title": "Miasme autour de la pierre",
-			"text": "Le point central et ses quatre voisins représentent les cases adjacentes. Tant que la carte reste dans le camp d'Izanami, une aura violette retire 1 force sur chaque face à chaque pierre adverse voisine, y compris à une carte posée plus tard à côté : celle-ci attaque d'abord normalement, puis subit le malus. Deux pierres Miasme voisines retirent 2 de force. Si la carte Miasme est capturée par un autre dieu, ou si la voisine passe dans ton camp, le malus disparaît. Chaque niveau de faiblesse brise visuellement une lame par face, sans affecter les boucliers. Une carte Déclin ne possède qu'un seul pouvoir."}
+			"text": "Le point central et ses quatre voisins représentent les cases adjacentes. Tant que la carte reste dans le camp de Nérava, une aura violette retire 1 force sur chaque face à chaque pierre adverse voisine, y compris à une carte posée plus tard à côté : celle-ci attaque d'abord normalement, puis subit le malus. Deux pierres Miasme voisines retirent 2 de force. Si la carte Miasme est capturée par un autre dieu, ou si la voisine passe dans ton camp, le malus disparaît. Chaque niveau de faiblesse brise visuellement une lame par face, sans affecter les boucliers. Une carte Déclin ne possède qu'un seul pouvoir."}
 	],
 	"hachiman": [
 		{"kind": "shield", "title": "Rempart : le demi-cercle",
@@ -29,7 +29,7 @@ const GOD_RULES := {
 	],
 	"okuninushi": [
 		{"kind": "swarm", "title": "Essaim : les trois points reliés",
-			"text": "Les pierres Essaim alliées reliées par leurs côtés forment un groupe. Plusieurs lianes vertes croisées restent visibles entre toute la largeur de leurs bords, puis une impulsion y fait pousser leurs lames d'aura. Chaque membre reçoit {swarm_per_ally} lames par autre membre du groupe, jusqu'à +{swarm_cap}, dans ses emplacements libres. Exemple : deux pierres reliées gagnent chacune 2 lames, trois pierres ou plus 4 lames chacune. Seul un joueur dont le dieu est Ōkuninushi relie ses pierres Essaim : une pierre capturée par un autre dieu perd son aura et ne renforce pas l'adversaire. Capturer un maillon coupe les lianes concernées et rétracte les bonus perdus."}
+			"text": "Les pierres Essaim alliées reliées par leurs côtés forment un groupe. Plusieurs lianes vertes croisées restent visibles entre toute la largeur de leurs bords, puis une impulsion y fait pousser leurs lames d'aura. Chaque membre reçoit {swarm_per_ally} lames par autre membre du groupe, jusqu'à +{swarm_cap}, dans ses emplacements libres. Exemple : deux pierres reliées gagnent chacune 2 lames, trois pierres ou plus 4 lames chacune. Seul un joueur dont le dieu est Sylkha relie ses pierres Essaim : une pierre capturée par un autre dieu perd son aura et ne renforce pas l'adversaire. Capturer un maillon coupe les lianes concernées et rétracte les bonus perdus."}
 	],
 	"susanoo": [
 		{"kind": "theft", "title": "Pillage : le cercle avec un +",
@@ -137,7 +137,7 @@ En cas d'[color=#f0d88a]égalité[/color], personne ne capture. Une pierre peut 
 Tu équipes un dieu dans le menu Cartes. Ton deck peut contenir les cartes neutres et les cartes propres à sa famille. Chaque dieu possède trois decks indépendants, accessibles par les boutons 1, 2 et 3. Chaque modification est sauvegardée automatiquement. Changer de dieu retrouve son dernier deck sélectionné, sans modifier les decks des autres dieux. Le deck sélectionné est celui utilisé en combat ; il doit être complet et respecter le budget.
 
 [color=#e8c050][b]Formes et niveaux[/b][/color]
-Les nouvelles lignées ont plusieurs formes : quatre niveaux pour une commune, trois pour une rare, deux pour une épique et un pour une légendaire. Les anciennes cartes restent disponibles à leur niveau unique pendant la transition du catalogue.
+Les lignées ont plusieurs formes : quatre niveaux pour une commune, trois pour une rare, deux pour une épique et un pour une légendaire.
 Le bouton « Afficher : niveau » change uniquement l'aperçu de la collection. Une carte qui n'a pas ce niveau reste affichée à son maximum. Dans Infos, les boutons numérotés permettent de consulter chaque forme. « Utiliser » équipe précisément la forme consultée, si le budget le permet. Un même monstre ne peut apparaître qu'une fois dans un deck, tous niveaux confondus. Les formes sont actuellement disponibles sans système de déblocage.
 
 Le contour de chaque pierre reprend la couleur de sa famille. Les logos en haut à droite annoncent ses pouvoirs. Voici les mêmes pictogrammes et leur fonctionnement :"""

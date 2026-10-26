@@ -51,7 +51,7 @@ func _on_npc_selected(npc_id: String) -> void:
 	var npc := StoneLoader.get_npc(npc_id)
 	if npc.is_empty():
 		return
-	profile_name.text = "%s\n%s" % [npc["name"], npc.get("name_jp", "")]
+	profile_name.text = str(npc["name"])
 	profile_quote.text = "« %s »" % npc.get("quote", "")
 	var diff_text: String
 	match npc["difficulty"]:

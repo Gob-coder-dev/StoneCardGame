@@ -27,12 +27,12 @@ func _compare_animated_and_instant(npc: Dictionary) -> void:
 		# pouvoirs continus, au lieu de simplement parcourir les cartes de famille.
 		if god_id == "okuninushi" and moves < 3:
 			move = [
-				{"row": 1, "col": 1, "stone_id": "oni_minor"},
-				{"row": 3, "col": 3, "stone_id": "oni_minor"},
-				{"row": 1, "col": 2, "stone_id": "kodama"}][moves]
+				{"row": 1, "col": 1, "stone_id": "e01_n3"},
+				{"row": 3, "col": 3, "stone_id": "e01_n3"},
+				{"row": 1, "col": 2, "stone_id": "e06_n2"}][moves]
 		elif god_id == "izanami" and moves < 2:
-			move = [{"row": 1, "col": 1, "stone_id": "kunoichi"},
-				{"row": 1, "col": 2, "stone_id": "yasha"}][moves]
+			move = [{"row": 1, "col": 1, "stone_id": "d07_n1"},
+				{"row": 1, "col": 2, "stone_id": "d05_n1"}][moves]
 		CombatResolverModel.apply_move(simulation, move["row"], move["col"], move["stone_id"], player)
 		if player == GameState.PLAYER_HUMAN:
 			manager.human_play(move["row"], move["col"], move["stone_id"])

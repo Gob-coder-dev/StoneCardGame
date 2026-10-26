@@ -1,6 +1,18 @@
 ## Format de sauvegarde et migration des profils, sans lecture/écriture disque.
 extends RefCounted
-const VERSION := 3
+const VERSION := 4
+const DeckMigration := preload("res://scripts/data/DeckCatalogueMigration.gd")
+
+static func needs_catalogue_migration(raw: Dictionary) -> bool:
+	if raw.get("player_deck") is Array and DeckMigration.requires_conversion(raw["player_deck"]):
+		return true
+	if raw.get("decks_by_god") is Dictionary:
+		for bank in raw["decks_by_god"].values():
+			if bank is Array:
+				for deck in bank:
+					if deck is Array and DeckMigration.requires_conversion(deck):
+						return true
+	return false
 
 static func default_stats() -> Dictionary:
 	return {"games_played": 0, "wins": 0, "losses": 0, "draws": 0,
@@ -42,11 +54,11 @@ static func _decode_decks(raw: Dictionary, active_god: String, legacy_deck: Arra
 		var saved_slots: Array = saved.get(god_id, []) if saved.get(god_id) is Array else []
 		for slot in range(DeckRules.DECKS_PER_GOD):
 			var cards: Array = saved_slots[slot] if slot < saved_slots.size() and saved_slots[slot] is Array else []
-			slots.append(DeckRules.sanitize_deck(cards, god_id))
+			slots.append(DeckMigration.convert(cards, god_id))
 		decks[god_id] = slots
 	# Version 1 et profils sans version : conserver le deck dans l'emplacement 1.
 	if not raw.has("decks_by_god") and decks.has(active_god):
-		decks[active_god][0] = DeckRules.sanitize_deck(legacy_deck, active_god)
+		decks[active_god][0] = DeckMigration.convert(legacy_deck, active_god)
 	return decks
 
 

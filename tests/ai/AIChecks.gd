@@ -27,7 +27,7 @@ func run() -> void:
 	_test_complete_matches()
 
 func _test_clone_and_hidden_random() -> void:
-	var state := _state_with_hands(["kappa"], ["tanuki"])
+	var state := _state_with_hands(["f03_n1"], ["f07_n1"])
 	state.set_random_seed(9988)
 	var clone := state.clone()
 	clone.draw_random_index(4)
@@ -84,7 +84,7 @@ func _test_profiles() -> void:
 
 func _test_ai_moves() -> void:
 	for data in [RANDOM, HALF, GREEDY, CAREFUL]:
-		var state := _state_with_hands(["kitsune"], ["kappa", "tanuki", "ronin"])
+		var state := _state_with_hands(["n12_n2"], ["f03_n1", "f07_n1", "f08_n1"])
 		state.human_god_id = "inari"
 		_force_instance(state, 1, 1, "fx_plain", GameState.PLAYER_HUMAN)
 		var view := state.clone_for_ai()
@@ -110,8 +110,8 @@ func _test_evaluation() -> void:
 		{"row": 1, "col": 0, "stone_id": "fx_ranged"}, 0)
 	_check(is_equal_approx(outcome["value"], 2.0) and not outcome["random"],
 		"l'évaluation compte les captures transperçantes")
-	var fortune := MoveEvaluatorModel.new(_state_with_hands([], ["kappa"]).clone_for_ai(), false).evaluate(
-		{"row": 1, "col": 1, "stone_id": "kappa"}, 0)
+	var fortune := MoveEvaluatorModel.new(_state_with_hands([], ["f03_n1"]).clone_for_ai(), false).evaluate(
+		{"row": 1, "col": 1, "stone_id": "f03_n1"}, 0)
 	_check(fortune["random"], "un coup qui utilise le hasard est signalé pour être évalué sur plusieurs tirages")
 
 
@@ -139,16 +139,16 @@ func _test_precision() -> void:
 
 
 func _test_opponent_model() -> void:
-	var state := _state_with_hands(["ashigaru"], ["fx_strong_wall"])
+	var state := _state_with_hands(["r05_n1"], ["fx_strong_wall"])
 	state.human_god_id = "hachiman"
-	CombatResolverModel.apply_move(state, 0, 0, "ashigaru", GameState.PLAYER_HUMAN)
+	CombatResolverModel.apply_move(state, 0, 0, "r05_n1", GameState.PLAYER_HUMAN)
 	CombatResolverModel.apply_move(state, 0, 1, "fx_strong_wall", GameState.PLAYER_AI)
 	var captured := state.get_cell(0, 0)
 	_check(captured["owner"] == GameState.PLAYER_AI and captured["placed_by"] == GameState.PLAYER_HUMAN,
 		"une case capturée garde l'auteur de sa pose")
 	var cards := Opponent.possible_cards(state.clone_for_ai())
-	_check(cards.size() == StoneLoader.get_stones_for_god("hachiman").size() - 1 and not cards.has("ashigaru")
-		and cards.has("izanagi") and cards.has("sumo") and not cards.has("kappa"),
+	_check(cards.size() == StoneLoader.get_stones_for_god("hachiman").size() - StoneLoader.lineage_max_level("r05") and not cards.has("r05_n1")
+		and cards.has("n01_n4") and cards.has("r04_n3") and not cards.has("f03_n1"),
 		"l'IA suppose les cartes du dieu adverse et les neutres, moins celles déjà posées")
 	_check(Opponent.possible_cards(_state_with_hands([""], [])).size() == StoneLoader.get_all_stones().size(),
 		"avec un dieu inconnu, toutes les cartes du catalogue restent possibles")
@@ -161,9 +161,9 @@ func _test_opponent_model() -> void:
 		and is_equal_approx(Opponent.expected_best(captures, weights), 2.0)
 		and Opponent.rank_weights(3, 5) == PackedFloat64Array([1.0, 0.0, 0.0]),
 		"la riposte attendue pondère chaque carte par sa chance d'être la meilleure de la main")
-	var card_ids: Array[String] = ["tanuki", "kitsune"]
+	var card_ids: Array[String] = ["f07_n1", "n12_n2"]
 	var variants := Opponent.attack_variants(card_ids)
-	_check(variants[0].size() == 2 and variants[0][0].normal_blades("left") == 2 and variants[0][1].normal_blades("right") == 2
+	_check(variants[0].size() == 2 and variants[0][0].normal_blades("left") == 3 and variants[0][1].normal_blades("right") == 3
 		and variants[0][1].normal_blades("left") == 0 and variants[1].size() == 1,
 		"un pile ou face adverse est envisagé dans ses deux orientations")
 
@@ -183,14 +183,14 @@ func _trap_state(human_hand: Array) -> GameState:
 
 func _test_anticipation_trap() -> void:
 	var catalog := _use_catalog(["fx_strong_wall"])
-	var greedy: Dictionary = _ai(GREEDY).choose_move(_trap_state(["kitsune"]).clone_for_ai())
+	var greedy: Dictionary = _ai(GREEDY).choose_move(_trap_state(["n12_n2"]).clone_for_ai())
 	_check(greedy == {"row": 1, "col": 1, "stone_id": "fx_attack2"}, "sans anticipation, l'IA prend la capture immédiate")
 	var all_careful := true
 	for seed_value in range(6):
-		var careful: Dictionary = _ai(CAREFUL, seed_value).choose_move(_trap_state(["kitsune"]).clone_for_ai())
+		var careful: Dictionary = _ai(CAREFUL, seed_value).choose_move(_trap_state(["n12_n2"]).clone_for_ai())
 		all_careful = all_careful and careful["row"] == 0 and careful["col"] == 1
 	_check(all_careful, "avec anticipation, l'IA renonce à une capture qui offre une riposte plus forte")
-	var view := _trap_state(["kitsune"]).clone_for_ai()
+	var view := _trap_state(["n12_n2"]).clone_for_ai()
 	var evaluator := MoveEvaluatorModel.new(view, true)
 	var trap_value: float = evaluator.evaluate({"row": 1, "col": 1, "stone_id": "fx_attack2"}, 0)["value"]
 	var safe_value: float = evaluator.evaluate({"row": 0, "col": 1, "stone_id": "fx_attack2"}, 0)["value"]
@@ -233,12 +233,12 @@ func _test_threat_by_direction() -> void:
 ## Pour chaque coup d'une vraie position (captures, Essaim, Pillage, Miasme et
 ## lames bleues compris), elle doit valoir le calcul refait de zéro sur le résultat.
 func _test_threat_reuse() -> void:
-	var state := _state_with_hands(["kitsune"], ["oni_minor", "kunoichi", "samurai_red", "fujin", "kodama"])
+	var state := _state_with_hands(["n12_n2"], ["e06_n1", "d07_n2", "p08_n1", "h09_n2", "e01_n1"])
 	state.human_god_id = "okuninushi"
-	_force_instance(state, 0, 0, "jorogumo", GameState.PLAYER_AI)
-	_force_instance(state, 0, 1, "oni_major", GameState.PLAYER_AI)
+	_force_instance(state, 0, 0, "e05_n2", GameState.PLAYER_AI)
+	_force_instance(state, 0, 1, "e11_n1", GameState.PLAYER_AI)
 	_force_instance(state, 1, 1, "fx_plain", GameState.PLAYER_HUMAN)
-	_force_instance(state, 2, 2, "yamabushi", GameState.PLAYER_HUMAN)
+	_force_instance(state, 2, 2, "r07_n2", GameState.PLAYER_HUMAN)
 	_force_instance(state, 3, 0, "fx_wall", GameState.PLAYER_AI)
 	state.apply_blocked_cells([[2, 0]])
 	for god_id in ["okuninushi", "izanami"]:
@@ -264,7 +264,7 @@ func _test_hidden_hand() -> void:
 	for data in [HALF, CAREFUL]:
 		for seed_value in range(4):
 			var moves: Array = []
-			for hand in [["kitsune"], ["izanagi"], ["ashigaru"]]:
+			for hand in [["n12_n2"], ["n01_n4"], ["r05_n1"]]:
 				moves.append(_ai(data, seed_value).choose_move(_trap_state(hand).clone_for_ai()))
 			same = same and moves[0] == moves[1] and moves[1] == moves[2]
 	_restore_catalog(catalog)
@@ -273,7 +273,7 @@ func _test_hidden_hand() -> void:
 
 func _test_endgame() -> void:
 	# Dernière case libre (2,2) sous une pierre humaine : seul le mur la capture.
-	var last := _state_3x3(["kitsune"], ["fx_ranged_target", "fx_strong_wall"])
+	var last := _state_3x3(["n12_n2"], ["fx_ranged_target", "fx_strong_wall"])
 	last.human_god_id = "hachiman"
 	for index in [0, 1, 2, 3, 5, 6, 7]:
 		var owner := GameState.PLAYER_HUMAN if index == 5 else GameState.PLAYER_AI
@@ -290,7 +290,7 @@ func _test_endgame() -> void:
 	# qui capture la pierre sans défense de l'IA en (1,1). La riposte immédiate
 	# ne pose pas la carte et ne voit pas cette aura ; le calcul exact la pose.
 	var catalog := _use_catalog(["fx_swarm_bottom"])
-	var aura := _state_3x3(["kitsune"], ["fx_ranged_target"])
+	var aura := _state_3x3(["n12_n2"], ["fx_ranged_target"])
 	aura.human_god_id = "okuninushi"
 	_force_instance(aura, 0, 0, "fx_swarm_a", GameState.PLAYER_HUMAN)
 	for index in [2, 3, 5, 6, 7]:

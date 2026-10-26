@@ -2,127 +2,139 @@
   "npcs": [
     {
       "id": "hiro",
-      "name": "Hiro le Novice",
-      "name_jp": "新入り",
-      "description": "Un jeune samouraï qui découvre à peine les SamStones.",
-      "quote": "Je m'entraîne encore, mais un jour je serai le meilleur !",
+      "name": "Le Disciple de la Muraille",
+      "description": "Une armure éveillée qui apprend à protéger les angles faibles de son deck.",
+      "quote": "Même une pierre fendue peut tenir debout.",
       "difficulty": "easy",
-      "ai": { "precision": 0.0, "anticipation": false },
-      "portrait": "res://assets/npcs/hiro.png",
+      "ai": {
+        "precision": 0,
+        "anticipation": false
+      },
+      "portrait": "",
       "deck": [
-        "ashigaru",
-        "yamabushi",
-        "sumo",
-        "naginata_monk",
-        "kitsune",
-        "monban",
-        "kumigashira",
-        "hyakusho"
+        "r01_n2",
+        "r02_n2",
+        "r03_n2",
+        "r04_n2",
+        "r05_n1",
+        "r06_n1",
+        "n01_n2",
+        "n24_n2"
       ],
       "god_id": "hachiman"
     },
     {
       "id": "mei",
-      "name": "Mei la Kunoichi",
-      "name_jp": "忍の梅",
-      "description": "Une ninja qui joue vite et sans se faire remarquer.",
-      "quote": "Tu ne m'auras pas deux fois au même endroit.",
+      "name": "La Porteuse de fièvre",
+      "description": "Une créature contaminée qui propage les premiers symptômes de Nérava.",
+      "quote": "Tu respireras avec moi.",
       "difficulty": "easy",
-      "ai": { "precision": 0.0, "anticipation": false },
-      "portrait": "res://assets/npcs/mei.png",
+      "ai": {
+        "precision": 0,
+        "anticipation": false
+      },
+      "portrait": "",
       "deck": [
-        "shinobi",
-        "kunoichi",
-        "yasha",
-        "naginata_monk",
-        "kitsune",
-        "yurei",
-        "gaki",
-        "nure_onna"
+        "d01_n2",
+        "d02_n2",
+        "d03_n2",
+        "d04_n2",
+        "d05_n1",
+        "d07_n1",
+        "n12_n1",
+        "n16_n1"
       ],
       "god_id": "izanami"
     },
     {
       "id": "tetsuo",
-      "name": "Tetsuo le Rōnin",
-      "name_jp": "浪人の鉄雄",
-      "description": "Un guerrier sans maître qui a beaucoup appris dans les rues.",
-      "quote": "Je n'obéis qu'à mes pierres.",
+      "name": "Le Croupier ricanant",
+      "description": "Un serviteur de Véskar dont les invitations cachent toujours une mauvaise surprise.",
+      "quote": "Approche. Le prochain tirage sera le bon.",
       "difficulty": "medium",
-      "ai": { "precision": 0.5, "anticipation": false },
-      "portrait": "res://assets/npcs/tetsuo.png",
+      "ai": {
+        "precision": 0.5,
+        "anticipation": false
+      },
+      "portrait": "",
       "deck": [
-        "kappa",
-        "tanuki",
-        "ronin",
-        "naginata_monk",
-        "raijin",
-        "bakuto",
-        "inugami",
-        "maneki_neko"
+        "f01_n3",
+        "f02_n3",
+        "f04_n3",
+        "f05_n2",
+        "f07_n2",
+        "f08_n2",
+        "n01_n2",
+        "n21_n1"
       ],
       "god_id": "inari"
     },
     {
       "id": "yuki",
-      "name": "Yuki la Prêtresse",
-      "name_jp": "巫女の雪",
-      "description": "Servante des dieux, elle invoque les yokai les plus puissants.",
-      "quote": "Les esprits choisissent leur camp eux-mêmes.",
+      "name": "La Tisseuse de racines",
+      "description": "Une nourrice de Sylkha qui relie les organismes en une colonie vivante.",
+      "quote": "Une seule voix, mille membres.",
       "difficulty": "medium",
-      "ai": { "precision": 0.5, "anticipation": false },
-      "portrait": "res://assets/npcs/yuki.png",
+      "ai": {
+        "precision": 0.5,
+        "anticipation": false
+      },
+      "portrait": "",
       "deck": [
-        "oni_minor",
-        "jorogumo",
-        "oni_major",
-        "kitsune",
-        "tatsu",
-        "kodama",
-        "tsuchigumo",
-        "nue"
+        "e01_n3",
+        "e04_n3",
+        "e05_n2",
+        "e06_n2",
+        "e07_n2",
+        "e09_n1",
+        "n01_n2",
+        "n16_n2"
       ],
       "god_id": "okuninushi"
     },
     {
       "id": "raiko",
-      "name": "Raiko le Maître du Tonnerre",
-      "name_jp": "雷光の雷鼓",
-      "description": "Un guerrier légendaire dont chaque coup résonne comme le tonnerre.",
-      "quote": "Tu entendras ma pierre avant de la voir.",
+      "name": "Le Guetteur du Lointain",
+      "description": "Une sentinelle d’Ilyr dont les membres organiques percent les lignes du plateau.",
+      "quote": "La distance ne te protège pas.",
       "difficulty": "hard",
-      "ai": { "precision": 1.0, "anticipation": true },
-      "portrait": "res://assets/npcs/raiko.png",
+      "ai": {
+        "precision": 1,
+        "anticipation": true
+      },
+      "portrait": "",
       "deck": [
-        "yumi_archer",
-        "tengu",
-        "fujin",
-        "raijin",
-        "tatsu",
-        "tsuki_yumi",
-        "raiju",
-        "hayabusa"
+        "h01_n4",
+        "h04_n3",
+        "h05_n3",
+        "h06_n2",
+        "h09_n1",
+        "h12_n1",
+        "n01_n3",
+        "n21_n1"
       ],
       "god_id": "tsukuyomi"
     },
     {
       "id": "kaguya",
-      "name": "Kaguya la Sans-Nom",
-      "name_jp": "かぐや",
-      "description": "Personne ne sait d'où elle vient. Elle joue les dieux comme des pions.",
-      "quote": "Je n'ai pas de pierre faible. Seulement de mauvais adversaires.",
+      "name": "Le Maître des carcasses",
+      "description": "Une machine d’Énigma qui transforme les défenses vaincues en nouvelles protections.",
+      "quote": "Tes pièces ont déjà une place dans mon corps.",
       "difficulty": "hard",
-      "ai": { "precision": 1.0, "anticipation": true },
-      "portrait": "res://assets/npcs/kaguya.png",
+      "ai": {
+        "precision": 1,
+        "anticipation": true
+      },
+      "portrait": "",
       "deck": [
-        "samurai_red",
-        "samurai_blue",
-        "susanoo",
-        "amaterasu",
-        "izanagi",
-        "orochi",
-        "sanzoku",
-        "akuma"
+        "p01_n4",
+        "p04_n4",
+        "p05_n3",
+        "p08_n2",
+        "p09_n2",
+        "p12_n1",
+        "n01_n3",
+        "n21_n1"
       ],
       "god_id": "susanoo"
     }

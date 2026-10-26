@@ -4,7 +4,7 @@
 ## NB : pas de class_name ici — le nom "StoneLoader" est défini dans project.godot
 ##      comme AutoLoad, ce qui le rend accessible globalement sans class_name.
 ##
-## Accès depuis n'importe quel script : StoneLoader.get_stone("ashigaru")
+## Accès depuis n'importe quel script : StoneLoader.get_stone("n01_n1")
 extends Node
 
 const ContentChecks := preload("res://scripts/data/ContentValidator.gd")
@@ -50,12 +50,10 @@ func _load_stones() -> void:
 	file.close()
 
 	var parsed = JSON.parse_string(content)
-	if parsed == null or not parsed.has("stones"):
+	if not parsed is Dictionary or not parsed.get("lineages") is Array:
 		push_error("StoneLoader: format JSON invalide dans %s" % STONES_PATH)
 		return
 
-	for stone in parsed["stones"]:
-		_index_stone(stone, str(stone["id"]), 1, 1)
 	for lineage in parsed.get("lineages", []):
 		_index_lineage(lineage)
 	_legacy_ids = parsed.get("legacy_ids", {}).duplicate()

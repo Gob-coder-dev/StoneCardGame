@@ -14,6 +14,7 @@ Une IA appelle le même moteur sur une copie pour essayer un coup instantanémen
 | `ContentValidator` | `find_problems` | Liste les incohérences des catalogues ; `StoneLoader` les signale au démarrage |
 | `PlayerData` | `get_active_deck`, `get_deck`, `get_selected_deck`, `set_player_deck`, `set_player_god`, `set_selected_deck`, `load_save`, `save` | Profil et trois decks persistants par dieu |
 | `PlayerSaveCodec` | `encode`, `decode` | Format et migration du profil sans accès disque |
+| `DeckCatalogueMigration` | `requires_conversion`, `convert` | Remplace les anciennes cartes par des formes compatibles, distinctes et dans le budget |
 | `PlayerSaveStorage` | `write`, `read` | Écriture sûre du profil sur le disque |
 | `BattleContext` | `record_result` | Adversaire sélectionné, premier joueur et dernier résultat |
 | `StoneCostRules` | `cost` | Règle du coût d'une carte |
@@ -28,7 +29,7 @@ renomme : une coupure ne laisse jamais un profil à moitié écrit. Un fichier
 illisible est renommé `savegame.json.unreadable` au lieu d'être écrasé, et un
 remplacement interrompu est récupéré au chargement suivant.
 
-Le format version 3 contient `decks_by_god` (trois tableaux d'identifiants de formes par dieu),
+Le format version 4 contient `decks_by_god` (trois tableaux d'identifiants de formes par dieu),
 `selected_deck_by_god` (indices de 0 à 2), `player_god_id`, `player_name` et
 `stats`. Il ne conserve plus de copie séparée du deck actif. `PlayerSaveCodec`
 migre les profils sans version et la version 1 : l'ancien `player_deck` devient
@@ -56,12 +57,32 @@ de pile ou face inconnu dans `stones.json`.
 
 ### Lignées et formes
 
-`stones.json` conserve les anciennes entrées `stones`, à une forme et un niveau.
-Le tableau `lineages` décrit les nouvelles lignées : identité commune et tableau
+`stones.json` contient 96 lignées de monstres et 275 formes, sans ancien tableau
+`stones`. Le tableau `lineages` décrit les lignées : identité commune et tableau
 `levels` de définitions explicites. Les quatre raretés modernes imposent 4/3/2/1
 formes. Chaque forme peut fournir ses statistiques, son nom, son texte et son
 image `asset` ; famille et rareté sont communes. Les nombres de symboles doivent
 être entiers et respecter la capacité de chaque face.
+
+Les PNG de production sont dans `assets/cards/<famille>/<forme>.png`. Le champ
+`asset` commun d'une lignée fournit son illustration N1 aux niveaux sans image
+spécifique ; un `asset` défini sur une forme a priorité. Le Porte-fièvre N4 utilise
+ainsi son dessin propre. Les 96 lignées disposent maintenant d'une illustration N1 ;
+le dessin provisoire reste disponible lorsqu'une définition ne fournit pas d'image.
+Les onze lignées reconstruites possèdent une image explicite par niveau au-delà
+du N1 commun. Réaffecter un ancien dessin à une forme finale modifie seulement
+les références `asset` et les PNG correspondants, sans changer l'index des formes,
+les statistiques ou les sauvegardes. Le [comparatif](designs/bestiaire-pixel-art-01/reconstruction-lignees/index.html)
+documente la répartition retenue.
+Le manifeste de la galerie pointe vers les mêmes PNG, sans copie concurrente
+dans `docs/designs/`. Les originaux restent à leur résolution complète ; les
+options d'import sans perte et les mipmaps sont enregistrés dans `.png.import`.
+
+`StoneCard._load_texture_if_any()` charge la ressource partagée par Godot au
+changement de définition. `_illustration_rect()` calcule le rectangle proportionnel
+et centré ; `_draw()` affiche la texture sur fond sombre puis les badges et le
+nom. Aucun fichier n'est chargé pendant le dessin et le moteur n'accède jamais
+aux textures. Le même composant couvre collection, fiche, main et plateau.
 
 `StoneLoader` valide puis indexe les définitions complètes une fois au chargement.
 `get_stone(form_id)` reste le contrat commun au moteur et aux vues.
@@ -70,8 +91,23 @@ fournissent des lectures de l'index ; `get_lineages_for_god` fournit une entrée
 par monstre pour la collection. Une forme demandée hors limites est refusée ;
 seul `preview_variant` sature le niveau demandé. Le dictionnaire facultatif
 `legacy_ids` décrit les correspondances explicites d'anciens identifiants.
-La version 3 garde aussi les sauvegardes des versions 1 et 2 ; la transition
-actuelle conserve tous les identifiants historiques.
+Les identifiants suivent la référence du catalogue : `n01` désigne une lignée,
+`n01_n2` sa deuxième forme. Les 131 identifiants historiques ne sont plus
+indexés comme cartes jouables ; `resolve_saved_id` les résout seulement pour
+les sauvegardes.
+
+La version 4 lit les profils antérieurs. `PlayerSaveCodec` confie les tableaux
+contenant des alias à `DeckCatalogueMigration`. Cette conversion déterministe
+cherche des formes proches de la correspondance déclarée, protège les lignées
+actuelles et réserve un budget pour les cartes restantes. Elle utilise
+`DeckRules` pour les ajouts effectifs. Les identifiants internes des six dieux
+et des six adversaires restent stables pour préserver banques et statistiques.
+
+`PlayerData.load_save` conserve en mémoire le JSON d'origine à convertir, sans
+écriture. À la première sauvegarde, `PlayerSaveStorage` l'enregistre dans
+`savegame.json.before_monsters` avant le profil version 4. Une copie existante
+est conservée ; si sa création échoue, la modification est annulée. Les tests
+utilisent un chemin distinct et isolent aussi cette copie en attente.
 
 Les decks restent des tableaux d'identifiants de formes. `DeckRules.lineage_index`
 centralise la recherche d'une lignée ; les validations et les opérations de
@@ -268,9 +304,9 @@ dans le champ `"ai"` de `npcs.json` ; `ContentValidator` en signale les erreurs.
 
 | Niveau | `precision` | `anticipation` | Adversaires | Délai minimal |
 | --- | --- | --- | --- | --- |
-| 1 | 0 | non | Hiro, Mei | 0,6 s |
-| 2 | 0,5 | non | Tetsuo, Yuki | 0,8 s |
-| 3 | 1 | oui | Raiko, Kaguya | 1,2 s |
+| 1 | 0 | non | Disciple de la Muraille, Porteuse de fièvre | 0,6 s |
+| 2 | 0,5 | non | Croupier ricanant, Tisseuse de racines | 0,8 s |
+| 3 | 1 | oui | Guetteur du Lointain, Maître des carcasses | 1,2 s |
 
 Avec la probabilité `precision`, l'IA joue le meilleur coup évalué, au hasard
 entre les ex aequo. Sinon elle commet une erreur crédible : un coup tiré au sort
@@ -311,10 +347,11 @@ de main, sans énumérer les mains. Le cas à une forme par lignée garde
 simulation de riposte retire aussi les autres formes de la lignée jouée.
 Il s'agit d'une hypothèse de composition, indépendante du véritable deck humain.
 
-Avec les 131 formes actuelles, un lot de 18 parties et 132 décisions mesure sur
-ce PC environ 57 ms en moyenne pour le niveau 3, une préparation maximale de
-6,7 ms et un appel `step()` maximal de 25,3 ms. Les mesures restent propres au
-PC et au lot ; le budget par image demeure une limite souple.
+Avec les 275 formes du catalogue de monstres, un lot de 18 parties et 132 décisions
+mesure sur ce PC environ 79 ms en moyenne pour le niveau 3, une préparation
+maximale de 10,4 ms et un appel `step()` maximal de 48,9 ms. Les mesures restent
+propres au PC et au lot ; le budget par image demeure une limite souple,
+avec des pointes qui demandent encore une mesure sur téléphone.
 
 `EndgameSearch` est un service sans état : il reçoit la simulation et la taille
 de la main cachée. L'exploration des placements restants est complète, mais la

@@ -9,9 +9,9 @@ func _test_fortune_view_animation() -> void:
 	view.size = Vector2(900, 900)
 	add_child(view)
 	view.build()
-	var state := _state_with_hands(["kappa"], [])
+	var state := _state_with_hands(["f03_n1"], [])
 	state.set_random_seed(2026)
-	var placement := CombatResolverModel.place_stone(state, 1, 1, "kappa", GameState.PLAYER_HUMAN)
+	var placement := CombatResolverModel.place_stone(state, 1, 1, "f03_n1", GameState.PLAYER_HUMAN)
 	view.refresh(state)
 	var slot: Panel = view.get_node("cell_1_1")
 	var card: StoneCard = slot.get_child(0)
@@ -33,9 +33,9 @@ func _test_coin_view_animation() -> void:
 		var state: GameState
 		var placement: Dictionary
 		for seed in range(1, 80):
-			state = _state_with_hands(["tanuki"], [])
+			state = _state_with_hands(["f07_n1"], [])
 			state.set_random_seed(seed)
-			placement = CombatResolverModel.place_stone(state, 1, 1, "tanuki", GameState.PLAYER_HUMAN)
+			placement = CombatResolverModel.place_stone(state, 1, 1, "f07_n1", GameState.PLAYER_HUMAN)
 			if state.get_cell(1, 1)["stone"].coin_flipped == flipped:
 				break
 		var view := BoardView.new()
@@ -45,7 +45,7 @@ func _test_coin_view_animation() -> void:
 		view.refresh(state)
 		view.animations.animate_preparation(1, 1, placement["placement_effects"], Timeline.PREPARATION)
 		var card: StoneCard = view.get_node("cell_1_1").get_child(0)
-		var original: Dictionary = StoneLoader.get_stone("tanuki")["blades"]
+		var original: Dictionary = StoneLoader.get_stone("f07_n1")["blades"]
 		var unchanged := true
 		for side in BattleStoneModel.SIDES:
 			unchanged = unchanged and int(card.displayed_stone().base_blades[side]) == int(original[side])

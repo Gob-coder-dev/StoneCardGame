@@ -19,6 +19,10 @@ v1/
 
 # Documents locaux non destinés à GitHub.
 /docs/archives/
+/docs/design/
+/docs/designs/
+/docs/CATALOGUE_CARTES_PROPOSITION.md
+/docs/REPRISE_ILLUSTRATIONS_N3.md
 /ANALYSE_PROJET.md
 [Cc][Ll][Aa][Uu][Dd][Ee].[Mm][Dd]
 

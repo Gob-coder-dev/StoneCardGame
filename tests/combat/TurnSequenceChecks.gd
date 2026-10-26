@@ -20,8 +20,8 @@ func _test_turn_manager_sequence() -> void:
 	manager.stone_placed.connect(func(_row: int, _col: int, _stone_id: String, _owner: int):
 		observed["placed"] = true
 	)
-	manager.start_game(["kappa"], ["fx_plain"], [], "", GameState.PLAYER_HUMAN, "inari", "hachiman")
-	var accepted := manager.human_play(1, 1, "kappa")
+	manager.start_game(["f03_n1"], ["fx_plain"], [], "", GameState.PLAYER_HUMAN, "inari", "hachiman")
+	var accepted := manager.human_play(1, 1, "f03_n1")
 	_check(accepted and observed["placed"] and not observed["preparing"], "la pose commence avant la révélation Fortune")
 	await manager.stone_preparing
 	_check(observed["preparing"], "Fortune se révèle après le rebond de pose")
@@ -138,8 +138,8 @@ func _test_presentation_acknowledgement() -> void:
 
 func _test_close_during_animation() -> void:
 	var manager := _animated_manager()
-	manager.start_game(["kappa"], ["fx_plain"], [], "", GameState.PLAYER_HUMAN)
-	manager.human_play(1, 1, "kappa")
+	manager.start_game(["f03_n1"], ["fx_plain"], [], "", GameState.PLAYER_HUMAN)
+	manager.human_play(1, 1, "f03_n1")
 	manager.queue_free()
 	await get_tree().process_frame
 	_check(not is_instance_valid(manager), "fermer la scène pendant une pose annule les animations et leurs attentes")
