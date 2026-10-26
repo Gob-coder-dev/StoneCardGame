@@ -1,7 +1,9 @@
-[gd_scene load_steps=3 format=3 uid="uid://result_scene"]
+[gd_scene load_steps=4 format=3 uid="uid://result_scene"]
 
 [ext_resource type="Script" path="res://scripts/ui/ResultController.gd" id="1_result"]
 [ext_resource type="Script" path="res://scripts/ui/input/TouchButton.gd" id="2_touch_button"]
+
+[ext_resource type="Script" path="res://scripts/ui/MenuBackground.gd" id="3_background"]
 
 [node name="Result" type="Control"]
 layout_mode = 3
@@ -10,12 +12,14 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 script = ExtResource("1_result")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="Control" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.07, 0.045, 0.025, 1)
+mouse_filter = 2
+script = ExtResource("3_background")
+room = 3
 
 [node name="VBoxCenter" type="VBoxContainer" parent="."]
 layout_mode = 1
@@ -32,24 +36,25 @@ alignment = 1
 theme_override_constants/separation = 28
 
 [node name="ResultLabel" type="Label" parent="VBoxCenter"]
+theme_type_variation = &"ScreenTitle"
 layout_mode = 2
-theme_override_colors/font_color = Color(0.91, 0.78, 0.47, 1)
-theme_override_font_sizes/font_size = 96
-text = "RÉSULTAT"
+theme_override_font_sizes/font_size = 76
+text = "RÉSULTAT DU DUEL"
 horizontal_alignment = 1
 
 [node name="ScoreLabel" type="Label" parent="VBoxCenter"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.95, 0.9, 0.78, 1)
 theme_override_font_sizes/font_size = 48
 text = "0 — 0"
 horizontal_alignment = 1
+autowrap_mode = 2
 
 [node name="Separator" type="Control" parent="VBoxCenter"]
 layout_mode = 2
 custom_minimum_size = Vector2(0, 40)
 
 [node name="ReplayButton" type="Button" parent="VBoxCenter"]
+theme_type_variation = &"PrimaryButton"
 layout_mode = 2
 script = ExtResource("2_touch_button")
 custom_minimum_size = Vector2(0, 130)

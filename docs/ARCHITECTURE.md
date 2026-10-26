@@ -219,6 +219,12 @@ et `swarm_changed` annoncent les faits ; ils ne contrôlent pas la fin des anima
 
 `BoardView` construit les cases, synchronise les cartes, reçoit les gestes et
 fournit leur géométrie. Son enfant `Animations` contient `BoardAnimationController`.
+La case porte aussi l'information de camp : `BoardView` choisit son fond et son
+contour bleu ou rouge depuis la palette de `UITheme`. Lors d'une capture,
+`BoardAnimationController` appelle `reveal_cell_owner()` au moment de l'impact ;
+cette anticipation est uniquement visuelle et ne modifie jamais `GameState`.
+`BlockedCellOverlay` dessine la grande croix et les entailles des cases interdites
+avec une géométrie proportionnelle, sans taille de police fixe.
 La couche `SwarmLinks` reste responsable des lianes persistantes.
 `BoardEffectGeometry.weakness_groups()` fusionne les malus d'une même cible du
 premier état avant au dernier état après, puis fournit les cartes et trajectoires
@@ -245,6 +251,9 @@ Aucune animation ne change le plateau logique ni ne relance le hasard.
 `GodSelector`, `NumberedSelector`, `DeckPanel` et `CollectionGrid` possèdent
 chacun leur vue. `NumberedSelector` partage les boutons tactiles des decks et
 des niveaux ; il émet `value_selected` et ignore les règles et la sauvegarde.
+`GodSelector` présente l'identité équipée à côté de ses trois decks, puis crée
+les six choix dans une grille 3 × 2. Il ne modifie pas `PlayerData` : il émet
+seulement `god_selected`, que le contrôleur valide et enregistre comme auparavant.
 Le contrôleur appelle `PlayerData.set_selected_deck()`, puis actualise le deck
 et les cartes masquées dans la collection, sans recréer celle-ci. Changer de
 contexte referme les panneaux de carte et annule tout remplacement en attente.
@@ -263,6 +272,11 @@ relire le filtre global.
 les mêmes nœuds selon le coût courant. Une lignée équipée est entièrement
 masquée. `StoneCard` affiche un petit repère de niveau pour les lignées évolutives
 et utilise leur champ `asset` existant ; le dessin procédural reste disponible.
+Son large cadre minéral, sombre et désaturé, indique la famille. Un liseré
+intérieur distinct indique la rareté par sa couleur et sa géométrie (simple,
+reflet, double ou ornée). L'état sélectionné reste un halo extérieur et ne
+recouvre donc aucune de ces informations. La propriété `_owner` subsiste pour
+les aperçus de combat, mais n'est plus dessinée sur le cadre de la carte.
 `CardGridLayout` crée les éléments visuels communs. Le tri est défini dans `CollectionGrid`
 (`SortMode`, dans l'ordre des boutons du menu) : FAMILLE par défaut (cartes du
 dieu puis neutres, chaque groupe par coût croissant), puis coût, rareté et nom,
@@ -280,6 +294,19 @@ indépendantes ; les valeurs initiales des scènes reflètent la disposition act
 
 `CardActionDrawer`, `StoneInfoSheet` et `ReplacementPanel` gèrent leurs panneaux.
 `TapGesture`, `TouchButton` et `TouchScrollContainer` conservent les gestes tactiles.
+
+L'habillage du refuge est commun aux écrans : `UITheme` fournit la palette et
+les fabriques de styles, `RefugeTheme` construit le thème global depuis ces
+constantes. `MenuBackground` dessine les fonds sans recevoir d'entrée et
+remplace l'ancien `ParchmentBackground`. Les variations de boutons sont
+déclarées dans le thème, sans modifier leurs contrôleurs tactiles.
+`data/gods.json` fournit le champ `asset` des portraits livrés dans `assets/gods/` ;
+l'accueil, le sélecteur, l'avant-combat et le HUD les utilisent. `GodPortrait`
+est la vue commune du sélecteur et du combat : il charge l'image, conserve ses
+proportions et applique le cadre de famille. L'accueil conserve son grand
+`TextureRect`. Chaque écran reste responsable des textes, tailles et interactions
+autour du portrait. Voir
+[l'identité visuelle des menus](IDENTITE_VISUELLE_MENUS.md).
 
 ## Poser une carte en combat
 

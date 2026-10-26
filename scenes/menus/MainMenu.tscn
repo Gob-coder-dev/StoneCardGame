@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://b8hjkpj0hmjtc"]
 
 [ext_resource type="Script" uid="uid://c620obhplo3k1" path="res://scripts/ui/MainMenu.gd" id="1_mainmenu"]
-[ext_resource type="Script" uid="uid://cms1p5lxyjnml" path="res://scripts/ui/ParchmentBackground.gd" id="2_parchment"]
+[ext_resource type="Script" uid="uid://cms1p5lxyjnml" path="res://scripts/ui/MenuBackground.gd" id="2_parchment"]
 [ext_resource type="PackedScene" path="res://scenes/ui/BottomNav.tscn" id="3_nav"]
 [ext_resource type="Script" uid="uid://153ulybbb0hg" path="res://scripts/ui/input/TouchButton.gd" id="4_touch_button"]
 
@@ -23,6 +23,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("2_parchment")
+room = 0
 
 [node name="Content" type="VBoxContainer" parent="." unique_id=84869108]
 layout_mode = 1
@@ -35,15 +36,16 @@ offset_right = -40.0
 offset_bottom = -174.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 40
+theme_override_constants/separation = 24
 
 [node name="Header" type="HBoxContainer" parent="Content" unique_id=732867860]
 layout_mode = 2
 
 [node name="ProfileButton" type="Button" parent="Content/Header" unique_id=1858800995]
-custom_minimum_size = Vector2(390, 100)
+custom_minimum_size = Vector2(420, 108)
 layout_mode = 2
-text = "PROFIL  •  Joueur"
+theme_override_font_sizes/font_size = 32
+text = "Joueur\nProfil & statistiques"
 script = ExtResource("4_touch_button")
 
 [node name="Spacer" type="Control" parent="Content/Header" unique_id=53395186]
@@ -53,45 +55,71 @@ size_flags_horizontal = 3
 [node name="Hero" type="VBoxContainer" parent="Content" unique_id=1506783815]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/separation = 30
+theme_override_constants/separation = 18
 alignment = 1
 
 [node name="Title" type="Label" parent="Content/Hero" unique_id=1468223497]
+theme_type_variation = &"ScreenTitle"
 layout_mode = 2
-theme_override_colors/font_color = Color(0.96, 0.78, 0.31, 1)
-theme_override_font_sizes/font_size = 116
+theme_override_font_sizes/font_size = 96
 text = "SAMSTONE"
 horizontal_alignment = 1
 
 [node name="Subtitle" type="Label" parent="Content/Hero" unique_id=1396934591]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.88, 0.75, 0.49, 1)
-theme_override_font_sizes/font_size = 48
-text = "石 の 戦 い"
+theme_override_font_sizes/font_size = 28
+text = "LE CABINET DES MONSTRES"
 horizontal_alignment = 1
 
-[node name="Emblem" type="Label" parent="Content/Hero" unique_id=1571428575]
-custom_minimum_size = Vector2(0, 400)
+[node name="Emblem" type="Control" parent="Content/Hero"]
+custom_minimum_size = Vector2(0, 620)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.55, 0.12, 0.1, 1)
-theme_override_font_sizes/font_size = 270
-text = "石"
+mouse_filter = 2
+
+[node name="GodPortrait" type="TextureRect" parent="Content/Hero/Emblem"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 90.0
+offset_right = -90.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+texture_filter = 4
+
+[node name="GodName" type="Label" parent="Content/Hero"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 62
 horizontal_alignment = 1
-vertical_alignment = 1
+text = "VÉSKAR"
+
+[node name="GodTitle" type="Label" parent="Content/Hero"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 40
+horizontal_alignment = 1
+text = "Le Manipulateur"
+
+[node name="GodFamily" type="Label" parent="Content/Hero"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 40
+horizontal_alignment = 1
+text = "Les Aléators"
 
 [node name="DeckStatus" type="Label" parent="Content/Hero" unique_id=1503925981]
 layout_mode = 2
-theme_override_font_sizes/font_size = 34
-text = "Deck 1 • 0/8 pierres • 0/80 points"
+theme_override_font_sizes/font_size = 44
+text = "Deck 1 • 0/8 cartes • 0/80 points"
 horizontal_alignment = 1
 autowrap_mode = 2
 
 [node name="PlayButton" type="Button" parent="Content/Hero" unique_id=1162903087]
-custom_minimum_size = Vector2(760, 180)
+theme_type_variation = &"PrimaryButton"
+custom_minimum_size = Vector2(760, 152)
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_font_sizes/font_size = 56
-text = "⚔  JOUER"
+text = "JOUER"
 script = ExtResource("4_touch_button")
 
 [node name="BottomNav" parent="." unique_id=2090898695 instance=ExtResource("3_nav")]

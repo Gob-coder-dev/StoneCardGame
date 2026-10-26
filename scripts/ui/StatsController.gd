@@ -76,11 +76,11 @@ func _make_stat_row(label_text: String, value_text: String) -> HBoxContainer:
 	label.text = label_text
 	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	label.add_theme_font_size_override("font_size", 34)
-	label.add_theme_color_override("font_color", Color("#d8c8a8"))
+	label.add_theme_color_override("font_color", UITheme.COL_TEXT)
 	var value := Label.new()
 	value.text = value_text
 	value.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	value.add_theme_color_override("font_color", Color("#ffe060"))
+	value.add_theme_color_override("font_color", UITheme.COL_ACCENT_LIGHT)
 	value.add_theme_font_size_override("font_size", 40)
 	row.add_child(label)
 	row.add_child(value)
@@ -98,7 +98,7 @@ func _build_npc_progression() -> void:
 
 		var status := Label.new()
 		status.text = "✔" if beaten else "◇"
-		status.add_theme_color_override("font_color", Color("#60d060") if beaten else Color("#806f55"))
+		status.add_theme_color_override("font_color", UITheme.COL_SUCCESS if beaten else UITheme.COL_TEXT_DIM)
 		status.add_theme_font_size_override("font_size", 36)
 		status.custom_minimum_size = Vector2(50, 0)
 

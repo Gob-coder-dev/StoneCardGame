@@ -1,9 +1,9 @@
 ## StoneCard.gd
 ## Composant carte réutilisable de SamStone.
 ## Dessine entièrement une carte par code (_draw) à partir des données d'une pierre :
-##   - cadre à la couleur de la famille
+##   - cadre minéral sombre à la couleur de la famille
 ##   - lames triangulaires sur les 4 côtés (le nombre = la valeur du côté)
-##   - bordure colorée selon le propriétaire (joueur / IA / neutre)
+##   - liseré et ornements indiquant la rareté
 ##   - illustration PNG, ou silhouette provisoire quand l'image manque
 ##   - bandeau de nom
 ##
@@ -26,8 +26,8 @@ const OWNER_HUMAN: int = 1
 const OWNER_AI: int = 2
 
 ## ─── Palette ──────────────────────────────────────────────────────────────────
-const COL_FRAME_LIGHT := Color("#f0d88a")
-const COL_FRAME_EDGE := Color("#5a4418")
+const COL_FRAME_LIGHT := Color("#b4aba0")
+const COL_FRAME_EDGE := Color("#383b45")
 const COL_BLADE_LIGHT := Color("#ffe9a8")
 const COL_RANDOM_BLADE := Symbols.FORTUNE
 const COL_LONG_BLADE := Color("#4fa9ff")
@@ -35,11 +35,8 @@ const COL_SWARM_BLADE := Color("#83d85d")
 const COL_SHIELD := Color("#92e7f2")
 const COL_ART_BG := Color("#d8c8a8")
 const COL_ILLUSTRATION_BG := Color("#151319")
-const COL_NAME_BG := Color("#2a1a0e")
-const COL_NAME_TEXT := Color("#f0e0c0")
-const COL_BORDER_HUMAN := Color("#3a7ad0")
-const COL_BORDER_AI := Color("#d04040")
-const COL_BORDER_NONE := Color("#9a8a6a")
+const COL_NAME_BG := Color("#202733")
+const COL_NAME_TEXT := UITheme.COL_TEXT
 
 ## ─── Données de la pierre ─────────────────────────────────────────────────────
 var _stone: Dictionary = {}
@@ -73,6 +70,9 @@ var _tap := Gesture.new()
 ## ─── Dimensions internes (ratio carte) ───────────────────────────────────────
 ## La carte occupe tout le rect du Control. On réserve une marge pour les lames.
 const BLADE_MARGIN: float = 0.12  ## proportion réservée aux lames sur les bords
+var _edge_margin_ratio: float = BLADE_MARGIN
+var _marker_scale: float = 1.0
+var _power_badge_scale: float = 1.0
 
 ## ─── API publique ─────────────────────────────────────────────────────────────
 
@@ -94,11 +94,10 @@ func setup(stone: Dictionary, owner: int = OWNER_NONE, battle_stone = null) -> v
 	queue_redraw()
 
 
-func set_owner_color(owner: int) -> void:
+func set_combat_owner(owner: int) -> void:
 	if owner == _owner:
 		return
 	_owner = owner
-	queue_redraw()
 
 
 func get_combat_owner() -> int:
@@ -265,17 +264,18 @@ func displayed_marker_position(side: String, index: int = -1) -> Vector2:
 
 func _marker_position_in(stone: BattleStoneModel, side: String, index: int) -> Vector2:
 	var square := minf(size.x, size.y)
-	var margin := square * BLADE_MARGIN
+	var margin := square * _edge_margin_ratio
+	var marker_margin := margin * _marker_scale
 	var frame := Rect2((size - Vector2.ONE * square) * 0.5 + Vector2.ONE * margin,
 		Vector2.ONE * (square - margin * 2.0))
 	var count := stone.marker_count(side) if stone != null else 1
 	var slot_index := count - 1 if index < 0 else index
 	var along := frame.size.x * 0.14 + frame.size.x * 0.72 * (slot_index + 0.5) / float(maxi(1, count))
 	match side:
-		"top": return frame.position + Vector2(along, -margin * 0.3)
-		"bottom": return Vector2(frame.position.x + along, frame.end.y + margin * 0.3)
-		"left": return frame.position + Vector2(-margin * 0.3, along)
-		_: return Vector2(frame.end.x + margin * 0.3, frame.position.y + along)
+		"top": return frame.position + Vector2(along, -marker_margin * 0.3)
+		"bottom": return Vector2(frame.position.x + along, frame.end.y + marker_margin * 0.3)
+		"left": return frame.position + Vector2(-marker_margin * 0.3, along)
+		_: return Vector2(frame.end.x + marker_margin * 0.3, frame.position.y + along)
 
 
 func set_selected(value: bool) -> void:
@@ -289,6 +289,33 @@ func set_show_cost(value: bool) -> void:
 	if value == _show_cost:
 		return
 	_show_cost = value
+	queue_redraw()
+
+
+## Les grands aperçus peuvent privilégier l'illustration ; le combat garde 12 %.
+func set_edge_margin_ratio(value: float) -> void:
+	var ratio := clampf(value, 0.04, BLADE_MARGIN)
+	if is_equal_approx(ratio, _edge_margin_ratio):
+		return
+	_edge_margin_ratio = ratio
+	queue_redraw()
+
+
+## Rend les symboles lisibles indépendamment de la marge réservée au cadre.
+func set_marker_scale(value: float) -> void:
+	var scale_value := clampf(value, 1.0, 3.0)
+	if is_equal_approx(scale_value, _marker_scale):
+		return
+	_marker_scale = scale_value
+	queue_redraw()
+
+
+## Agrandit les logos de pouvoir dans les aperçus qui disposent de plus de place.
+func set_power_badge_scale(value: float) -> void:
+	var scale_value := clampf(value, 1.0, 2.5)
+	if is_equal_approx(scale_value, _power_badge_scale):
+		return
+	_power_badge_scale = scale_value
 	queue_redraw()
 
 
@@ -326,7 +353,7 @@ func _draw() -> void:
 		(size.x - square_side) * 0.5,
 		(size.y - square_side) * 0.5
 	)
-	var margin: float = square_side * BLADE_MARGIN
+	var margin: float = square_side * _edge_margin_ratio
 
 	# Rectangle intérieur (cadre) une fois les lames retirées sur les bords,
 	# positionné dans le carré centré.
@@ -338,7 +365,7 @@ func _draw() -> void:
 	)
 
 	# 1. Lames, lames spéciales et boucliers (derrière le cadre).
-	_draw_combat_edges(frame_rect, margin)
+	_draw_combat_edges(frame_rect, margin * _marker_scale)
 
 	## Épaisseurs proportionnelles au côté du carré (rendu correct à toute taille).
 	var w_thin: float = max(1.0, square_side * 0.012)
@@ -346,28 +373,29 @@ func _draw() -> void:
 	var w_border: float = max(2.0, square_side * 0.022)
 	var art_margin: float = square_side * 0.035
 
-	# 2. Le minerai du cadre reprend la couleur de la famille du dieu.
+	# 2. Le minerai sombre et désaturé reprend la couleur de la famille du dieu.
+	# Il reste volontairement moins lumineux que le liseré de rareté.
 	var family_color := _family_color()
-	var frame_dark := family_color.darkened(0.46)
-	var frame_light := family_color.lightened(0.20)
-	var frame_edge := family_color.darkened(0.68)
+	var frame_dark := UITheme.COL_BG.lerp(family_color, 0.30)
+	var frame_light := UITheme.COL_SURFACE.lerp(family_color, 0.43)
+	var frame_edge := family_color.darkened(0.66)
 	draw_rect(frame_rect, frame_dark, true)
 	var inner_frame := frame_rect.grow(-w_thin)
 	draw_rect(inner_frame, frame_light, true)
 	draw_rect(frame_rect, frame_edge, false, w_edge)
 
-	# 3. Bordure propriétaire
-	var border_col := _owner_color()
-	var border_rect := frame_rect.grow(-w_border * 0.75)
-	draw_rect(border_rect, border_col, false, w_border)
+	# 3. Le liseré intérieur indique la rareté. Le propriétaire est porté
+	# par la case du plateau afin de ne jamais masquer cette information.
+	var rarity_rect := frame_rect.grow(-w_border * 0.82)
+	_draw_rarity_frame(rarity_rect, w_border)
 
 	# 4. Zone illustration
 	var name_h := frame_rect.size.y * 0.16
 	var art_rect := Rect2(
-		border_rect.position.x + art_margin,
-		border_rect.position.y + art_margin,
-		border_rect.size.x - 2.0 * art_margin,
-		border_rect.size.y - 2.0 * art_margin - name_h
+		rarity_rect.position.x + art_margin,
+		rarity_rect.position.y + art_margin,
+		rarity_rect.size.x - 2.0 * art_margin,
+		rarity_rect.size.y - 2.0 * art_margin - name_h
 	)
 
 	if _texture != null:
@@ -382,10 +410,10 @@ func _draw() -> void:
 		var level_font := ThemeDB.fallback_font
 		var level_size := maxi(12, int(square_side * 0.07))
 		var level_text := "N%d" % int(_stone.get("level", 1))
-		var level_extent := Vector2(square_side * 0.19, square_side * 0.10)
-		var level_rect := Rect2(art_rect.end - level_extent, level_extent)
+		var level_rect := _level_badge_rect(art_rect, square_side)
+		var padding := maxf(2.0, square_side * 0.008)
 		draw_rect(level_rect, COL_NAME_BG)
-		draw_string(level_font, level_rect.position + Vector2(3, level_rect.size.y * 0.82), level_text,
+		draw_string(level_font, level_rect.position + Vector2(padding, padding + level_font.get_ascent(level_size)), level_text,
 			HORIZONTAL_ALIGNMENT_LEFT, -1, level_size, Color.WHITE)
 
 	# 5. Bandeau de nom
@@ -400,13 +428,27 @@ func _draw() -> void:
 
 	# 6. Surbrillance si sélectionnée
 	if _selected:
-		draw_rect(frame_rect, Color("#ffe060"), false, w_border)
+		# Halo extérieur : la sélection ne remplace jamais le liseré de rareté.
+		var selection_rect := frame_rect.grow(w_border * 0.48)
+		draw_rect(selection_rect, Color("#ffe060", 0.24), false, w_border * 1.65)
+		draw_rect(selection_rect, Color("#ffe060"), false, maxf(1.5, w_border * 0.62))
 
 	# 7. Coût du deck, affiché uniquement dans l'écran Cartes.
 	if _show_cost:
 		_draw_cost_badge(frame_rect, square_side)
 	if displayed_weakness() > 0:
 		_draw_weakness_badge(frame_rect, square_side)
+
+
+## Largeur du texte et padding réel : aucun emplacement vide à droite de « N1 ».
+func _level_badge_rect(art_rect: Rect2, square_side: float) -> Rect2:
+	var font := ThemeDB.fallback_font
+	var font_size := maxi(12, int(square_side * 0.07))
+	var text := "N%d" % int(_stone.get("level", 1))
+	var padding := maxf(2.0, square_side * 0.008)
+	var text_width := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+	var extent := Vector2(text_width, font.get_height(font_size)) + Vector2.ONE * padding * 2.0
+	return Rect2(art_rect.end - extent, extent)
 
 
 ## La texture reste partagée par ResourceLoader ; seules ses dimensions dessinées
@@ -418,11 +460,53 @@ func _illustration_rect(bounds: Rect2) -> Rect2:
 	return Rect2(bounds.get_center() - drawn_size * 0.5, drawn_size)
 
 
-func _owner_color() -> Color:
-	match _owner:
-		OWNER_HUMAN: return COL_BORDER_HUMAN
-		OWNER_AI:    return COL_BORDER_AI
-		_:           return COL_BORDER_NONE
+## Chaque rareté possède une silhouette de cadre en plus de sa couleur :
+## simple (commune), reflet (rare), double (épique) ou ornée (légendaire).
+func _draw_rarity_frame(bounds: Rect2, width: float) -> void:
+	var rarity := str(_stone.get("rarity", "common")).to_lower()
+	var color := UITheme.rarity_color(rarity)
+	match rarity:
+		"rare", "uncommon":
+			draw_rect(bounds, color.darkened(0.24), false, width)
+			var shine := color.lightened(0.25)
+			draw_line(bounds.position, Vector2(bounds.end.x, bounds.position.y), shine,
+				maxf(1.0, width * 0.42), true)
+			draw_line(bounds.position, Vector2(bounds.position.x, bounds.end.y), shine,
+				maxf(1.0, width * 0.42), true)
+		"epic":
+			draw_rect(bounds, color, false, width)
+			draw_rect(bounds.grow(-width * 1.12), color.lightened(0.22), false,
+				maxf(1.0, width * 0.42))
+			_draw_rarity_diamond(Vector2(bounds.position.x + bounds.size.x * 0.22, bounds.end.y),
+				width * 0.72, color.lightened(0.26))
+			_draw_rarity_diamond(Vector2(bounds.position.x + bounds.size.x * 0.78, bounds.end.y),
+				width * 0.72, color.lightened(0.26))
+		"legendary":
+			draw_rect(bounds, Color(color, 0.22), false, width * 2.0)
+			draw_rect(bounds, color, false, width)
+			draw_rect(bounds.grow(-width * 1.08), color.lightened(0.28), false,
+				maxf(1.0, width * 0.34))
+			_draw_legendary_corners(bounds, width, color.lightened(0.18))
+		_:
+			draw_rect(bounds, color, false, maxf(1.5, width * 0.72))
+
+
+func _draw_rarity_diamond(center: Vector2, radius: float, color: Color) -> void:
+	draw_colored_polygon(PackedVector2Array([
+		center + Vector2(0.0, -radius), center + Vector2(radius, 0.0),
+		center + Vector2(0.0, radius), center + Vector2(-radius, 0.0)
+	]), color)
+
+
+func _draw_legendary_corners(bounds: Rect2, width: float, color: Color) -> void:
+	var arm := minf(bounds.size.x, bounds.size.y) * 0.11
+	var line_width := maxf(1.2, width * 0.58)
+	for corner in [bounds.position, Vector2(bounds.end.x, bounds.position.y),
+		Vector2(bounds.position.x, bounds.end.y), bounds.end]:
+		var inward_x := 1.0 if corner.x == bounds.position.x else -1.0
+		var inward_y := 1.0 if corner.y == bounds.position.y else -1.0
+		draw_line(corner, corner + Vector2(inward_x * arm, 0.0), color, line_width, true)
+		draw_line(corner, corner + Vector2(0.0, inward_y * arm), color, line_width, true)
 
 
 func _family_color() -> Color:
@@ -440,15 +524,20 @@ func _draw_cost_badge(frame_rect: Rect2, square_side: float) -> void:
 	var radius := square_side * 0.085
 	var center := frame_rect.position + Vector2(radius * 0.35, radius * 0.35)
 	var font := ThemeDB.fallback_font
-	var font_size := clampi(int(radius * 1.15), 12, 30)
+	var font_size := clampi(int(radius * 1.15), 12, UITheme.CARD_COST_MAX_FONT_SIZE)
 	var value := UIFormat.cost(cost)
 	var text_size := font.get_string_size(value, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size)
-	# Un coût en quarts de point peut avoir cinq caractères : le badge s'élargit
-	# plutôt que de réduire la police ou de laisser le texte dépasser du cercle.
+	# Les grandes fiches agrandissent aussi les chiffres. Un coût long reste
+	# compact pour ne pas masquer les premières lames du bord supérieur.
+	var text_limit := maxf(radius * 1.9,
+		font.get_string_size(value, HORIZONTAL_ALIGNMENT_LEFT, -1, 30).x)
+	if text_size.x > text_limit:
+		font_size = maxi(12, int(float(font_size) * text_limit / text_size.x))
+		text_size = font.get_string_size(value, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size)
 	var badge := Rect2(center - Vector2.ONE * radius,
 		Vector2(maxf(radius * 2.0, text_size.x + radius * 0.7), radius * 2.0))
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color("#6f1717")
+	style.bg_color = UITheme.COL_DANGER
 	style.border_color = COL_FRAME_LIGHT
 	style.set_border_width_all(maxi(2, int(square_side * 0.012)))
 	style.set_corner_radius_all(int(radius))
@@ -598,7 +687,7 @@ func _draw_broken_blade(points: PackedVector2Array, original_color: Color) -> vo
 
 
 func _draw_power_badges(art_rect: Rect2, square_side: float, family_color: Color) -> void:
-	var radius := clampf(square_side * 0.064, 7.0, 24.0)
+	var radius := clampf(square_side * 0.064, 7.0, 24.0) * _power_badge_scale
 	var gap := radius * 0.28
 	var right := art_rect.end.x - gap
 	for badge in Symbols.badges_for(_stone):
@@ -1074,7 +1163,7 @@ func _draw_weapon(art_rect: Rect2, unit: float) -> void:
 func _draw_name(name_rect: Rect2) -> void:
 	var font := ThemeDB.fallback_font
 	var fsize := int(name_rect.size.y * 0.55)
-	fsize = clamp(fsize, 8, 22)
+	fsize = clampi(fsize, 8, UITheme.CARD_NAME_MAX_FONT_SIZE)
 	var text: String = _stone.get("name", "")
 	var text_size := font.get_string_size(text, HORIZONTAL_ALIGNMENT_CENTER, -1, fsize)
 	# Réduire la taille si le texte dépasse

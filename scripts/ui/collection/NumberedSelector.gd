@@ -21,7 +21,7 @@ func _init(row: HBoxContainer, count: int, first_value: int = 1) -> void:
 		button.button_group = _group
 		button.add_theme_stylebox_override("normal", UITheme.nav_tab_style(false))
 		button.add_theme_stylebox_override("hover", UITheme.nav_tab_style(false, true))
-		var selected_style := UITheme.panel_style(UITheme.COL_GOLD.darkened(0.65), UITheme.COL_GOLD)
+		var selected_style := UITheme.nav_tab_style(true)
 		button.add_theme_stylebox_override("pressed", selected_style)
 		button.add_theme_stylebox_override("hover_pressed", selected_style)
 		button.add_theme_color_override("font_color", UITheme.COL_TEXT_DIM)

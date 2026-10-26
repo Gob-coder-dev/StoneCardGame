@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3 uid="uid://stats_screen"]
 
 [ext_resource type="Script" path="res://scripts/ui/StatsController.gd" id="1_stats"]
-[ext_resource type="Script" path="res://scripts/ui/ParchmentBackground.gd" id="2_background"]
+[ext_resource type="Script" path="res://scripts/ui/MenuBackground.gd" id="2_background"]
 [ext_resource type="Script" path="res://scripts/ui/input/TouchScrollContainer.gd" id="3_touch_scroll"]
 [ext_resource type="Script" path="res://scripts/ui/input/TouchButton.gd" id="4_touch_button"]
 
@@ -35,9 +35,9 @@ theme_override_constants/separation = 28
 layout_mode = 2
 
 [node name="Title" type="Label" parent="Root/Header"]
+theme_type_variation = &"ScreenTitle"
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.94, 0.78, 0.35, 1)
 theme_override_font_sizes/font_size = 60
 text = "PROFIL & STATS"
 vertical_alignment = 1
@@ -69,8 +69,8 @@ layout_mode = 2
 theme_override_constants/separation = 20
 
 [node name="SectionTitle" type="Label" parent="Root/Scroll/Content/ProfilePanel/ProfileContent"]
+theme_type_variation = &"SectionTitle"
 layout_mode = 2
-theme_override_colors/font_color = Color(0.94, 0.78, 0.35, 1)
 theme_override_font_sizes/font_size = 42
 text = "MON PROFIL"
 
@@ -81,7 +81,6 @@ theme_override_constants/separation = 18
 [node name="PseudoLabel" type="Label" parent="Root/Scroll/Content/ProfilePanel/ProfileContent/PseudoRow"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.98, 0.91, 0.72, 1)
 theme_override_font_sizes/font_size = 52
 text = "Joueur"
 vertical_alignment = 1
@@ -106,7 +105,6 @@ placeholder_text = "2 à 16 caractères"
 
 [node name="ErrorLabel" type="Label" parent="Root/Scroll/Content/ProfilePanel/ProfileContent/EditRow"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.94, 0.35, 0.29, 1)
 theme_override_font_sizes/font_size = 26
 autowrap_mode = 2
 
@@ -122,6 +120,7 @@ size_flags_horizontal = 3
 text = "ANNULER"
 
 [node name="SaveButton" type="Button" parent="Root/Scroll/Content/ProfilePanel/ProfileContent/EditRow/EditButtons"]
+theme_type_variation = &"PrimaryButton"
 layout_mode = 2
 script = ExtResource("4_touch_button")
 custom_minimum_size = Vector2(0, 96)
@@ -129,8 +128,8 @@ size_flags_horizontal = 3
 text = "ENREGISTRER"
 
 [node name="GlobalTitle" type="Label" parent="Root/Scroll/Content"]
+theme_type_variation = &"SectionTitle"
 layout_mode = 2
-theme_override_colors/font_color = Color(0.94, 0.78, 0.35, 1)
 theme_override_font_sizes/font_size = 42
 text = "STATISTIQUES GÉNÉRALES"
 horizontal_alignment = 1
@@ -144,8 +143,8 @@ layout_mode = 2
 theme_override_constants/separation = 18
 
 [node name="NPCTitle" type="Label" parent="Root/Scroll/Content"]
+theme_type_variation = &"SectionTitle"
 layout_mode = 2
-theme_override_colors/font_color = Color(0.94, 0.78, 0.35, 1)
 theme_override_font_sizes/font_size = 42
 text = "PAR ADVERSAIRE"
 horizontal_alignment = 1

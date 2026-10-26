@@ -85,7 +85,8 @@ func _check_rules_scroll() -> void:
 func _check_deck_slots() -> void:
 	var page := await _open_scene("res://scenes/menus/CollectionScreen.tscn")
 	var scroll: ScrollContainer = page.get_node("Content/Scroll")
-	var slots: HBoxContainer = scroll.get_node("Page/DeckSlots")
+	var slots: HBoxContainer = scroll.get_node(
+		"Page/GodDeckPanel/GodDeckContent/GodDeckRow/IdentityDeck/DeckSlots")
 	var second: Button = slots.get_child(1)
 	await _swipe(_center(second), Vector2(0, -180))
 	_check(scroll.scroll_vertical > 60 and PlayerData.get_selected_deck() == 0,
@@ -200,9 +201,13 @@ func _check_collection() -> void:
 		await _tap(_center(info_button))
 		_check(page.info_sheet.visible, "tiroir : toucher Infos ouvre la fiche")
 		var modal_scroll := scroll.scroll_vertical
-		await _swipe(Vector2(200, 180), Vector2(0, -100))
+		# Viser la marge réelle du fond, même si la fiche change de hauteur.
+		var panel: Control = page.info_sheet.get_node("InfoPanel")
+		var backdrop: Control = page.info_sheet.get_node("Backdrop")
+		var outside := _point(backdrop, Vector2(panel.position.x * 0.5, panel.position.y + 100))
+		await _swipe(outside, Vector2(0, 100))
 		_check(scroll.scroll_vertical == modal_scroll, "fenêtre : les gestes ne traversent pas le fond modal")
-		await _tap(Vector2(200, 100))
+		await _tap(outside)
 		_check(not page.info_sheet.visible, "fenêtre : toucher le fond ferme la fiche")
 	await _remove(page)
 

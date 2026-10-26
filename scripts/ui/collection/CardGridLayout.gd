@@ -29,8 +29,8 @@ static func make_empty_deck_slot() -> Panel:
 	empty.custom_minimum_size = Vector2(UITheme.CARD_DECK, UITheme.CARD_DECK)
 	empty.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color("#160e08")
-	style.border_color = Color("#58452a")
+	style.bg_color = UITheme.COL_TAB_IDLE
+	style.border_color = UITheme.COL_TAB_BORDER
 	style.set_border_width_all(3)
 	style.set_corner_radius_all(12)
 	empty.add_theme_stylebox_override("panel", style)
@@ -40,7 +40,7 @@ static func make_empty_deck_slot() -> Panel:
 	plus.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	plus.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	plus.add_theme_font_size_override("font_size", 72)
-	plus.add_theme_color_override("font_color", Color("#6c5938"))
+	plus.add_theme_color_override("font_color", UITheme.COL_TEXT_DIM.darkened(0.25))
 	plus.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	empty.add_child(plus)
 	return empty

@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3 uid="uid://howto_screen"]
 
 [ext_resource type="Script" path="res://scripts/ui/HowToPlayController.gd" id="1_howto"]
-[ext_resource type="Script" path="res://scripts/ui/ParchmentBackground.gd" id="2_background"]
+[ext_resource type="Script" path="res://scripts/ui/MenuBackground.gd" id="2_background"]
 [ext_resource type="PackedScene" path="res://scenes/ui/BottomNav.tscn" id="3_nav"]
 [ext_resource type="Script" path="res://scripts/ui/input/TouchScrollContainer.gd" id="4_touch_scroll"]
 
@@ -32,8 +32,8 @@ offset_bottom = -174.0
 theme_override_constants/separation = 24
 
 [node name="Title" type="Label" parent="Content"]
+theme_type_variation = &"ScreenTitle"
 layout_mode = 2
-theme_override_colors/font_color = Color(0.94, 0.78, 0.35, 1)
 theme_override_font_sizes/font_size = 64
 text = "RÈGLES DU JEU"
 horizontal_alignment = 1
@@ -78,6 +78,11 @@ theme_override_font_sizes/bold_font_size = 34
 bbcode_enabled = true
 fit_content = true
 scroll_active = false
+
+[node name="EndSpace" type="Control" parent="Content/Scroll/RulesPanel/Page"]
+custom_minimum_size = Vector2(0, 120)
+layout_mode = 2
+mouse_filter = 2
 
 [node name="BottomNav" parent="." instance=ExtResource("3_nav")]
 current_tab = 2

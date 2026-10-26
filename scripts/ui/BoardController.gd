@@ -82,9 +82,10 @@ func _start_battle(human_deck: Array, npc_id: String) -> void:
 	var human_god := StoneLoader.get_god(PlayerData.player_god_id)
 	var ai_god := StoneLoader.get_god(str(_npc_data.get("god_id", "")))
 	hud.set_names(
-		"%s • %s" % [PlayerData.player_name, human_god.get("name", "")],
-		"%s • %s" % [_npc_data.get("name", "Adversaire"), ai_god.get("name", "")]
+		PlayerData.player_name,
+		str(_npc_data.get("name", "Adversaire"))
 	)
+	hud.set_gods(human_god, ai_god)
 	hud.set_scores(0, 0)
 
 	var blocked := BoardSetupGenerator.generate()

@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3 uid="uid://level_select"]
 
 [ext_resource type="Script" path="res://scripts/ui/LevelSelectController.gd" id="1_lvlsel"]
-[ext_resource type="Script" path="res://scripts/ui/ParchmentBackground.gd" id="2_parchment"]
+[ext_resource type="Script" path="res://scripts/ui/MenuBackground.gd" id="2_parchment"]
 [ext_resource type="Script" path="res://scripts/ui/input/TouchButton.gd" id="3_touch_button"]
 [ext_resource type="Script" path="res://scripts/ui/input/TouchScrollContainer.gd" id="4_touch_scroll"]
 
@@ -19,6 +19,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
 script = ExtResource("2_parchment")
+room = 3
 
 [node name="Root" type="VBoxContainer" parent="."]
 layout_mode = 1
@@ -43,11 +44,11 @@ theme_override_font_sizes/font_size = 48
 text = "×"
 
 [node name="TitleLabel" type="Label" parent="Root/Header"]
+theme_type_variation = &"ScreenTitle"
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.91, 0.78, 0.47, 1)
-theme_override_font_sizes/font_size = 58
-text = "CHOISIR UN ADVERSAIRE"
+theme_override_font_sizes/font_size = 52
+text = "LES RENCONTRES"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -72,14 +73,12 @@ theme_override_constants/separation = 20
 
 [node name="NPCName" type="Label" parent="Root/ProfilePanel/ProfileContent"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.95, 0.9, 0.78, 1)
 theme_override_font_sizes/font_size = 48
 text = "Nom NPC"
 horizontal_alignment = 1
 
 [node name="NPCQuote" type="Label" parent="Root/ProfilePanel/ProfileContent"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.82, 0.74, 0.58, 1)
 theme_override_font_sizes/font_size = 32
 text = "Citation"
 horizontal_alignment = 1
@@ -92,6 +91,7 @@ text = "Niveau : ?"
 horizontal_alignment = 1
 
 [node name="FightButton" type="Button" parent="Root/ProfilePanel/ProfileContent"]
+theme_type_variation = &"PrimaryButton"
 layout_mode = 2
 script = ExtResource("3_touch_button")
 custom_minimum_size = Vector2(0, 130)

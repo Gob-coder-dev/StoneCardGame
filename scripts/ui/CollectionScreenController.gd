@@ -19,10 +19,15 @@ var _level_selector: NumberedSelector
 var _preview_level := 1
 
 @onready var scroll: ScrollContainer = $Content/Scroll
-@onready var god_button: Button = $Content/Scroll/Page/GodPanel/GodContent/GodButton
-@onready var god_description: Label = $Content/Scroll/Page/GodPanel/GodContent/GodDescription
+@onready var god_button: Button = $Content/Scroll/Page/GodDeckPanel/GodDeckContent/GodDeckRow/GodButton
+@onready var god_portrait: GodPortrait = $Content/Scroll/Page/GodDeckPanel/GodDeckContent/GodDeckRow/GodButton/Portrait
+@onready var god_name: Label = $Content/Scroll/Page/GodDeckPanel/GodDeckContent/GodDeckRow/IdentityDeck/GodName
+@onready var god_title: Label = $Content/Scroll/Page/GodDeckPanel/GodDeckContent/GodDeckRow/IdentityDeck/GodTitle
+@onready var god_family: Label = $Content/Scroll/Page/GodDeckPanel/GodDeckContent/GodDeckRow/IdentityDeck/GodFamily
+@onready var god_change_label: Label = $Content/Scroll/Page/GodDeckPanel/GodDeckContent/GodDeckRow/GodButton/ChangeLabel
+@onready var god_description: Label = $Content/Scroll/Page/GodDeckPanel/GodDeckContent/GodDescription
 @onready var god_menu: PanelContainer = $Content/Scroll/Page/GodMenu
-@onready var god_options: VBoxContainer = $Content/Scroll/Page/GodMenu/GodOptions
+@onready var god_options: GridContainer = $Content/Scroll/Page/GodMenu/GodOptions
 @onready var deck_rows: VBoxContainer = $Content/Scroll/Page/DeckPanel/DeckContent/DeckRows
 @onready var deck_count_label: Label = $Content/Scroll/Page/DeckPanel/DeckContent/DeckHeader/DeckCount
 @onready var collection_rows: VBoxContainer = $Content/Scroll/Page/CollectionRows
@@ -49,8 +54,14 @@ func _ready() -> void:
 	god_button.pressed.connect(_toggle_god_menu)
 	_deck_panel = DeckPanelView.new(deck_rows)
 	_collection_grid = CollectionGridView.new(collection_rows)
-	_god_selector = GodSelectorView.new(god_button, god_description, god_menu, god_options)
-	_deck_slot_selector = NumberedSelector.new($Content/Scroll/Page/DeckSlots, DeckRules.DECKS_PER_GOD, 0)
+	_god_selector = GodSelectorView.new(
+		god_button, god_portrait, god_name, god_title, god_family,
+		god_description, god_change_label, god_menu, god_options
+	)
+	_deck_slot_selector = NumberedSelector.new(
+		$Content/Scroll/Page/GodDeckPanel/GodDeckContent/GodDeckRow/IdentityDeck/DeckSlots,
+		DeckRules.DECKS_PER_GOD, 0
+	)
 	_level_selector = NumberedSelector.new($Content/Scroll/Page/LevelMenu/Levels, StoneEvolutionRules.MAX_PREVIEW_LEVEL)
 	_deck_panel.card_requested.connect(_open_card_actions)
 	_collection_grid.card_requested.connect(_open_card_actions)

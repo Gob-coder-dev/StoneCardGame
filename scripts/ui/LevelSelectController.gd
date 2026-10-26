@@ -36,9 +36,17 @@ func _make_npc_btn(npc: Dictionary) -> Button:
 		"medium": stars = "★★☆"
 		_:        stars = "★★★"
 	var btn: Button = TouchButtonScript.new()
-	btn.text = "%s  %s" % [stars, npc["name"]]
+	var god := StoneLoader.get_god(str(npc.get("god_id", "")))
+	btn.text = "%s  %s\n%s" % [stars, npc["name"], god.get("family_name", "")]
+	var portrait_path := str(god.get("asset", ""))
+	if portrait_path != "":
+		btn.icon = load(portrait_path) as Texture2D
+		btn.expand_icon = true
+		btn.add_theme_constant_override("icon_max_width", 112)
+		btn.add_theme_constant_override("h_separation", 24)
+	btn.add_theme_font_size_override("font_size", 32)
 	btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
-	btn.custom_minimum_size = Vector2(0, 120)
+	btn.custom_minimum_size = Vector2(0, 152)
 	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn.autowrap_mode = TextServer.AUTOWRAP_OFF
 	btn.clip_text = true
@@ -59,6 +67,8 @@ func _on_npc_selected(npc_id: String) -> void:
 		"medium": diff_text = "Niveau : Moyen   ★★☆"
 		_:        diff_text = "Niveau : Difficile ★★★"
 	var god := StoneLoader.get_god(str(npc.get("god_id", "")))
+	profile_panel.add_theme_stylebox_override("panel", UITheme.panel_style(
+		UITheme.COL_PANEL_BG, Color(str(god.get("color", "#575361")))))
 	profile_difficulty.text = "%s\nDieu : %s • %s" % [
 		diff_text, god.get("name", "?"), god.get("family_name", "?")
 	]

@@ -18,6 +18,10 @@ var _human_plate: PanelContainer
 var _ai_plate: PanelContainer
 var _human_name: Label
 var _ai_name: Label
+var _human_god: Label
+var _ai_god: Label
+var _human_portrait: GodPortrait
+var _ai_portrait: GodPortrait
 var _human_score: Label
 var _ai_score: Label
 var _center: Label        ## symbole central : flèche directionnelle ou "VS"
@@ -44,9 +48,11 @@ func _build() -> void:
 	row.add_theme_constant_override("separation", UITheme.GAP_MEDIUM)
 	col.add_child(row)
 
-	var human := _make_plate(COL_HUMAN)
+	var human := _make_plate(COL_HUMAN, false)
 	_human_plate = human["plate"]
 	_human_name = human["name"]
+	_human_god = human["god"]
+	_human_portrait = human["portrait"]
 	_human_score = human["score"]
 	row.add_child(_human_plate)
 
@@ -60,9 +66,11 @@ func _build() -> void:
 	_center.add_theme_color_override("font_color", Color("#c8a060"))
 	row.add_child(_center)
 
-	var ai := _make_plate(COL_AI)
+	var ai := _make_plate(COL_AI, true)
 	_ai_plate = ai["plate"]
 	_ai_name = ai["name"]
+	_ai_god = ai["god"]
+	_ai_portrait = ai["portrait"]
 	_ai_score = ai["score"]
 	row.add_child(_ai_plate)
 
@@ -93,31 +101,52 @@ func _build() -> void:
 
 ## Crée une plaque (nom au-dessus, score en gros en dessous), de taille fixe.
 ## accent_color : la couleur du camp (bleu joueur / rouge IA).
-func _make_plate(accent_color: Color) -> Dictionary:
+func _make_plate(accent_color: Color, portrait_on_right: bool) -> Dictionary:
 	var plate := PanelContainer.new()
 	plate.custom_minimum_size = Vector2(0, UITheme.HUD_PLATE_HEIGHT)
 	plate.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	plate.add_theme_stylebox_override("panel", _plate_style(accent_color, false))
 
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 10)
+	plate.add_child(row)
+
+	var portrait := GodPortrait.new()
+	portrait.custom_minimum_size = UITheme.GOD_HUD_PORTRAIT_SIZE
+	portrait.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+
 	var vbox := VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 6)
-	plate.add_child(vbox)
+	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	vbox.add_theme_constant_override("separation", 0)
+	if portrait_on_right:
+		row.add_child(vbox)
+		row.add_child(portrait)
+	else:
+		row.add_child(portrait)
+		row.add_child(vbox)
 
 	var name_lbl := Label.new()
 	name_lbl.clip_text = true
 	name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_lbl.add_theme_font_size_override("font_size", UITheme.FONT_SMALL)
+	name_lbl.add_theme_font_size_override("font_size", 25)
 	name_lbl.add_theme_color_override("font_color", COL_NAME)
 	vbox.add_child(name_lbl)
 
+	var god_lbl := Label.new()
+	god_lbl.clip_text = true
+	god_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	god_lbl.add_theme_font_size_override("font_size", 25)
+	vbox.add_child(god_lbl)
+
 	var score_lbl := Label.new()
 	score_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	score_lbl.add_theme_font_size_override("font_size", UITheme.FONT_SCORE)
+	score_lbl.add_theme_font_size_override("font_size", 50)
 	score_lbl.add_theme_color_override("font_color", COL_SCORE)
 	score_lbl.text = "0"
 	vbox.add_child(score_lbl)
 
-	return { "plate": plate, "name": name_lbl, "score": score_lbl }
+	return {"plate": plate, "name": name_lbl, "god": god_lbl,
+		"portrait": portrait, "score": score_lbl}
 
 
 func _plate_style(accent_color: Color, active: bool) -> StyleBoxFlat:
@@ -140,6 +169,21 @@ func set_names(human_name: String, ai_name: String) -> void:
 	_ai_display_name = ai_name
 	_human_name.text = human_name
 	_ai_name.text = ai_name
+
+
+## Les portraits et noms de dieux sont séparés des noms des combattants : les
+## plaques restent lisibles même lorsque l'adversaire possède un long nom.
+func set_gods(human_god: Dictionary, ai_god: Dictionary) -> void:
+	_human_portrait.setup(human_god)
+	_ai_portrait.setup(ai_god)
+	_human_god.text = str(human_god.get("name", "Dieu"))
+	_ai_god.text = str(ai_god.get("name", "Dieu"))
+	_human_god.add_theme_color_override(
+		"font_color", Color(str(human_god.get("color", UITheme.COL_TEXT.to_html())))
+	)
+	_ai_god.add_theme_color_override(
+		"font_color", Color(str(ai_god.get("color", UITheme.COL_TEXT.to_html())))
+	)
 
 
 func set_scores(human_score: int, ai_score: int) -> void:

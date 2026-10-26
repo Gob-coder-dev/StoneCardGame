@@ -46,6 +46,15 @@ tests/
 
 ## Pour ouvrir le projet
 
+Les menus utilisent le **cabinet des monstres** : fonds de refuge, panneaux
+en ardoise, texte ivoire, boutons ambrés et portraits des six dieux. La palette
+est centralisée dans `UITheme` et le thème est construit par `RefugeTheme`.
+Sur une carte, le minerai sombre indique la famille et le liseré intérieur
+indique la rareté par sa couleur comme par sa forme. En combat, le cadre de la
+case — bleu ou rouge — indique le camp ; une grande croix ivoire signale les
+cases interdites. Une capture recolore sa case au moment exact de l'impact.
+Voir [l'identité visuelle des menus](docs/IDENTITE_VISUELLE_MENUS.md).
+
 1. Télécharger **Godot 4.7** (ou plus récent) sur https://godotengine.org
 2. Lancer Godot → "Import" → sélectionner ce dossier `samstone/`
 3. Le projet s'ouvre directement
@@ -81,7 +90,7 @@ profil et d'interface écrivent dans des fichiers temporaires dédiés, puis les
 suppriment ; la sauvegarde personnelle du joueur reste intacte.
 
 Chaque suite se termine par un résumé, par exemple
-`GOD_SYSTEM_CHECKS: 393 passed, 0 failed, 0 Godot errors` ou
+`GOD_SYSTEM_CHECKS: 433 passed, 0 failed, 0 Godot errors` ou
 `TACTILE : 63 vérifications, 0 échec(s), 0 erreur(s) Godot.`, et renvoie le code
 de sortie 1 en cas de problème. Sont comptés comme problèmes : une vérification
 ratée, une suite qui ne compile pas, une erreur ou un avertissement Godot non

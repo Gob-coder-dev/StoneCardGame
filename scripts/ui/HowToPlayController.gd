@@ -43,22 +43,31 @@ const GOD_RULES := {
 
 
 func _ready() -> void:
+	$Content/Scroll/RulesPanel/Page/EndSpace.custom_minimum_size.y = UITheme.RULES_END_SPACE
 	var values := _rule_values()
 	rules_text.text = _rules_bbcode().format(values)
 	for god in StoneLoader.get_all_gods():
 		_add_god_rules(god, values)
-	end_text.text = """[color=#ffe060][font_size=44]Fin de partie[/font_size][/color]
+	end_text.text = """[color=#{heading}][font_size=44]Fin de partie[/font_size][/color]
 
 Quand toutes les cases jouables sont remplies, on compte les pierres de chaque camp. Celui qui en contrôle le plus gagne.
 
-[color=#ffe060][font_size=44]Conseil[/font_size][/color]
+[color=#{heading}][font_size=44]Conseil[/font_size][/color]
 
-Regarde les côtés faibles déjà exposés et garde une pierre capable de les attaquer au bon moment."""
+Regarde les côtés faibles déjà exposés et garde une pierre capable de les attaquer au bon moment.""".format(values)
 
 
 ## Valeurs lues dans les règles du code, pour que les textes ne s'en écartent pas.
 static func _rule_values() -> Dictionary:
 	return {
+		"heading": UITheme.COL_ACCENT_LIGHT.to_html(false),
+		"success": UITheme.COL_SUCCESS.to_html(false),
+		"human": UITheme.COL_BOARD_HUMAN_EDGE.to_html(false),
+		"opponent": UITheme.COL_BOARD_AI_EDGE.to_html(false),
+		"common": UITheme.COL_RARITY_COMMON.to_html(false),
+		"rare": UITheme.COL_RARITY_RARE.to_html(false),
+		"epic": UITheme.COL_RARITY_EPIC.to_html(false),
+		"legendary": UITheme.COL_RARITY_LEGENDARY.to_html(false),
 		"board_size": GameState.BOARD_SIZE,
 		"deck_size": DeckRules.DECK_SIZE,
 		"deck_budget": DeckRules.DECK_BUDGET,
@@ -106,38 +115,42 @@ func _make_text(value: String) -> RichTextLabel:
 
 
 func _rules_bbcode() -> String:
-	return """[color=#ffe060][font_size=44]But du jeu[/font_size][/color]
+	return """[color=#{heading}][font_size=44]But du jeu[/font_size][/color]
 
 Contrôler le plus de pierres possible sur le plateau quand toutes les cases sont remplies.
 
-[color=#ffe060][font_size=44]Le plateau[/font_size][/color]
+[color=#{heading}][font_size=44]Le plateau[/font_size][/color]
 
 Une grille de {board_size}×{board_size}. Certaines parties comportent une ou deux cases bloquées (marquées ✕) où personne ne peut jouer.
 
-[color=#ffe060][font_size=44]Les pierres[/font_size][/color]
+En combat, la case indique le propriétaire : [color=#{human}]bleu pour ton camp[/color], [color=#{opponent}]rouge pour l'adversaire[/color]. Quand une pierre est capturée, sa case change de couleur au moment de l'impact.
 
-Chaque pierre possède des symboles sur ses 4 côtés (haut, bas, gauche, droite). Une face contient au maximum [color=#ffe060]{max_markers} symboles au total[/color] : lames normales, lames spéciales et boucliers partagent les mêmes emplacements.
+[color=#{heading}][font_size=44]Les pierres[/font_size][/color]
 
-Tu choisis {deck_size} pierres pour ton deck, dans la limite de [color=#ffe060]{deck_budget} points[/color]. Une lame normale coûte {normal_cost} point. Les lames aléatoires, boucliers, lames longues et pouvoirs sont comptés selon leur coût propre.
+Chaque pierre possède des symboles sur ses 4 côtés (haut, bas, gauche, droite). Une face contient au maximum [color=#{heading}]{max_markers} symboles au total[/color] : lames normales, lames spéciales et boucliers partagent les mêmes emplacements.
 
-[color=#ffe060][font_size=44]Déroulement d'un tour[/font_size][/color]
+Tu choisis {deck_size} pierres pour ton deck, dans la limite de [color=#{heading}]{deck_budget} points[/color]. Une lame normale coûte {normal_cost} point. Les lames aléatoires, boucliers, lames longues et pouvoirs sont comptés selon leur coût propre.
+
+[color=#{heading}][font_size=44]Déroulement d'un tour[/font_size][/color]
 
 Un tirage au sort décide qui commence. À tour de rôle, chaque joueur pose une pierre de sa main sur une case libre. Les animations révèlent ses pouvoirs avant de donner la main au joueur suivant.
 
-[color=#ffe060][font_size=44]Capturer une pierre[/font_size][/color]
+[color=#{heading}][font_size=44]Capturer une pierre[/font_size][/color]
 
 Quand tu poses une pierre à côté d'une pierre adverse, on compare les côtés qui se touchent.
 
-Si [color=#60d060]ton attaque est strictement supérieure à sa défense[/color] sur le côté face-à-face, tu captures cette pierre : elle passe dans ton camp.
+Si [color=#{success}]ton attaque est strictement supérieure à sa défense[/color] sur le côté face-à-face, tu captures cette pierre : elle passe dans ton camp.
 
-En cas d'[color=#f0d88a]égalité[/color], personne ne capture. Une pierre peut capturer plusieurs cibles d'un coup. Il n'y a pas de capture en chaîne.
+En cas d'[color=#{heading}]égalité[/color], personne ne capture. Une pierre peut capturer plusieurs cibles d'un coup. Il n'y a pas de capture en chaîne.
 
-[color=#ffe060][font_size=44]Dieux et logos des pouvoirs[/font_size][/color]
+[color=#{heading}][font_size=44]Dieux et logos des pouvoirs[/font_size][/color]
 
-Tu équipes un dieu dans le menu Cartes. Ton deck peut contenir les cartes neutres et les cartes propres à sa famille. Chaque dieu possède trois decks indépendants, accessibles par les boutons 1, 2 et 3. Chaque modification est sauvegardée automatiquement. Changer de dieu retrouve son dernier deck sélectionné, sans modifier les decks des autres dieux. Le deck sélectionné est celui utilisé en combat ; il doit être complet et respecter le budget.
+Tu équipes un dieu dans le menu Decks. Ton deck peut contenir les cartes neutres et les cartes propres à sa famille. Chaque dieu possède trois decks indépendants, accessibles par les boutons 1, 2 et 3. Chaque modification est sauvegardée automatiquement. Changer de dieu retrouve son dernier deck sélectionné, sans modifier les decks des autres dieux. Le deck sélectionné est celui utilisé en combat ; il doit être complet et respecter le budget.
 
-[color=#e8c050][b]Formes et niveaux[/b][/color]
+[color=#{heading}][b]Formes et niveaux[/b][/color]
 Les lignées ont plusieurs formes : quatre niveaux pour une commune, trois pour une rare, deux pour une épique et un pour une légendaire.
 Le bouton « Afficher : niveau » change uniquement l'aperçu de la collection. Une carte qui n'a pas ce niveau reste affichée à son maximum. Dans Infos, les boutons numérotés permettent de consulter chaque forme. « Utiliser » équipe précisément la forme consultée, si le budget le permet. Un même monstre ne peut apparaître qu'une fois dans un deck, tous niveaux confondus. Les formes sont actuellement disponibles sans système de déblocage.
 
-Le contour de chaque pierre reprend la couleur de sa famille. Les logos en haut à droite annoncent ses pouvoirs. Voici les mêmes pictogrammes et leur fonctionnement :"""
+Le large cadre minéral sombre reprend la couleur de la famille. Son liseré intérieur indique la rareté, par sa teinte et par sa forme : [color=#{common}]Commune ivoire et simple[/color], [color=#{rare}]Rare cyan avec reflet[/color], [color=#{epic}]Épique violette et double[/color], [color=#{legendary}]Légendaire dorée et ornée[/color]. La couleur de la case reste donc toujours réservée au camp.
+
+Les logos en haut à droite annoncent les pouvoirs. Voici les mêmes pictogrammes et leur fonctionnement :"""

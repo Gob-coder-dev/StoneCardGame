@@ -8,9 +8,9 @@ content_margin_left = 12.0
 content_margin_top = 10.0
 content_margin_right = 12.0
 content_margin_bottom = 10.0
-bg_color = Color(0.063, 0.035, 0.02, 1)
+bg_color = Color(0.086, 0.106, 0.145, 1)
 border_width_top = 3
-border_color = Color(0.541, 0.416, 0.157, 1)
+border_color = Color(0.341, 0.325, 0.380, 1)
 
 [node name="BottomNav" type="PanelContainer"]
 layout_mode = 1
@@ -33,15 +33,16 @@ script = ExtResource("2_touch_button")
 custom_minimum_size = Vector2(0, 132)
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 28
-text = "▣\nCARTES"
+text = "DECKS"
 
 [node name="PlayButton" type="Button" parent="Tabs"]
+theme_type_variation = &"PrimaryButton"
 layout_mode = 2
 script = ExtResource("2_touch_button")
 custom_minimum_size = Vector2(0, 132)
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 28
-text = "⚔\nJOUER"
+text = "JOUER"
 
 [node name="RulesButton" type="Button" parent="Tabs"]
 layout_mode = 2
@@ -49,4 +50,4 @@ script = ExtResource("2_touch_button")
 custom_minimum_size = Vector2(0, 132)
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 28
-text = "≡\nRÈGLES"
+text = "RÈGLES"

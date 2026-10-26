@@ -57,8 +57,11 @@ func _test_attack_view_animation() -> void:
 		"une cible distante ne fait partir que les projectiles bleus")
 	await get_tree().create_timer(Timeline.hit_time(2) + 0.06).timeout
 	var target: StoneCard = view.get_node("cell_1_2").get_child(0)
-	_check(target.get_combat_owner() == GameState.PLAYER_HUMAN and state.get_cell(1, 2)["owner"] == GameState.PLAYER_AI,
-		"la capture se révèle à l'impact sans mutation du modèle par la vue")
+	var captured_cell := view.slot_at(1, 2).get_theme_stylebox("panel") as StyleBoxFlat
+	_check(target.get_combat_owner() == GameState.PLAYER_HUMAN
+		and captured_cell.bg_color == UITheme.COL_BOARD_HUMAN_BG
+		and state.get_cell(1, 2)["owner"] == GameState.PLAYER_AI,
+		"la carte et sa case révèlent la capture à l'impact sans mutation du modèle")
 	await get_tree().create_timer(duration).timeout
 	_check(state.random_state == rng_before and view.animations.get_node_or_null("AttackReveal") == null,
 		"le tir bleu termine sa trajectoire sans tirer de nouveau hasard")

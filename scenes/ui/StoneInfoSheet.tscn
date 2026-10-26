@@ -26,9 +26,9 @@ anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 30.0
-offset_top = 230.0
+offset_top = 60.0
 offset_right = -30.0
-offset_bottom = -30.0
+offset_bottom = -150.0
 
 [node name="InfoContent" type="VBoxContainer" parent="InfoPanel"]
 layout_mode = 2
@@ -39,9 +39,9 @@ layout_mode = 2
 theme_override_constants/separation = 16
 
 [node name="Title" type="Label" parent="InfoPanel/InfoContent/Header"]
+theme_type_variation = &"ScreenTitle"
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.98, 0.84, 0.44, 1)
 theme_override_font_sizes/font_size = 50
 text = "Pierre"
 vertical_alignment = 1
@@ -74,24 +74,28 @@ mouse_filter = 1
 
 [node name="Summary" type="Label" parent="InfoPanel/InfoContent/Scroll/Page"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.91, 0.8, 0.63, 1)
 theme_override_font_sizes/font_size = 32
 text = "Rare • 10 points"
 autowrap_mode = 2
 
 [node name="Description" type="Label" parent="InfoPanel/InfoContent/Scroll/Page"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 108)
-theme_override_colors/font_color = Color(0.94, 0.88, 0.76, 1)
 theme_override_font_sizes/font_size = 35
 text = "Description de la pierre."
 vertical_alignment = 1
 autowrap_mode = 2
 
-[node name="Power" type="Label" parent="InfoPanel/InfoContent/Scroll/Page"]
+[node name="PowerRow" type="HBoxContainer" parent="InfoPanel/InfoContent/Scroll/Page"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 96)
-theme_override_colors/font_color = Color(0.9, 0.64, 0.85, 1)
+theme_override_constants/separation = 18
+
+[node name="Badges" type="HBoxContainer" parent="InfoPanel/InfoContent/Scroll/Page/PowerRow"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Power" type="Label" parent="InfoPanel/InfoContent/Scroll/Page/PowerRow"]
+layout_mode = 2
+size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 30
 text = "Pouvoir de famille"
 vertical_alignment = 1
@@ -99,26 +103,24 @@ autowrap_mode = 2
 
 [node name="Stats" type="Label" parent="InfoPanel/InfoContent/Scroll/Page"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 72)
-theme_override_colors/font_color = Color(0.96, 0.79, 0.34, 1)
+custom_minimum_size = Vector2(0, 56)
 theme_override_font_sizes/font_size = 30
 text = "HAUT 1   •   BAS 1   •   GAUCHE 1   •   DROITE 1"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Card" type="CenterContainer" parent="InfoPanel/InfoContent/Scroll/Page"]
+[node name="Card" type="MarginContainer" parent="InfoPanel/InfoContent/Scroll/Page"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 650)
-size_flags_vertical = 3
+mouse_filter = 2
 
 [node name="Error" type="Label" parent="InfoPanel/InfoContent"]
 visible = false
 layout_mode = 2
-theme_override_colors/font_color = Color(0.94, 0.44, 0.38, 1)
 theme_override_font_sizes/font_size = 30
 autowrap_mode = 2
 
 [node name="UseButton" type="Button" parent="InfoPanel/InfoContent"]
+theme_type_variation = &"PrimaryButton"
 layout_mode = 2
 script = ExtResource("2_touch_button")
 custom_minimum_size = Vector2(0, 108)

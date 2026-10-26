@@ -14,6 +14,7 @@ signal cell_pressed(row: int, col: int)
 const GAP: float = 16.0
 const SwarmLinks := preload("res://scripts/ui/combat/SwarmLinkLayer.gd")
 const AnimationController := preload("res://scripts/ui/combat/BoardAnimationController.gd")
+const BlockedOverlay := preload("res://scripts/ui/BlockedCellOverlay.gd")
 var animations: Control
 
 var _slots: Array = []        ## Panel par case (index 1D)
@@ -26,6 +27,7 @@ const DROP_RADIUS: float = 0.75
 var _drop_target := Vector2i(-1, -1)
 var _drop_style: StyleBoxFlat = null
 var _drop_previous_style: StyleBox = null
+var _cell_styles: Dictionary = {}
 
 
 ## Construit le plateau une fois, à une taille carrée fixe calculée sur la
@@ -69,12 +71,7 @@ func build() -> void:
 func _make_slot(row: int, col: int) -> Panel:
 	var slot := Panel.new()
 	slot.name = "cell_%d_%d" % [row, col]
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color("#241810")
-	sb.border_color = Color("#4a3a22")
-	sb.set_border_width_all(2)
-	sb.set_corner_radius_all(6)
-	slot.add_theme_stylebox_override("panel", sb)
+	slot.add_theme_stylebox_override("panel", _cell_style(GameState.PLAYER_NONE))
 	slot.gui_input.connect(_on_slot_input.bind(row, col))
 	return slot
 
@@ -98,8 +95,10 @@ func refresh(state: GameState) -> void:
 			var slot: Panel = _slots[idx]
 
 			if cell["cell_type"] == GameState.CELL_BLOCKED:
+				_apply_cell_style(idx, GameState.PLAYER_NONE, true)
 				_mark_blocked(slot)
 				continue
+			_apply_cell_style(idx, int(cell["owner"]))
 
 			if cell["owner"] == GameState.PLAYER_NONE:
 				if _cards[idx] != null:
@@ -110,7 +109,7 @@ func refresh(state: GameState) -> void:
 			if _cards[idx] == null:
 				_cards[idx] = _spawn_card(slot, cell["stone_id"], cell["owner"], cell.get("stone"))
 			else:
-				_cards[idx].set_owner_color(cell["owner"])
+				_cards[idx].set_combat_owner(cell["owner"])
 				_cards[idx].set_battle_stone(cell.get("stone"))
 
 
@@ -128,22 +127,61 @@ func _spawn_card(slot: Panel, stone_id: String, owner_val: int, battle_stone = n
 func _mark_blocked(slot: Panel) -> void:
 	if slot.get_node_or_null("BlockedMark") != null:
 		return
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color("#140c06")
-	sb.border_color = Color("#2a2018")
-	sb.set_border_width_all(2)
-	sb.set_corner_radius_all(6)
-	slot.add_theme_stylebox_override("panel", sb)
-	var lbl := Label.new()
-	lbl.name = "BlockedMark"
-	lbl.text = "✕"
-	lbl.add_theme_font_size_override("font_size", 40)
-	lbl.add_theme_color_override("font_color", Color("#4a3a28"))
-	lbl.set_anchors_preset(Control.PRESET_FULL_RECT)
-	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	slot.add_child(lbl)
+	var overlay := BlockedOverlay.new()
+	overlay.name = "BlockedMark"
+	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	slot.add_child(overlay)
+
+
+## La capture est montrée à l'impact, avant que le moteur ne publie son état
+## final. Cette méthode ne change que l'habillage de la case concernée.
+func reveal_cell_owner(row: int, col: int, owner: int) -> void:
+	if row < 0 or row >= GameState.BOARD_SIZE or col < 0 or col >= GameState.BOARD_SIZE:
+		return
+	_apply_cell_style(GameState.cell_index(row, col), owner)
+
+
+func _apply_cell_style(index: int, owner: int, blocked: bool = false) -> void:
+	var slot: Panel = _slots[index]
+	var style := _cell_style(owner, blocked)
+	if _drop_target != Vector2i(-1, -1) and index == GameState.cell_index(_drop_target.x, _drop_target.y):
+		_drop_previous_style = style
+		return
+	slot.add_theme_stylebox_override("panel", style)
+
+
+func _cell_style(owner: int, blocked: bool = false) -> StyleBoxFlat:
+	var key := "blocked" if blocked else str(owner)
+	if _cell_styles.has(key):
+		return _cell_styles[key]
+	var style := StyleBoxFlat.new()
+	if blocked:
+		style.bg_color = UITheme.COL_BOARD_BLOCKED_BG
+		style.border_color = UITheme.COL_BOARD_BLOCKED_EDGE
+		style.set_border_width_all(6)
+		style.set_corner_radius_all(4)
+	elif owner == GameState.PLAYER_HUMAN:
+		style.bg_color = UITheme.COL_BOARD_HUMAN_BG
+		style.border_color = UITheme.COL_BOARD_HUMAN_EDGE
+		style.set_border_width_all(7)
+		style.set_corner_radius_all(12)
+	elif owner == GameState.PLAYER_AI:
+		style.bg_color = UITheme.COL_BOARD_AI_BG
+		style.border_color = UITheme.COL_BOARD_AI_EDGE
+		# Bord plus anguleux et horizontalement renforcé : le camp reste
+		# reconnaissable autrement que par sa seule teinte.
+		style.border_width_left = 5
+		style.border_width_right = 5
+		style.border_width_top = 8
+		style.border_width_bottom = 8
+		style.set_corner_radius_all(2)
+	else:
+		style.bg_color = UITheme.COL_BOARD_EMPTY_BG
+		style.border_color = UITheme.COL_BOARD_EMPTY_EDGE
+		style.set_border_width_all(2)
+		style.set_corner_radius_all(7)
+	_cell_styles[key] = style
+	return style
 
 
 

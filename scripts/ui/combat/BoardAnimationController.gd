@@ -90,13 +90,18 @@ func _hold_swarm_preview(events: Array) -> void:
 
 func animate_capture(row: int, col: int, new_owner: int) -> void:
 	var card: StoneCard = _board.card_at(row, col)
-	if card == null or card.get_combat_owner() == new_owner:
+	if card == null:
+		return
+	# Le cadre de la carte reste dédié à sa rareté. La case révèle le
+	# nouveau camp au même impact que l'éclair de capture.
+	_board.reveal_cell_owner(row, col, new_owner)
+	if card.get_combat_owner() == new_owner:
 		return
 	card.pivot_offset = card.size * 0.5
 	var tween := _create_tracked_tween()
 	tween.tween_property(card, "modulate", Color(1.6, 1.6, 1.2), 0.12)
 	tween.tween_property(card, "modulate", Color(1, 1, 1), 0.18)
-	card.set_owner_color(new_owner)
+	card.set_combat_owner(new_owner)
 
 
 ## Tween gardé pour pouvoir l'arrêter si l'étape est annulée. Aucune connexion

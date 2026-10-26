@@ -3,13 +3,17 @@ class_name StoneInfoSheet
 extends Control
 signal use_requested(stone_id: String)
 const NumberedSelector := preload("res://scripts/ui/collection/NumberedSelector.gd")
+const PowerBadge := preload("res://scripts/ui/PowerBadge.gd")
+const Symbols := preload("res://scripts/ui/StoneSymbols.gd")
 
 @onready var title_label: Label = $InfoPanel/InfoContent/Header/Title
 @onready var summary_label: Label = $InfoPanel/InfoContent/Scroll/Page/Summary
 @onready var description_label: Label = $InfoPanel/InfoContent/Scroll/Page/Description
-@onready var power_label: Label = $InfoPanel/InfoContent/Scroll/Page/Power
+@onready var power_row: HBoxContainer = $InfoPanel/InfoContent/Scroll/Page/PowerRow
+@onready var power_badges: HBoxContainer = $InfoPanel/InfoContent/Scroll/Page/PowerRow/Badges
+@onready var power_label: Label = $InfoPanel/InfoContent/Scroll/Page/PowerRow/Power
 @onready var stats_label: Label = $InfoPanel/InfoContent/Scroll/Page/Stats
-@onready var card_container: CenterContainer = $InfoPanel/InfoContent/Scroll/Page/Card
+@onready var card_container: MarginContainer = $InfoPanel/InfoContent/Scroll/Page/Card
 @onready var close_button: Button = $InfoPanel/InfoContent/Header/CloseButton
 @onready var use_button: Button = $InfoPanel/InfoContent/UseButton
 @onready var error_label: Label = $InfoPanel/InfoContent/Error
@@ -30,11 +34,23 @@ func _ready() -> void:
 		if _shown_variant != "":
 			use_requested.emit(_shown_variant))
 	_card = StoneCard.new()
-	_card.custom_minimum_size = Vector2(UITheme.CARD_INFO, UITheme.CARD_INFO)
+	_card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_card.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_card.set_edge_margin_ratio(UITheme.CARD_PREVIEW_EDGE_MARGIN)
+	_card.set_power_badge_scale(UITheme.CARD_PREVIEW_POWER_BADGE_SCALE)
 	_card.set_show_cost(true)
 	_card.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	card_container.add_child(_card)
+	card_container.resized.connect(_fit_card)
+	_fit_card.call_deferred()
 	visible = false
+
+
+## La hauteur participe réellement au VBox et au défilement de la fiche.
+func _fit_card() -> void:
+	var side := card_container.size.x
+	if side > 0 and not is_equal_approx(card_container.custom_minimum_size.y, side):
+		card_container.custom_minimum_size.y = side
 
 
 func open_for(stone_id: String, deck: Array = []) -> void:
@@ -76,14 +92,32 @@ func _refresh_form(stone_id: String) -> void:
 	description_label.text = stone.get("description", "")
 	power_label.text = str(stone.get("power_text", "Aucun pouvoir de famille : cette pierre est neutre."))
 	power_label.add_theme_color_override(
-		"font_color", Color(str(god.get("color", "#c8b58c")))
+		"font_color", Color(str(god.get("color", UITheme.COL_TEXT_DIM.to_html())))
 	)
+	_refresh_power_badges(stone, Color(str(god.get("color", UITheme.COL_TEXT_DIM.to_html()))))
 	var blades: Dictionary = stone.get("blades", {})
 	stats_label.text = "H %d   •   B %d   •   G %d   •   D %d%s" % [
 		blades.get("top", 0), blades.get("bottom", 0),
 		blades.get("left", 0), blades.get("right", 0), _special_summary(stone)
 	]
 	_card.setup(stone, StoneCard.OWNER_NONE)
+
+
+## Réutilise exactement les pictogrammes des cartes et des règles. Les cartes
+## neutres gardent toute la largeur pour leur texte puisqu'elles n'ont pas de logo.
+func _refresh_power_badges(stone: Dictionary, family_color: Color) -> void:
+	for child in power_badges.get_children():
+		power_badges.remove_child(child)
+		child.queue_free()
+	for definition in Symbols.badges_for(stone):
+		var badge := PowerBadge.new()
+		badge.kind = str(definition["kind"])
+		badge.count = int(definition.get("count", 0))
+		badge.color = family_color
+		badge.custom_minimum_size = Vector2(154 if badge.count > 0 else 96, 96)
+		badge.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+		power_badges.add_child(badge)
+	power_badges.visible = power_badges.get_child_count() > 0
 
 
 func show_error(message: String) -> void:

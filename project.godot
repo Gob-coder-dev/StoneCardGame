@@ -15,7 +15,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 [application]
 
 config/name="SamStone"
-config/description="A strategic stone card game inspired by the art of feudal Japan."
+config/description="Un bestiaire de monstres et six dieux à maîtriser dans un jeu de cartes stratégique."
 config/version="0.1.0"
 run/main_scene="res://scenes/menus/MainMenu.tscn"
 config/features=PackedStringArray("4.7", "Mobile")

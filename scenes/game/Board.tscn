@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/ui/BoardController.gd" id="1_boardctrl"]
 [ext_resource type="Script" path="res://scripts/engine/TurnManager.gd" id="2_turnmgr"]
-[ext_resource type="Script" path="res://scripts/ui/ParchmentBackground.gd" id="3_parchment"]
+[ext_resource type="Script" path="res://scripts/ui/MenuBackground.gd" id="3_parchment"]
 [ext_resource type="Script" path="res://scripts/ui/BoardView.gd" id="4_boardview"]
 [ext_resource type="Script" path="res://scripts/ui/HandView.gd" id="5_handview"]
 [ext_resource type="Script" path="res://scripts/ui/BattleHUD.gd" id="6_hud"]

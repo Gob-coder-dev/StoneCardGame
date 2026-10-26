@@ -30,6 +30,7 @@ func setup(stone_id: String, source: Source) -> void:
 
 func _refresh() -> void:
 	primary_button.text = "RETIRER" if _source == Source.DECK else "UTILISER"
+	primary_button.theme_type_variation = &"DangerButton" if _source == Source.DECK else &"PrimaryButton"
 
 
 func _on_info_pressed() -> void:

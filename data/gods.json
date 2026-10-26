@@ -7,7 +7,8 @@
       "family_name": "Les Aléators",
       "color": "#e75aa8",
       "description": "Des lames roses à demi-coût et des pierres qui jouent leur orientation à pile ou face.",
-      "title": "le Manipulateur"
+      "title": "le Manipulateur",
+      "asset": "res://assets/gods/veskar.png"
     },
     {
       "id": "izanami",
@@ -15,7 +16,8 @@
       "family_name": "Les Flétris",
       "color": "#9b6bc7",
       "description": "Le Miasme affaiblit de 1 les voisines adverses tant que son aura est active ; l'Échec corrosif retire 2 de force aux pierres qui résistent à l'attaque, jusqu'à la fin du prochain coup du lanceur.",
-      "title": "la Mère des Fièvres"
+      "title": "la Mère des Fièvres",
+      "asset": "res://assets/gods/nerava.png"
     },
     {
       "id": "hachiman",
@@ -23,7 +25,8 @@
       "family_name": "Les Remparts",
       "color": "#72c7d8",
       "description": "Ajoute des boucliers : ils renforcent la défense sans augmenter l'attaque.",
-      "title": "la Muraille"
+      "title": "la Muraille",
+      "asset": "res://assets/gods/kharun.png"
     },
     {
       "id": "tsukuyomi",
@@ -31,7 +34,8 @@
       "family_name": "Les Veilleurs",
       "color": "#5fa8ff",
       "description": "Projette des lames bleues sur une ligne, au-delà des alliés et des cases vides.",
-      "title": "le Guetteur Éternel"
+      "title": "le Guetteur Éternel",
+      "asset": "res://assets/gods/ilyr.png"
     },
     {
       "id": "okuninushi",
@@ -39,7 +43,8 @@
       "family_name": "L’Essaim",
       "color": "#7fc95b",
       "description": "Les pierres Swarm connectées se renforcent toutes tant qu'elles restent dans le même camp.",
-      "title": "la Mère-Ruche"
+      "title": "la Mère-Ruche",
+      "asset": "res://assets/gods/sylkha.png"
     },
     {
       "id": "susanoo",
@@ -47,7 +52,8 @@
       "family_name": "Les Assimilateurs",
       "color": "#ef8b45",
       "description": "Après une capture, transforme la force vaincue en boucliers répartis sur les autres faces de la pierre attaquante.",
-      "title": "la Machine Première"
+      "title": "la Machine Première",
+      "asset": "res://assets/gods/enigma.png"
     }
   ]
 }
