@@ -387,7 +387,8 @@
             "bottom": 0,
             "left": 0,
             "right": 1
-          }
+          },
+          "asset": "res://assets/cards/n/n08_n1.png"
         },
         {
           "id": "n08_n2",
@@ -458,7 +459,8 @@
             "bottom": 3,
             "left": 4,
             "right": 3
-          }
+          },
+          "asset": "res://assets/cards/n/n24_n3.png"
         },
         {
           "id": "n24_n4",
@@ -533,7 +535,8 @@
             "bottom": 0,
             "left": 1,
             "right": 1
-          }
+          },
+          "asset": "res://assets/cards/n/n10_n1.png"
         },
         {
           "id": "n10_n2",
@@ -1227,7 +1230,8 @@
             "bottom": 0,
             "left": 1,
             "right": 1
-          }
+          },
+          "asset": "res://assets/cards/f/f04_n3.png"
         },
         {
           "id": "f04_n4",
@@ -1374,7 +1378,8 @@
             "bottom": 2,
             "left": 4,
             "right": 1
-          }
+          },
+          "asset": "res://assets/cards/f/f07_n3.png"
         }
       ]
     },
@@ -1418,7 +1423,8 @@
             "bottom": 4,
             "left": 3,
             "right": 2
-          }
+          },
+          "asset": "res://assets/cards/f/f08_n3.png"
         }
       ]
     },
@@ -1640,7 +1646,8 @@
             "bottom": 3,
             "left": 1,
             "right": 0
-          }
+          },
+          "asset": "res://assets/cards/d/d02_n3.png"
         },
         {
           "id": "d02_n4",
@@ -1694,7 +1701,8 @@
             "bottom": 2,
             "left": 2,
             "right": 1
-          }
+          },
+          "asset": "res://assets/cards/d/d03_n3.png"
         },
         {
           "id": "d03_n4",
@@ -1748,7 +1756,8 @@
             "bottom": 0,
             "left": 2,
             "right": 0
-          }
+          },
+          "asset": "res://assets/cards/d/d04_n3.png"
         },
         {
           "id": "d04_n4",
@@ -1802,7 +1811,8 @@
             "bottom": 3,
             "left": 1,
             "right": 3
-          }
+          },
+          "asset": "res://assets/cards/d/d05_n3.png"
         }
       ]
     },
@@ -1847,7 +1857,8 @@
             "bottom": 1,
             "left": 2,
             "right": 2
-          }
+          },
+          "asset": "res://assets/cards/d/d06_n3.png"
         }
       ]
     },
@@ -1892,7 +1903,8 @@
             "bottom": 2,
             "left": 4,
             "right": 1
-          }
+          },
+          "asset": "res://assets/cards/d/d07_n3.png"
         }
       ]
     },
@@ -1937,7 +1949,8 @@
             "bottom": 2,
             "left": 2,
             "right": 2
-          }
+          },
+          "asset": "res://assets/cards/d/d08_n3.png"
         }
       ]
     },
@@ -2117,7 +2130,8 @@
           "shields": {
             "left": 2,
             "right": 2
-          }
+          },
+          "asset": "res://assets/cards/r/r01_n3.png"
         },
         {
           "id": "r01_n4",
@@ -2183,7 +2197,8 @@
           },
           "shields": {
             "top": 2
-          }
+          },
+          "asset": "res://assets/cards/r/r02_n3.png"
         },
         {
           "id": "r02_n4",
@@ -2257,7 +2272,8 @@
             "bottom": 2,
             "left": 2,
             "right": 2
-          }
+          },
+          "asset": "res://assets/cards/r/r03_n3.png"
         },
         {
           "id": "r03_n4",
@@ -2325,7 +2341,8 @@
           },
           "shields": {
             "bottom": 2
-          }
+          },
+          "asset": "res://assets/cards/r/r04_n3.png"
         },
         {
           "id": "r04_n4",
@@ -2395,7 +2412,8 @@
           "shields": {
             "top": 2,
             "left": 2
-          }
+          },
+          "asset": "res://assets/cards/r/r05_n3.png"
         }
       ]
     },
@@ -2454,7 +2472,8 @@
             "bottom": 3,
             "left": 2,
             "right": 1
-          }
+          },
+          "asset": "res://assets/cards/r/r06_n3.png"
         }
       ]
     },
@@ -2510,7 +2529,8 @@
           "shields": {
             "top": 2,
             "bottom": 2
-          }
+          },
+          "asset": "res://assets/cards/r/r07_n3.png"
         }
       ]
     },
@@ -2566,7 +2586,8 @@
           "shields": {
             "left": 3,
             "right": 2
-          }
+          },
+          "asset": "res://assets/cards/r/r08_n3.png"
         }
       ]
     },
@@ -2768,7 +2789,8 @@
           },
           "long_blades": {
             "right": 4
-          }
+          },
+          "asset": "res://assets/cards/h/h01_n3.png"
         },
         {
           "id": "h01_n4",
@@ -2832,7 +2854,8 @@
           },
           "long_blades": {
             "top": 4
-          }
+          },
+          "asset": "res://assets/cards/h/h02_n3.png"
         },
         {
           "id": "h02_n4",
@@ -2896,7 +2919,8 @@
           },
           "long_blades": {
             "bottom": 4
-          }
+          },
+          "asset": "res://assets/cards/h/h03_n3.png"
         },
         {
           "id": "h03_n4",
@@ -2960,7 +2984,8 @@
           },
           "long_blades": {
             "left": 4
-          }
+          },
+          "asset": "res://assets/cards/h/h04_n3.png"
         },
         {
           "id": "h04_n4",
@@ -3024,7 +3049,8 @@
           },
           "long_blades": {
             "right": 3
-          }
+          },
+          "asset": "res://assets/cards/h/h05_n3.png"
         }
       ]
     },
@@ -3079,7 +3105,8 @@
           "long_blades": {
             "left": 4,
             "right": 3
-          }
+          },
+          "asset": "res://assets/cards/h/h06_n3.png"
         }
       ]
     },
@@ -3131,7 +3158,8 @@
           },
           "long_blades": {
             "top": 4
-          }
+          },
+          "asset": "res://assets/cards/h/h07_n3.png"
         }
       ]
     },
@@ -3183,7 +3211,8 @@
           },
           "long_blades": {
             "left": 3
-          }
+          },
+          "asset": "res://assets/cards/h/h08_n3.png"
         }
       ]
     },
@@ -3373,7 +3402,8 @@
             "bottom": 1,
             "left": 1,
             "right": 0
-          }
+          },
+          "asset": "res://assets/cards/e/e01_n3.png"
         },
         {
           "id": "e01_n4",
@@ -3428,7 +3458,8 @@
             "bottom": 3,
             "left": 1,
             "right": 1
-          }
+          },
+          "asset": "res://assets/cards/e/e02_n3.png"
         },
         {
           "id": "e02_n4",
@@ -3483,7 +3514,8 @@
             "bottom": 0,
             "left": 3,
             "right": 2
-          }
+          },
+          "asset": "res://assets/cards/e/e03_n3.png"
         },
         {
           "id": "e03_n4",
@@ -3538,7 +3570,8 @@
             "bottom": 0,
             "left": 2,
             "right": 0
-          }
+          },
+          "asset": "res://assets/cards/e/e04_n3.png"
         },
         {
           "id": "e04_n4",
@@ -3593,7 +3626,8 @@
             "bottom": 1,
             "left": 4,
             "right": 1
-          }
+          },
+          "asset": "res://assets/cards/e/e05_n3.png"
         }
       ]
     },
@@ -3639,7 +3673,8 @@
             "bottom": 2,
             "left": 2,
             "right": 2
-          }
+          },
+          "asset": "res://assets/cards/e/e06_n3.png"
         }
       ]
     },
@@ -3685,7 +3720,8 @@
             "bottom": 4,
             "left": 2,
             "right": 3
-          }
+          },
+          "asset": "res://assets/cards/e/e07_n3.png"
         }
       ]
     },
@@ -3731,7 +3767,8 @@
             "bottom": 3,
             "left": 1,
             "right": 1
-          }
+          },
+          "asset": "res://assets/cards/e/e08_n3.png"
         }
       ]
     },
@@ -3905,7 +3942,8 @@
             "bottom": 0,
             "left": 1,
             "right": 0
-          }
+          },
+          "asset": "res://assets/cards/p/p01_n3.png"
         },
         {
           "id": "p01_n4",
@@ -3960,7 +3998,8 @@
             "bottom": 1,
             "left": 0,
             "right": 4
-          }
+          },
+          "asset": "res://assets/cards/p/p02_n3.png"
         },
         {
           "id": "p02_n4",
@@ -4015,7 +4054,8 @@
             "bottom": 3,
             "left": 2,
             "right": 1
-          }
+          },
+          "asset": "res://assets/cards/p/p03_n3.png"
         },
         {
           "id": "p03_n4",
@@ -4070,7 +4110,8 @@
             "bottom": 1,
             "left": 2,
             "right": 0
-          }
+          },
+          "asset": "res://assets/cards/p/p04_n3.png"
         },
         {
           "id": "p04_n4",
@@ -4125,7 +4166,8 @@
             "bottom": 0,
             "left": 4,
             "right": 1
-          }
+          },
+          "asset": "res://assets/cards/p/p05_n3.png"
         }
       ]
     },
@@ -4171,7 +4213,8 @@
             "bottom": 4,
             "left": 1,
             "right": 3
-          }
+          },
+          "asset": "res://assets/cards/p/p06_n3.png"
         }
       ]
     },
@@ -4217,7 +4260,8 @@
             "bottom": 1,
             "left": 3,
             "right": 1
-          }
+          },
+          "asset": "res://assets/cards/p/p07_n3.png"
         }
       ]
     },
@@ -4263,7 +4307,8 @@
             "bottom": 2,
             "left": 3,
             "right": 1
-          }
+          },
+          "asset": "res://assets/cards/p/p08_n3.png"
         }
       ]
     },

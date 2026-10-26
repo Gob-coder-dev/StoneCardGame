@@ -4,6 +4,10 @@ Ce document est la référence visuelle active de **SamStone**. L'ancien univers
 japonais a été remplacé par un bestiaire horrifique organisé autour de six dieux,
 de leurs familles de cartes et de monstres neutres.
 
+Pour la taille visible des pixels, la fidélité aux illustrations déjà approuvées
+et les contrôles de cohérence par niveau, suivre la
+[charte des illustrations pixel art](CHARTE_ILLUSTRATIONS_PIXEL_ART.md).
+
 L'objectif est un jeu sombre et inquiétant, mais lisible, accueillant et rapide à
 comprendre sur un écran mobile. L'horreur vient des silhouettes, des matières et
 des détails narratifs ; elle ne doit jamais nuire à la lecture des cartes ni des
@@ -150,8 +154,8 @@ sont dans assets/cards, et leur association au jeu se fait par le champ asset de
 data/stones.json. Une image de niveau peut remplacer l'illustration commune de sa
 lignée sans changer ses statistiques, ses identifiants ou les sauvegardes.
 
-Le jeu contient actuellement 203 PNG de cartes ; les 96 lignées ont une
-illustration N1. Les images de niveaux supérieurs sont intégrées progressivement.
+Le jeu contient actuellement 246 PNG de cartes : 96 N1, 81 N2, 65 N3 et 4 N4.
+Les trois premiers niveaux sont intégralement illustrés ; 29 N4 restent à créer.
 
 ## Interface et symboles
 

@@ -62,8 +62,9 @@ et la fiche **Infos** permet de consulter les formes puis d'équiper préciséme
 celle choisie.
 
 Les illustrations sont stockées dans `assets/cards/`. Le projet embarque
-actuellement **203 PNG** : les 96 formes N1 sont illustrées, avec des évolutions
-N2, N3 et N4 déjà intégrées pour une partie du catalogue. Les définitions de jeu
+actuellement **246 PNG** : les 96 N1, les 81 N2 et les 65 N3 sont illustrés,
+ainsi que 4 N4. Les 29 N4 restants héritent encore du dessin de leur lignée.
+Les définitions de jeu
 restent dans `data/stones.json` : modifier une image ne modifie donc ni les
 statistiques ni les sauvegardes.
 
