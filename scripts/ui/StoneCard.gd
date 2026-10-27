@@ -3,7 +3,7 @@
 ## Dessine entièrement une carte par code (_draw) à partir des données d'une pierre :
 ##   - cadre minéral sombre à la couleur de la famille
 ##   - lames triangulaires sur les 4 côtés (le nombre = la valeur du côté)
-##   - liseré et ornements indiquant la rareté
+##   - contour extérieur simple indiquant la rareté
 ##   - illustration PNG, ou silhouette provisoire quand l'image manque
 ##   - bandeau de nom
 ##
@@ -374,7 +374,7 @@ func _draw() -> void:
 	var art_margin: float = square_side * 0.035
 
 	# 2. Le minerai sombre et désaturé reprend la couleur de la famille du dieu.
-	# Il reste volontairement moins lumineux que le liseré de rareté.
+	# Famille = matière, rareté = contour extérieur pour éviter toute confusion/superposition.
 	var family_color := _family_color()
 	var frame_dark := UITheme.COL_BG.lerp(family_color, 0.30)
 	var frame_light := UITheme.COL_SURFACE.lerp(family_color, 0.43)
@@ -384,18 +384,18 @@ func _draw() -> void:
 	draw_rect(inner_frame, frame_light, true)
 	draw_rect(frame_rect, frame_edge, false, w_edge)
 
-	# 3. Le liseré intérieur indique la rareté. Le propriétaire est porté
-	# par la case du plateau afin de ne jamais masquer cette information.
-	var rarity_rect := frame_rect.grow(-w_border * 0.82)
-	_draw_rarity_frame(rarity_rect, w_border)
+	# 3. Contour de rareté à l'extérieur. Un simple trait, lisible même sur petit écran.
+	var rarity_outer_w := clampf(square_side * 0.016, 2.0, maxf(2.0, w_border * 0.8))
+	_draw_rarity_outer(frame_rect, rarity_outer_w)
 
-	# 4. Zone illustration
-	var name_h := frame_rect.size.y * 0.16
+	# 4. Zone illustration (à l'intérieur du cadre famille)
+	var art_inner := frame_rect.grow(-rarity_outer_w * 0.6)
+	var name_h := art_inner.size.y * 0.16
 	var art_rect := Rect2(
-		rarity_rect.position.x + art_margin,
-		rarity_rect.position.y + art_margin,
-		rarity_rect.size.x - 2.0 * art_margin,
-		rarity_rect.size.y - 2.0 * art_margin - name_h
+		art_inner.position.x + art_margin,
+		art_inner.position.y + art_margin,
+		art_inner.size.x - 2.0 * art_margin,
+		art_inner.size.y - 2.0 * art_margin - name_h
 	)
 
 	if _texture != null:
@@ -460,53 +460,12 @@ func _illustration_rect(bounds: Rect2) -> Rect2:
 	return Rect2(bounds.get_center() - drawn_size * 0.5, drawn_size)
 
 
-## Chaque rareté possède une silhouette de cadre en plus de sa couleur :
-## simple (commune), reflet (rare), double (épique) ou ornée (légendaire).
-func _draw_rarity_frame(bounds: Rect2, width: float) -> void:
+## Contour simple de la rareté, placé à l'extérieur du cadre famille.
+func _draw_rarity_outer(bounds: Rect2, width: float) -> void:
 	var rarity := str(_stone.get("rarity", "common")).to_lower()
 	var color := UITheme.rarity_color(rarity)
-	match rarity:
-		"rare", "uncommon":
-			draw_rect(bounds, color.darkened(0.24), false, width)
-			var shine := color.lightened(0.25)
-			draw_line(bounds.position, Vector2(bounds.end.x, bounds.position.y), shine,
-				maxf(1.0, width * 0.42), true)
-			draw_line(bounds.position, Vector2(bounds.position.x, bounds.end.y), shine,
-				maxf(1.0, width * 0.42), true)
-		"epic":
-			draw_rect(bounds, color, false, width)
-			draw_rect(bounds.grow(-width * 1.12), color.lightened(0.22), false,
-				maxf(1.0, width * 0.42))
-			_draw_rarity_diamond(Vector2(bounds.position.x + bounds.size.x * 0.22, bounds.end.y),
-				width * 0.72, color.lightened(0.26))
-			_draw_rarity_diamond(Vector2(bounds.position.x + bounds.size.x * 0.78, bounds.end.y),
-				width * 0.72, color.lightened(0.26))
-		"legendary":
-			draw_rect(bounds, Color(color, 0.22), false, width * 2.0)
-			draw_rect(bounds, color, false, width)
-			draw_rect(bounds.grow(-width * 1.08), color.lightened(0.28), false,
-				maxf(1.0, width * 0.34))
-			_draw_legendary_corners(bounds, width, color.lightened(0.18))
-		_:
-			draw_rect(bounds, color, false, maxf(1.5, width * 0.72))
-
-
-func _draw_rarity_diamond(center: Vector2, radius: float, color: Color) -> void:
-	draw_colored_polygon(PackedVector2Array([
-		center + Vector2(0.0, -radius), center + Vector2(radius, 0.0),
-		center + Vector2(0.0, radius), center + Vector2(-radius, 0.0)
-	]), color)
-
-
-func _draw_legendary_corners(bounds: Rect2, width: float, color: Color) -> void:
-	var arm := minf(bounds.size.x, bounds.size.y) * 0.11
-	var line_width := maxf(1.2, width * 0.58)
-	for corner in [bounds.position, Vector2(bounds.end.x, bounds.position.y),
-		Vector2(bounds.position.x, bounds.end.y), bounds.end]:
-		var inward_x := 1.0 if corner.x == bounds.position.x else -1.0
-		var inward_y := 1.0 if corner.y == bounds.position.y else -1.0
-		draw_line(corner, corner + Vector2(inward_x * arm, 0.0), color, line_width, true)
-		draw_line(corner, corner + Vector2(0.0, inward_y * arm), color, line_width, true)
+	var outer := bounds.grow(width * 0.5)
+	draw_rect(outer, color, false, width)
 
 
 func _family_color() -> Color:

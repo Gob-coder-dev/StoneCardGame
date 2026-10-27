@@ -77,13 +77,12 @@ const COL_TAB_IDLE := Color("#1c222d")
 const COL_TAB_BORDER := Color("#434855")
 const COL_SELECTED := Color("#453c35")
 
-## Lecture des cartes : le minerai sombre indique la famille, tandis que ce
-## liseré plus lumineux indique la rareté. Les formes dessinées par StoneCard
-## complètent la couleur pour que l'information ne repose jamais sur elle seule.
-const COL_RARITY_COMMON := Color("#c8c3b8")
-const COL_RARITY_RARE := Color("#72d5ea")
-const COL_RARITY_EPIC := Color("#c46cff")
-const COL_RARITY_LEGENDARY := Color("#ffc857")
+## Lecture des cartes : le minerai sombre indique la famille, le contour extérieur
+## indique la rareté. Un contour unique évite la confusion entre les deux canaux.
+const COL_RARITY_COMMON := Color("#bfb7aa")
+const COL_RARITY_RARE := Color("#9fd9ff")
+const COL_RARITY_EPIC := Color("#d9a8ff")
+const COL_RARITY_LEGENDARY := Color("#ffb63b")
 
 ## Plateau : le camp appartient à la case, pas au cadre de la carte. Les fonds
 ## sombres restent assez larges autour des lames pour être lus sur téléphone.

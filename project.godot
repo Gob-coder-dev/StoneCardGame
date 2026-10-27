@@ -16,7 +16,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 config/name="SamStone"
 config/description="Un bestiaire de monstres et six dieux à maîtriser dans un jeu de cartes stratégique."
-config/version="0.1.0"
+config/version="0.5.0"
 run/main_scene="res://scenes/menus/MainMenu.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
 config/icon="res://assets/ui/icon.svg"

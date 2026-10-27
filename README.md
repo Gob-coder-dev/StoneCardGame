@@ -85,7 +85,7 @@ séparées visuellement afin de rester lisibles sur téléphone :
 | Élément | Information portée |
 | --- | --- |
 | Cadre minéral sombre de la carte | Famille du dieu |
-| Liseré intérieur | Rareté : simple, réfléchissant, double ou orné |
+| Contour extérieur simple | Rareté |
 | Logo en haut à droite | Pouvoir de la carte |
 | Case du plateau | Propriétaire : bleu pour le joueur, rouge pour l'adversaire |
 | Grande croix ivoire | Case condamnée, non jouable |
