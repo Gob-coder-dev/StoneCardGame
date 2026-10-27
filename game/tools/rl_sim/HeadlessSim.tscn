@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bqvj8x4n2k1m3"]
+
+[ext_resource type="Script" path="res://tools/rl_sim/HeadlessRunner.gd" id="1_abc123"]
+
+[node name="HeadlessSim" type="Node"]
+script = ExtResource("1_abc123")

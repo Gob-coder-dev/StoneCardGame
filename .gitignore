@@ -1,7 +1,6 @@
-# Cache, imports générés et identifiants locaux de Godot.
-# Conserver les fichiers source *.uid. Les *.import sont générés automatiquement par Godot.
-/.godot/
-/.import/
+# Godot : caches et imports générés. Les fichiers source *.uid restent suivis.
+**/.godot/
+**/.import/
 *.png.import
 *.jpg.import
 *.jpeg.import
@@ -20,12 +19,16 @@
 *.remap
 export_credentials.cfg
 
-# Builds et exports ; les APK n'appartiennent pas au code source.
+# Builds et exports.
 /build/
 /dist/
 /exports/
-/android/build/
-v1/
+/game/build/
+/game/dist/
+/game/exports/
+/game/android/build/
+/v1/
+/v3/
 *.apk
 *.apk.idsig
 *.aab
@@ -33,11 +36,30 @@ v1/
 *.obb
 *.ipa
 
-# Documents locaux non destinés à GitHub.
-/docs/archives/
-/docs/designs/
-/docs/CATALOGUE_CARTES_PROPOSITION.md
-/docs/REPRISE_ILLUSTRATIONS_N3.md
+# Python et entraînement RL.
+/rl/.venv/
+/rl/.venv*/
+/rl/**/__pycache__/
+/rl/**/*.py[cod]
+/rl/.pytest_cache/
+/rl/.mypy_cache/
+/rl/.ruff_cache/
+/rl/.coverage
+/rl/htmlcov/
+/rl/build/
+/rl/dist/
+/rl/**/*.egg-info/
+/rl/runs/
+/rl/checkpoints/
+/rl/logs/
+/rl/wandb/
+/rl/artifacts/
+
+# Documents locaux non destinés au dépôt.
+/game/docs/archives/
+/game/docs/designs/
+/game/docs/CATALOGUE_CARTES_PROPOSITION.md
+/game/docs/REPRISE_ILLUSTRATIONS_N3.md
 /ANALYSE_PROJET.md
 [Cc][Ll][Aa][Uu][Dd][Ee].[Mm][Dd]
 
@@ -53,9 +75,9 @@ v1/
 *.pem
 
 # Réglages personnels d'éditeur et fichiers du système.
-/.idea/
-/.vscode/
-/.vs/
+**/.idea/
+**/.vscode/
+**/.vs/
 .DS_Store
 Thumbs.db
 Desktop.ini

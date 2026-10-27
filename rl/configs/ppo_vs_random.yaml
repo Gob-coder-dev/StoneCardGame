@@ -1,0 +1,27 @@
+# PPO configuration vs random agent
+seed: 12345
+device: "cpu"  # Référence de validation ; DirectML viendra après la phase 4.
+
+# Environment
+num_envs: 1
+num_steps: 128
+gamma: 0.99
+gae_lambda: 0.95
+
+# Training
+learning_rate: 2.5e-4
+num_minibatches: 4
+update_epochs: 4
+clip_coef: 0.2
+ent_coef: 0.01
+vf_coef: 0.5
+max_grad_norm: 0.5
+
+# Model
+hidden_dim: 256
+
+# Training loop
+total_timesteps: 100000
+eval_interval: 10000
+save_interval: 20000
+
