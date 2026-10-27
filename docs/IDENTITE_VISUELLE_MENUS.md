@@ -57,8 +57,10 @@ Les six portraits sont fournis dans `assets/gods/`. Le champ `asset` de
   remplit la largeur disponible ; son conteneur réserve la même hauteur pour
   qu'elle reste carrée et ne recouvre pas les textes. Son logo de pouvoir est
   agrandi pour cette vue et le même pictogramme précède le texte d'explication.
-- Rencontres : portraits de famille, difficulté, identité de l'adversaire,
-  panneau de détail et bouton Affronter.
+- Rencontres : six portraits de dieux, puis une carte modale qui regroupe le
+  palier de cartes, la difficulté et le bouton Affronter. La carte tient
+  entièrement à l'écran et ne défile pas ; un appui sur le fond assombri, la
+  touche Échap ou le retour Android la referme sans quitter l'écran.
 - Règles : texte ivoire et titres ambrés, logos des pouvoirs aux couleurs
   de leur famille ; valeurs toujours lues dans les règles du jeu. Une marge
   finale permet de défiler après la dernière ligne.
@@ -116,7 +118,7 @@ existants. `MenuChecks` vérifie en plus le chargement des six portraits et le
 passage des gestes à travers le décor de l'accueil. Les essais utilisent un profil
 temporaire, restauré ensuite.
 
-Au dernier contrôle automatisé, 433 vérifications générales et 63 vérifications
+Au dernier contrôle automatisé, 446 vérifications générales et 76 vérifications
 tactiles ont réussi sans échec ni erreur Godot. Une validation visuelle doit
 compléter ces suites après chaque changement de composition : chaque dieu, les
 fiches de cartes, les tiroirs ouverts, les quatre raretés, les deux propriétaires

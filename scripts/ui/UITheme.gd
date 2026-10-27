@@ -2,7 +2,8 @@
 ## Constantes de design centralisées pour TOUTE l'interface.
 ## Toutes les valeurs sont pensées pour le canevas de référence 1080×1920
 ## (ratio 9:16). Le mode d'étirement "canvas_items" les met automatiquement à
-## l'échelle de l'écran réel (1080p, 720p, etc.) en conservant le ratio.
+## l'échelle de l'écran réel (1080p, 720p, etc.). L'aspect "expand" ajoute de
+## l'espace aux écrans plus hauts (téléphones 20:9) au lieu de créer des bandes.
 ##
 ## Règle du projet : ne JAMAIS poser une marge/taille de police "au hasard"
 ## dans un écran. On se réfère à ces constantes, pour une UI cohérente partout.

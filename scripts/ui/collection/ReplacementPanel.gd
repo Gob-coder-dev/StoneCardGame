@@ -4,6 +4,8 @@ extends Control
 
 signal replacement_requested(old_id: String)
 
+const Gesture := preload("res://scripts/ui/input/TapGesture.gd")
+
 @onready var deck_grid: GridContainer = $Panel/Content/DeckGrid
 @onready var candidate: CenterContainer = $Panel/Content/Candidate
 @onready var status_label: Label = $Panel/Content/Status
@@ -11,10 +13,12 @@ signal replacement_requested(old_id: String)
 
 var _deck: Array = []
 var _incoming_id: String = ""
+var _backdrop_tap := Gesture.new()
 
 
 func _ready() -> void:
 	cancel_button.pressed.connect(close_panel)
+	$Backdrop.gui_input.connect(_on_backdrop_input)
 	deck_grid.columns = UITheme.DECK_COLUMNS
 	visible = false
 
@@ -28,8 +32,14 @@ func open_for(deck: Array, incoming_id: String) -> void:
 
 func close_panel() -> void:
 	visible = false
+	_backdrop_tap.reset()
 	_deck.clear()
 	_incoming_id = ""
+
+
+func _on_backdrop_input(event: InputEvent) -> void:
+	if _backdrop_tap.update(event, $Backdrop) == Gesture.Result.TAP:
+		close_panel()
 
 
 func show_budget_error(cost: float) -> void:

@@ -4,6 +4,7 @@
 extends Control
 
 @onready var npc_label: Label = $VBoxCenter/NPCLabel
+@onready var difficulty_label: Label = $VBoxCenter/DifficultyLabel
 @onready var player_god_portrait: GodPortrait = $VBoxCenter/GodDuel/PlayerGod/Portrait
 @onready var player_god_name: Label = $VBoxCenter/GodDuel/PlayerGod/Name
 @onready var player_god_family: Label = $VBoxCenter/GodDuel/PlayerGod/Family
@@ -22,8 +23,9 @@ const FACE_NPC := "LUI"
 func _ready() -> void:
 	start_button.pressed.connect(_on_start)
 
-	var npc := StoneLoader.get_npc(BattleContext.selected_npc_id)
+	var npc := BattleContext.current_opponent()
 	npc_label.text = npc.get("name", "???")
+	difficulty_label.text = _opponent_subtitle(npc)
 	var human_god := StoneLoader.get_god(PlayerData.player_god_id)
 	var npc_god := StoneLoader.get_god(str(npc.get("god_id", "")))
 	_setup_god_identity(player_god_portrait, player_god_name, player_god_family,
@@ -49,6 +51,24 @@ func _setup_god_identity(portrait: GodPortrait, name_label: Label, family_label:
 	family_label.add_theme_color_override(
 		"font_color", Color(str(god.get("color", UITheme.COL_TEXT.to_html())))
 	)
+
+
+## Les adversaires générés précisent leur palier et leur difficulté ; les
+## adversaires historiques de npcs.json n'ont pas ces champs.
+func _opponent_subtitle(npc: Dictionary) -> String:
+	var bracket_label := str(npc.get("bracket_label", ""))
+	var difficulty_label := str(npc.get("difficulty_label", ""))
+	var stars := str(npc.get("difficulty_stars_text", ""))
+	if bracket_label == "" and difficulty_label == "":
+		return ""
+	var level_text := difficulty_label
+	if stars != "" and difficulty_label != "":
+		level_text = "%s %s" % [stars, difficulty_label]
+	if bracket_label == "":
+		return level_text
+	if level_text == "":
+		return bracket_label
+	return "%s • %s" % [bracket_label, level_text]
 
 
 ## Donne à la pièce une forme de cercle parfait : le rayon de coin = la moitié
@@ -89,7 +109,7 @@ func _animate_coin_flip() -> void:
 
 func _finish_flip(player_starts: bool) -> void:
 	_show_coin_face(player_starts)
-	var npc := StoneLoader.get_npc(BattleContext.selected_npc_id)
+	var npc := BattleContext.current_opponent()
 	var npc_name: String = npc.get("name", "L'adversaire")
 	coin_flip_label.text = "Tu commences !" if player_starts else "%s commence !" % npc_name
 	## Mémoriser qui commence pour que la partie respecte ce tirage
@@ -101,6 +121,21 @@ func _show_coin_face(show_player: bool) -> void:
 	coin_label.text = FACE_PLAYER if show_player else FACE_NPC
 	player_god_portrait.set_emphasized(show_player)
 	opponent_god_portrait.set_emphasized(not show_player)
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel"):
+		_go_back()
+		get_viewport().set_input_as_handled()
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
+		_go_back()
+
+
+func _go_back() -> void:
+	get_tree().change_scene_to_file("res://scenes/menus/LevelSelect.tscn")
 
 
 func _on_start() -> void:

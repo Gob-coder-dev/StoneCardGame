@@ -57,6 +57,21 @@ Quand toutes les cases jouables sont remplies, on compte les pierres de chaque c
 Regarde les côtés faibles déjà exposés et garde une pierre capable de les attaquer au bon moment.""".format(values)
 
 
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel"):
+		_go_back()
+		get_viewport().set_input_as_handled()
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
+		_go_back()
+
+
+func _go_back() -> void:
+	get_tree().change_scene_to_file("res://scenes/menus/MainMenu.tscn")
+
+
 ## Valeurs lues dans les règles du code, pour que les textes ne s'en écartent pas.
 static func _rule_values() -> Dictionary:
 	return {

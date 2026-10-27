@@ -62,9 +62,11 @@ func _connect_signals() -> void:
 
 
 func _start_battle(human_deck: Array, npc_id: String) -> void:
-	_npc_data = StoneLoader.get_npc(npc_id)
+	_npc_data = BattleContext.current_opponent()
+	if str(_npc_data.get("id", "")) != npc_id:
+		_npc_data = StoneLoader.get_npc(npc_id)
 	if _npc_data.is_empty():
-		push_error("BoardController: NPC '%s' introuvable." % npc_id)
+		push_error("BoardController: adversaire '%s' introuvable." % npc_id)
 		return
 
 	board_view.build()  ## garantit la construction si pas encore faite

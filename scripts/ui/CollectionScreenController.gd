@@ -3,6 +3,7 @@
 extends Control
 
 const SortMode = CollectionGridView.SortMode
+const Gesture := preload("res://scripts/ui/input/TapGesture.gd")
 
 ## Dans l'ordre de SortMode et des boutons du menu de tri.
 const SORT_LABELS: Array[String] = ["FAMILLE", "COÛT", "RARETÉ", "NOM"]
@@ -47,10 +48,14 @@ var _action_card: StoneCard = null
 var _action_stone_id: String = ""
 var _action_source: int = -1
 var _replacement_stone_id: String = ""
+var _scroll_tap := Gesture.new()
+var _suppress_scroll_tap: bool = false
+var _clearing_scroll_tap: bool = false
 
 
 func _ready() -> void:
 	_current_deck = PlayerData.get_active_deck()
+	scroll.gui_input.connect(_on_scroll_gui_input)
 	god_button.pressed.connect(_toggle_god_menu)
 	_deck_panel = DeckPanelView.new(deck_rows)
 	_collection_grid = CollectionGridView.new(collection_rows)
@@ -79,6 +84,7 @@ func _ready() -> void:
 
 
 func _toggle_level_menu() -> void:
+	_suppress_scroll_tap_once()
 	_close_action_drawer()
 	god_menu.visible = false
 	sort_menu.visible = false
@@ -97,6 +103,7 @@ func _select_preview_level(level: int) -> void:
 
 
 func _toggle_god_menu() -> void:
+	_suppress_scroll_tap_once()
 	_close_action_drawer()
 	level_menu.visible = false
 	sort_menu.visible = false
@@ -144,6 +151,74 @@ func _close_card_panels() -> void:
 	level_menu.visible = false
 
 
+## Les menus de dieu, de tri et de niveau sont posés dans le défilement.
+## Le retour Android les referme avant de quitter l'écran.
+func _close_inline_menus() -> void:
+	god_menu.visible = false
+	sort_menu.visible = false
+	level_menu.visible = false
+	_update_sort_labels()
+	_refresh_god_panel()
+
+
+## Un appui sur une zone vide referme le tiroir ou les menus ouverts. Les
+## boutons et les cartes laissent passer leur relâchement jusqu'au défilement :
+## on ignore donc le premier appui qui suit l'ouverture d'un panneau.
+func _on_scroll_gui_input(event: InputEvent) -> void:
+	if _scroll_tap.update(event, scroll) != Gesture.Result.TAP:
+		return
+	if _suppress_scroll_tap:
+		return
+	if info_sheet.visible or replacement_panel.visible:
+		return
+	if is_instance_valid(_action_drawer):
+		_close_action_drawer()
+	elif god_menu.visible or sort_menu.visible or level_menu.visible:
+		_close_inline_menus()
+
+
+func _suppress_scroll_tap_once() -> void:
+	_suppress_scroll_tap = true
+	if _clearing_scroll_tap:
+		return
+	_clearing_scroll_tap = true
+	_clear_scroll_tap_deferred()
+
+
+func _clear_scroll_tap_deferred() -> void:
+	await get_tree().process_frame
+	_suppress_scroll_tap = false
+	_clearing_scroll_tap = false
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel"):
+		_go_back()
+		get_viewport().set_input_as_handled()
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
+		_go_back()
+
+
+func _go_back() -> void:
+	if info_sheet.visible:
+		info_sheet.close_sheet()
+		return
+	if replacement_panel.visible:
+		replacement_panel.close_panel()
+		_replacement_stone_id = ""
+		return
+	if is_instance_valid(_action_drawer):
+		_close_action_drawer()
+		return
+	if god_menu.visible or sort_menu.visible or level_menu.visible:
+		_close_inline_menus()
+		return
+	get_tree().change_scene_to_file("res://scenes/menus/MainMenu.tscn")
+
+
 func _setup_sort() -> void:
 	for index in range(sort_options.get_child_count()):
 		var option := sort_options.get_child(index) as Button
@@ -153,6 +228,7 @@ func _setup_sort() -> void:
 
 
 func _toggle_sort_menu() -> void:
+	_suppress_scroll_tap_once()
 	_close_action_drawer()
 	level_menu.visible = false
 	god_menu.visible = false
@@ -214,6 +290,7 @@ func _populate_collection() -> void:
 
 
 func _open_card_actions(stone_id: String, wrapper: VBoxContainer, source: int) -> void:
+	_suppress_scroll_tap_once()
 	if not StoneLoader.has_stone(stone_id):
 		return
 	if _action_stone_id == stone_id and _action_source == source and is_instance_valid(_action_drawer):

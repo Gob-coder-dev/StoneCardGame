@@ -56,5 +56,12 @@ func _on_play_pressed() -> void:
 		get_tree().change_scene_to_file("res://scenes/menus/CollectionScreen.tscn")
 
 
+func _notification(what: int) -> void:
+	# Le retour Android quitte l'application depuis l'accueil ; les autres
+	# écrans l'interceptent avant d'arriver ici.
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
+		get_tree().quit()
+
+
 func _on_profile_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/menus/Stats.tscn")

@@ -8,6 +8,7 @@
 extends Node
 
 const ContentChecks := preload("res://scripts/data/ContentValidator.gd")
+const OpponentCatalogModel := preload("res://scripts/data/OpponentCatalog.gd")
 
 const STONES_PATH: String = "res://data/stones.json"
 const NPCS_PATH: String = "res://data/npcs.json"
@@ -36,6 +37,8 @@ func _ready() -> void:
 	_load_gods()
 	_load_npcs()
 	for problem in ContentChecks.find_problems(_stones_list, _gods, _npcs.values(), _default_god_id):
+		push_error("StoneLoader: " + problem)
+	for problem in OpponentCatalogModel.problems():
 		push_error("StoneLoader: " + problem)
 
 

@@ -1,4 +1,5 @@
-## Réglage d'une IA, lu dans le champ "ai" d'un adversaire de npcs.json :
+## Réglage d'une IA, construit par OpponentCatalog ou lu dans le champ "ai" d'un
+## adversaire historique de npcs.json :
 ##   "ai": { "precision": 0.5, "anticipation": false }
 ##
 ## precision    : probabilité de jouer le meilleur coup évalué. Sinon l'IA fait
@@ -28,7 +29,7 @@ func think_delay() -> float:
 	return 0.6 + 0.4 * precision + (0.2 if anticipation else 0.0)
 
 
-## Problèmes d'un profil lu dans npcs.json ; liste vide si le profil est valide.
+## Problèmes d'un profil d'IA ; liste vide si le profil est valide.
 static func problems(data: Variant) -> Array[String]:
 	var result: Array[String] = []
 	if not data is Dictionary:

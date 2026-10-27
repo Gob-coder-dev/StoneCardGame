@@ -1,7 +1,10 @@
 ## Profil local et statistiques du joueur.
 extends Control
 
+const OpponentCatalogModel := preload("res://scripts/data/OpponentCatalog.gd")
+
 @onready var close_button: Button = $Root/Header/CloseButton
+@onready var scroll: ScrollContainer = $Root/Scroll
 @onready var pseudo_label: Label = $Root/Scroll/Content/ProfilePanel/ProfileContent/PseudoRow/PseudoLabel
 @onready var edit_button: Button = $Root/Scroll/Content/ProfilePanel/ProfileContent/PseudoRow/EditButton
 @onready var edit_row: VBoxContainer = $Root/Scroll/Content/ProfilePanel/ProfileContent/EditRow
@@ -19,6 +22,7 @@ func _ready() -> void:
 	save_name_button.pressed.connect(_save_name)
 	cancel_name_button.pressed.connect(_cancel_edit)
 	name_input.text_submitted.connect(func(_value): _save_name())
+	name_input.focus_entered.connect(_reveal_name_input)
 	pseudo_label.text = PlayerData.player_name
 	edit_row.visible = false
 	_build_global_stats()
@@ -47,6 +51,33 @@ func _cancel_edit() -> void:
 	edit_button.disabled = false
 	error_label.text = ""
 	name_input.release_focus()
+
+
+## Sur téléphone, le clavier virtuel peut recouvrir le champ. On remonte la
+## ligne d'édition une fois la nouvelle mise en page stabilisée.
+func _reveal_name_input() -> void:
+	await get_tree().process_frame
+	await get_tree().process_frame
+	if is_instance_valid(name_input):
+		scroll.ensure_control_visible(name_input)
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not event.is_action_pressed("ui_cancel"):
+		return
+	if edit_row.visible:
+		_cancel_edit()
+	else:
+		_close()
+	get_viewport().set_input_as_handled()
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
+		if edit_row.visible:
+			_cancel_edit()
+		else:
+			_close()
 
 
 func _close() -> void:
@@ -88,10 +119,16 @@ func _make_stat_row(label_text: String, value_text: String) -> HBoxContainer:
 
 
 func _build_npc_progression() -> void:
-	for npc in StoneLoader.get_npcs_ordered():
-		var npc_id: String = npc["id"]
-		var record := PlayerData.npc_record(npc_id)
-		var beaten := PlayerData.is_npc_beaten(npc_id)
+	for matchup in OpponentCatalogModel.progression_rows():
+		var wins := 0
+		var games := 0
+		var beaten := false
+		for raw_id in matchup["difficulty_ids"]:
+			var npc_id := str(raw_id)
+			var record := PlayerData.npc_record(npc_id)
+			wins += int(record.get("wins", 0))
+			games += int(record.get("games", 0))
+			beaten = beaten or PlayerData.is_npc_beaten(npc_id)
 		var row := HBoxContainer.new()
 		row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.add_theme_constant_override("separation", 8)
@@ -103,14 +140,15 @@ func _build_npc_progression() -> void:
 		status.custom_minimum_size = Vector2(50, 0)
 
 		var name_label := Label.new()
-		name_label.text = npc["name"]
+		name_label.text = str(matchup.get("label", ""))
 		name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		name_label.clip_text = true
 		name_label.add_theme_font_size_override("font_size", 32)
+		var color_hex := str(matchup.get("color", ""))
+		if color_hex != "":
+			name_label.add_theme_color_override("font_color", Color(color_hex))
 
 		var record_label := Label.new()
-		var games := int(record.get("games", 0))
-		var wins := int(record.get("wins", 0))
 		record_label.text = "%d/%d" % [wins, games] if games > 0 else "—"
 		record_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		record_label.custom_minimum_size = Vector2(120, 0)

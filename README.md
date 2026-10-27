@@ -123,6 +123,11 @@ Le flux principal est le suivant :
 L'IA utilise le même moteur sur des copies de l'état : elle ne lit ni la main
 réelle du joueur ni le prochain tirage aléatoire.
 
+Les Rencontres combinent un dieu, un palier de cartes (niveau 1, niveau 2,
+niveaux 3) et une difficulté. Le deck ne dépend que du dieu et du palier ;
+la difficulté règle la précision de l'IA (0, 0,25, 0,5, 0,75 ou 1) et, au
+niveau le plus élevé, l'anticipation.
+
 Pour le détail des responsabilités, des signaux et des fichiers, voir
 [l'architecture complète](docs/ARCHITECTURE.md). Pour la palette et les choix de
 mise en page, voir [l'identité visuelle des menus](docs/IDENTITE_VISUELLE_MENUS.md).
@@ -135,7 +140,10 @@ Les données de contenu sont validées au démarrage :
 
 - `data/stones.json` : lignées, formes, coûts, symboles et pouvoirs ;
 - `data/gods.json` : dieux, familles, couleurs, descriptions et portraits ;
-- `data/npcs.json` : six adversaires, leurs decks et leurs profils d'IA.
+- `data/npcs.json` : six adversaires historiques, conservés pour les tests et
+  les anciennes références ;
+- `OpponentCatalog` : génère les quatre-vingt-dix rencontres (six dieux, trois
+  paliers de cartes et cinq difficultés) sans dupliquer leurs decks.
 
 Le profil local est enregistré dans `user://savegame.json`. Le format actuel est
 la version 4 : il conserve le pseudo, les statistiques, les trois decks de chacun
@@ -154,8 +162,9 @@ d'un ancien profil converti, la version d'origine est conservée dans
 3. Ouvrir le projet et lancer la scène principale `scenes/menus/MainMenu.tscn`.
 
 Le projet utilise un canevas de référence de 1080 × 1920 avec étirement
-`canvas_items`, afin de conserver son interface portrait sur les différentes
-résolutions mobiles.
+`canvas_items` et l'aspect `expand` : les écrans plus hauts que le 9:16
+reçoivent de l'espace supplémentaire au lieu de bandes noires, sans déformer
+l'interface portrait.
 
 ## Tests
 
@@ -174,12 +183,13 @@ godot --headless --fixed-fps 60 --path . res://tests/TouchInputChecks.tscn
 ```
 
 Cette suite injecte de vrais événements tactiles et vérifie notamment le
-défilement, les appuis, l'inertie, le multitouch et la pose de cartes. Au dernier
-contrôle, les suites terminent respectivement par :
+défilement, les appuis, l'inertie, le multitouch, la fermeture des panneaux
+modaux et la pose de cartes. Au dernier contrôle, les suites terminent
+respectivement par :
 
 ```text
-GOD_SYSTEM_CHECKS: 433 passed, 0 failed, 0 Godot errors
-TACTILE : 63 vérifications, 0 échec(s), 0 erreur(s) Godot.
+GOD_SYSTEM_CHECKS: 446 passed, 0 failed, 0 Godot errors
+TACTILE : 76 vérifications, 0 échec(s), 0 erreur(s) Godot.
 ```
 
 Les tests automatisés ne remplacent pas une vérification visuelle sur téléphone

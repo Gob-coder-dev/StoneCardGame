@@ -23,7 +23,7 @@ func _ready() -> void:
 		_:
 			result_label.text = "ÉGALITÉ"
 
-	var npc := StoneLoader.get_npc(BattleContext.selected_npc_id)
+	var npc := BattleContext.current_opponent()
 	var npc_name: String = npc.get("name", "Adversaire")
 	score_label.text = "%s %d  —  %d %s" % [
 		PlayerData.player_name,
@@ -31,6 +31,17 @@ func _ready() -> void:
 		BattleContext.last_score_ai,
 		npc_name
 	]
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel"):
+		_on_menu()
+		get_viewport().set_input_as_handled()
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
+		_on_menu()
 
 
 func _on_replay() -> void:

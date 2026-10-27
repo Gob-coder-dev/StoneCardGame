@@ -141,6 +141,11 @@ func _check_collection() -> void:
 	_check(is_instance_valid(page._action_drawer), "multitouch : le premier doigt déclenche une seule action")
 	page._close_action_drawer()
 	await _settle()
+	await _tap(_center(first_card))
+	_check(is_instance_valid(page._action_drawer), "deck : rouvrir le tiroir pour tester le fond")
+	var deck_hint: Label = scroll.get_node("Page/DeckPanel/DeckContent/DeckHint")
+	await _tap(_center(deck_hint))
+	_check(not is_instance_valid(page._action_drawer), "deck : toucher une zone vide referme le tiroir")
 
 	# Les cartes du deck sont masquées dans la collection : prendre la première affichée.
 	var collection_card: StoneCard = null
@@ -181,6 +186,17 @@ func _check_collection() -> void:
 	await _settle()
 	await _tap(_center(cost_option))
 	_check(page._sort_mode == 1 and not page.sort_menu.visible, "tri : choisir le coût fonctionne au tactile")
+	await _reset_scroll(scroll)
+	await _tap(_center(sort))
+	_check(page.sort_menu.visible, "tri : rouvrir les options pour tester l'extérieur")
+	var collection_title: Label = scroll.get_node("Page/CollectionHeader/CollectionTitle")
+	await _tap(_center(collection_title))
+	_check(not page.sort_menu.visible, "tri : toucher hors du menu referme les options")
+	await _tap(_center(sort))
+	_check(page.sort_menu.visible, "tri : rouvrir les options pour tester le retour")
+	page._go_back()
+	await _settle()
+	_check(not page.sort_menu.visible, "tri : le retour ferme les options sans quitter la page")
 
 	await _reset_scroll(scroll)
 	first_card = deck_rows.get_child(0).get_child(0).get_child(0)
@@ -209,6 +225,19 @@ func _check_collection() -> void:
 		_check(scroll.scroll_vertical == modal_scroll, "fenêtre : les gestes ne traversent pas le fond modal")
 		await _tap(outside)
 		_check(not page.info_sheet.visible, "fenêtre : toucher le fond ferme la fiche")
+
+	var incoming_id := ""
+	for stone in StoneLoader.get_stones_for_god(PlayerData.player_god_id):
+		if not page._current_deck.has(str(stone["id"])):
+			incoming_id = str(stone["id"])
+			break
+	var replacement: ReplacementPanel = page.replacement_panel
+	replacement.open_for(page._current_deck, incoming_id)
+	await _settle()
+	_check(replacement.visible, "remplacement : le panneau s'ouvre")
+	var replacement_backdrop: Control = replacement.get_node("Backdrop")
+	await _tap(_point(replacement_backdrop, Vector2(10, 10)))
+	_check(not replacement.visible, "remplacement : toucher le fond ferme le panneau")
 	await _remove(page)
 
 
@@ -335,8 +364,8 @@ func _check_other_menus() -> void:
 	await _tap(_center(edit))
 	_check(stats.edit_row.visible, "profil : un seul appui ouvre l'édition du pseudo")
 	stats._cancel_edit()
-	# Les six adversaires actuels peuvent tenir sur un grand écran. Préparer
-	# une liste longue pour vérifier le défilement sans dépendre des stats sauvées.
+	# La progression contient dix-huit lignes dieu × palier. Préparer une liste
+	# longue pour vérifier le défilement sans dépendre des stats sauvées.
 	scroll.get_node("Content/NPCPanel/NPCList").custom_minimum_size.y = 1400
 	await _settle()
 	var value_before := scroll.scroll_vertical
@@ -344,9 +373,28 @@ func _check_other_menus() -> void:
 	_check(scroll.scroll_vertical > value_before, "profil : défilement tactile des statistiques")
 	await _remove(stats)
 	var levels := await _open_scene("res://scenes/menus/LevelSelect.tscn")
+	var npc_scroll: ScrollContainer = levels.get_node("Root/NPCListScroll")
 	var first_npc: Button = levels.get_node("Root/NPCListScroll/NPCList").get_child(0)
 	await _tap(_center(first_npc))
-	_check(levels.profile_panel.visible, "adversaires : les boutons dynamiques fonctionnent au toucher")
+	_check(levels.modal.visible, "adversaires : les boutons dynamiques fonctionnent au toucher")
+	var card_rect: Rect2 = levels.profile_panel.get_global_rect()
+	_check(card_rect.position.y >= 0.0 and card_rect.end.y <= levels.size.y,
+		"adversaires : la carte tient entièrement à l'écran, sans défilement")
+	# Le fond modal absorbe le geste : ni fermeture, ni défilement de la liste.
+	var outside := _point(levels.backdrop, Vector2(24, 80))
+	await _swipe(outside, Vector2(0, -200))
+	_check(levels.modal.visible and npc_scroll.scroll_vertical == 0,
+		"adversaires : glisser sur le fond ne ferme pas la carte et ne fait pas défiler la liste")
+	await _tap(outside)
+	_check(not levels.modal.visible, "adversaires : toucher en dehors de la carte la referme")
+	await _tap(_center(first_npc))
+	_check(levels.modal.visible, "adversaires : retoucher le même dieu rouvre sa carte")
+	var escape := InputEventKey.new()
+	escape.keycode = KEY_ESCAPE
+	escape.pressed = true
+	Input.parse_input_event(escape)
+	await _settle()
+	_check(not levels.modal.visible, "adversaires : le retour ferme la carte sans quitter l'écran")
 	await _remove(levels)
 
 

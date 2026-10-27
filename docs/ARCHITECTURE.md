@@ -9,14 +9,15 @@ Une IA appelle le même moteur sur une copie pour essayer un coup instantanémen
 | --- | --- | --- |
 | `data/stones.json` | — | Définition complète de chaque carte, pouvoirs compris |
 | `data/gods.json` | — | Dieux, familles, couleurs et descriptions |
-| `data/npcs.json` | — | Adversaires, decks, dieux et profils d'IA |
+| `data/npcs.json` | — | Six adversaires historiques, leurs decks et profils d'IA |
+| `OpponentCatalog` | `build`, `deck_for`, `progression_rows` | Génère les adversaires dieu × palier × difficulté, sans fichier de quatre-vingt-dix entrées |
 | `StoneLoader` | `get_stone`, `has_stone`, `has_effect`, `stone_affinity`, `get_god`, `get_npc` | Charge les catalogues, fournit des copies et des lectures sans copie |
 | `ContentValidator` | `find_problems` | Liste les incohérences des catalogues ; `StoneLoader` les signale au démarrage |
 | `PlayerData` | `get_active_deck`, `get_deck`, `get_selected_deck`, `set_player_deck`, `set_player_god`, `set_selected_deck`, `load_save`, `save` | Profil et trois decks persistants par dieu |
 | `PlayerSaveCodec` | `encode`, `decode` | Format et migration du profil sans accès disque |
 | `DeckCatalogueMigration` | `requires_conversion`, `convert` | Remplace les anciennes cartes par des formes compatibles, distinctes et dans le budget |
 | `PlayerSaveStorage` | `write`, `read` | Écriture sûre du profil sur le disque |
-| `BattleContext` | `record_result` | Adversaire sélectionné, premier joueur et dernier résultat |
+| `BattleContext` | `select_opponent`, `current_opponent`, `record_result` | Adversaire sélectionné, premier joueur et dernier résultat |
 | `StoneCostRules` | `cost` | Règle du coût d'une carte |
 | `StoneEffects` | — | Identifiants et valeurs des pouvoirs (corrosion, renfort et plafond d'Essaim) |
 | `StoneEvolutionRules` | `max_level`, `preview_level`, `is_valid_level` | Limites par rareté et saturation des seuls aperçus |
@@ -97,7 +98,8 @@ contenant des alias à `DeckCatalogueMigration`. Cette conversion déterministe
 cherche des formes proches de la correspondance déclarée, protège les lignées
 actuelles et réserve un budget pour les cartes restantes. Elle utilise
 `DeckRules` pour les ajouts effectifs. Les identifiants internes des six dieux
-et des six adversaires restent stables pour préserver banques et statistiques.
+et des six adversaires historiques restent stables pour préserver banques et
+statistiques.
 
 `PlayerData.load_save` conserve en mémoire le JSON d'origine à convertir, sans
 écriture. À la première sauvegarde, `PlayerSaveStorage` l'enregistre dans
@@ -304,6 +306,18 @@ proportions et applique le cadre de famille. L'accueil conserve son grand
 autour du portrait. Voir
 [l'identité visuelle des menus](IDENTITE_VISUELLE_MENUS.md).
 
+## Rencontres
+
+`LevelSelectController` construit la cascade dieu → palier de cartes → difficulté.
+Il ne crée que six boutons de dieux ; `OpponentCatalog` fabrique les
+quatre-vingt-dix adversaires à la demande. Le deck ne dépend que du dieu et du
+palier, tandis que la difficulté fournit le profil d'IA et l'identifiant
+`bot_<dieu>_<palier>_<difficulté>`. `BattleContext.select_opponent()` conserve la
+rencontre ; `current_opponent()` retombe sur `StoneLoader.get_npc()` pour les
+adversaires historiques de `npcs.json`. `PreBattle`, `BoardController` et l'écran
+de résultat lisent la même source. Le profil agrège les statistiques des cinq
+difficultés par dieu et par palier.
+
 ## Poser une carte en combat
 
 Deux gestes posent une carte : toucher la carte puis la case, ou glisser la carte
@@ -321,15 +335,23 @@ relâcher demande `TurnManager.human_play()`, relâcher ailleurs annule sans sé
 
 ## IA
 
-Une seule IA, `ProfileAI`, joue tous les adversaires. `AIProfile` lit son réglage
-dans le champ `"ai"` de `npcs.json` ; `ContentValidator` en signale les erreurs.
-`AITurnRunner.create_ai()` crée l'IA d'un profil.
+Une seule IA, `ProfileAI`, joue tous les adversaires. `AIProfile` reçoit le
+profil construit par `OpponentCatalog` (ou celui de `npcs.json` pour les
+adversaires historiques) ; `ContentValidator` et `OpponentCatalog.problems()`
+en signalent les erreurs. `AITurnRunner.create_ai()` crée l'IA d'un profil.
 
-| Niveau | `precision` | `anticipation` | Adversaires | Délai minimal |
-| --- | --- | --- | --- | --- |
-| 1 | 0 | non | Disciple de la Muraille, Porteuse de fièvre | 0,6 s |
-| 2 | 0,5 | non | Croupier ricanant, Tisseuse de racines | 0,8 s |
-| 3 | 1 | oui | Guetteur du Lointain, Maître des carcasses | 1,2 s |
+`OpponentCatalog` combine six dieux, trois paliers de cartes et cinq
+difficultés. Le deck est déterministe pour un couple dieu × palier : les cinq
+difficultés affrontent les mêmes cartes. L'identifiant
+`bot_<dieu>_<palier>_<difficulté>` sert de clé aux statistiques.
+
+| Difficulté | `precision` | `anticipation` | Délai minimal |
+| --- | --- | --- | --- |
+| Très facile | 0 | non | 0,6 s |
+| Facile | 0,25 | non | 0,7 s |
+| Moyen | 0,5 | non | 0,8 s |
+| Difficile | 0,75 | non | 0,9 s |
+| Très difficile | 1 | oui | 1,2 s |
 
 Avec la probabilité `precision`, l'IA joue le meilleur coup évalué, au hasard
 entre les ex aequo. Sinon elle commet une erreur crédible : un coup tiré au sort

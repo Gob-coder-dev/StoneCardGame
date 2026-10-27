@@ -1,5 +1,6 @@
 extends "res://tests/support/CombatTestSuite.gd"
 const ProfileFixture := preload("res://tests/support/PlayerProfileFixture.gd")
+const OpponentCatalogModel := preload("res://scripts/data/OpponentCatalog.gd")
 
 func run() -> void:
 	var fixture := ProfileFixture.new()
@@ -14,6 +15,8 @@ func run() -> void:
 	await _test_hand_keeps_remaining_cards()
 	_test_first_player_draw()
 	await _test_prebattle_reveals_draw()
+	await _test_generated_opponent_battle()
+	await _test_result_uses_generated_opponent()
 	fixture.restore()
 
 
@@ -248,6 +251,56 @@ func _test_battle_uses_selected_deck() -> void:
 	BattleContext.forced_first_player = saved_first
 	PlayerData.set_player_deck([])
 	PlayerData.set_selected_deck(0)
+
+
+func _test_generated_opponent_battle() -> void:
+	var saved_npc := BattleContext.selected_npc_id
+	var saved_opponent := BattleContext.selected_opponent
+	var saved_first := BattleContext.forced_first_player
+	var opponent := OpponentCatalogModel.build("susanoo", "n1", "moyen")
+	BattleContext.select_opponent(opponent)
+	BattleContext.forced_first_player = GameState.PLAYER_HUMAN
+	PlayerData.set_selected_deck(0)
+	PlayerData.set_player_deck(ProfileFixture.DECK.duplicate())
+	var board: Control = (load("res://scenes/game/Board.tscn") as PackedScene).instantiate()
+	add_child(board)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var state: GameState = board.turn_manager.get_state()
+	_check(state.npc_id == opponent["id"]
+		and state.god_of(GameState.PLAYER_AI) == "susanoo"
+		and state.hand_of(GameState.PLAYER_AI) == StoneLoader.build_hand(opponent["deck"]),
+		"un combat généré reçoit le deck, le dieu et l'identifiant de la rencontre choisie")
+	board.queue_free()
+	await get_tree().process_frame
+	BattleContext.selected_npc_id = saved_npc
+	BattleContext.selected_opponent = saved_opponent
+	BattleContext.forced_first_player = saved_first
+	PlayerData.set_player_deck([])
+	PlayerData.set_selected_deck(0)
+
+
+func _test_result_uses_generated_opponent() -> void:
+	var saved_id := BattleContext.selected_npc_id
+	var saved_opponent := BattleContext.selected_opponent
+	var saved_winner := BattleContext.last_winner
+	var saved_human := BattleContext.last_score_human
+	var saved_ai := BattleContext.last_score_ai
+	var opponent := OpponentCatalogModel.build("izanami", "n2", "tres_difficile")
+	BattleContext.select_opponent(opponent)
+	BattleContext.record_result(GameState.PLAYER_HUMAN, 42, 17)
+	var page: Control = (load("res://scenes/menus/Result.tscn") as PackedScene).instantiate()
+	add_child(page)
+	await get_tree().process_frame
+	_check(page.result_label.text == "VICTOIRE !"
+		and page.score_label.text.contains(opponent["name"])
+		and page.score_label.text.contains("42") and page.score_label.text.contains("17"),
+		"l'écran de résultat affiche le nom et le score de la rencontre générée")
+	page.queue_free()
+	await get_tree().process_frame
+	BattleContext.selected_npc_id = saved_id
+	BattleContext.selected_opponent = saved_opponent
+	BattleContext.record_result(saved_winner, saved_human, saved_ai)
 
 
 func _test_cost_format() -> void:

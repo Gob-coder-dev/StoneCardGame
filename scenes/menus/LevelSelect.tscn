@@ -63,34 +63,84 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 20
 
-[node name="ProfilePanel" type="PanelContainer" parent="Root"]
-layout_mode = 2
+[node name="Modal" type="Control" parent="."]
 visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
 
-[node name="ProfileContent" type="VBoxContainer" parent="Root/ProfilePanel"]
+[node name="Backdrop" type="ColorRect" parent="Modal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.02, 0.025, 0.04, 0.78)
+
+[node name="Center" type="CenterContainer" parent="Modal"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 40.0
+offset_top = 70.0
+offset_right = -40.0
+offset_bottom = -70.0
+mouse_filter = 2
+
+[node name="ProfilePanel" type="PanelContainer" parent="Modal/Center"]
+custom_minimum_size = Vector2(920, 0)
 layout_mode = 2
-theme_override_constants/separation = 20
 
-[node name="NPCName" type="Label" parent="Root/ProfilePanel/ProfileContent"]
+[node name="ProfileContent" type="VBoxContainer" parent="Modal/Center/ProfilePanel"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="NPCName" type="Label" parent="Modal/Center/ProfilePanel/ProfileContent"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 48
 text = "Nom NPC"
 horizontal_alignment = 1
 
-[node name="NPCQuote" type="Label" parent="Root/ProfilePanel/ProfileContent"]
+[node name="NPCQuote" type="Label" parent="Modal/Center/ProfilePanel/ProfileContent"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 32
 text = "Citation"
 horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="Difficulty" type="Label" parent="Root/ProfilePanel/ProfileContent"]
+[node name="Difficulty" type="Label" parent="Modal/Center/ProfilePanel/ProfileContent"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 34
 text = "Niveau : ?"
 horizontal_alignment = 1
 
-[node name="FightButton" type="Button" parent="Root/ProfilePanel/ProfileContent"]
+[node name="BracketTitle" type="Label" parent="Modal/Center/ProfilePanel/ProfileContent"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.71, 0.714, 0.753, 1)
+theme_override_font_sizes/font_size = 28
+text = "Niveau de puissance des cartes"
+horizontal_alignment = 1
+
+[node name="BracketRow" type="HBoxContainer" parent="Modal/Center/ProfilePanel/ProfileContent"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="DifficultyTitle" type="Label" parent="Modal/Center/ProfilePanel/ProfileContent"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.71, 0.714, 0.753, 1)
+theme_override_font_sizes/font_size = 28
+text = "DIFFICULTÉ"
+horizontal_alignment = 1
+
+[node name="DifficultyRow" type="GridContainer" parent="Modal/Center/ProfilePanel/ProfileContent"]
+layout_mode = 2
+columns = 2
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 12
+
+[node name="FightButton" type="Button" parent="Modal/Center/ProfilePanel/ProfileContent"]
 theme_type_variation = &"PrimaryButton"
 layout_mode = 2
 script = ExtResource("3_touch_button")
