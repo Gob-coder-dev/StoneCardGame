@@ -1,7 +1,23 @@
 # Cache, imports générés et identifiants locaux de Godot.
-# Conserver les fichiers source *.uid et *.import de Godot 4.
+# Conserver les fichiers source *.uid. Les *.import sont générés automatiquement par Godot.
 /.godot/
 /.import/
+*.png.import
+*.jpg.import
+*.jpeg.import
+*.webp.import
+*.svg.import
+*.tga.import
+*.bmp.import
+*.hdr.import
+*.exr.import
+*.ktx.import
+*.ogg.import
+*.mp3.import
+*.wav.import
+*.fontdata.import
+*.translation
+*.remap
 export_credentials.cfg
 
 # Builds et exports ; les APK n'appartiennent pas au code source.
