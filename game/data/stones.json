@@ -1040,7 +1040,7 @@
             "left": 0,
             "right": 0
           },
-          "random_blades": 4
+          "random_blades": 5
         },
         {
           "id": "f01_n2",
@@ -1050,7 +1050,7 @@
             "left": 0,
             "right": 0
           },
-          "random_blades": 5,
+          "random_blades": 7,
           "asset": "res://assets/cards/f/f01_n2.png"
         },
         {
@@ -1061,7 +1061,7 @@
             "left": 0,
             "right": 0
           },
-          "random_blades": 6,
+          "random_blades": 9,
           "asset": "res://assets/cards/f/f01_n3.png"
         },
         {
@@ -1072,7 +1072,7 @@
             "left": 0,
             "right": 0
           },
-          "random_blades": 8
+          "random_blades": 11
         }
       ]
     },
@@ -1097,7 +1097,7 @@
             "left": 0,
             "right": 1
           },
-          "random_blades": 1
+          "random_blades": 3
         },
         {
           "id": "f02_n2",
@@ -1107,7 +1107,7 @@
             "left": 0,
             "right": 2
           },
-          "random_blades": 2,
+          "random_blades": 4,
           "asset": "res://assets/cards/f/f02_n2.png"
         },
         {
@@ -1118,7 +1118,7 @@
             "left": 0,
             "right": 3
           },
-          "random_blades": 3,
+          "random_blades": 5,
           "asset": "res://assets/cards/f/f02_n3.png"
         },
         {
@@ -1129,7 +1129,7 @@
             "left": 0,
             "right": 4
           },
-          "random_blades": 4
+          "random_blades": 6
         }
       ]
     },
@@ -1154,7 +1154,7 @@
             "left": 0,
             "right": 0
           },
-          "random_blades": 2
+          "random_blades": 4
         },
         {
           "id": "f03_n2",
@@ -1164,7 +1164,7 @@
             "left": 0,
             "right": 0
           },
-          "random_blades": 3,
+          "random_blades": 5,
           "asset": "res://assets/cards/f/f03_n2.png"
         },
         {
@@ -1175,7 +1175,7 @@
             "left": 0,
             "right": 0
           },
-          "random_blades": 4,
+          "random_blades": 6,
           "asset": "res://assets/cards/f/f03_n3.png"
         },
         {
@@ -1186,7 +1186,7 @@
             "left": 0,
             "right": 0
           },
-          "random_blades": 5
+          "random_blades": 7
         }
       ]
     },
@@ -1328,12 +1328,12 @@
         {
           "id": "f06_n3",
           "blades": {
-            "top": 3,
+            "top": 2,
             "bottom": 3,
             "left": 3,
-            "right": 3
+            "right": 2
           },
-          "random_blades": 3,
+          "random_blades": 4,
           "asset": "res://assets/cards/f/f06_n3.png"
         }
       ]
@@ -1515,12 +1515,12 @@
         {
           "id": "f11_n1",
           "blades": {
-            "top": 4,
-            "bottom": 4,
-            "left": 0,
-            "right": 0
+            "top": 3,
+            "bottom": 3,
+            "left": 1,
+            "right": 1
           },
-          "random_blades": 6
+          "random_blades": 5
         }
       ]
     },
@@ -1542,7 +1542,7 @@
           "id": "f12_n1",
           "blades": {
             "top": 4,
-            "bottom": 1,
+            "bottom": 2,
             "left": 3,
             "right": 2
           }
@@ -2238,9 +2238,9 @@
           },
           "shields": {
             "top": 1,
-            "bottom": 1,
+            "bottom": 2,
             "left": 1,
-            "right": 1
+            "right": 2
           }
         },
         {
@@ -2268,10 +2268,10 @@
             "right": 0
           },
           "shields": {
-            "top": 3,
-            "bottom": 2,
+            "top": 2,
+            "bottom": 3,
             "left": 2,
-            "right": 2
+            "right": 3
           },
           "asset": "res://assets/cards/r/r03_n3.png"
         },
@@ -2285,9 +2285,9 @@
           },
           "shields": {
             "top": 3,
-            "bottom": 3,
+            "bottom": 4,
             "left": 3,
-            "right": 3
+            "right": 4
           }
         }
       ]
@@ -2551,8 +2551,8 @@
         {
           "id": "r08_n1",
           "blades": {
-            "top": 2,
-            "bottom": 0,
+            "top": 0,
+            "bottom": 2,
             "left": 0,
             "right": 1
           },
@@ -2564,8 +2564,8 @@
         {
           "id": "r08_n2",
           "blades": {
-            "top": 3,
-            "bottom": 0,
+            "top": 0,
+            "bottom": 3,
             "left": 0,
             "right": 2
           },
@@ -2578,14 +2578,15 @@
         {
           "id": "r08_n3",
           "blades": {
-            "top": 4,
-            "bottom": 1,
+            "top": 1,
+            "bottom": 4,
             "left": 0,
             "right": 2
           },
           "shields": {
             "left": 3,
-            "right": 2
+            "right": 1,
+            "top": 2
           },
           "asset": "res://assets/cards/r/r08_n3.png"
         }
@@ -2610,13 +2611,13 @@
           "blades": {
             "top": 1,
             "bottom": 0,
-            "left": 1,
-            "right": 0
+            "left": 0,
+            "right": 1
           },
           "shields": {
             "top": 2,
             "bottom": 3,
-            "left": 1
+            "right": 1
           }
         },
         {
@@ -2624,13 +2625,13 @@
           "blades": {
             "top": 1,
             "bottom": 0,
-            "left": 2,
-            "right": 1
+            "left": 1,
+            "right": 2
           },
           "shields": {
             "top": 3,
             "bottom": 3,
-            "left": 2
+            "right": 2
           },
           "asset": "res://assets/cards/r/r09_n2.png"
         }
@@ -2728,9 +2729,9 @@
         {
           "id": "r12_n1",
           "blades": {
-            "top": 3,
+            "top": 2,
             "bottom": 2,
-            "left": 1,
+            "left": 3,
             "right": 0
           },
           "shields": {
