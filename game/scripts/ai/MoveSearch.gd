@@ -26,12 +26,21 @@ func _init(moves: Array, evaluator, choose: Callable) -> void:
 			_pending.append(Vector2i(index, 0))
 
 
-## Avance la réflexion pendant environ budget_usec microsecondes (0 : jusqu'au
-## bout). Évalue toujours au moins un tirage. Renvoie true quand le coup est choisi.
+## Avance la préparation puis les tirages pendant environ budget_usec
+## microsecondes (0 : jusqu'au bout). Une fois la préparation terminée, évalue
+## toujours au moins un tirage. Renvoie true quand le coup est choisi.
 func step(budget_usec: int = 0) -> bool:
 	if _finished:
 		return true
 	var started := Time.get_ticks_usec()
+	if _evaluator != null:
+		var remaining := budget_usec
+		if budget_usec > 0:
+			remaining = maxi(1, budget_usec - int(Time.get_ticks_usec() - started))
+		if not _evaluator.prepare_step(remaining):
+			return false
+		if budget_usec > 0 and Time.get_ticks_usec() - started >= budget_usec:
+			return false
 	var first := _next
 	while _next < _pending.size():
 		if budget_usec > 0 and _next > first and Time.get_ticks_usec() - started >= budget_usec:

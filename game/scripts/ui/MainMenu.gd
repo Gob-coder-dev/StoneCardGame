@@ -8,14 +8,20 @@ extends Control
 @onready var god_name: Label = $Content/Hero/GodName
 @onready var god_title: Label = $Content/Hero/GodTitle
 @onready var god_family: Label = $Content/Hero/GodFamily
+@onready var art_warmup: VBoxContainer = $Content/Hero/ArtWarmup
+@onready var art_warmup_label: Label = $Content/Hero/ArtWarmup/Label
+@onready var art_warmup_bar: ProgressBar = $Content/Hero/ArtWarmup/Progress
 
 
 func _ready() -> void:
 	profile_button.pressed.connect(_on_profile_pressed)
 	play_button.pressed.connect(_on_play_pressed)
+	CardArtCache.warmup_progress.connect(_on_art_warmup_progress)
+	CardArtCache.warmup_finished.connect(_on_art_warmup_finished)
 	resized.connect(_fit_portrait)
 	_fit_portrait.call_deferred()
 	_refresh()
+	CardArtCache.preload_god_portraits()
 
 
 func _fit_portrait() -> void:
@@ -47,6 +53,23 @@ func _refresh() -> void:
 	else:
 		play_button.text = "COMPLÉTER MON DECK"
 		deck_status.add_theme_color_override("font_color", UITheme.COL_WARNING)
+	CardArtCache.activate_god(PlayerData.player_god_id, 1, deck)
+	var progress := CardArtCache.progress_for_god(PlayerData.player_god_id)
+	_on_art_warmup_progress(PlayerData.player_god_id, progress.x, progress.y)
+
+
+func _on_art_warmup_progress(god_id: String, loaded: int, total: int) -> void:
+	if god_id != PlayerData.player_god_id:
+		return
+	art_warmup.visible = total > 0 and loaded < total
+	art_warmup_bar.max_value = maxi(1, total)
+	art_warmup_bar.value = loaded
+	art_warmup_label.text = "PRÉPARATION DES ILLUSTRATIONS  %d/%d" % [loaded, total]
+
+
+func _on_art_warmup_finished(god_id: String) -> void:
+	if god_id == PlayerData.player_god_id:
+		art_warmup.visible = false
 
 
 func _on_play_pressed() -> void:

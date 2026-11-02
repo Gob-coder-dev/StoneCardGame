@@ -11,6 +11,8 @@ extends Node
 const SaveCodec := preload("res://scripts/data/PlayerSaveCodec.gd")
 const SaveStorage := preload("res://scripts/data/PlayerSaveStorage.gd")
 
+enum ProfileChange { SUCCESS, INVALID, SAVE_FAILED }
+
 ## Source unique des decks : trois emplacements par dieu, indices de 0 à 2.
 ## Les lectures renvoient des copies ; les écritures passent par les méthodes ci-dessous.
 var _decks_by_god: Dictionary = {}
@@ -47,7 +49,9 @@ func win_rate() -> int:
 ## Enregistre le résultat d'une partie.
 ## winner : 1 = humain, 2 = IA, 0 = égalité
 ## captures_by_human : nombre de captures réalisées par le joueur dans la partie
-func record_game(npc_id: String, winner: int, score_human: int, score_ai: int, captures_by_human: int) -> void:
+func record_game(npc_id: String, winner: int, score_human: int, score_ai: int,
+		captures_by_human: int) -> Error:
+	var previous := stats.duplicate(true)
 	stats["games_played"] = stats.get("games_played", 0) + 1
 	stats["total_captures"] = stats.get("total_captures", 0) + captures_by_human
 
@@ -76,7 +80,10 @@ func record_game(npc_id: String, winner: int, score_human: int, score_ai: int, c
 		per_npc[npc_id]["best_diff"] = diff
 	stats["per_npc"] = per_npc
 
-	save()
+	var error := save()
+	if error != OK:
+		stats = previous
+	return error
 
 
 ## Un NPC est "battu" si le joueur l'a emporté au moins une fois
@@ -141,14 +148,21 @@ func _ready() -> void:
 	load_save()
 
 
-## Change le pseudo si sa longueur est comprise entre 2 et 16 caractères.
-func set_player_name(value: String) -> bool:
+## Change le pseudo et l'enregistre avant d'annoncer le succès. Le résultat
+## distingue une saisie invalide d'une erreur disque afin que l'interface puisse
+## afficher le bon message.
+func set_player_name(value: String) -> ProfileChange:
 	var clean := value.strip_edges()
 	if clean.length() < 2 or clean.length() > 16:
-		return false
+		return ProfileChange.INVALID
+	if clean == player_name:
+		return ProfileChange.SUCCESS
+	var previous := player_name
 	player_name = clean
-	save()
-	return true
+	if save() != OK:
+		player_name = previous
+		return ProfileChange.SAVE_FAILED
+	return ProfileChange.SUCCESS
 
 
 ## Copie du deck sélectionné, utilisée par la collection, l'accueil et le combat.

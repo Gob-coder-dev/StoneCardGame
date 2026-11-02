@@ -28,7 +28,7 @@ static func decode(raw: Dictionary) -> Dictionary:
 	var god := str(raw.get("player_god_id", ""))
 	# Les sauvegardes sans version/dieu utilisent la famille qui conserve le plus de cartes.
 	if StoneLoader.get_god(god).is_empty():
-		god = StoneLoader.best_god_for_deck(legacy_deck)
+		god = best_god_for_deck(legacy_deck)
 	var player_name := str(raw.get("player_name", "Joueur")).strip_edges()
 	if player_name.length() < 2 or player_name.length() > 16:
 		player_name = "Joueur"
@@ -41,6 +41,24 @@ static func decode(raw: Dictionary) -> Dictionary:
 	for god_id in decks:
 		selections[god_id] = _decode_slot(saved_selections.get(god_id, 0))
 	return encode(decks, selections, god, player_name, stats)
+
+
+## Choisit le dieu qui conserve le plus de cartes d'un ancien deck. Cette règle
+## appartient à la migration du profil, pas au catalogue de contenu.
+static func best_god_for_deck(stone_ids: Array) -> String:
+	var best_id := StoneLoader.default_god_id()
+	var best_count := -1
+	for god in StoneLoader.get_all_gods():
+		var god_id := str(god.get("id", ""))
+		var available := 0
+		for raw_id in stone_ids:
+			var stone_id := StoneLoader.resolve_saved_id(str(raw_id))
+			if StoneLoader.is_stone_available_to_god(stone_id, god_id):
+				available += 1
+		if available > best_count:
+			best_count = available
+			best_id = god_id
+	return best_id
 
 
 ## Toujours trois tableaux distincts par dieu. Chaque deck est nettoyé dans

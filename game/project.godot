@@ -26,6 +26,7 @@ config/icon="res://assets/ui/icon.svg"
 StoneLoader="*res://scripts/data/StoneLoader.gd"
 PlayerData="*res://scripts/data/PlayerData.gd"
 BattleContext="*res://scripts/data/BattleContext.gd"
+CardArtCache="*res://scripts/data/CardArtCache.gd"
 
 [display]
 

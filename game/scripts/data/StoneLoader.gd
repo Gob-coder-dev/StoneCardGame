@@ -184,21 +184,16 @@ func has_effect(stone_id: String, effect: String) -> bool:
 	return effects is Array and effects.has(effect)
 
 
-## Enregistre une pierre fabriquée à la main (utilisé par les tests unitaires
-## pour injecter des pierres de lames connues sans dépendre de stones.json).
-func register_stone(stone_id: String, top: int, bottom: int, left: int, right: int, extras: Dictionary = {}) -> void:
-	var stone := {
-		"id": stone_id,
-		"name": stone_id,
-		"blades": { "top": top, "bottom": bottom, "left": left, "right": right }
-	}
-	stone.merge(extras, true)
-	_stones[stone_id] = stone
-
-
 ## Retourne toutes les pierres sous forme de liste.
 func get_all_stones() -> Array:
 	return _stones_list.duplicate(true)
+
+
+func get_all_stone_ids() -> Array[String]:
+	var result: Array[String] = []
+	for stone in _stones_list:
+		result.append(str(stone["id"]))
+	return result
 
 
 ## Coût d'une pierre du catalogue, 0 si introuvable. La règle vit dans StoneCostRules.
@@ -266,9 +261,19 @@ func stone_affinity(stone_id: String) -> String:
 
 func get_stones_for_god(god_id: String) -> Array:
 	var result: Array = []
+	for stone_id in get_stone_ids_for_god(god_id):
+		result.append(get_stone(stone_id))
+	return result
+
+
+## Lecture légère pour l'IA et les index : évite de copier chaque dictionnaire
+## complet lorsque seuls les identifiants sont nécessaires.
+func get_stone_ids_for_god(god_id: String) -> Array[String]:
+	var result: Array[String] = []
 	for stone in _stones_list:
-		if is_stone_available_to_god(str(stone["id"]), god_id):
-			result.append(stone.duplicate(true))
+		var stone_id := str(stone["id"])
+		if is_stone_available_to_god(stone_id, god_id):
+			result.append(stone_id)
 	return result
 
 
@@ -282,20 +287,3 @@ func get_lineages_for_god(god_id: String) -> Array:
 			seen[lineage] = true
 			result.append(stone)
 	return result
-
-
-## Migration des sauvegardes antérieures au système de dieux : choisit le dieu
-## qui rend le plus de cartes de l'ancien deck encore accessibles.
-func best_god_for_deck(stone_ids: Array) -> String:
-	var best_id := default_god_id()
-	var best_count := -1
-	for god in _gods_list:
-		var god_id := str(god.get("id", ""))
-		var available := 0
-		for raw_id in stone_ids:
-			if is_stone_available_to_god(resolve_saved_id(str(raw_id)), god_id):
-				available += 1
-		if available > best_count:
-			best_count = available
-			best_id = god_id
-	return best_id

@@ -21,57 +21,113 @@ var _lines: Array = []
 var _base_signatures: Array = []
 ## Captures de chaque tir depuis chaque case libre de l'état initial.
 var _base_hits := {}
+var _shot_indices := {}
+
+enum PreparationPhase { CARDS, LINES, SIGNATURES, HITS, DONE }
+var _preparation_phase := PreparationPhase.CARDS
+var _preparation_index := 0
+var _free_cells: Array = []
 
 
 func _init(state: GameState) -> void:
 	_state = state
 	_possible_cards = Opponent.possible_cards(state)
-	_prepare_threats()
 	_hand_size = state.human_hand.size()
 
 
-func _prepare_threats() -> void:
-	var shot_indices := {}
-	for variants in Opponent.attack_variants(_possible_cards):
-		var orientations: Array = []
-		for stone in variants:
-			var shots := PackedInt32Array()
-			for side in StoneSide.ALL:
-				var normal_count: int = stone.normal_blades(side)
-				var long_count: int = int(stone.long_blades.get(side, 0))
-				if normal_count + long_count == 0:
-					continue
-				var key := "%s:%d:%d" % [side, normal_count, long_count]
-				if not shot_indices.has(key):
-					shot_indices[key] = _shots.size()
-					_shots.append(make_shot(side, normal_count, long_count))
-					_shot_sides.append(StoneSide.ALL.find(side))
-				shots.append(shot_indices[key])
-			orientations.append(shots)
-		_threat_cards.append(orientations)
-	_prepare_lines()
-	for index in range(_state.board.size()):
-		_base_signatures.append(_cell_signature(_state.board[index]))
-	for cell in RulesEngine.get_free_cells(_state):
-		_base_hits[GameState.cell_index(cell["row"], cell["col"])] = _shot_hits(_state, cell["row"], cell["col"])
+## Prépare le modèle par unités bornées : une carte, une case ou un ensemble de
+## tirs de case. MoveSearch peut ainsi rendre la main entre deux unités.
+func prepare_step(budget_usec: int = 0) -> bool:
+	if is_prepared():
+		return true
+	var started := Time.get_ticks_usec()
+	var did_work := false
+	while not is_prepared():
+		if did_work and budget_usec > 0 \
+				and Time.get_ticks_usec() - started >= budget_usec:
+			return false
+		_prepare_next_unit()
+		did_work = true
+	return true
 
-## Prépare les lignes indépendamment des cartes envisagées.
-func _prepare_lines() -> void:
-	for index in range(GameState.total_cells()):
-		var row := index / GameState.BOARD_SIZE
-		var col := index % GameState.BOARD_SIZE
-		var per_side: Array = []
+
+func is_prepared() -> bool:
+	return _preparation_phase == PreparationPhase.DONE
+
+
+func _prepare_next_unit() -> void:
+	match _preparation_phase:
+		PreparationPhase.CARDS:
+			if _preparation_index < _possible_cards.size():
+				_prepare_card(_possible_cards[_preparation_index])
+				_preparation_index += 1
+				return
+			_advance_preparation(PreparationPhase.LINES)
+		PreparationPhase.LINES:
+			if _preparation_index < GameState.total_cells():
+				_prepare_line(_preparation_index)
+				_preparation_index += 1
+				return
+			_advance_preparation(PreparationPhase.SIGNATURES)
+		PreparationPhase.SIGNATURES:
+			if _preparation_index < _state.board.size():
+				_base_signatures.append(_cell_signature(_state.board[_preparation_index]))
+				_preparation_index += 1
+				return
+			_free_cells = RulesEngine.get_free_cells(_state)
+			_advance_preparation(PreparationPhase.HITS)
+		PreparationPhase.HITS:
+			if _preparation_index < _free_cells.size():
+				var cell: Dictionary = _free_cells[_preparation_index]
+				_base_hits[GameState.cell_index(cell["row"], cell["col"])] = \
+					_shot_hits(_state, cell["row"], cell["col"])
+				_preparation_index += 1
+				return
+			_advance_preparation(PreparationPhase.DONE)
+
+
+func _advance_preparation(next_phase: PreparationPhase) -> void:
+	_preparation_phase = next_phase
+	_preparation_index = 0
+
+
+func _prepare_card(stone_id: String) -> void:
+	var orientations: Array = []
+	for stone in Opponent.attack_variants_for(stone_id):
+		var shots := PackedInt32Array()
 		for side in StoneSide.ALL:
-			var delta: Vector2i = StoneSide.GRID[side]
-			var line := PackedInt32Array()
-			var r := row + delta.x
-			var c := col + delta.y
-			while r >= 0 and r < GameState.BOARD_SIZE and c >= 0 and c < GameState.BOARD_SIZE:
-				line.append(GameState.cell_index(r, c))
-				r += delta.x
-				c += delta.y
-			per_side.append(line)
-		_lines.append(per_side)
+			var normal_count: int = stone.normal_blades(side)
+			var long_count: int = int(stone.long_blades.get(side, 0))
+			if normal_count + long_count == 0:
+				continue
+			var key := "%s:%d:%d" % [side, normal_count, long_count]
+			if not _shot_indices.has(key):
+				_shot_indices[key] = _shots.size()
+				_shots.append(make_shot(side, normal_count, long_count))
+				_shot_sides.append(StoneSide.ALL.find(side))
+			shots.append(_shot_indices[key])
+		orientations.append(shots)
+	_threat_cards.append(orientations)
+
+
+## Prépare la ligne d'une case indépendamment des cartes envisagées.
+func _prepare_line(index: int) -> void:
+	var row := index / GameState.BOARD_SIZE
+	var col := index % GameState.BOARD_SIZE
+	var per_side: Array = []
+	for side in StoneSide.ALL:
+		var delta: Vector2i = StoneSide.GRID[side]
+		var line := PackedInt32Array()
+		var r := row + delta.x
+		var c := col + delta.y
+		while r >= 0 and r < GameState.BOARD_SIZE \
+				and c >= 0 and c < GameState.BOARD_SIZE:
+			line.append(GameState.cell_index(r, c))
+			r += delta.x
+			c += delta.y
+		per_side.append(line)
+	_lines.append(per_side)
+
 
 ## Toutes les données d'une case qui peuvent changer le résultat d'un tir.
 static func _cell_signature(cell: Dictionary) -> Array:
@@ -98,6 +154,8 @@ static func make_shot(side: String, normal_count: int, long_count: int) -> Battl
 ## Espérance de la meilleure riposte d'une main cachée. Conserve exactement
 ## les mêmes poids et orientations que le calcul sans réutilisation des tirs.
 func threat(simulation: GameState) -> float:
+	if not is_prepared():
+		prepare_step()
 	if _threat_cards.is_empty() or _hand_size <= 0:
 		return 0.0
 	var best := PackedFloat64Array()

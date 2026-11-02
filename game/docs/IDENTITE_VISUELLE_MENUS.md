@@ -118,7 +118,7 @@ existants. `MenuChecks` vérifie en plus le chargement des six portraits et le
 passage des gestes à travers le décor de l'accueil. Les essais utilisent un profil
 temporaire, restauré ensuite.
 
-Au dernier contrôle automatisé, 446 vérifications générales et 76 vérifications
+Au dernier contrôle automatisé, 451 vérifications générales et 76 vérifications
 tactiles ont réussi sans échec ni erreur Godot. Une validation visuelle doit
 compléter ces suites après chaque changement de composition : chaque dieu, les
 fiches de cartes, les tiroirs ouverts, les quatre raretés, les deux propriétaires

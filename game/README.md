@@ -66,11 +66,20 @@ et la fiche **Infos** permet de consulter les formes puis d'équiper préciséme
 celle choisie.
 
 Les illustrations sont stockées dans `assets/cards/`. Le projet embarque
-actuellement **246 PNG** : les 96 N1, les 81 N2 et les 65 N3 sont illustrés,
-ainsi que 4 N4. Les 29 N4 restants héritent encore du dessin de leur lignée.
+actuellement **275 PNG** : les 96 N1, les 81 N2, les 65 N3 et les 33 N4 sont
+illustrés. Les Avortons des caves ont leurs quatre illustrations propres, avec
+3, 6, 9 puis 12 individus. Toutes les lignées évolutives disposent désormais
+d'une image propre pour chacun de leurs niveaux.
 Les définitions de jeu
 restent dans `data/stones.json` : modifier une image ne modifie donc ni les
 statistiques ni les sauvegardes.
+
+Au lancement, `CardArtCache` préchauffe en arrière-plan les illustrations du
+dieu, du niveau et du deck actifs ; l'accueil affiche sa progression. La page
+Cartes réutilise ensuite sa grille : un tri déplace les cartes existantes et un
+changement de dieu conserve les 24 cartes neutres. Les six portraits de dieux
+restent préparés pour la session, mais le jeu ne conserve jamais volontairement
+les 275 illustrations de cartes dans son cache applicatif.
 
 ## Menus et lecture visuelle
 
@@ -135,8 +144,10 @@ niveau le plus élevé, l'anticipation.
 Pour le détail des responsabilités, des signaux et des fichiers, voir
 [l'architecture complète](docs/ARCHITECTURE.md). Pour la palette et les choix de
 mise en page, voir [l'identité visuelle des menus](docs/IDENTITE_VISUELLE_MENUS.md).
-La bible des monstres, des dieux et des évolutions est dans la
+L’univers, les familles et les dieux sont décrits dans la
 [direction artistique](docs/DIRECTION_ARTISTIQUE_MONSTRES.md).
+L’[index de la documentation](docs/README.md) regroupe les références du projet,
+dont le bestiaire et la direction artistique.
 
 ## Données et sauvegarde
 
@@ -192,7 +203,7 @@ modaux et la pose de cartes. Au dernier contrôle, les suites terminent
 respectivement par :
 
 ```text
-GOD_SYSTEM_CHECKS: 446 passed, 0 failed, 0 Godot errors
+GOD_SYSTEM_CHECKS: 451 passed, 0 failed, 0 Godot errors
 TACTILE : 76 vérifications, 0 échec(s), 0 erreur(s) Godot.
 ```
 

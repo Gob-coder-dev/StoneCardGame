@@ -7,13 +7,13 @@ const CHEAP_SUFFIXES := ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]
 
 func before_all() -> void:
 	for suffix in CHEAP_SUFFIXES:
-		StoneLoader.register_stone("deck_4%s" % suffix, 1, 1, 1, 1)
+		_register("deck_4%s" % suffix, 1, 1, 1, 1)
 	for suffix in ["a", "b", "c"]:
-		StoneLoader.register_stone("deck_8%s" % suffix, 2, 2, 2, 2)
+		_register("deck_8%s" % suffix, 2, 2, 2, 2)
 	for suffix in ["a", "b", "c", "d"]:
-		StoneLoader.register_stone("deck_12%s" % suffix, 3, 3, 3, 3)
+		_register("deck_12%s" % suffix, 3, 3, 3, 3)
 	for suffix in ["a", "b", "c", "d", "e"]:
-		StoneLoader.register_stone("deck_16%s" % suffix, 4, 4, 4, 4)
+		_register("deck_16%s" % suffix, 4, 4, 4, 4)
 
 
 ## Un deck complet de pierres à 4 points (32 points pour 8 pierres).

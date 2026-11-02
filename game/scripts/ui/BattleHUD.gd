@@ -38,25 +38,42 @@ func _ready() -> void:
 
 
 func _build() -> void:
-	## Conteneur vertical : [ ligne des plaques ] au-dessus de [ bandeau de tour ]
 	var col := VBoxContainer.new()
 	col.add_theme_constant_override("separation", UITheme.GAP_SMALL)
 	add_child(col)
+	col.add_child(_build_plate_row())
+	col.add_child(_build_banner())
 
-	## Ligne horizontale : plaque gauche | flèche/VS | plaque droite
+
+func _build_plate_row() -> HBoxContainer:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", UITheme.GAP_MEDIUM)
-	col.add_child(row)
-
 	var human := _make_plate(COL_HUMAN, false)
-	_human_plate = human["plate"]
-	_human_name = human["name"]
-	_human_god = human["god"]
-	_human_portrait = human["portrait"]
-	_human_score = human["score"]
+	_assign_plate(human, true)
 	row.add_child(_human_plate)
+	row.add_child(_build_center_label())
+	var ai := _make_plate(COL_AI, true)
+	_assign_plate(ai, false)
+	row.add_child(_ai_plate)
+	return row
 
-	## Symbole central, zone fixe. Affiche une flèche vers le joueur actif.
+
+func _assign_plate(parts: Dictionary, human: bool) -> void:
+	if human:
+		_human_plate = parts["plate"]
+		_human_name = parts["name"]
+		_human_god = parts["god"]
+		_human_portrait = parts["portrait"]
+		_human_score = parts["score"]
+	else:
+		_ai_plate = parts["plate"]
+		_ai_name = parts["name"]
+		_ai_god = parts["god"]
+		_ai_portrait = parts["portrait"]
+		_ai_score = parts["score"]
+
+
+func _build_center_label() -> Label:
 	_center = Label.new()
 	_center.text = "VS"
 	_center.custom_minimum_size = Vector2(UITheme.HUD_CENTER_WIDTH, 0)
@@ -64,20 +81,11 @@ func _build() -> void:
 	_center.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_center.add_theme_font_size_override("font_size", UITheme.FONT_HUD_CENTER)
 	_center.add_theme_color_override("font_color", Color("#c8a060"))
-	row.add_child(_center)
+	return _center
 
-	var ai := _make_plate(COL_AI, true)
-	_ai_plate = ai["plate"]
-	_ai_name = ai["name"]
-	_ai_god = ai["god"]
-	_ai_portrait = ai["portrait"]
-	_ai_score = ai["score"]
-	row.add_child(_ai_plate)
 
-	## Bandeau de tour : un petit cadre à fond noir, centré, bien lisible.
+func _build_banner() -> CenterContainer:
 	var banner_box := CenterContainer.new()
-	col.add_child(banner_box)
-
 	var banner_panel := PanelContainer.new()
 	var banner_sb := StyleBoxFlat.new()
 	banner_sb.bg_color = Color("#0a0603")
@@ -97,6 +105,7 @@ func _build() -> void:
 	_banner.add_theme_font_size_override("font_size", UITheme.FONT_BANNER)
 	_banner.add_theme_color_override("font_color", COL_ACTIVE)
 	banner_panel.add_child(_banner)
+	return banner_box
 
 
 ## Crée une plaque (nom au-dessus, score en gros en dessous), de taille fixe.

@@ -9,24 +9,32 @@ const Effects := preload("res://scripts/domain/StoneEffects.gd")
 ## reçoivent des lames d'aura. Une pierre Essaim capturée par un autre dieu
 ## perd donc son aura. Sans pierre Essaim, il n'y a rien à recalculer.
 static func recalculate(state: GameState) -> void:
-	var is_member := {}
-	var has_swarm_stone := false
+	var members := _reset_and_active_members(state)
+	for component in _connected_components(state, members):
+		_apply_component_bonus(state, component)
+
+
+## Retire les anciennes auras de toutes les pierres Essaim et renvoie uniquement
+## celles dont le pouvoir est actif dans leur camp actuel.
+static func _reset_and_active_members(state: GameState) -> Dictionary:
+	var members := {}
 	for index in range(state.board.size()):
 		var cell: Dictionary = state.board[index]
 		var stone := Board.stone_at(cell)
 		if stone == null or not StoneLoader.has_effect(stone.stone_id, Effects.SWARM):
 			continue
-		has_swarm_stone = true
-		# Une pierre devenue inactive doit aussi perdre ses anciennes lames.
 		for side in SIDES:
 			stone.swarm_blades[side] = 0
 		if Board.has_active_power(state, cell, Effects.SWARM):
-			is_member[index] = true
-	if not has_swarm_stone or is_member.is_empty():
-		return
+			members[index] = true
+	return members
+
+
+static func _connected_components(state: GameState, members: Dictionary) -> Array:
+	var components: Array = []
 	var visited := {}
-	for index in range(state.board.size()):
-		if visited.has(index) or not is_member.has(index):
+	for index in members:
+		if visited.has(index):
 			continue
 		var owner: int = state.board[index]["owner"]
 		var component: Array[int] = []
@@ -35,35 +43,47 @@ static func recalculate(state: GameState) -> void:
 		while not pending.is_empty():
 			var current: int = pending.pop_back()
 			component.append(current)
-			var current_row := current / GameState.BOARD_SIZE
-			var current_col := current % GameState.BOARD_SIZE
-			for adjacent in GameState.get_adjacent_positions(current_row, current_col):
+			var row := current / GameState.BOARD_SIZE
+			var col := current % GameState.BOARD_SIZE
+			for adjacent in GameState.get_adjacent_positions(row, col):
 				var next_index := GameState.cell_index(adjacent["row"], adjacent["col"])
-				if visited.has(next_index):
-					continue
-				if state.board[next_index]["owner"] == owner and is_member.has(next_index):
+				if not visited.has(next_index) and members.has(next_index) \
+						and state.board[next_index]["owner"] == owner:
 					visited[next_index] = true
 					pending.append(next_index)
-		var bonus_count := mini(Effects.SWARM_CAP, (component.size() - 1) * Effects.BLADES_PER_ALLY)
-		for member_index in component:
-			var member := Board.stone_at(state.board[member_index])
-			var contributor := 0
-			for other_index in component:
-				if other_index == member_index or contributor >= bonus_count:
-					continue
-				var other := Board.stone_at(state.board[other_index])
-				var pair_key := "%d:%d" % [mini(member.instance_id, other.instance_id), maxi(member.instance_id, other.instance_id)]
-				var start := absi(hash(pair_key + ":" + str(member.instance_id))) % SIDES.size()
-				# Chaque lame d'un même allié part de la face suivante : l'aura se répartit.
-				for blade in range(Effects.BLADES_PER_ALLY):
-					if contributor >= bonus_count:
-						break
-					for offset in range(SIDES.size()):
-						var side := SIDES[(start + blade + offset) % SIDES.size()]
-						if member.free_marker_slots(side) > 0:
-							member.swarm_blades[side] = int(member.swarm_blades[side]) + 1
-							contributor += 1
-							break
+		components.append(component)
+	return components
+
+
+static func _apply_component_bonus(state: GameState, component: Array) -> void:
+	var bonus_count := mini(Effects.SWARM_CAP,
+		(component.size() - 1) * Effects.BLADES_PER_ALLY)
+	for member_index in component:
+		var member := Board.stone_at(state.board[member_index])
+		var contributor := 0
+		for other_index in component:
+			if other_index == member_index or contributor >= bonus_count:
+				continue
+			var other := Board.stone_at(state.board[other_index])
+			var pair_key := "%d:%d" % [mini(member.instance_id, other.instance_id),
+				maxi(member.instance_id, other.instance_id)]
+			var start := absi(hash(pair_key + ":" + str(member.instance_id))) % SIDES.size()
+			contributor = _add_ally_blades(member, start, contributor, bonus_count)
+
+
+static func _add_ally_blades(member: BattleStoneModel, start: int, contributor: int,
+		bonus_count: int) -> int:
+	# Chaque lame d'un même allié part de la face suivante : l'aura se répartit.
+	for blade in range(Effects.BLADES_PER_ALLY):
+		if contributor >= bonus_count:
+			break
+		for offset in range(SIDES.size()):
+			var side := SIDES[(start + blade + offset) % SIDES.size()]
+			if member.free_marker_slots(side) > 0:
+				member.swarm_blades[side] = int(member.swarm_blades[side]) + 1
+				contributor += 1
+				break
+	return contributor
 
 
 ## Capture les seules données nécessaires à la présentation de l'Essaim.
@@ -130,37 +150,52 @@ static func links(state: GameState) -> Array:
 
 
 static func transitions(before: Dictionary, after: Dictionary,
-	source_row: int, source_col: int) -> Array:
+		source_row: int, source_col: int) -> Array:
 	var before_members: Dictionary = before.get("members", {})
 	var after_members: Dictionary = after.get("members", {})
 	var before_links: Dictionary = before.get("links", {})
 	var after_links: Dictionary = after.get("links", {})
+	var affected := _changed_members(before_members, after_members,
+		before_links, after_links)
+	if affected.is_empty():
+		return []
+	_expand_affected_component(affected, before_links, after_links)
+	return [CombatEvents.swarm_change(source_row, source_col,
+		_member_transitions(affected, before_members, after_members),
+		_visible_links(affected, before_links),
+		_visible_links(affected, after_links))]
+
+
+static func _changed_members(before_members: Dictionary, after_members: Dictionary,
+		before_links: Dictionary, after_links: Dictionary) -> Dictionary:
 	var affected := {}
 	for instance_id in before_members:
 		var old_member: Dictionary = before_members[instance_id]
 		var new_member: Dictionary = after_members.get(instance_id, {})
-		if not new_member.is_empty() and old_member.get("blades", {}) != new_member.get("blades", {}):
+		if not new_member.is_empty() \
+				and old_member.get("blades", {}) != new_member.get("blades", {}):
 			affected[instance_id] = true
 	for instance_id in after_members:
-		if before_members.has(instance_id):
-			continue
-		if after_members[instance_id].get("blades", {}) != _empty_side_map():
+		if not before_members.has(instance_id) \
+				and after_members[instance_id].get("blades", {}) != _empty_side_map():
 			affected[instance_id] = true
 	for key in before_links:
 		if not after_links.has(key):
-			var removed: Dictionary = before_links[key]
-			affected[removed["a_instance"]] = true
-			affected[removed["b_instance"]] = true
+			_mark_link_members(affected, before_links[key])
 	for key in after_links:
 		if not before_links.has(key):
-			var added: Dictionary = after_links[key]
-			affected[added["a_instance"]] = true
-			affected[added["b_instance"]] = true
-	if affected.is_empty():
-		return []
+			_mark_link_members(affected, after_links[key])
+	return affected
 
-	# Étend la sélection aux composantes avant et après : les liaisons stables
-	# transportent elles aussi l'impulsion jusqu'aux membres renforcés.
+
+static func _mark_link_members(affected: Dictionary, link: Dictionary) -> void:
+	affected[link["a_instance"]] = true
+	affected[link["b_instance"]] = true
+
+
+## Les liaisons stables transportent l'impulsion à toute la composante touchée.
+static func _expand_affected_component(affected: Dictionary, before_links: Dictionary,
+		after_links: Dictionary) -> void:
 	var expanded := true
 	while expanded:
 		expanded = false
@@ -176,34 +211,34 @@ static func transitions(before: Dictionary, after: Dictionary,
 					affected[a] = true
 					expanded = true
 
-	var member_events: Array = []
+
+static func _member_transitions(affected: Dictionary, before_members: Dictionary,
+		after_members: Dictionary) -> Array:
+	var result: Array = []
 	var member_ids: Array = affected.keys()
 	member_ids.sort()
 	for instance_id in member_ids:
 		var old_member: Dictionary = before_members.get(instance_id, {})
 		var new_member: Dictionary = after_members.get(instance_id, {})
 		var reference: Dictionary = new_member if not new_member.is_empty() else old_member
-		member_events.append({
+		result.append({
 			"instance_id": instance_id,
 			"row": int(reference["row"]), "col": int(reference["col"]),
 			"before": old_member.get("blades", _empty_side_map()).duplicate(true),
 			"after": new_member.get("blades", _empty_side_map()).duplicate(true)
 		})
-	var visible_before: Array = []
-	var visible_after: Array = []
-	var before_keys: Array = before_links.keys()
-	var after_keys: Array = after_links.keys()
-	before_keys.sort()
-	after_keys.sort()
-	for key in before_keys:
-		var link: Dictionary = before_links[key]
+	return result
+
+
+static func _visible_links(affected: Dictionary, links: Dictionary) -> Array:
+	var result: Array = []
+	var keys: Array = links.keys()
+	keys.sort()
+	for key in keys:
+		var link: Dictionary = links[key]
 		if affected.has(link["a_instance"]) and affected.has(link["b_instance"]):
-			visible_before.append(link.duplicate(true))
-	for key in after_keys:
-		var link: Dictionary = after_links[key]
-		if affected.has(link["a_instance"]) and affected.has(link["b_instance"]):
-			visible_after.append(link.duplicate(true))
-	return [CombatEvents.swarm_change(source_row, source_col, member_events, visible_before, visible_after)]
+			result.append(link.duplicate(true))
+	return result
 
 
 static func _swarm_link_key(first: int, second: int) -> String:

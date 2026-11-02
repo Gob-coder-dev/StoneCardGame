@@ -144,6 +144,14 @@ func _test_failed_save() -> void:
 	_expect_log("PlayerData: profil non enregistré")
 	_check(not player.set_player_god("susanoo") and player.get_profile() == previous and Storage.read(TEST_PATH) == disk,
 		"un échec d'enregistrement garde le dieu et le fichier précédents intacts")
+	_expect_log("PlayerData: profil non enregistré")
+	_check(player.set_player_name("Nouveau nom") == PlayerModel.ProfileChange.SAVE_FAILED
+		and player.get_profile() == previous,
+		"un échec d'enregistrement restaure le pseudo précédent")
+	_expect_log("PlayerData: profil non enregistré")
+	_check(player.record_game("bot_test", GameState.PLAYER_HUMAN, 9, 5, 3) != OK
+		and player.get_profile() == previous and Storage.read(TEST_PATH) == disk,
+		"un échec d'enregistrement restaure toutes les statistiques de la partie")
 	player.free()
 	_remove_test_files()
 

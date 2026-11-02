@@ -180,7 +180,8 @@ func _on_turn_ended(score_human: int, score_ai: int) -> void:
 func _on_game_over(winner: int, score_human: int, score_ai: int) -> void:
 	hud.set_game_over()
 	BattleContext.record_result(winner, score_human, score_ai)
-	PlayerData.record_game(BattleContext.selected_npc_id, winner, score_human, score_ai, _human_captures)
+	PlayerData.record_game(BattleContext.selected_npc_id, winner, score_human, score_ai,
+		_human_captures)
 	await get_tree().create_timer(1.5).timeout
 	get_tree().change_scene_to_file("res://scenes/menus/Result.tscn")
 

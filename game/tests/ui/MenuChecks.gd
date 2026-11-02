@@ -422,8 +422,9 @@ func _test_collection_incremental_refresh() -> void:
 	await get_tree().process_frame
 	var by_name := _shown_collection_ids(page)
 	_check(page.sort_button.text.begins_with("TRIER : NOM")
-		and _names_ascending(by_name) and not _is_family_order(by_name, "inari"),
-		"le tri par nom mélange de nouveau cartes du dieu et neutres")
+		and _names_ascending(by_name) and not _is_family_order(by_name, "inari")
+		and _collection_cards(page)["f03_n1"] == kappa,
+		"le tri par nom déplace les cartes existantes sans les recréer")
 	page._select_sort(0)
 	await get_tree().process_frame
 	grid = page.collection_rows.get_child(0)
@@ -439,6 +440,13 @@ func _test_collection_incremental_refresh() -> void:
 		and is_equal_approx(visible_wrappers[3].position.x, visible_wrappers[0].position.x)
 		and visible_wrappers[3].position.y > visible_wrappers[0].position.y,
 		"une carte ajoutée au deck disparaît et la grille referme le trou")
+	var neutral: StoneCard = _collection_cards(page)["n01_n1"]
+	page._collection_grid.rebuild("susanoo", page._current_deck, page._sort_mode)
+	await get_tree().process_frame
+	var changed_god := _collection_cards(page)
+	_check(page.collection_rows.get_child(0) == grid and changed_god.size() == 36
+		and changed_god["n01_n1"] == neutral and not changed_god.has("f03_n1"),
+		"changer de dieu conserve la grille et les vingt-quatre cartes neutres")
 	page.queue_free()
 	await get_tree().process_frame
 

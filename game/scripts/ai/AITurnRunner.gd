@@ -11,7 +11,7 @@ const Profile := preload("res://scripts/ai/AIProfile.gd")
 const ProfileAIModel := preload("res://scripts/ai/ProfileAI.gd")
 const MoveSearchModel := preload("res://scripts/ai/MoveSearch.gd")
 
-## Temps de calcul accordé à l'IA à chaque image, en microsecondes.
+## Temps de préparation et de calcul accordé à l'IA à chaque image, en microsecondes.
 const FRAME_BUDGET_USEC := 4000
 
 var _ai: AIPlayer = null
