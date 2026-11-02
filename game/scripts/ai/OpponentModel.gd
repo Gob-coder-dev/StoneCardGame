@@ -10,16 +10,15 @@ const CoinFlip := preload("res://scripts/engine/effects/CoinFlipEffect.gd")
 ## Cartes que le joueur humain peut encore avoir en main. Avec un dieu inconnu,
 ## toutes les cartes du catalogue restent possibles.
 static func possible_cards(state: GameState) -> Array[String]:
-	var definitions := StoneLoader.get_stones_for_god(state.human_god_id)
-	if definitions.is_empty():
-		definitions = StoneLoader.get_all_stones()
+	var stone_ids := StoneLoader.get_stone_ids_for_god(state.human_god_id)
+	if stone_ids.is_empty():
+		stone_ids = StoneLoader.get_all_stone_ids()
 	var placed := {}
 	for cell in state.board:
 		if cell["placed_by"] == GameState.PLAYER_HUMAN:
 			placed[StoneLoader.stone_lineage(str(cell["stone_id"]))] = true
 	var result: Array[String] = []
-	for definition in definitions:
-		var stone_id := str(definition["id"])
+	for stone_id in stone_ids:
 		if not placed.has(StoneLoader.stone_lineage(stone_id)):
 			result.append(stone_id)
 	return result
@@ -109,14 +108,18 @@ static func expected_from_variants(card_ids: Array, values: Array[float], hand_s
 static func attack_variants(card_ids: Array[String]) -> Array:
 	var result: Array = []
 	for stone_id in card_ids:
-		var definition := StoneLoader.get_stone(stone_id)
-		var stone: BattleStoneModel = BattleStoneModel.new()
-		stone.configure(stone_id, definition)
-		var variants: Array = [stone]
-		var axis := str(definition.get("coin_flip", ""))
-		if axis != "":
-			var flipped: BattleStoneModel = stone.clone()
-			CoinFlip.apply_outcome(flipped, axis, true)
-			variants.append(flipped)
-		result.append(variants)
+		result.append(attack_variants_for(stone_id))
 	return result
+
+
+static func attack_variants_for(stone_id: String) -> Array:
+	var definition := StoneLoader.get_stone(stone_id)
+	var stone: BattleStoneModel = BattleStoneModel.new()
+	stone.configure(stone_id, definition)
+	var variants: Array = [stone]
+	var axis := str(definition.get("coin_flip", ""))
+	if axis != "":
+		var flipped: BattleStoneModel = stone.clone()
+		CoinFlip.apply_outcome(flipped, axis, true)
+		variants.append(flipped)
+	return variants

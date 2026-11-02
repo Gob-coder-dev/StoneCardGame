@@ -3,7 +3,8 @@ extends "res://tests/support/CombatTestSuite.gd"
 
 func run() -> void:
 	_test_catalogue_images()
-	_test_shared_texture_and_fallback()
+	_test_art_cache()
+	_test_shared_texture_and_missing_artwork()
 	_test_illustration_layout()
 	_test_level_badge_layout()
 	_test_rarity_and_board_ownership_styles()
@@ -31,7 +32,17 @@ func _test_catalogue_images() -> void:
 		"le Porte-fièvre niveau quatre utilise sa propre illustration")
 
 
-func _test_shared_texture_and_fallback() -> void:
+func _test_art_cache() -> void:
+	CardArtCache.activate_god("inari", 1, ["n01_n4"])
+	var path := str(StoneLoader.get_stone("n01_n1")["asset"])
+	var loaded := load(path) as Texture2D
+	var cached := CardArtCache.texture(path)
+	var progress := CardArtCache.progress_for_god("inari")
+	_check(progress.y == 37 and progress.x >= 1 and cached == loaded,
+		"le cache prépare le dieu actif et les formes équipées en partageant les textures")
+
+
+func _test_shared_texture_and_missing_artwork() -> void:
 	var definition := StoneLoader.get_stone("n01_n1")
 	var first := StoneCard.new()
 	var second := StoneCard.new()
@@ -43,7 +54,7 @@ func _test_shared_texture_and_fallback() -> void:
 	placeholder["asset"] = ""
 	first.setup(placeholder)
 	_check(first._texture == null,
-		"réutiliser une carte sans image retire l'ancienne texture et conserve le dessin provisoire")
+		"réutiliser une carte sans image retire l'ancienne texture et affiche le repli neutre")
 	_check(second.mouse_filter == Control.MOUSE_FILTER_PASS,
 		"une carte illustrée continue de laisser défiler le conteneur tactile")
 	first.free()

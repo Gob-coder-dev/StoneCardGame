@@ -1,6 +1,7 @@
 extends "res://tests/support/CombatTestSuite.gd"
 const Effects := preload("res://scripts/domain/StoneEffects.gd")
 const ContentChecks := preload("res://scripts/data/ContentValidator.gd")
+const PlayerSaveCodec := preload("res://scripts/data/PlayerSaveCodec.gd")
 const Board := preload("res://scripts/engine/combat/CombatBoard.gd")
 
 func run() -> void:
@@ -57,7 +58,7 @@ func _test_content_validation() -> void:
 		"un pouvoir ou un axe de pile ou face mal orthographié est signalé au chargement")
 	var npc := StoneLoader.get_npc("hiro")
 	npc["ai"] = {"precison": 0.5, "anticipation": false}
-	problems = ContentChecks.find_problems([], gods, [npc], StoneLoader.default_god_id())
+	problems = ContentChecks.find_problems(StoneLoader.get_all_stones(), gods, [npc], StoneLoader.default_god_id())
 	_check(problems.size() == 2 and problems[0].contains("precison") and problems[1].contains("précision"),
 		"un réglage d'IA mal orthographié dans npcs.json est signalé au chargement")
 
@@ -119,7 +120,9 @@ func _test_catalog_and_decks() -> void:
 	for npc in StoneLoader.get_npcs_ordered():
 		npc_decks_valid = npc_decks_valid and DeckRules.is_deck_valid(npc["deck"], npc["god_id"])
 	_check(npc_decks_valid, "chaque adversaire a huit lignées compatibles, dans le budget de 80 points")
-	_check(StoneLoader.best_god_for_deck(["p08_n1", "p09_n2", "p12_n1", "f03_n1", "n12_n2"]) == "susanoo", "la migration choisit le dieu qui conserve le plus de cartes")
+	_check(PlayerSaveCodec.best_god_for_deck(
+		["p08_n1", "p09_n2", "p12_n1", "f03_n1", "n12_n2"]) == "susanoo",
+		"la migration choisit le dieu qui conserve le plus de cartes")
 
 
 func _test_immutable_catalog() -> void:

@@ -55,6 +55,7 @@ var _clearing_scroll_tap: bool = false
 
 func _ready() -> void:
 	_current_deck = PlayerData.get_active_deck()
+	_prepare_card_art()
 	scroll.gui_input.connect(_on_scroll_gui_input)
 	god_button.pressed.connect(_toggle_god_menu)
 	_deck_panel = DeckPanelView.new(deck_rows)
@@ -96,6 +97,7 @@ func _toggle_level_menu() -> void:
 func _select_preview_level(level: int) -> void:
 	_close_action_drawer()
 	_preview_level = level
+	_prepare_card_art()
 	level_menu.visible = false
 	level_button.text = "AFFICHER : NIVEAU %d ▼" % level
 	_level_selector.refresh(level)
@@ -122,6 +124,7 @@ func _select_god(next_god_id: String) -> void:
 		return
 	_close_card_panels()
 	_current_deck = PlayerData.get_active_deck()
+	_prepare_card_art()
 	god_menu.visible = false
 	sort_menu.visible = false
 	_update_sort_labels()
@@ -136,6 +139,7 @@ func _select_deck(slot: int) -> void:
 		return
 	_close_card_panels()
 	_current_deck = PlayerData.get_active_deck()
+	_prepare_card_art()
 	god_menu.visible = false
 	sort_menu.visible = false
 	_update_sort_labels()
@@ -382,9 +386,14 @@ func _commit_operation(operation: Dictionary) -> bool:
 		_show_error("Impossible de modifier ce deck : la sauvegarde a échoué.")
 		return false
 	_current_deck = new_deck.duplicate()
+	_prepare_card_art()
 	_clear_status()
 	_refresh_all()
 	return true
+
+
+func _prepare_card_art() -> void:
+	CardArtCache.activate_god(PlayerData.player_god_id, _preview_level, _current_deck)
 
 
 func _show_error(message: String) -> void:

@@ -45,43 +45,75 @@ func set_preview_level(level: int) -> void:
 	_preview_level = level
 	if not is_instance_valid(_grid):
 		return
-	var displayed: Array = []
-	for lineage in _wrappers:
-		var id := StoneLoader.variant_id(lineage, StoneEvolutionRules.preview_level(level, StoneLoader.lineage_max_level(lineage)))
-		var card: StoneCard = _wrappers[lineage].get_child(0)
-		var definition := StoneLoader.get_stone(id)
-		if card.get_stone_id() != id:
-			card.setup(definition, StoneCard.OWNER_NONE)
-		displayed.append(definition)
-	displayed.sort_custom(_sorts_before)
-	for index in range(displayed.size()):
-		_grid.move_child(_wrappers[StoneLoader.stone_lineage(str(displayed[index]["id"]))], index)
+	_populate_collection()
 
 func _populate_collection() -> void:
-	Layout.clear_children(collection_rows)
-	_wrappers.clear()
+	var stones := _displayed_stones()
+	stones.sort_custom(_sorts_before)
+	_ensure_grid()
+	var desired := {}
+	for stone in stones:
+		desired[StoneLoader.stone_lineage(str(stone["id"]))] = stone
+	var reusable := _detach_obsolete_wrappers(desired)
+	var ordered: Array[VBoxContainer] = []
+	for stone in stones:
+		var lineage := StoneLoader.stone_lineage(str(stone["id"]))
+		var wrapper: VBoxContainer = _wrappers.get(lineage)
+		if wrapper == null:
+			wrapper = reusable.pop_back() if not reusable.is_empty() else _make_wrapper()
+			_wrappers[lineage] = wrapper
+		var card := wrapper.get_child(0) as StoneCard
+		if card.get_stone_id() != str(stone["id"]):
+			card.setup(stone, StoneCard.OWNER_NONE)
+			card.name = "c_" + str(stone["id"])
+		wrapper.visible = DeckRules.lineage_index(_current_deck, lineage) < 0
+		ordered.append(wrapper)
+	for wrapper in reusable:
+		_grid.remove_child(wrapper)
+		wrapper.queue_free()
+	for index in range(ordered.size()):
+		var wrapper := ordered[index]
+		if wrapper.get_parent() != _grid:
+			_grid.add_child(wrapper)
+		_grid.move_child(wrapper, index)
+
+
+func _displayed_stones() -> Array:
 	var stones: Array = []
 	for base in StoneLoader.get_lineages_for_god(_god_id):
-		stones.append(StoneLoader.get_stone(StoneLoader.preview_variant(str(base["id"]), _preview_level)))
-	stones.sort_custom(_sorts_before)
+		var stone_id := StoneLoader.preview_variant(str(base["id"]), _preview_level)
+		stones.append(StoneLoader.get_stone(stone_id))
+	return stones
 
-	# Une grille ignore ses cartes masquées : les suivantes remontent à leur place.
+
+func _ensure_grid() -> void:
+	if is_instance_valid(_grid):
+		return
 	_grid = GridContainer.new()
 	_grid.columns = CARDS_PER_ROW
 	_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_grid.add_theme_constant_override("h_separation", CARD_SPACING)
 	_grid.add_theme_constant_override("v_separation", CARD_SPACING)
 	collection_rows.add_child(_grid)
-	for stone in stones:
-		var wrapper := Layout.make_card_wrapper(true, UITheme.CARD_COLLECTION)
-		var card := Layout.make_stone_card(stone, StoneCard.OWNER_NONE, UITheme.CARD_COLLECTION)
-		card.name = "c_" + str(stone["id"])
-		card.card_pressed.connect(card_requested.emit.bind(wrapper, CardActionDrawer.Source.COLLECTION))
-		wrapper.add_child(card)
-		var lineage := StoneLoader.stone_lineage(str(stone["id"]))
-		_wrappers[lineage] = wrapper
-		wrapper.visible = DeckRules.lineage_index(_current_deck, lineage) < 0
-		_grid.add_child(wrapper)
+
+
+func _detach_obsolete_wrappers(desired: Dictionary) -> Array[VBoxContainer]:
+	var reusable: Array[VBoxContainer] = []
+	for raw_lineage in _wrappers.keys():
+		var lineage := str(raw_lineage)
+		if desired.has(lineage):
+			continue
+		reusable.append(_wrappers[lineage])
+		_wrappers.erase(lineage)
+	return reusable
+
+
+func _make_wrapper() -> VBoxContainer:
+	var wrapper := Layout.make_card_wrapper(true, UITheme.CARD_COLLECTION)
+	var card := Layout.make_stone_card({}, StoneCard.OWNER_NONE, UITheme.CARD_COLLECTION)
+	card.card_pressed.connect(card_requested.emit.bind(wrapper, CardActionDrawer.Source.COLLECTION))
+	wrapper.add_child(card)
+	return wrapper
 
 
 ## Comparaison du tri choisi ; le nom départage les égalités.

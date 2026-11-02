@@ -39,9 +39,13 @@ func _begin_edit() -> void:
 
 
 func _save_name() -> void:
-	if not PlayerData.set_player_name(name_input.text):
-		error_label.text = "Le pseudo doit contenir entre 2 et 16 caractères."
-		return
+	match PlayerData.set_player_name(name_input.text):
+		PlayerData.ProfileChange.INVALID:
+			error_label.text = "Le pseudo doit contenir entre 2 et 16 caractères."
+			return
+		PlayerData.ProfileChange.SAVE_FAILED:
+			error_label.text = "Impossible d'enregistrer le pseudo. Réessaie."
+			return
 	pseudo_label.text = PlayerData.player_name
 	_cancel_edit()
 

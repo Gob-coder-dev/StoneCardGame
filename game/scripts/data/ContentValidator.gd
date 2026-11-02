@@ -63,12 +63,14 @@ static func _integer_count(value: Variant, maximum: int) -> bool:
 
 static func find_problems(stones: Array, gods: Dictionary, npcs: Array, default_god_id: String) -> Array[String]:
 	var problems: Array[String] = []
+	var stones_by_id := {}
 	if not gods.has(default_god_id):
 		problems.append("dieu par défaut inconnu '%s'." % default_god_id)
 	for stone in stones:
 		_check_stone(stone, gods, problems)
+		stones_by_id[str(stone.get("id", ""))] = stone
 	for npc in npcs:
-		_check_npc(npc, gods, problems)
+		_check_npc(npc, gods, stones_by_id, problems)
 	return problems
 
 
@@ -104,7 +106,8 @@ static func _check_stone(stone: Dictionary, gods: Dictionary, problems: Array[St
 		problems.append("lames aléatoires impossibles sur '%s'." % stone_id)
 
 
-static func _check_npc(npc: Dictionary, gods: Dictionary, problems: Array[String]) -> void:
+static func _check_npc(npc: Dictionary, gods: Dictionary, stones_by_id: Dictionary,
+		problems: Array[String]) -> void:
 	var npc_id := str(npc.get("id", ""))
 	var god_id := str(npc.get("god_id", ""))
 	if not gods.has(god_id):
@@ -116,7 +119,10 @@ static func _check_npc(npc: Dictionary, gods: Dictionary, problems: Array[String
 		problems.append("le deck du NPC '%s' doit contenir %d pierres." % [npc_id, DeckRules.DECK_SIZE])
 	var seen: Array = []
 	for stone_id in npc.get("deck", []):
-		var lineage := StoneLoader.stone_lineage(str(stone_id))
-		if seen.has(lineage) or not StoneLoader.is_stone_available_to_god(str(stone_id), god_id):
+		var definition: Dictionary = stones_by_id.get(str(stone_id), {})
+		var lineage := str(definition.get("lineage_id", ""))
+		var affinity := str(definition.get("god_id", ""))
+		if definition.is_empty() or lineage == "" or seen.has(lineage) \
+				or (affinity != "neutral" and affinity != god_id):
 			problems.append("deck incompatible pour le NPC '%s'." % npc_id)
 		seen.append(lineage)

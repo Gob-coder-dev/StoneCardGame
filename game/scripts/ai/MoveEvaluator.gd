@@ -42,6 +42,12 @@ func _init(state: GameState, anticipation: bool) -> void:
 func is_endgame() -> bool:
 	return _endgame
 
+
+## La préparation de la riposte fait partie du même budget par image que les
+## évaluations. Les autres profils n'ont aucune préparation différée.
+func prepare_step(budget_usec: int = 0) -> bool:
+	return true if _riposte == null else _riposte.prepare_step(budget_usec)
+
 ## Nombre de tirages d'un coup dont la simulation consomme du hasard.
 func random_samples() -> int:
 	return ENDGAME_RANDOM_SAMPLES if _endgame else RANDOM_SAMPLES
@@ -49,6 +55,9 @@ func random_samples() -> int:
 ## Le placement utilise toujours le moteur commun, puis le modèle adapté à
 ## l'avancement du match. La détection du hasard et les graines restent inchangées.
 func evaluate(move: Dictionary, sample: int) -> Dictionary:
+	# Les appels synchrones des tests et des outils restent valides ; MoveSearch
+	# prépare normalement ce modèle avant la première évaluation.
+	prepare_step()
 	var stone_id: String = move["stone_id"]
 	var row: int = move["row"]
 	var col: int = move["col"]

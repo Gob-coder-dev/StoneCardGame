@@ -54,9 +54,17 @@ func _register_test_stones() -> void:
 
 
 func _register(id: String, top: int, bottom: int, left: int, right: int, extras: Dictionary = {}) -> void:
-	var definition := {"god_id": "neutral", "effects": []}
+	var definition := {
+		"id": id,
+		"name": id,
+		"god_id": "neutral",
+		"effects": [],
+		"blades": {"top": top, "bottom": bottom, "left": left, "right": right}
+	}
 	definition.merge(extras, true)
-	StoneLoader.register_stone(id, top, bottom, left, right, definition)
+	# Les fixtures possèdent le catalogue de test ; aucune API de mutation dédiée
+	# aux tests n'est exposée par le singleton de production.
+	StoneLoader._stones[id] = definition
 
 
 ## L'IA déduit les cartes possibles de l'adversaire du catalogue réel, qui va

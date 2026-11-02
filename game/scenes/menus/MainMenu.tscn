@@ -113,6 +113,23 @@ text = "Deck 1 • 0/8 cartes • 0/80 points"
 horizontal_alignment = 1
 autowrap_mode = 2
 
+[node name="ArtWarmup" type="VBoxContainer" parent="Content/Hero"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Label" type="Label" parent="Content/Hero/ArtWarmup"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.74, 0.70, 0.62, 1)
+theme_override_font_sizes/font_size = 24
+text = "PRÉPARATION DES ILLUSTRATIONS"
+horizontal_alignment = 1
+
+[node name="Progress" type="ProgressBar" parent="Content/Hero/ArtWarmup"]
+custom_minimum_size = Vector2(0, 16)
+layout_mode = 2
+show_percentage = false
+
 [node name="PlayButton" type="Button" parent="Content/Hero" unique_id=1162903087]
 theme_type_variation = &"PrimaryButton"
 custom_minimum_size = Vector2(760, 152)

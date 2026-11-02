@@ -165,33 +165,41 @@ func _draw_random_distribution() -> void:
 	var landing := clampf(inverse_lerp(DISTRIBUTION_END, 1.0, progress), 0.0, 1.0)
 	var gates := [_face_gates.get("top", _center), _face_gates.get("right", _center),
 		_face_gates.get("bottom", _center), _face_gates.get("left", _center)]
-	var side_names := GATE_SIDES
+	var selected_sides := _selected_gate_counts()
+	var active_gate := _active_search_gate(search)
+	_draw_distribution_gates(gates, selected_sides, active_gate, landing)
+	_draw_search_pulse(gates, active_gate, search, landing)
+	_draw_distribution_core(search, landing)
+	_draw_distributed_transfers(landing)
+
+
+func _selected_gate_counts() -> Dictionary:
 	var selected_sides := {}
 	for transfer in _transfers:
 		var selected_side := str(transfer["destination_side"])
 		selected_sides[selected_side] = int(selected_sides.get(selected_side, 0)) + 1
-	var active_gate := -1
-	if not _searchable_gates.is_empty():
-		active_gate = _searchable_gates[int(floor(search * 15.0)) % _searchable_gates.size()]
-	# Les quatre conduits restent lisibles ; seuls les possibles sont parcourus.
+	return selected_sides
+
+
+func _active_search_gate(search: float) -> int:
+	if _searchable_gates.is_empty():
+		return -1
+	return _searchable_gates[int(floor(search * 15.0)) % _searchable_gates.size()]
+
+
+func _draw_distribution_gates(gates: Array, selected_sides: Dictionary,
+	active_gate: int, landing: float) -> void:
 	for gate_index in range(gates.size()):
 		var gate: Vector2 = gates[gate_index]
 		var closed := not _searchable_gates.has(gate_index)
-		var chosen := landing > 0.0 and selected_sides.has(side_names[gate_index])
+		var chosen := landing > 0.0 and selected_sides.has(GATE_SIDES[gate_index])
 		var searching := landing <= 0.0 and gate_index == active_gate
-		var branch_color := Color(0.31, 0.14, 0.24, 0.62)
-		var branch_width := maxf(3.0, _square * 0.019)
-		if closed:
-			# La face qui a capturé ne peut rien recevoir : son conduit reste éteint.
-			branch_color = Color(0.20, 0.10, 0.14, 0.22)
-		elif searching:
-			branch_color = Color(1.0, 0.72, 0.24, 0.96)
-			branch_width = maxf(7.0, _square * 0.052)
-		elif chosen:
-			branch_color = Color(1.0, 0.66, 0.18, 0.92)
-			branch_width = maxf(6.0, _square * 0.043)
+		var style := _distribution_gate_style(closed, searching, chosen)
 		var path := _distribution_branch(gate, gate_index)
-		draw_polyline(path, Color(branch_color, branch_color.a * 0.26), branch_width * 1.75, true)
+		var branch_color: Color = style["color"]
+		var branch_width: float = style["width"]
+		draw_polyline(path, Color(branch_color, branch_color.a * 0.26),
+			branch_width * 1.75, true)
 		draw_polyline(path, branch_color, branch_width, true)
 		var gate_color := Symbols.THEFT if not searching and not chosen else Color("#ffd45b")
 		gate_color.a = 0.58 if not searching and not chosen else 1.0
@@ -201,15 +209,32 @@ func _draw_random_distribution() -> void:
 			Color(0.19, 0.08, 0.10, 0.40 if closed else 0.88))
 		draw_arc(gate, _square * (0.058 if searching or chosen else 0.044), 0.0, TAU, 20,
 			gate_color, maxf(2.0, _square * 0.016), true)
-	# Un paquet lumineux parcourt le faux chemin actif pour matérialiser le tirage.
-	if landing <= 0.0:
+
+
+func _distribution_gate_style(closed: bool, searching: bool, chosen: bool) -> Dictionary:
+	if closed:
+		return {"color": Color(0.20, 0.10, 0.14, 0.22),
+			"width": maxf(3.0, _square * 0.019)}
+	if searching:
+		return {"color": Color(1.0, 0.72, 0.24, 0.96),
+			"width": maxf(7.0, _square * 0.052)}
+	if chosen:
+		return {"color": Color(1.0, 0.66, 0.18, 0.92),
+			"width": maxf(6.0, _square * 0.043)}
+	return {"color": Color(0.31, 0.14, 0.24, 0.62),
+		"width": maxf(3.0, _square * 0.019)}
+
+
+func _draw_search_pulse(gates: Array, active_gate: int, search: float, landing: float) -> void:
+	if landing <= 0.0 and active_gate >= 0:
 		var search_step := fposmod(search * 15.0, 1.0)
 		var pulse_point := _distribution_branch_point(gates[active_gate], active_gate,
 			sin(search_step * PI) if search_step < 1.0 else 1.0)
 		draw_circle(pulse_point, _square * 0.046, Color(1.0, 0.90, 0.42, 0.35))
 		draw_circle(pulse_point, _square * 0.022, Color("#fff3a8"))
-	# Le noyau est volontairement grand : il remplace la petite roulette et
-	# annonce clairement que les unités absorbées attendent une destination.
+
+
+func _draw_distribution_core(search: float, landing: float) -> void:
 	var core_pulse := 1.0 + sin(search * TAU * 7.5) * 0.08 if landing <= 0.0 else 1.0
 	draw_circle(_center, _square * 0.125 * core_pulse, Color(0.13, 0.05, 0.08, 0.92))
 	draw_circle(_center, _square * 0.092 * core_pulse, Color(0.78, 0.25, 0.10, 0.94))
@@ -217,14 +242,16 @@ func _draw_random_distribution() -> void:
 		Color("#ffd45b"), maxf(3.0, _square * 0.020), true)
 	Symbols.draw_text(self, _center, _square * 0.080,
 		"?" if landing <= 0.0 else "×%d" % _transfers.size(), Color("#fff3bd"))
-	# À la résolution, chaque bouclier quitte le noyau par son vrai conduit.
+
+
+func _draw_distributed_transfers(landing: float) -> void:
 	for index in range(_transfers.size()):
 		var transfer: Dictionary = _transfers[index]
 		var delayed_landing := clampf(landing * 1.22 - float(index) / float(maxi(1, _transfers.size())) * 0.18, 0.0, 1.0)
 		if delayed_landing <= 0.0:
 			continue
 		var destination_side := str(transfer["destination_side"])
-		var destination_index := side_names.find(destination_side)
+		var destination_index := GATE_SIDES.find(destination_side)
 		var target: Vector2 = transfer["target"]
 		var travel := smoothstep(0.0, 1.0, delayed_landing)
 		var point := _distribution_branch_point(target, destination_index, travel)

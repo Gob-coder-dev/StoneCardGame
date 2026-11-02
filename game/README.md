@@ -74,6 +74,13 @@ Les définitions de jeu
 restent dans `data/stones.json` : modifier une image ne modifie donc ni les
 statistiques ni les sauvegardes.
 
+Au lancement, `CardArtCache` préchauffe en arrière-plan les illustrations du
+dieu, du niveau et du deck actifs ; l'accueil affiche sa progression. La page
+Cartes réutilise ensuite sa grille : un tri déplace les cartes existantes et un
+changement de dieu conserve les 24 cartes neutres. Les six portraits de dieux
+restent préparés pour la session, mais le jeu ne conserve jamais volontairement
+les 275 illustrations de cartes dans son cache applicatif.
+
 ## Menus et lecture visuelle
 
 La navigation inférieure donne accès à **Cartes**, **Jouer** et **Règles**. La
@@ -196,7 +203,7 @@ modaux et la pose de cartes. Au dernier contrôle, les suites terminent
 respectivement par :
 
 ```text
-GOD_SYSTEM_CHECKS: 446 passed, 0 failed, 0 Godot errors
+GOD_SYSTEM_CHECKS: 451 passed, 0 failed, 0 Godot errors
 TACTILE : 76 vérifications, 0 échec(s), 0 erreur(s) Godot.
 ```
 

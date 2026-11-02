@@ -98,6 +98,9 @@ func _test_ai_moves() -> void:
 
 
 func _test_evaluation() -> void:
+	var deferred := RiposteModel.new(_state_with_hands(["n12_n2"], []).clone_for_ai())
+	_check(not deferred.is_prepared() and deferred.prepare_step() and deferred.is_prepared(),
+		"le modèle de riposte diffère sa préparation jusqu'au lancement de la recherche")
 	# Seul fx_attack2 posé en (1,1) capture la pierre humaine : 2 lames contre 1.
 	var state := _state_with_hands([], ["fx_plain", "fx_attack2"])
 	_force_instance(state, 1, 2, "fx_plain", GameState.PLAYER_HUMAN)

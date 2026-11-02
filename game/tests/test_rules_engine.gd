@@ -1,27 +1,27 @@
 ## Tests des règles de base : placement, captures adjacentes, score et coups.
 ## Exécutée par GodSystemChecks avec les assertions locales.
 ##
-## Les pierres de test sont injectées dans StoneLoader via register_stone(),
-## pour des lames connues et des tests indépendants de stones.json. Les pierres
+## Les fixtures installent des pierres isolées dans le catalogue de test pour
+## des lames connues et des tests indépendants de stones.json. Les pierres
 ## posées sont de vraies instances de combat, comme dans une partie.
 extends "res://tests/support/CombatTestSuite.gd"
 
 ## Enregistre les pierres de test une fois, avant tous les tests.
 func before_all() -> void:
-	StoneLoader.register_stone("t_1111", 1, 1, 1, 1)
-	StoneLoader.register_stone("t_4444", 4, 4, 4, 4)
-	StoneLoader.register_stone("t_0003", 0, 0, 0, 3)  # right=3
-	StoneLoader.register_stone("t_0010", 0, 0, 1, 0)  # left=1
-	StoneLoader.register_stone("t_0002", 0, 0, 0, 2)  # right=2
-	StoneLoader.register_stone("t_0020", 0, 0, 2, 0)  # left=2
-	StoneLoader.register_stone("t_0400", 0, 0, 4, 0)  # left=4
-	StoneLoader.register_stone("t_0001", 0, 0, 0, 1)  # right=1
-	StoneLoader.register_stone("t_0303", 0, 3, 0, 3)  # bottom=3, right=3
-	StoneLoader.register_stone("t_1000", 1, 0, 0, 0)  # top=1
-	StoneLoader.register_stone("t_3000", 3, 0, 0, 0)  # top=3
-	StoneLoader.register_stone("t_0100", 0, 1, 0, 0)  # bottom=1
-	StoneLoader.register_stone("t_0300", 0, 3, 0, 0)  # bottom=3
-	StoneLoader.register_stone("t_0030", 0, 0, 3, 0)  # left=3
+	_register("t_1111", 1, 1, 1, 1)
+	_register("t_4444", 4, 4, 4, 4)
+	_register("t_0003", 0, 0, 0, 3)  # right=3
+	_register("t_0010", 0, 0, 1, 0)  # left=1
+	_register("t_0002", 0, 0, 0, 2)  # right=2
+	_register("t_0020", 0, 0, 2, 0)  # left=2
+	_register("t_0400", 0, 0, 4, 0)  # left=4
+	_register("t_0001", 0, 0, 0, 1)  # right=1
+	_register("t_0303", 0, 3, 0, 3)  # bottom=3, right=3
+	_register("t_1000", 1, 0, 0, 0)  # top=1
+	_register("t_3000", 3, 0, 0, 0)  # top=3
+	_register("t_0100", 0, 1, 0, 0)  # bottom=1
+	_register("t_0300", 0, 3, 0, 0)  # bottom=3
+	_register("t_0030", 0, 0, 3, 0)  # left=3
 
 
 func _make_state() -> GameState:

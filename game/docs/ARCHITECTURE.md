@@ -16,6 +16,7 @@ Une IA appelle le même moteur sur une copie pour essayer un coup instantanémen
 | `PlayerData` | `get_active_deck`, `get_deck`, `get_selected_deck`, `set_player_deck`, `set_player_god`, `set_selected_deck`, `load_save`, `save` | Profil et trois decks persistants par dieu |
 | `PlayerSaveCodec` | `encode`, `decode` | Format et migration du profil sans accès disque |
 | `DeckCatalogueMigration` | `requires_conversion`, `convert` | Remplace les anciennes cartes par des formes compatibles, distinctes et dans le budget |
+| `CardArtCache` | `activate_god`, `texture`, `progress_for_god` | Préchauffe les illustrations utiles hors du thread principal et borne les références conservées |
 | `PlayerSaveStorage` | `write`, `read` | Écriture sûre du profil sur le disque |
 | `BattleContext` | `select_opponent`, `current_opponent`, `record_result` | Adversaire sélectionné, premier joueur et dernier résultat |
 | `StoneCostRules` | `cost` | Règle du coût d'une carte |
@@ -71,15 +72,17 @@ spécifique ; un `asset` défini sur une forme a priorité. Les 96 lignées disp
 d'une illustration N1 ; les formes de niveau supérieur peuvent progressivement
 recevoir leur propre image. Réaffecter une illustration modifie seulement les
 références `asset` et les PNG correspondants, sans changer l'index des formes,
-les statistiques ou les sauvegardes. Les originaux restent à leur résolution
-complète ; les options d'import sans perte et les mipmaps sont enregistrés dans
-`.png.import`.
+les statistiques ou les sauvegardes. Les originaux et les imports restent pour
+l'instant à leur résolution complète, en compression sans perte et sans limite
+de taille ; leur réduction est une optimisation d'assets distincte.
 
-`StoneCard._load_texture_if_any()` charge la ressource partagée par Godot au
-changement de définition. `_illustration_rect()` calcule le rectangle proportionnel
-et centré ; `_draw()` affiche la texture sur fond sombre puis les badges et le
-nom. Aucun fichier n'est chargé pendant le dessin et le moteur n'accède jamais
-aux textures. Le même composant couvre collection, fiche, main et plateau.
+`StoneCard._load_texture_if_any()` demande la ressource à `CardArtCache` au
+changement de définition, sans bloquer le thread principal. La carte reçoit le
+signal `texture_ready` et se redessine lorsque l'image arrive. `_illustration_rect()`
+calcule le rectangle proportionnel et centré ; `_draw()` affiche la texture sur
+fond sombre puis les badges et le nom. Aucun fichier n'est chargé pendant le
+dessin et le moteur n'accède jamais aux textures. Le même composant couvre
+collection, fiche, main et plateau.
 
 `StoneLoader` valide puis indexe les définitions complètes une fois au chargement.
 `get_stone(form_id)` reste le contrat commun au moteur et aux vues.
@@ -267,9 +270,18 @@ panneau ouvert. Le remplacement conserve l'identifiant précis choisi, sans
 relire le filtre global.
 
 `CollectionGrid.set_preview_level` actualise une carte par lignée et réordonne
-les mêmes nœuds selon le coût courant. Une lignée équipée est entièrement
-masquée. `StoneCard` affiche un petit repère de niveau pour les lignées évolutives
-et utilise leur champ `asset` existant ; le dessin procédural reste disponible.
+les mêmes nœuds selon le coût courant. Le tri déplace également ces nœuds sans
+les reconstruire ; un changement de dieu conserve les vingt-quatre lignées
+neutres et recycle les douze emplacements de famille. Une lignée équipée est
+entièrement masquée. `CardArtCache` préchauffe hors du thread principal les
+illustrations du dieu, du niveau et du deck actifs. Il garde les six portraits
+de dieux pour la session, mais relâche ses références fortes aux anciens groupes
+de cartes afin de ne pas mettre les 275 images en mémoire. `StoneCard` affiche
+la texture dès son arrivée et reste utilisable avec son repli neutre pendant le
+chargement. Il affiche aussi un petit repère de niveau pour les lignées évolutives
+et utilise leur champ `asset` existant. Une image absente affiche seulement un
+indicateur neutre : aucune illustration procédurale de l'ancienne version n'est
+conservée dans le composant de carte.
 Son large cadre minéral, sombre et désaturé, indique la famille. Un liseré
 intérieur distinct indique la rareté par sa couleur et sa géométrie (simple,
 reflet, double ou ornée). L'état sélectionné reste un halo extérieur et ne
@@ -283,7 +295,8 @@ Les cartes du deck n'apparaissent pas dans la collection. `CollectionGrid` les
 garde construites mais masquées dans une `GridContainer`, qui referme les trous :
 un changement de deck reconstruit ses emplacements et masque ou réaffiche seulement
 les cartes concernées de la collection, sans recréer de carte.
-Un changement de dieu ou de tri reconstruit la collection.
+Un changement de tri réordonne les wrappers existants. Un changement de dieu
+conserve les vingt-quatre wrappers neutres et recycle les douze autres.
 
 `UITheme.DECK_COLUMNS` fixe les colonnes de la main, du deck et du remplacement.
 La main calcule ses rangées sur le deck complet, puis garde sa hauteur pendant
@@ -415,14 +428,16 @@ elle ignore les lames roses et l'aura d'Essaim que la carte recevrait. Le calcul
 exact de fin de partie pose réellement les cartes.
 
 `AIPlayer` définit le contrat : `start_search(état)` rend une `MoveSearch`, dont
-`step(budget)` évalue les tirages un par un, puis `chosen_move()` donne le coup.
-`AITurnRunner` lui accorde environ 4 ms par image dans `_process`, sans minuteur ni `await`,
+`step(budget)` prépare le modèle de riposte par petites unités puis évalue les
+tirages un par un ; `chosen_move()` donne ensuite le coup. `AITurnRunner` lui
+accorde environ 4 ms par image dans `_process`, sans minuteur ni `await`,
 et joue quand la réflexion est finie et le délai écoulé. Une partie relancée ou
 une scène fermée abandonne la réflexion. `choose_move()` réfléchit d'un bloc pour
 les tests.
-Le budget est vérifié entre deux évaluations et ne couvre pas la préparation
-synchrone du modèle de riposte : un calcul individuel peut donc le dépasser.
-Les mesures doivent inclure le total, la préparation et le plus long appel à `step()`.
+Le budget couvre la préparation des cartes, des lignes, des signatures et des
+captures de base. Il est vérifié entre deux unités : une unité individuelle peut
+donc légèrement le dépasser. Les mesures doivent inclure le total et le plus long
+appel à `step()`.
 
 ## Ajouter un pouvoir
 
@@ -465,6 +480,9 @@ pour les six familles, puis compare le plateau, le hasard et tous les états de 
 Les dieux sont équipés dans les deux camps, et des ouvertures dédiées garantissent
 que les comparaisons Déclin et Essaim déclenchent réellement leurs auras.
 `TurnSequenceChecks` vérifie aussi les fins retardées et l'annulation des présentations.
+
+Au dernier contrôle automatisé, `GodSystemChecks` compte 451 réussites et
+`TouchInputChecks` 76 vérifications tactiles, sans échec ni erreur Godot.
 
 Les lanceurs chargent les suites à l'exécution et enregistrent `tests/support/TestLog.gd`
 auprès de Godot. Une suite qui ne compile pas, une erreur ou un avertissement
