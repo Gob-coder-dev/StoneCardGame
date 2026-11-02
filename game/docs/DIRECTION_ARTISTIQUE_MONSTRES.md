@@ -1,17 +1,41 @@
 # Direction artistique — Bestiaire d'horreur
 
-Ce document est la référence visuelle active de **SamStone**. L'ancien univers
-japonais a été remplacé par un bestiaire horrifique organisé autour de six dieux,
-de leurs familles de cartes et de monstres neutres.
+Ce document est la référence visuelle active de **SamStone**. L’univers japonais
+d’origine a été remplacé par un bestiaire horrifique organisé autour de six dieux,
+de leurs familles de cartes et de monstres neutres. Le [bestiaire](BESTIAIRE.md)
+décrit les créatures individuelles.
 
-Pour la taille visible des pixels, la fidélité aux illustrations déjà approuvées
-et les contrôles de cohérence par niveau, suivre la
-[charte des illustrations pixel art](CHARTE_ILLUSTRATIONS_PIXEL_ART.md).
+L’objectif est un jeu inquiétant mais lisible et accueillant sur mobile. L’horreur
+vient des silhouettes, des matières, des expressions et des détails narratifs ;
+elle ne doit jamais nuire à la lecture des cartes ni des symboles de combat.
 
-L'objectif est un jeu sombre et inquiétant, mais lisible, accueillant et rapide à
-comprendre sur un écran mobile. L'horreur vient des silhouettes, des matières et
-des détails narratifs ; elle ne doit jamais nuire à la lecture des cartes ni des
-symboles de combat.
+## Rendu pixel art, couleurs et lumière
+
+- Les PNG restent à leur résolution native, avec alpha réel : aucun export
+  48 × 48 / 64 × 64, agrandissement artificiel ou filtre mosaïque.
+- Les pixels doivent être visibles dans les contours **et** les surfaces : volumes
+  construits en amas irréguliers, transitions cassées et ombres nuancées.
+  Éviter le modelé lisse, les dégradés continus et les intérieurs détaillés mais
+  sans grain pixel.
+- Une image n’a pas à être assombrie ou désaturée pour paraître horrifique.
+  Préserver les couleurs de matière, les tons moyens et des reflets ponctuels ;
+  ne pas éclairer artificiellement chaque relief ni ajouter de halo général.
+- « Moins propre » désigne la structure des couleurs et du dessin, pas l’ajout
+  automatique de saleté ou de bruit.
+- Tous les niveaux d’une lignée, y compris les N3 et N4 en haute résolution,
+  conservent un grain pixel aussi identifiable que les premiers niveaux.
+
+## Références visuelles
+
+| Famille | Illustrations de référence |
+| --- | --- |
+| Aléators | Dévoracle, Griffe à jetons, Dé boiteux, Sou ricanant, Roulette vorace, Jumeau de cuivre, Valet à l’envers. |
+| Flétris | Porte-fièvre, Crache-cendre, Clochelet malade, Mâchoire moisie, Veuve des spores, Sonneur pestiféré, Ronge-chair, Porte-cercueil. |
+| Remparts | Éclat cuirassé, Heaume errant, Carapace vide, Osselet blindé, Chevalier sans visage, Golem de faïence, Portail d’os, Colosse riveté, Reliquaire ambulant, Sarcophage debout, Gardien des décombres. |
+| Veilleurs | Les N1 communs, rares et épiques. |
+| Essaim | Nœud vivant, Larve d’ancrage, Bourgeon mordant et Ronce rampante. |
+| Assimilateurs | Les N1 communs et rares, ainsi que le Démonteur. |
+| Neutres | Mordeur des combles, Rampant des fosses et Mâche-mur. |
 
 ## Principes généraux
 
@@ -19,8 +43,7 @@ symboles de combat.
   de production. Elles ne sont pas réduites à des sprites 48 × 48 ou 64 × 64.
 - Chaque monstre se lit d'abord par une silhouette, un geste et un point focal
   clair. Les petits détails complètent la lecture sans la remplacer.
-- Les ombres restent profondes, mais les valeurs intermédiaires doivent permettre
-  de distinguer l'anatomie sur téléphone.
+- Les nuances de lumière et de couleur doivent rendre l’anatomie lisible sur téléphone, sans imposer un rendu sombre ou terne.
 - Une famille se reconnaît par ses matières et ses motifs, pas seulement par sa
   couleur de cadre.
 - Les dieux doivent être plus imposants et plus immédiatement reconnaissables que
@@ -32,12 +55,12 @@ symboles de combat.
 
 | Dieu | Famille | Vocabulaire visuel | Palette dominante |
 | --- | --- | --- | --- |
-| **Véskar, le Manipulateur** | Les Aléators | Casino maudit, dés vivants, cartes, roulette, mains trop nombreuses. | Rose vif, ivoire, noir, accents rouges. |
-| **Nérava, la Mère des Fièvres** | Les Flétris | Infection, chairs sèches, spores, cloches funéraires, fissures contaminées. | Violet, cendre, chair pâle. |
-| **Kharûn, la Muraille** | Les Remparts | Golems, basalte, armures hantées, os et débris incrustés. | Ivoire, charbon, turquoise. |
-| **Ilyr, le Guetteur Éternel** | Les Veilleurs | Regard, observatoire vivant, lances organiques, membres allongés. | Bleu profond, argent, nuit. |
-| **Sylkha, la Mère-Ruche** | L'Essaim | Insectes, racines, nids, filaments et colonie vivante. | Vert, ambre, brun sombre. |
-| **Énigma, la Machine Première** | Les Assimilateurs | Machines vivantes, câbles, outils, récupération et matière absorbée. | Cuivre, orange, os sombre. |
+| **Véskar, le Manipulateur** | Les Aléators | Casino maudit, dés vivants, cartes, roulette, mains trop nombreuses. | Rose charnel, ivoire vieilli, noir et rouge sombre ; accents vifs localisés. |
+| **Nérava, la Mère des Fièvres** | Les Flétris | Infection, chairs sèches, spores, cloches funéraires, fissures contaminées. | Violets assourdis, cendre, chair grisâtre et os ternes. |
+| **Kharûn, la Muraille** | Les Remparts | Golems, basalte, armures hantées, os et débris incrustés. | Ivoire vieilli, gris, charbon ; accents turquoise contenus. |
+| **Ilyr, le Guetteur Éternel** | Les Veilleurs | Regard, observatoire vivant, lances organiques, membres allongés. | Bleu profond, argent terni et nuit ; lumière localisée. |
+| **Sylkha, la Mère-Ruche** | L'Essaim | Insectes, racines, nids, filaments et colonie vivante. | Vert olive, ambre sombre et brun de racines. |
+| **Énigma, la Machine Première** | Les Assimilateurs | Machines vivantes, câbles, outils, récupération et matière absorbée. | Cuivre oxydé, métal noirci, rouille et os sali ; accents orange localisés. |
 
 ### Véskar — Les Aléators
 
@@ -115,10 +138,10 @@ aussi rares ou dangereux que les cartes de famille, mais ne portent ni code de
 casino, ni contamination Flétrie, ni réseau d'Essaim, ni technologie
 d'Assimilateur dominante.
 
-**Avortons des caves** est une règle d'évolution représentative : trois créatures
-chaotiques sont visibles au niveau 1, puis leur nombre augmente avec les niveaux.
-L'image doit montrer une montée en puissance, pas seulement une version plus
-détaillée du même dessin.
+Les Avortons des caves illustrent une règle d’évolution représentative : la troupe
+grandit de 3 à 6, puis 9 et 12 créatures. Une évolution doit modifier la menace,
+la composition ou la silhouette ; elle ne consiste jamais à détailler davantage
+la même image.
 
 ## Évolutions et raretés
 
@@ -154,8 +177,8 @@ sont dans assets/cards, et leur association au jeu se fait par le champ asset de
 data/stones.json. Une image de niveau peut remplacer l'illustration commune de sa
 lignée sans changer ses statistiques, ses identifiants ou les sauvegardes.
 
-Le jeu contient actuellement 246 PNG de cartes : 96 N1, 81 N2, 65 N3 et 4 N4.
-Les trois premiers niveaux sont intégralement illustrés ; 29 N4 restent à créer.
+Le jeu contient actuellement 275 PNG de cartes : 96 N1, 81 N2, 65 N3 et 33 N4.
+Tous les niveaux prévus sont illustrés ; les corrections futures relèvent désormais de l’harmonisation ou de la validation artistique, pas d’illustrations manquantes.
 
 ## Interface et symboles
 
