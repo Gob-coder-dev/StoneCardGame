@@ -1,0 +1,58 @@
+seed: 314159
+device: cpu
+output_dir: runs/deck_evolution
+
+parallel:
+  workers: 4
+  batch_size: 64
+
+monitoring:
+  tensorboard: true
+
+telemetry:
+  # Tous les matchs gardent leur résumé; 10 % gardent leurs actions détaillées.
+  action_sample_rate: 0.10
+
+evolution:
+  population_size: 48
+  elites: 8
+  crossover_children: 24
+  strong_mutations: 8
+  random_immigrants: 8
+  tournament_size: 4
+  generations: 20
+
+evaluation:
+  # 6 adversaires x 2 camps x 2 premiers joueurs.
+  short_games_per_side_order: 4   # 96 matchs par deck
+  medium_games_per_side_order: 20 # 480 matchs par deck
+  final_games_per_side_order: 100 # 2 400 matchs par deck
+  short_seed_base: 2200000000
+  medium_seed_base: 2210000000
+  final_seed_base: 2220000000
+  medium_finalists: 12
+  final_finalists: 3
+
+final_gate:
+  minimum_win_rate: 0.55
+  minimum_worst_matchup: 0.40
+
+opponents:
+  - id: mirror_inari
+    god: inari
+    deck: [f01_n3, f02_n3, f04_n3, f05_n2, f07_n2, f08_n2, n01_n2, n21_n1]
+  - id: mirror_izanami
+    god: izanami
+    deck: [d01_n2, d02_n2, d03_n2, d04_n2, d05_n1, d07_n1, n12_n1, n16_n1]
+  - id: mirror_hachiman
+    god: hachiman
+    deck: [r01_n2, r02_n2, r03_n2, r04_n2, r05_n1, r06_n1, n01_n2, n24_n2]
+  - id: mirror_tsukuyomi
+    god: tsukuyomi
+    deck: [h01_n4, h04_n3, h05_n3, h06_n2, h09_n1, h12_n1, n01_n3, n21_n1]
+  - id: mirror_okuninushi
+    god: okuninushi
+    deck: [e01_n3, e04_n3, e05_n2, e06_n2, e07_n2, e09_n1, n01_n2, n16_n2]
+  - id: mirror_susanoo
+    god: susanoo
+    deck: [p01_n4, p04_n4, p05_n3, p08_n2, p09_n2, p12_n1, n01_n3, n21_n1]

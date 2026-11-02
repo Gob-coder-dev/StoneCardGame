@@ -1,0 +1,105 @@
+seed: 654321
+device: cpu
+output_dir: runs/boss_specialists
+
+environment:
+  backend: python_batch
+  evaluation_backend: godot
+  godot_path: null
+  reward:
+    capture: 0.0
+    multi_capture: 0.0
+    terminal: 2.0
+    final_margin: 0.10
+    final_margin_scale: 5.0
+    board_control_delta: 0.05
+    board_control_delta_limit: 4
+  # Placeholder required by the common PPO schema. The trainer replaces this
+  # scenario with the selected deck from boss_roster.json.
+  scenarios:
+    - god: inari
+      deck: [f01_n3, f02_n3, f04_n3, f05_n2, f07_n2, f08_n2, n01_n2, n21_n1]
+
+model:
+  hidden_dim: 512
+
+ppo:
+  total_timesteps: 8388608
+  rollout_steps: 32
+  num_envs: 32
+  learning_rate: 0.00005
+  gamma: 0.99
+  gae_lambda: 0.95
+  minibatches: 8
+  min_update_epochs: 1
+  max_update_epochs: 4
+  target_kl: 0.015
+  update_epochs: 3
+  clip_coef: 0.2
+  entropy_coef: 0.008
+  value_coef: 0.5
+  max_grad_norm: 0.5
+
+monitoring:
+  tensorboard: true
+  checkpoint_every_updates: 25
+  snapshot_every_updates: 200
+  alerts:
+    target_kl: 0.015
+    maximum_clip_fraction: 0.30
+    minimum_normalized_entropy: 0.06
+    minimum_explained_variance: -0.10
+    maximum_throughput_drop: 0.35
+    maximum_eval_regression: 0.05
+    maximum_reward_divergence: 0.25
+    minimum_anchor_win_rate: 0.75
+    plateau_evaluations: 5
+    consecutive_updates: 3
+
+curriculum:
+  promotion_win_rate: 0.85
+  confidence_floor: 0.90
+  maximum_loss_rate: 0.07
+  non_loss_confidence_floor: 0.90
+  replay_probability: 0.0
+  god_sampling: {enabled: false}
+  terrain_sampling: {enabled: false}
+
+evaluation:
+  every_updates: 100
+  games: 240
+  num_envs: 10
+  seed_base: 2600000000
+  anchor_games_per_stage: 0
+  final_gate:
+    games_per_slice: 1
+    seed_base: 1
+    overall_win_rate: 0.0
+    confidence_floor: 0.0
+    minimum_slice_win_rate: 0.0
+
+specialization:
+  output_root: runs/boss_specialists
+  mirror_probability: 0.10
+  evaluation_games_per_matchup: 4
+  evaluation_seed_base: 2650000000
+  selection_specialist_weight: 0.75
+  snapshot_every_updates: 100
+  max_recent: 6
+  weight_schedule:
+    - until_update: 200
+      weights: {current: 0.15, recent: 0.00, historical: 0.00, best: 0.05, godot: 0.80}
+    - until_update: 800
+      weights: {current: 0.25, recent: 0.10, historical: 0.05, best: 0.10, godot: 0.50}
+    - until_update: 2147483647
+      weights: {current: 0.35, recent: 0.20, historical: 0.10, best: 0.10, godot: 0.25}
+  validation:
+    minimum_updates: 800
+    games_per_slice: 24
+    seed_base: 2700000000
+    maximum_godot_regression: 0.06
+    maximum_matchup_regression: 0.05
+    minimum_score_gain: 0.01
+    minimum_overall_score: 0.52
+    minimum_matchup_score: 0.40
+    minimum_wilson_win: 0.48

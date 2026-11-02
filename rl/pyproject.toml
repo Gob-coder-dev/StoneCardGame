@@ -10,6 +10,14 @@ readme = "README.md"
 requires-python = ">=3.11,<3.12"
 dynamic = ["dependencies"]
 
+[project.scripts]
+samstone-train = "samstone_rl.training.ppo_cleanrl:main"
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0.0", "ruff>=0.8.0", "mypy>=1.13.0"]
+directml = ["torch-directml>=0.2.0.dev240914"]
+monitoring = ["wandb>=0.16.0"]
+
 [tool.setuptools.dynamic]
 dependencies = { file = ["requirements.txt"] }
 

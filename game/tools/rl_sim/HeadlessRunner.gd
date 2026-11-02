@@ -1,144 +1,209 @@
-## HeadlessRunner.gd
-## Serveur de commandes JSON via stdin/stdout pour le simulateur RL
+## Serveur JSON-lines local. Le TCP separe le protocole des logs Godot.
 extends Node
 
-const TurnManagerModel := preload("res://scripts/engine/TurnManager.gd")
-const GameStateModel := preload("res://scripts/engine/GameState.gd")
-const RulesEngineModel := preload("res://scripts/engine/RulesEngine.gd")
-const PlacementRulesModel := preload("res://scripts/engine/PlacementRules.gd")
-const CombatResolverModel := preload("res://scripts/engine/CombatResolver.gd")
-const BoardSetupGenerator := preload("res://scripts/engine/BoardSetupGenerator.gd")
+const SimulatorModel := preload("res://tools/rl_sim/MatchSimulator.gd")
+const Serializer := preload("res://tools/rl_sim/StateSerializer.gd")
+const DeckApi := preload("res://tools/rl_sim/DeckApi.gd")
 
-const StateSerializer := preload("res://tools/rl_sim/StateSerializer.gd")
-const RewardCalculator := preload("res://tools/rl_sim/RewardCalculator.gd")
+var _server := TCPServer.new()
+var _peer: StreamPeerTCP = null
+var _buffer := ""
+var _simulator := SimulatorModel.new()
+var _simulators: Dictionary = {}
 
-var turn_manager: Node = null
-var current_config: Dictionary = {}
 
 func _ready() -> void:
-	print("RL_SIM_READY")
-	flush_stdout()
-	set_process(true)
-
-func flush_stdout():
-	# Force flush in headless
-	pass
+	var port := _argument_value("--rl-port")
+	if port <= 0:
+		push_error("HeadlessRunner: --rl-port PORT est obligatoire")
+		get_tree().quit(2)
+		return
+	var error := _server.listen(port, "127.0.0.1")
+	if error != OK:
+		push_error("HeadlessRunner: impossible d'ecouter le port %d" % port)
+		get_tree().quit(3)
 
 
 func _process(_delta: float) -> void:
-	if not OS.is_stdin_enabled():
+	if _peer == null and _server.is_connection_available():
+		_peer = _server.take_connection()
+	if _peer == null:
 		return
-	
-	# Read line from stdin
-	var input = OS.read_string_from_stdin()
-	if input == "":
+	_peer.poll()
+	if _peer.get_status() != StreamPeerTCP.STATUS_CONNECTED:
+		_peer = null
+		_buffer = ""
 		return
-	
-	# Process each line
-	var lines = input.split("\n", false)
-	for line in lines:
-		if line.strip_edges() == "":
-			continue
-		_handle_command(line.strip_edges())
+	var available := _peer.get_available_bytes()
+	if available <= 0:
+		return
+	_buffer += _peer.get_utf8_string(available)
+	while _buffer.contains("\n"):
+		var boundary := _buffer.find("\n")
+		var line := _buffer.substr(0, boundary).strip_edges()
+		_buffer = _buffer.substr(boundary + 1)
+		if line != "":
+			_handle(line)
 
-func _handle_command(line: String) -> void:
-	var parsed = JSON.parse_string(line)
-	if not parsed is Dictionary:
-		_send_response({"ok": false, "error": "invalid_json"})
+
+func _handle(line: String) -> void:
+	var request = JSON.parse_string(line)
+	if not request is Dictionary:
+		_send({"ok": false, "id": 0, "error": "invalid_json"})
 		return
-	
-	var cmd = parsed.get("cmd", "")
-	var req_id = parsed.get("id", 0)
-	
-	match cmd:
+	var request_id := int(request.get("id", 0))
+	var command := str(request.get("cmd", ""))
+	match command:
 		"ping":
-			_send_response({"ok": true, "id": req_id, "result": {"pong": true}})
+			_send_ok(request_id, {"pong": true})
 		"reset":
-			var result = _handle_reset(parsed.get("config", {}))
-			_send_response({"ok": true, "id": req_id, "result": result})
-		"get_legal_moves":
-			var result = _handle_legal_moves()
-			_send_response({"ok": true, "id": req_id, "result": result})
+			var reset_result := _simulator.reset(request.get("config", {}))
+			if not bool(reset_result.get("success", false)):
+				_send_error(request_id, str(reset_result.get("error", "reset impossible")))
+			else:
+				_send_ok(request_id, _snapshot(int(request.get("observer", GameState.PLAYER_HUMAN)), reset_result))
+		"legal_actions":
+			_send_ok(request_id, {"legal_actions": _simulator.legal_actions()})
+		"get_state":
+			_send_ok(request_id, _snapshot(int(request.get("observer", GameState.PLAYER_HUMAN))))
 		"step":
-			var action = parsed.get("action", {})
-			var result = _handle_step(action)
-			_send_response({"ok": true, "id": req_id, "result": result})
+			var step_result := _simulator.step(request.get("action", {}))
+			if not bool(step_result.get("success", false)):
+				_send_error(request_id, str(step_result.get("error", "action refusee")))
+			else:
+				_send_ok(request_id, _snapshot(int(request.get("observer", GameState.PLAYER_HUMAN)), step_result))
+		"choose_profile_action":
+			var choice := _simulator.choose_profile_action(request.get("profile", {}))
+			if bool(choice.get("success", false)):
+				_send_ok(request_id, {"action": choice["action"]})
+			else:
+				_send_error(request_id, str(choice.get("error", "choix impossible")))
+		"tactical_action_scores":
+			_send_ok(request_id, {"scores": _simulator.tactical_action_scores(
+				int(request.get("observer", GameState.PLAYER_HUMAN)))})
+		"get_deck_catalog":
+			_send_ok(request_id, DeckApi.catalog())
+		"validate_deck":
+			_send_ok(request_id, DeckApi.validate_deck(
+				request.get("stone_ids", []), str(request.get("god_id", ""))))
+		"validate_decks":
+			_send_ok(request_id, {"results": DeckApi.validate_decks(request.get("decks", []))})
+		"get_engine_manifest":
+			_send_ok(request_id, DeckApi.engine_manifest())
+		"batch_reset":
+			_send_ok(request_id, {"results": _batch_reset(request.get("matches", []))})
+		"batch_step":
+			_send_ok(request_id, {"results": _batch_step(request.get("matches", []))})
+		"batch_get_state":
+			_send_ok(request_id, {"results": _batch_get_state(request.get("matches", []))})
+		"batch_choose_profile_action":
+			_send_ok(request_id, {"results": _batch_choose_profile(request.get("matches", []))})
+		"release_matches":
+			for match_id in request.get("match_ids", []):
+				_simulators.erase(str(match_id))
+			_send_ok(request_id, {"remaining": _simulators.size()})
+		"shutdown":
+			_send_ok(request_id, {"shutdown": true})
+			get_tree().quit()
 		_:
-			_send_response({"ok": false, "id": req_id, "error": "unknown_command"})
+			_send_error(request_id, "unknown_command")
 
-func _handle_reset(config: Dictionary) -> Dictionary:
-	current_config = config
-	var human_deck = config.get("human_deck", [])
-	var ai_deck = config.get("ai_deck", [])
-	var human_god = config.get("human_god", "")
-	var ai_god = config.get("ai_god", "")
-	var seed = config.get("seed", randi())
-	var blocked = config.get("blocked", [])
-	
-	turn_manager = TurnManagerModel.new()
-	add_child(turn_manager)
-	
-	# Generate blocked cells if empty
-	if blocked.is_empty() and config.get("random_blocked", false):
-		blocked = BoardSetupGenerator.generate_blocked_cells()
-	
-	var forced_first = config.get("forced_first_player", 0)
-	turn_manager.start_game(human_deck, ai_deck, blocked, "", forced_first, human_god, ai_god)
-	
-	var state = turn_manager.get_state()
-	# Force AI to be current player if requested
-	if config.get("ai_to_move_first", false):
-		state.current_player = GameStateModel.PLAYER_AI
-	
-	var obs = StateSerializer.serialize_state(state, true) # true = mask opponent hand
-	return {"observation": obs, "legal_moves": _get_legal_moves_list()}
 
-func _handle_legal_moves() -> Dictionary:
-	return {"legal_moves": _get_legal_moves_list()}
+func _snapshot(observer: int, extra: Dictionary = {}) -> Dictionary:
+	return _snapshot_for(_simulator, observer, extra)
 
-func _get_legal_moves_list() -> Array:
-	if turn_manager == null:
-		return []
-	var state = turn_manager.get_state()
-	if state == null or state.is_game_over:
-		return []
-	
-	var moves = RulesEngineModel.get_valid_moves(state, GameStateModel.PLAYER_AI)
-	return moves
 
-func _handle_step(action: Dictionary) -> Dictionary:
-	if turn_manager == null:
-		return {"observation": {}, "reward": 0.0, "done": true, "info": {}}
-	
-	var state = turn_manager.get_state()
-	if state == null or state.is_game_over:
-		return {"observation": StateSerializer.serialize_state(state, true), "reward": 0.0, "done": true, "info": {}}
-	
-	var row = int(action.get("row", -1))
-	var col = int(action.get("col", -1))
-	var stone_id = str(action.get("stone_id", ""))
-	
-	var before_score_ai = state.score_ai
-	var before_score_human = state.score_human
-	
-	# Apply move
-	var success = turn_manager.ai_play(row, col, stone_id)
-	if not success:
-		return {"observation": StateSerializer.serialize_state(state, true), "reward": -0.01, "done": false, "info": {"invalid_move": true}}
-	
-	# Wait for turn to advance (synchronously in headless)
-	# In headless without UI, TurnManager processes immediately via awaits
-	await get_tree().process_frame
-	await get_tree().process_frame
-	
-	var after_state = turn_manager.get_state()
-	var captures = max(0, after_state.score_ai - before_score_ai)
-	
-	var reward = RewardCalculator.calculate_reward(captures, after_state)
-	var done = after_state.is_game_over
-	var obs = StateSerializer.serialize_state(after_state, true)
-	
-	return {"observation": obs, "reward": reward, "done": done, "info": {"captures": captures}}
+func _snapshot_for(simulator, observer: int, extra: Dictionary = {}) -> Dictionary:
+	var result := extra.duplicate(true)
+	result["observation"] = Serializer.serialize_for_player(simulator.state, observer)
+	result["legal_actions"] = simulator.legal_actions()
+	return result
 
-func _send_response(response: Dictionary) -> void:
-	print(JSON.stringify(response))
+
+func _batch_reset(matches: Array) -> Array:
+	var results: Array = []
+	for request in matches:
+		if not request is Dictionary:
+			results.append({"ok": false, "match_id": "", "error": "requete invalide"})
+			continue
+		var match_id := str(request.get("match_id", ""))
+		if match_id == "":
+			results.append({"ok": false, "match_id": "", "error": "match_id obligatoire"})
+			continue
+		var simulator := SimulatorModel.new()
+		var reset_result := simulator.reset(request.get("config", {}))
+		if not bool(reset_result.get("success", false)):
+			results.append({"ok": false, "match_id": match_id,
+				"error": str(reset_result.get("error", "reset impossible"))})
+			continue
+		_simulators[match_id] = simulator
+		results.append({"ok": true, "match_id": match_id,
+			"result": _snapshot_for(simulator, int(request.get("observer", GameState.PLAYER_HUMAN)), reset_result)})
+	return results
+
+
+func _batch_step(matches: Array) -> Array:
+	var results: Array = []
+	for request in matches:
+		var match_id := str(request.get("match_id", "")) if request is Dictionary else ""
+		var simulator = _simulators.get(match_id)
+		if simulator == null:
+			results.append({"ok": false, "match_id": match_id, "error": "match inconnu"})
+			continue
+		var step_result: Dictionary = simulator.step(request.get("action", {}))
+		if not bool(step_result.get("success", false)):
+			results.append({"ok": false, "match_id": match_id,
+				"error": str(step_result.get("error", "action refusee"))})
+			continue
+		results.append({"ok": true, "match_id": match_id,
+			"result": _snapshot_for(simulator, int(request.get("observer", GameState.PLAYER_HUMAN)), step_result)})
+	return results
+
+
+func _batch_get_state(matches: Array) -> Array:
+	var results: Array = []
+	for request in matches:
+		var match_id := str(request.get("match_id", "")) if request is Dictionary else ""
+		var simulator = _simulators.get(match_id)
+		if simulator == null:
+			results.append({"ok": false, "match_id": match_id, "error": "match inconnu"})
+			continue
+		results.append({"ok": true, "match_id": match_id,
+			"result": _snapshot_for(simulator, int(request.get("observer", GameState.PLAYER_HUMAN)))})
+	return results
+
+
+func _batch_choose_profile(matches: Array) -> Array:
+	var results: Array = []
+	for request in matches:
+		var match_id := str(request.get("match_id", "")) if request is Dictionary else ""
+		var simulator = _simulators.get(match_id)
+		if simulator == null:
+			results.append({"ok": false, "match_id": match_id, "error": "match inconnu"})
+			continue
+		var choice: Dictionary = simulator.choose_profile_action(request.get("profile", {}))
+		if bool(choice.get("success", false)):
+			results.append({"ok": true, "match_id": match_id, "result": {"action": choice["action"]}})
+		else:
+			results.append({"ok": false, "match_id": match_id,
+				"error": str(choice.get("error", "choix impossible"))})
+	return results
+
+
+func _send_ok(request_id: int, result: Dictionary) -> void:
+	_send({"ok": true, "id": request_id, "result": result})
+
+
+func _send_error(request_id: int, message: String) -> void:
+	_send({"ok": false, "id": request_id, "error": message})
+
+
+func _send(response: Dictionary) -> void:
+	if _peer != null:
+		_peer.put_data((JSON.stringify(response) + "\n").to_utf8_buffer())
+
+
+func _argument_value(name: String) -> int:
+	var args := OS.get_cmdline_user_args()
+	var index := args.find(name)
+	return int(args[index + 1]) if index >= 0 and index + 1 < args.size() else -1

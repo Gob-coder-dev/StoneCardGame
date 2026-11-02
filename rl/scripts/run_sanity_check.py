@@ -1,56 +1,47 @@
 #!/usr/bin/env python3
-import sys
+from __future__ import annotations
+
+import argparse
 import os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
+import sys
+from pathlib import Path
 
-from samstone_rl.bridge.godot_process import GodotProcess
-import random
+import numpy as np
 
-def main():
-    print("Starting sanity check...")
-    godot = GodotProcess()
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+
+from samstone_rl.envs.samstone_env import SamStoneEnv
+from samstone_rl.opponents import GodotProfileOpponent
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Termine des parties RL headless aleatoires.")
+    parser.add_argument("--games", type=int, default=10)
+    parser.add_argument("--godot", default=os.environ.get("GODOT_BIN"))
+    parser.add_argument("--profile", type=float, default=0.0, help="precision du bot Godot adverse")
+    parser.add_argument("--anticipation", action="store_true")
+    args = parser.parse_args()
+    wins = draws = losses = 0
+    env = SamStoneEnv(godot_path=args.godot, opponent=GodotProfileOpponent(args.profile, args.anticipation))
     try:
-        godot.start()
-        print("Testing ping...")
-        if godot.ping():
-            print("Ping OK")
-        else:
-            print("Ping failed")
-            return
-        
-        print("Testing reset...")
-        config = {
-            "human_deck": ["n01_n1", "n02_n1", "n03_n1", "n04_n1", "n05_n1", "n06_n1", "n07_n1", "n08_n1"],
-            "ai_deck": ["n09_n1", "n10_n1", "n11_n1", "n12_n1", "n13_n1", "n14_n1", "n15_n1", "n16_n1"],
-            "human_god_id": "veskar",
-            "ai_god_id": "nerava",
-            "seed": 12345,
-            "ai_to_move_first": True
-        }
-        result = godot.reset(config)
-        print(f"Reset OK - legal moves: {len(result.get('legal_moves', []))}")
-        
-        print("Testing random moves...")
-        for i in range(5):
-            moves = godot.get_legal_moves()
-            if not moves:
-                print(f"  Move {i}: No legal moves")
-                break
-            move = random.choice(moves)
-            step_result = godot.step(move)
-            print(f"  Move {i}: reward={step_result.get('reward', 0):.3f}, done={step_result.get('done', False)}")
-            if step_result.get('done'):
-                break
-        
-        print("Sanity check completed!")
-        
-    except Exception as e:
-        print(f"Error: {e}")
-        import traceback
-        traceback.print_exc()
+        for episode in range(args.games):
+            _observation, info = env.reset(seed=1000 + episode)
+            done = False
+            while not done:
+                action = int(env.np_random.choice(np.flatnonzero(info["action_mask"])))
+                _observation, _reward, terminated, truncated, info = env.step(action)
+                done = terminated or truncated
+            if info["winner"] == env.agent_player:
+                wins += 1
+            elif info["winner"] == 0:
+                draws += 1
+            else:
+                losses += 1
+        print(f"{args.games} parties terminees: {wins} V / {draws} N / {losses} D")
+        return 0
     finally:
-        godot.close()
+        env.close()
+
 
 if __name__ == "__main__":
-    main()
-
+    raise SystemExit(main())

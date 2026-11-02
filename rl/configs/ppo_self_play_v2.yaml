@@ -1,0 +1,124 @@
+# Phase 5: start only from a validated phase-4 checkpoint.
+# The decks below are fixed presets. Training pairs different gods and decks.
+seed: 54321
+device: cpu
+output_dir: runs/ppo_self_play_v2
+
+environment:
+  backend: python_batch
+  evaluation_backend: godot
+  godot_path: null
+  reward:
+    capture: 0.0
+    multi_capture: 0.0
+    terminal: 2.0
+    final_margin: 0.10
+    final_margin_scale: 5.0
+    board_control_delta: 0.05
+    board_control_delta_limit: 4
+  scenarios:
+    - god: inari
+      deck: [f01_n3, f02_n3, f04_n3, f05_n2, f07_n2, f08_n2, n01_n2, n21_n1]
+    - god: izanami
+      deck: [d01_n2, d02_n2, d03_n2, d04_n2, d05_n1, d07_n1, n12_n1, n16_n1]
+    - god: hachiman
+      deck: [r01_n2, r02_n2, r03_n2, r04_n2, r05_n1, r06_n1, n01_n2, n24_n2]
+    - god: tsukuyomi
+      deck: [h01_n4, h04_n3, h05_n3, h06_n2, h09_n1, h12_n1, n01_n3, n21_n1]
+    - god: okuninushi
+      deck: [e01_n3, e04_n3, e05_n2, e06_n2, e07_n1, e09_n1, n01_n2, n16_n2]
+    - god: susanoo
+      deck: [p01_n4, p04_n4, p05_n3, p08_n2, p09_n2, p12_n1, n01_n3, n21_n1]
+
+model:
+  hidden_dim: 512
+
+ppo:
+  total_timesteps: 4194304
+  rollout_steps: 32
+  num_envs: 16
+  learning_rate: 0.00010
+  gamma: 0.99
+  gae_lambda: 0.95
+  minibatches: 8
+  min_update_epochs: 1
+  max_update_epochs: 4
+  target_kl: 0.02
+  update_epochs: 3
+  clip_coef: 0.2
+  entropy_coef: 0.01
+  value_coef: 0.5
+  max_grad_norm: 0.5
+
+monitoring:
+  tensorboard: true
+  checkpoint_every_updates: 25
+  snapshot_every_updates: 200
+  alerts:
+    target_kl: 0.02
+    maximum_clip_fraction: 0.30
+    minimum_normalized_entropy: 0.08
+    minimum_explained_variance: -0.10
+    maximum_throughput_drop: 0.35
+    maximum_eval_regression: 0.05
+    maximum_reward_divergence: 0.25
+    minimum_anchor_win_rate: 0.80
+    plateau_evaluations: 5
+    consecutive_updates: 3
+
+curriculum:
+  promotion_win_rate: 0.85
+  confidence_floor: 0.90
+  maximum_loss_rate: 0.07
+  non_loss_confidence_floor: 0.90
+  replay_probability: 0.20
+  god_sampling:
+    enabled: false
+  terrain_sampling:
+    enabled: false
+
+evaluation:
+  every_updates: 100
+  games: 500
+  num_envs: 10
+  seed_base: 2300000000
+  anchor_games_per_stage: 0
+  final_gate:
+    games_per_slice: 100
+    seed_base: 2100000000
+    overall_win_rate: 0.85
+    confidence_floor: 0.90
+    maximum_loss_rate: 0.05
+    non_loss_confidence_floor: 0.90
+    minimum_slice_win_rate: 0.80
+    maximum_slice_loss_rate: 0.10
+
+phase5:
+  activation: after_phase4_gate
+  require_validated_phase4: true
+  league_directory: runs/ppo_self_play_v2/league
+  mirror_probability: 0.10
+  mixed_eval_games_per_pair: 1
+  mixed_eval_seed_base: 2350000000
+  selection_mixed_weight: 0.70
+  snapshot_every_updates: 100
+  max_recent: 6
+  weight_schedule:
+    - until_update: 100
+      weights: {current: 0.15, recent: 0.00, historical: 0.00, best: 0.05, godot: 0.80}
+    - until_update: 500
+      weights: {current: 0.30, recent: 0.10, historical: 0.05, best: 0.05, godot: 0.50}
+    - until_update: 2147483647
+      weights: {current: 0.40, recent: 0.20, historical: 0.10, best: 0.05, godot: 0.25}
+  validation:
+    minimum_updates: 500
+    godot_games_per_slice: 12
+    mixed_games_per_slice: 12
+    godot_seed_base: 2400000000
+    mixed_seed_base: 2500000000
+    maximum_stage_regression: 0.05
+    maximum_god_regression: 0.08
+    minimum_head_to_head_score: 0.52
+    minimum_head_to_head_wilson: 0.49
+    minimum_god_score: 0.45
+    minimum_matchup_score: 0.30

@@ -1,377 +1,328 @@
 # Plan de développement — SamStone RL
 
-Ce document est la feuille de route de référence du trainer. Une phase n'est
-terminée que lorsque ses critères de validation sont automatisés et passent de
-manière reproductible.
+Ce document décrit l'architecture cible et les conditions de passage entre les
+phases. L'historique des prototypes a été retiré : seule l'implémentation
+actuelle fait référence.
 
 ## 1. Résultat attendu
 
-Le projet doit livrer six boss, un pour chacun des dieux de SamStone :
+Le projet doit produire six boss, un par dieu, composés d'une politique et d'un
+deck optimisé. Ils seront intégrés dans Godot, embarqués dans l'APK et
+fonctionneront hors ligne. Les mêmes simulations fourniront des statistiques
+sur les cartes, dieux, terrains, matchups et ordres de départ.
 
-| Boss | Identifiant moteur |
-| --- | --- |
-| Véskar | `inari` |
-| Nérava | `izanami` |
-| Kharûn | `hachiman` |
-| Ilyr | `tsukuyomi` |
-| Sylkha | `okuninushi` |
-| Énigma | `susanoo` |
-
-Chaque boss est un couple `(politique, deck)` évalué contre une ligue diverse.
-Les modèles et leurs decks seront embarqués dans l'APK et fonctionneront hors
-ligne. Le même système produira des données d'équilibrage contrôlées.
+Une invincibilité absolue n'est pas une cible vérifiable dans un jeu contenant
+du hasard et de l'information cachée. La cible est une robustesse statistique
+sur une ligue diverse et des seeds jamais utilisés pour l'optimisation.
 
 ## 2. Principes non négociables
 
-1. **Une seule source de règles** : aucune mécanique de combat n'est recodée en
-   Python. Le simulateur appelle le moteur Godot.
-2. **Parité avant performance** : un simulateur rapide mais divergent est
-   inutilisable.
-3. **Information réaliste** : la main adverse et le futur aléatoire restent
-   masqués.
-4. **Déterminisme** : seed, decks, terrain et politiques identiques donnent la
-   même trace.
-5. **Évaluation séparée** : les seeds et adversaires d'évaluation ne servent pas
-   à l'optimisation.
-6. **Victoire avant captures** : l'objectif terminal domine toute récompense
-   intermédiaire.
-7. **Mesures avant optimisation** : aucune promesse de débit ou de latence sans
-   benchmark reproductible.
-8. **Déploiement simple** : poids compacts exécutés par Godot ; pas de dépendance
-   ONNX, Python ou réseau dans l'APK.
+1. **Godot est canonique** : les promotions et validations utilisent le moteur
+   réel du jeu.
+2. **Le moteur Python est contrôlé** : il accélère la collecte, sans décider de
+   la qualité finale d'un checkpoint.
+3. **Aucune information cachée** : la politique et les bots d'entraînement ne
+   consultent jamais la véritable main adverse.
+4. **Victoire avant captures** : la récompense terminale domine le shaping.
+5. **Évaluation séparée** : seeds et matchs d'évaluation ne sont pas réutilisés
+   pour apprendre.
+6. **Reproductibilité** : configuration, checksums, RNG, curriculum et état
+   Adam sont sauvegardés.
+7. **Mesures avant optimisation** : toute modification de performance possède
+   un benchmark reproductible.
+8. **Déploiement local** : les poids sont exécutés par Godot, sans Python,
+   ONNX, serveur ou connexion dans l'APK.
 
-## 3. Architecture cible
-
-```text
-StoneCardGame/
-├── game/
-│   ├── project.godot
-│   ├── assets/
-│   ├── data/
-│   ├── scenes/
-│   ├── scripts/
-│   ├── tests/
-│   └── tools/rl_sim/
-│       ├── HeadlessSim.tscn
-│       ├── HeadlessRunner.gd
-│       ├── MatchSimulator.gd
-│       └── StateSerializer.gd
-└── rl/
-    ├── configs/
-    ├── scripts/
-    ├── src/samstone_rl/
-    │   ├── bridge/
-    │   ├── envs/
-    │   ├── models/
-    │   ├── opponents/
-    │   ├── training/
-    │   └── utils/
-    └── tests/
-```
-
-`game/tools/rl_sim/` est une couche d'intégration, pas un second moteur. Les
-récompenses, rollouts et algorithmes d'apprentissage appartiennent à `rl/`.
-
-## 4. Phase 0 — fondations du monorepo
-
-**Statut : en cours.**
-
-### Travaux
-
-- [x] Séparer `game/` et `rl/`.
-- [x] Conserver l'adaptateur GDScript sous le `res://` du jeu.
-- [x] Déplacer le code Python dans un package `src/samstone_rl`.
-- [x] Déclarer le package avec `pyproject.toml`.
-- [x] Corriger les règles Git qui ignoraient le code source `env/`.
-- [x] Ignorer tous les environnements virtuels et artefacts locaux.
-- [x] Documenter l'intégration finale sans ONNX.
-- [ ] Recréer un seul environnement Python 3.11 dans `rl/.venv`.
-- [ ] Verrouiller un ensemble de dépendances testé sur une installation neuve.
-- [ ] Ajouter `pytest`, le lint et la vérification de types minimale.
-- [x] Supprimer les chemins absolus et utiliser `GODOT_BIN`/CLI/`PATH`.
-- [ ] Ajouter une commande de diagnostic CPU et DirectML.
-
-### Critères de validation
-
-- Un clone neuf installe le trainer avec une commande documentée.
-- Aucun cache, environnement virtuel ou run n'apparaît dans Git.
-- Le projet Godot s'ouvre et ses tests se lancent depuis `game/`.
-- Les imports Python fonctionnent après `python -m pip install -e .`.
-
-## 5. Phase 1 — simulateur Godot synchrone et fidèle
-
-**Statut : prototype à remplacer.**
-
-### 5.1 Moteur de match headless
-
-Créer `MatchSimulator.gd`, sans `TurnManager` ni attente de frame. Un appel à
-`step` doit effectuer atomiquement :
+## 3. Architecture de référence
 
 ```text
-validation PlacementRules
-→ CombatResolver.apply_move
-→ RulesEngine.calculate_score
-→ détection de fin
-→ changement de joueur si nécessaire
+Expérience rapide                        Validation canonique
+┌──────────────────────┐                ┌──────────────────────┐
+│ 64 états batch       │                │ 10 processus Godot   │
+│ encodage direct      │                │ seeds réservés       │
+└──────────┬───────────┘                └──────────┬───────────┘
+           │ observations/actions                  │ résultats
+           └──────────────┬────────────────────────┘
+                          ▼
+                ┌──────────────────┐
+                │ Gym + PPO        │
+                │ curriculum       │
+                │ checkpoints      │
+                └────────┬─────────┘
+                         ▼
+                TensorBoard / JSONL
 ```
 
-Le résultat brut contient les captures retournées par `CombatResolver`, pas une
-différence de score qui compterait aussi la pierre posée.
+Une unique boucle PPO gère toutes les largeurs de collecte. `python_batch`
+apprend à partir des mêmes règles que `python`, mais encode directement les
+états dans les tenseurs PPO sans reconstruire les dictionnaires du bridge.
+Godot reste le backend d'évaluation. L'observation, le codec d'actions, la
+récompense et les checkpoints restent communs.
 
-### 5.2 Reset déterministe
+Configuration officielle : `configs/ppo_phase4_tactical.yaml`.
 
-`reset(config)` doit :
+## 4. État des phases
 
-- exiger un seed entier ;
-- valider les deux dieux et les deux decks ;
-- produire ou accepter les cases bloquées ;
-- produire ou accepter le premier joueur ;
-- initialiser le générateur propre à `GameState` ;
-- refuser clairement toute configuration invalide.
+### Phase 0 — monorepo et outillage
 
-La distribution du jeu est conservée : 0, 1 ou 2 cases bloquées avec les mêmes
-probabilités et un premier joueur équilibré.
+**Statut : implémentée.**
 
-### 5.3 API primitive
+- projets `game/` et `rl/` séparés ;
+- package Python sous `src/` ;
+- Python 3.11 et dépendances déclarées ;
+- chemins portables via `GODOT_BIN` ;
+- artefacts locaux exclus de Git ;
+- lint et tests automatisés.
 
-Le serveur expose :
+### Phase 1 — simulateur Godot synchrone
 
-- `ping` ;
-- `reset` ;
-- `legal_actions` pour le joueur courant ;
-- `step` pour appliquer exactement un coup ;
-- `get_state` pour le diagnostic ;
-- `shutdown`.
+**Statut : implémentée.**
 
-Le wrapper Gym gérera les réponses de l'adversaire. Cette primitive permettra
-aussi le self-play où Python contrôle les deux camps.
+- reset déterministe ;
+- observation publique pour les deux camps ;
+- actions légales et application atomique d'un placement ;
+- captures issues directement du moteur de combat ;
+- score, fin de partie et changement de joueur synchrones.
 
-### 5.4 Observation publique
+Garde restante avant publication : campagne longue de 10 000 parties et corpus
+élargi pour toutes les combinaisons d'effets aléatoires.
 
-`StateSerializer.serialize_for_player(state, observer)` doit fonctionner pour
-les deux joueurs. Il expose la propre main, la taille de la main adverse et
-toutes les informations publiques du plateau, sans RNG caché ni cartes adverses.
+### Phase 2 — pont Python/Godot
 
-### 5.5 Tests de parité
+**Statut : implémentée.**
 
-- Parties scriptées comparées tour par tour au vrai moteur.
-- Toutes les familles et tous les effets couverts.
-- Cas de hasard répétés avec les mêmes seeds.
-- États comparés après chaque coup, pas seulement au score final.
+- socket TCP locale avec timeouts ;
+- diagnostics séparés du protocole ;
+- fermeture gracieuse et détection des processus morts ;
+- pool multi-processus pour évaluations et recherche de decks ;
+- manifeste et checksum du catalogue.
 
-### Critères de validation
+### Phase 3 — environnement Gymnasium
 
-- 10 000 parties aléatoires terminent sans blocage ni action invalide.
-- Un même seed produit la même trace JSON complète.
-- Toute action annoncée légale est acceptée.
-- Toute action illégale est refusée sans mutation de l'état.
-- Le score total correspond toujours au nombre de pierres posées.
-- Zéro divergence avec le moteur utilisé par le jeu sur le corpus de parité.
+**Statut : implémentée.**
 
-## 6. Phase 2 — pont Python/Godot robuste
+- observation canonique de taille stable ;
+- 128 actions masquées ;
+- alternance agent/adversaire dans une transition Gym ;
+- deux camps, ordres de départ et terrains ;
+- récompense symétrique : victoire/défaite `±2`, marge finale bornée et petite
+  variation du contrôle durable du plateau après la réponse adverse ;
+- captures immédiates non récompensées dans la configuration de production.
 
-**Statut : prototype à remplacer.**
+### Phase 4 — PPO et curriculum
 
-### Travaux
+**Statut : implémentée, entraînement long en cours.**
 
-- Lancer `game/project.godot` depuis un chemin configurable.
-- Remplacer les `sleep` et `readline` bloquants par une lecture asynchrone avec
-  timeout.
-- Séparer stdout protocolaire et stderr de diagnostic.
-- Préfixer les réponses, par exemple `RL_JSON:`, pour ignorer les logs Godot.
-- Vérifier l'identifiant de chaque requête.
-- Détecter les processus morts et conserver les dernières lignes d'erreur.
-- Ajouter un contexte `with GodotProcess(...)` et une fermeture gracieuse.
-- Garantir `terminate`, puis `kill` en dernier recours.
-- Préparer `batch_reset` et `batch_step` pour plusieurs matchs par processus.
+- acteur-critique tactique masqué : une tête partagée compare chaque coup légal
+  à partir de la carte, de la case, des captures et de la menace de riposte ;
+- PPO, GAE, clipping, entropie et bootstrap ;
+- batch fixe de 2 048 transitions ;
+- 64 environnements `python_batch` pour l'expérience ;
+- évaluation uniforme sur 500 matchs avec dix processus Godot ;
+- curriculum unique `0 → 0,25 → 0,5 → 1` sans anticipation, puis
+  `anticipation 25 % → 50 % → 75 % → 100 %` ;
+- tirage d'anticipation par décision, reproductible par seed ;
+- import `--weights-only` pour changer de curriculum sans hériter de son état ;
+- exposition adaptative aux dieux et terrains faibles ;
+- replay de 20 % des anciens paliers ;
+- checkpoints atomiques `latest`, `best` et snapshots.
 
-### Tests
+Promotion d'un palier :
 
-- Protocole JSON valide et invalide.
-- Logs parasites avant et entre les réponses.
-- Timeout de démarrage et de commande.
-- Crash du processus.
-- Fermeture normale et forcée.
-- Cent cycles de démarrage/arrêt sans processus orphelin.
-- Plusieurs parties complètes via le pont.
+- `win_rate >= 0,85` ;
+- `loss_rate <= 0,07` pour les paliers intermédiaires ;
+- `non_loss_wilson_lower >= 0,90`.
+- deux évaluations consécutives de 500 parties conformes avant promotion.
 
-### Critères de validation
+La garde finale couvre les huit paliers, six dieux, deux camps et deux ordres de
+départ. Seul son checkpoint `phase4_validated.pt` peut activer la phase 5.
 
-- Aucune opération réseau local ne peut attendre sans limite.
-- Une erreur contient la commande, l'identifiant et le diagnostic Godot utile.
-- Le test d'intégration termine une partie et libère toujours le processus.
+#### Historique de validation tactique
 
-## 7. Phase 3 — environnement Gymnasium
+Une expérience isolée a testé une politique conditionnée par action avant son
+adoption dans le PPO de production. Le réseau conserve une tête résiduelle identique à la
+politique 512 importée et ajoute un scorer partagé recevant, pour chaque coup
+légal, la carte, la case, la capture immédiate et la menace de riposte.
 
-**Statut : prototype à remplacer.**
+- diagnostic décision par décision exporté en JSON et CSV ;
+- calcul déterministe sans consommation du hasard réel ni main cachée ;
+- ancien checkpoint préservé exactement au moment de l'import ;
+- passages intermédiaires officiels : 85 % de victoires, 7 % de défaites
+  maximum, Wilson des non-défaites à 90 % et deux confirmations ;
+- comparaison obligatoire sur 2 880 mêmes seeds avant adoption ;
+- backend Python pendant le pilote, schéma également exposé et testé dans Godot,
+  puis validation Godot complète seulement si l'amélioration est démontrée.
 
-### 7.1 Observation canonique
+Le calcul complet est dorénavant le chemin principal du boss, puis sera mesuré
+sur l'APK avant l'export final.
 
-Structurer l'observation avant de l'aplatir :
+### Phase 5 — self-play et ligue
 
-```text
-board  : [16, F_case]
-hand   : [8, F_carte]
-global : [F_partie]
-mask   : [128]
+**Statut : code d'entraînement et de validation implémenté ; campagne non lancée.**
+
+- checkpoints adverses figés pendant une partie ;
+- catégories courant, récent, historique et meilleur ;
+- ancrage Godot toujours présent ;
+- transition progressive jusqu'à 75 % de self-play ;
+- classement et historique persistants.
+- matchs entre les six dieux et leurs presets (90 % de duels croisés, 10 % de
+  miroirs dans la configuration actuelle) ;
+- boucle PPO dédiée avec reprise, snapshots et métriques de matchup ;
+- évaluation périodique sur 144 matchs mixtes contre la politique validée de
+  phase 4, en plus des 500 parties contre le dernier bot Godot.
+
+La garde finale utilise des seeds non employés pendant l'entraînement ni les
+évaluations périodiques. Elle compare candidat et politique de phase 4 contre
+les cinq profils Godot, sur les mêmes scénarios : 5 × 6 × 2 camps × 2 ordres ×
+12 seeds × 2 politiques = 2 880 matchs. Elle joue aussi 6 × 6 × 2 × 2 × 12 =
+1 728 duels contre le checkpoint figé de phase 4. Total : 4 608 matchs.
+Critères configurables dans `ppo_self_play_v2.yaml` : 500 mises à jour minimum,
+régression maximale de 5 points par palier Godot et 8 points par dieu, score
+global d'au moins 52 % contre la politique de phase 4, borne Wilson de victoire
+d'au moins 49 %, score d'au moins 45 % par dieu et 30 % par matchup. Le seul
+checkpoint officiel pour la phase 6 est `phase5_validated.pt`.
+
+Travaux pendant la campagne de phase 5 :
+
+1. suivre les matchups et les cinq ancrages Godot ;
+2. lancer la garde finale sur le meilleur checkpoint ;
+3. retenir une politique universelle validée ;
+4. décider si un fine-tuning par dieu apporte un gain réel.
+
+### Phase 6 — optimisation des decks
+
+**Statut : infrastructure implémentée, campagne longue non exécutée.**
+
+- catalogue extrait de Godot ;
+- génération, croisement et mutation de decks légaux ;
+- évaluation sur seeds communs, deux camps et deux ordres ;
+- cache SQLite et reprise après interruption ;
+- rapports d'équilibrage ;
+- garde finale indépendante de la population d'entraînement.
+
+Le réseau reste figé pendant l'évaluation d'une population. Un gain de deck ne
+doit jamais être confondu avec un gain de politique.
+
+### Phase 6B — spécialisation des six boss
+
+**Statut : entraînement, gardes et statistiques implémentés ; campagne non exécutée.**
+
+- registre immuable construit depuis les six rapports officiels de phase 6 ;
+- un run indépendant par dieu, initialisé avec `phase5_validated.pt` ;
+- dieu et deck final fixes pour l'agent, adversaires répartis sur les six decks ;
+- ligue persistante de checkpoints courant, récents, historiques et meilleur ;
+- ancrage continu contre les profils Godot ;
+- comparaison périodique contre la politique universelle sur seeds fixes ;
+- reprise exacte, checkpoints atomiques et TensorBoard par dieu ;
+- garde finale exigeant gain global, robustesse par matchup et absence de
+  régression importante contre Godot ;
+- garde globale des six poids et classement descriptif des boss.
+
+Cette phase ne remplace pas la politique universelle : elle produit six copies
+spécialisées. Un checkpoint n'est officiel qu'après `validate_boss.py`, et le
+lot n'est exportable qu'après `validate_boss_roster.py`.
+
+### Phase 7 — intégration dans Godot
+
+**Statut : à réaliser après sélection des politiques et decks.**
+
+- définir le format compact des poids `float32` ;
+- implémenter l'inférence du MLP dans Godot ;
+- partager le schéma d'observation et le codec d'actions ;
+- comparer logits et actions sur des fixtures PyTorch/Godot ;
+- mesurer mémoire et latence sur téléphone réel ;
+- embarquer six couples `(poids, deck)` dans l'APK.
+
+### Phase 8 — observabilité et équilibrage
+
+**Statut : implémentée.**
+
+- métriques JSONL versionnées ;
+- TensorBoard ;
+- alertes KL, clipping, entropie, variance et régression ;
+- rapports HTML ;
+- statistiques par dieu, camp, terrain et ordre de départ ;
+- débit décisions/s et parties/s ;
+- télémétrie de la recherche de decks.
+- classement des dieux sur échantillons communs ;
+- taux de sélection des cartes dans les populations et top decks ;
+- taux d'utilisation lorsqu'une carte est réellement disponible en main ;
+- détection des cartes jamais sélectionnées grâce au snapshot du catalogue ;
+- ablations appariées sur les mêmes seeds pour tester les remplacements de
+  cartes sans confondre chance, camp, terrain ou adversaire.
+
+## 5. Parité du moteur rapide
+
+Le moteur Python implémente placements, lames normales et longues, boucliers,
+lames aléatoires, pile ou face, Miasme, Corrosion, vol de boucliers et Essaim.
+
+Validation obligatoire :
+
+- observation identique après chaque coup déterministe ;
+- mêmes actions légales et captures ;
+- mêmes invariants de score et de fin ;
+- parité batch/scalar sur les six dieux, les deux camps et tous les profils ;
+- aucun contenu de main adverse dans l'anticipation ;
+- évaluation officielle exclusivement dans Godot.
+
+La mise en production de `python_batch` a également exigé une suite complète
+de tests Python, 22 tests avec le véritable exécutable Godot, des benchmarks à
+32/64/128 environnements et un test d'endurance de 1 024 000 transitions PPO.
+
+Python et Godot n'utilisent pas le même générateur pseudo-aléatoire. Les tirages
+ne sont donc pas identiques seed par seed, mais doivent suivre les mêmes lois.
+Cette différence ne peut pas promouvoir un modèle, puisque Godot reste l'oracle.
+
+Référence de performance actuelle : environ 388 parties/s et 2 914 décisions/s
+sur 1 024 000 transitions PPO. À lot identique, `python_batch` est environ
+1,9 fois plus rapide que `python`. La largeur 64 est retenue : 128 états
+n'apportent pratiquement aucun gain supplémentaire sur la machine de référence.
+
+Le palier `precision_100_anticipation` utilise un cache comportemental à deux
+niveaux : enveloppes offensives immuables de chaque variante, puis profil de
+riposte public indexé par dieu et lignées déjà posées. Le plateau reste évalué
+pour chaque simulation et aucune carte cachée n'entre dans la clé. Cette
+optimisation conserve exactement les valeurs et choix du bot tout en faisant
+passer le benchmark avec anticipation de 6,74 à 26,56 parties/s (×3,9).
+
+## 6. Procédure de validation
+
+Avant un entraînement long :
+
+```powershell
+.\.venv311\Scripts\python.exe -m ruff check .
+.\.venv311\Scripts\python.exe -m pytest tests -q
+.\.venv311\Scripts\python.exe scripts\benchmark_fast_training.py `
+  --config configs\ppo_phase4_tactical.yaml --updates 12 --num-envs 64 `
+  --backend python_batch
 ```
 
-Une pierre posée doit encoder au minimum son propriétaire relatif, son auteur,
-ses quatre faces, lames normales/aléatoires/longues/Essaim, boucliers,
-faiblesses, effets, affinité et données publiques nécessaires aux transitions.
+Avant la phase 5 :
 
-Chaque emplacement de la main encode la carte et ses mécaniques. Deux cartes
-tactiquement différentes ne doivent jamais produire la même observation.
-
-Le point de vue est canonique : `moi`, `adversaire`, `vide`. Le même modèle peut
-ainsi jouer depuis les deux camps. Le schéma reçoit un numéro de version stable.
-
-### 7.2 Espace d'actions
-
-Conserver `8 × 16 = 128` actions : emplacement de main puis case. Le masque est
-un tableau booléen. Une action illégale déclenche une erreur en développement ;
-elle n'est jamais remplacée silencieusement par une autre.
-
-### 7.3 Cycle Gym
-
-`reset` fait jouer l'adversaire s'il commence, puis renvoie une décision de
-l'agent. `step` applique le coup de l'agent, laisse l'adversaire répondre jusqu'à
-la prochaine décision de l'agent ou la fin, puis renvoie la transition.
-
-Les adversaires utilisent une interface commune :
-
-- aléatoire ;
-- IA actuelle de Godot ;
-- checkpoint RL, à partir de la phase 5.
-
-### 7.4 Récompense
-
-La référence initiale est : victoire `+1`, défaite `-1`, égalité `0`. Captures,
-marge et effets sont des métriques. Un shaping éventuel doit être faible,
-documenté et fondé sur un potentiel de différence de score afin de ne pas rendre
-une défaite riche en captures préférable à une victoire.
-
-### Critères de validation
-
-- `gymnasium.utils.env_checker.check_env` passe.
-- Toutes les observations appartiennent à leur espace déclaré.
-- Le masque correspond exactement aux actions Godot.
-- Aucun contenu de main adverse ou futur RNG n'est présent.
-- Les deux camps, premiers joueurs et terrains sont couverts.
-- Seeds identiques : épisodes identiques.
-
-## 8. Phase 4 — PPO et preuve d'apprentissage
-
-**Statut : prototype à remplacer.**
-
-Cette phase démontre que la chaîne apprend ; elle ne cherche pas encore le boss
-final.
-
-### 8.1 Modèle initial
-
-Utiliser un MLP acteur-critique compact : encodeur partagé, 128 logits d'action
-et une valeur scalaire. Le masque booléen est appliqué aux logits avant la
-distribution catégorielle. CPU d'abord ; DirectML seulement après validation.
-
-### 8.2 PPO correct
-
-La mise à jour doit recalculer `new_log_prob`, utiliser
-`exp(new_log_prob - old_log_prob)`, l'entropie réelle, le clipping PPO, GAE et le
-bootstrap correct aux frontières d'épisode. Actions et masques sont stockés en
-`long` et `bool`.
-
-Tester explicitement que :
-
-- les paramètres de la tête acteur reçoivent un gradient ;
-- les poids changent après une optimisation ;
-- le ratio n'est pas constamment égal à 1 ;
-- aucune probabilité n'est attribuée à une action masquée.
-
-### 8.3 Progression contrôlée
-
-1. Sur-apprendre un scénario minuscule déterministe.
-2. Apprendre contre un adversaire aléatoire avec un deck fixe.
-3. Généraliser sur des seeds réservés.
-4. Alterner camp, premier joueur et terrains.
-5. Étendre aux six dieux et à plusieurs decks fixes.
-6. Affronter l'IA actuelle du jeu.
-
-### 8.4 Batching et reproductibilité
-
-Utiliser plusieurs environnements ou plusieurs matchs batchés. Chaque
-environnement reçoit un seed dérivé et enregistré. Un run conserve configuration,
-version du code, versions des dépendances et checkpoints `latest`/`best`.
-
-### 8.5 Mesures
-
-Journaliser retours, victoire/égalité/défaite, marge, durée, captures, actions
-invalides, entropie, KL approximative, clip fraction, variance expliquée,
-étapes/seconde et parties/seconde.
-
-### Critères de validation
-
-- Le scénario jouet est résolu de manière reproductible.
-- La politique progresse significativement contre l'aléatoire sur des seeds
-  qu'elle n'a jamais vus.
-- Le résultat est mesuré depuis les deux camps avec intervalle de confiance.
-- Un checkpoint rechargé reproduit ses décisions déterministes.
-- Aucune action illégale n'est émise.
-- Une évaluation séparée contre l'IA actuelle est disponible.
-
-## 9. Phase 5 — self-play et ligue
-
-- Politique universelle conditionnée par le dieu, le deck et l'état public.
-- Mélange d'adversaires `current`, récents, historiques et exploitants.
-- Échantillonnage équilibré des dieux, camps, terrains et seeds.
-- Elo et matrice de matchups calculés sur un tournoi séparé.
-- Prévention de l'oubli catastrophique par conservation d'une ligue historique.
-
-Critère principal : aucune ancienne politique importante ni stratégie simple ne
-doit devenir un contre stable sans être réintroduite dans la ligue.
-
-## 10. Phase 6 — évolution des decks
-
-La recherche de deck est une boucle extérieure, séparée de PPO : génération de
-decks légaux, tournois courts, sélection, mutation et réévaluation. Les
-contraintes viennent des règles Godot : huit cartes, budget, lignées uniques,
-niveaux existants et compatibilité avec le dieu.
-
-La politique et les decks sont améliorés en alternance. Les six meilleurs
-couples `(politique, deck)` sont ensuite fine-tunés et soumis à un tournoi final.
-
-## 11. Phase 7 — intégration locale dans Godot
-
-- Exporter poids `float32`, dimensions, normalisations et manifeste versionné.
-- Ajouter l'encodeur, le codec d'actions et l'inférence dans Godot.
-- Intégrer les six configurations de boss à l'APK.
-- Vérifier des fixtures `observation → logits → action` entre PyTorch et Godot.
-- Mesurer latence et mémoire sur un vrai appareil Android.
-- Ajouter éventuellement une recherche limitée aux meilleurs coups proposés par
-  le réseau si elle améliore nettement la force du boss.
-
-ONNX n'est envisagé de nouveau que si une mesure sur appareil prouve que
-l'inférence Godot est insuffisante.
-
-## 12. Phase 8 — rapports d'équilibrage
-
-Conserver pour chaque match : seed, versions, dieux, decks, premier joueur,
-terrain, résultat, marge, actions, cartes, positions, captures et effets. Les
-rapports comparent cartes et dieux à contexte égal et distinguent force du deck,
-force de la politique et avantage structurel du matchup.
-
-## 13. Ordre de livraison
-
-```text
-Phase 0 validée
-→ simulateur et parité
-→ pont fiable
-→ environnement validé
-→ preuve PPO
-→ self-play
-→ decks
-→ six boss intégrés
-→ rapports d'équilibrage
+```powershell
+.\.venv311\Scripts\python.exe scripts\validate_phase4.py `
+  runs\ppo_phase4_tactical\best.pt `
+  --config configs\ppo_phase4_tactical.yaml
 ```
 
-Aucune phase ne doit être accélérée en lançant un entraînement coûteux avant la
-validation de la phase précédente.
+Avant de retenir un deck :
+
+```powershell
+.\.venv311\Scripts\python.exe scripts\validate_phase5.py `
+  runs\ppo_self_play_v2\best.pt --config configs\ppo_self_play_v2.yaml
+.\.venv311\Scripts\python.exe scripts\validate_phase6.py runs\deck_evolution\reports
+```
+
+Avant l'APK : parité des logits, tests sur appareil, mesure de latence et test
+hors ligne complet.
+
+## 7. Règles de maintenance
+
+- Une seule configuration officielle par workflow.
+- Aucun nouveau backend sans test différentiel.
+- Aucun seuil de promotion dans le code : tous restent configurables.
+- Aucun chemin absolu dans les fichiers versionnés.
+- Aucun checkpoint ou run supprimé automatiquement.
+- Une fonctionnalité expérimentale vit dans une branche ou derrière une option,
+  pas dans une seconde boucle d'entraînement copiée.
+- Toute nouvelle métrique possède un nom stable et une définition documentée.

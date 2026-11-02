@@ -1,0 +1,109 @@
+# Continuation stricte du pilote tactique : une promotion demande deux
+# evaluations independantes reussies au meme palier (2 x 500 parties).
+seed: 20261102
+device: cpu
+output_dir: runs/experiments/tactical_features_strict_001
+
+environment:
+  backend: python_batch
+  evaluation_backend: python
+  godot_path: null
+  reward:
+    capture: 0.0
+    multi_capture: 0.0
+    terminal: 2.0
+    final_margin: 0.10
+    final_margin_scale: 5.0
+    board_control_delta: 0.05
+    board_control_delta_limit: 4
+  scenarios:
+    - {god: inari, deck: [f01_n3, f02_n3, f04_n3, f05_n2, f07_n2, f08_n2, n01_n2, n21_n1]}
+    - {god: izanami, deck: [d01_n2, d02_n2, d03_n2, d04_n2, d05_n1, d07_n1, n12_n1, n16_n1]}
+    - {god: hachiman, deck: [r01_n2, r02_n2, r03_n2, r04_n2, r05_n1, r06_n1, n01_n2, n24_n2]}
+    - {god: tsukuyomi, deck: [h01_n4, h04_n3, h05_n3, h06_n2, h09_n1, h12_n1, n01_n3, n21_n1]}
+    - {god: okuninushi, deck: [e01_n3, e04_n3, e05_n2, e06_n2, e07_n1, e09_n1, n01_n2, n16_n2]}
+    - {god: susanoo, deck: [p01_n4, p04_n4, p05_n3, p08_n2, p09_n2, p12_n1, n01_n3, n21_n1]}
+
+model:
+  architecture: tactical_actor_critic
+  hidden_dim: 512
+  action_hidden_dim: 128
+
+ppo:
+  total_timesteps: 2048000
+  rollout_steps: 32
+  num_envs: 64
+  learning_rate: 0.00010
+  gamma: 0.99
+  gae_lambda: 0.95
+  minibatches: 8
+  min_update_epochs: 1
+  max_update_epochs: 4
+  target_kl: 0.02
+  update_epochs: 3
+  clip_coef: 0.2
+  entropy_coef: 0.01
+  value_coef: 0.5
+  max_grad_norm: 0.5
+
+monitoring:
+  tensorboard: true
+  checkpoint_every_updates: 25
+  snapshot_every_updates: 100
+  alerts:
+    target_kl: 0.02
+    maximum_clip_fraction: 0.30
+    minimum_normalized_entropy: 0.08
+    minimum_explained_variance: -0.10
+    maximum_throughput_drop: 0.35
+    maximum_eval_regression: 0.05
+    maximum_reward_divergence: 0.25
+    minimum_anchor_win_rate: 0.65
+    plateau_evaluations: 5
+    consecutive_updates: 3
+
+curriculum:
+  # 425 victoires sur 500 minimum, 35 defaites maximum, deux fois de suite.
+  promotion_win_rate: 0.85
+  confidence_floor: 0.81
+  maximum_loss_rate: 0.07
+  non_loss_confidence_floor: 0.90
+  promotion_confirmations: 2
+  replay_probability: 0.20
+  stages:
+    - {name: precision_100_anticipation_25, precision: 1.0, anticipation_probability: 0.25}
+    - {name: precision_100_anticipation_50, precision: 1.0, anticipation_probability: 0.50}
+    - {name: precision_100_anticipation_75, precision: 1.0, anticipation_probability: 0.75}
+    - {name: precision_100_anticipation, precision: 1.0, anticipation_probability: 1.0}
+  god_sampling:
+    enabled: true
+    target_wilson: 0.75
+    minimum_multiplier: 0.60
+    maximum_multiplier: 2.20
+    deficit_exponent: 1.0
+    smoothing: 0.35
+  terrain_sampling:
+    enabled: true
+    blocked_counts: [0, 1, 2]
+    target_wilson: 0.75
+    minimum_multiplier: 0.70
+    maximum_multiplier: 1.80
+    deficit_exponent: 1.0
+    smoothing: 0.35
+
+evaluation:
+  every_updates: 50
+  games: 500
+  num_envs: 4
+  seed_base: 2200000000
+  anchor_games_per_stage: 24
+  anchor_seed_base: 2250000000
+  final_gate:
+    games_per_slice: 100
+    seed_base: 2300000000
+    overall_win_rate: 0.85
+    confidence_floor: 0.80
+    maximum_loss_rate: 0.05
+    non_loss_confidence_floor: 0.90
+    minimum_slice_win_rate: 0.70
+    maximum_slice_loss_rate: 0.10

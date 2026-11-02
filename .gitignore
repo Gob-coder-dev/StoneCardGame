@@ -50,6 +50,7 @@ export_credentials.cfg
 /rl/dist/
 /rl/**/*.egg-info/
 /rl/runs/
+/rl/archive_rl/
 /rl/checkpoints/
 /rl/logs/
 /rl/wandb/

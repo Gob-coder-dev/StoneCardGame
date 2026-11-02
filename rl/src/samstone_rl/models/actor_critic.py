@@ -1,64 +1,49 @@
+from __future__ import annotations
+
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
+from torch import nn
 from torch.distributions import Categorical
-import numpy as np
 
 
 class ActorCritic(nn.Module):
-    def __init__(self, obs_dim, action_dim, hidden_dim=256):
+    def __init__(self, obs_dim: int, action_dim: int, hidden_dim: int = 256) -> None:
         super().__init__()
-        self.obs_dim = obs_dim
-        self.action_dim = action_dim
-        
-        # Shared backbone
-        self.shared = nn.Sequential(
-            nn.Linear(obs_dim, hidden_dim),
-            nn.ReLU(),
-            nn.Linear(hidden_dim, hidden_dim),
-            nn.ReLU(),
-            nn.Linear(hidden_dim, hidden_dim),
-            nn.ReLU(),
+        self.backbone = nn.Sequential(
+            nn.Linear(obs_dim, hidden_dim), nn.Tanh(),
+            nn.Linear(hidden_dim, hidden_dim), nn.Tanh(),
         )
-        
-        # Actor head
-        self.actor = nn.Sequential(
-            nn.Linear(hidden_dim, hidden_dim // 2),
-            nn.ReLU(),
-            nn.Linear(hidden_dim // 2, action_dim)
-        )
-        
-        # Critic head
-        self.critic = nn.Sequential(
-            nn.Linear(hidden_dim, hidden_dim // 2),
-            nn.ReLU(),
-            nn.Linear(hidden_dim // 2, 1)
-        )
-    
-    def forward(self, x, action_mask=None):
-        features = self.shared(x)
-        logits = self.actor(features)
-        
-        if action_mask is not None:
-            # Mask illegal actions
-            logits = torch.where(action_mask, logits, torch.tensor(-1e8).to(logits.device))
-        
-        probs = F.softmax(logits, dim=-1)
-        dist = Categorical(probs)
-        value = self.critic(features)
-        
-        return dist, value, logits
-    
-    def get_value(self, x):
-        features = self.shared(x)
-        return self.critic(features)
-    
-    def get_action(self, x, action_mask=None, deterministic=False):
-        dist, value, logits = self.forward(x, action_mask)
-        if deterministic:
-            action = torch.argmax(logits, dim=-1)
-        else:
-            action = dist.sample()
-        log_prob = dist.log_prob(action)
-        return action, log_prob, value
+        self.actor = nn.Linear(hidden_dim, action_dim)
+        self.critic = nn.Linear(hidden_dim, 1)
+        self._initialize()
 
+    def distribution_and_value(self, observations: torch.Tensor,
+                               action_mask: torch.Tensor) -> tuple[Categorical, torch.Tensor]:
+        if action_mask.dtype is not torch.bool:
+            raise TypeError("action_mask doit etre un tenseur bool")
+        if torch.any(~action_mask.any(dim=-1)):
+            raise ValueError("au moins une ligne ne contient aucune action legale")
+        features = self.backbone(observations)
+        logits = self.actor(features).masked_fill(~action_mask, torch.finfo(features.dtype).min)
+        return Categorical(logits=logits), self.critic(features).squeeze(-1)
+
+    def act(self, observations: torch.Tensor, action_mask: torch.Tensor,
+            deterministic: bool = False) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        distribution, value = self.distribution_and_value(observations, action_mask)
+        action = distribution.probs.argmax(dim=-1) if deterministic else distribution.sample()
+        return action, distribution.log_prob(action), value
+
+    def evaluate_actions(self, observations: torch.Tensor, action_mask: torch.Tensor,
+                         actions: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        distribution, value = self.distribution_and_value(observations, action_mask)
+        return distribution.log_prob(actions.long()), distribution.entropy(), value
+
+    def value(self, observations: torch.Tensor) -> torch.Tensor:
+        return self.critic(self.backbone(observations)).squeeze(-1)
+
+    def _initialize(self) -> None:
+        for layer in self.modules():
+            if isinstance(layer, nn.Linear):
+                nn.init.orthogonal_(layer.weight, 2**0.5)
+                nn.init.zeros_(layer.bias)
+        nn.init.orthogonal_(self.actor.weight, 0.01)
+        nn.init.orthogonal_(self.critic.weight, 1.0)

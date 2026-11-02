@@ -1,0 +1,17 @@
+seed: 777777
+device: cpu
+output_dir: runs/balance_analysis
+
+parallel:
+  workers: 6
+  batch_size: 64
+
+telemetry:
+  action_sample_rate: 0.25
+
+ablation:
+  games_per_side_order: 12
+  seed_base: 2800000000
+  alternatives_per_card: 4
+  maximum_cost_delta: 8.0
+  minimum_effect: 0.02

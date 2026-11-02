@@ -1,23 +1,24 @@
 import json
-from typing import Dict, Any, Optional
+from typing import Any
 
 
 class Protocol:
-    """Simple JSON line-based protocol for Godot <-> Python communication"""
-    
+    """Encode requests and decode responses for the local JSON-lines protocol."""
+
     @staticmethod
-    def encode_request(cmd: str, req_id: int, **kwargs) -> str:
+    def encode_request(cmd: str, req_id: int, **kwargs: Any) -> str:
         request = {"cmd": cmd, "id": req_id}
         request.update(kwargs)
         return json.dumps(request) + "\n"
-    
+
     @staticmethod
-    def decode_response(line: str) -> Optional[Dict[str, Any]]:
+    def decode_response(line: str) -> dict[str, Any] | None:
         try:
             line = line.strip()
             if not line:
                 return None
-            return json.loads(line)
-        except json.JSONDecodeError:
+            value = json.loads(line)
+            return value if isinstance(value, dict) else None
+        except (json.JSONDecodeError, TypeError):
             return None
 
