@@ -91,9 +91,10 @@ page Cartes comporte :
 - la collection, le tri, le remplacement d'une carte et les fiches détaillées ;
 - le choix du niveau à équiper, sans bouton de sauvegarde séparé.
 
-L'interface adopte le style du *cabinet des monstres* : ardoise sombre, texte
-ivoire, accents ambrés et portraits horrifiques. Les informations de combat sont
-séparées visuellement afin de rester lisibles sur téléphone :
+L'interface adopte un thème d'arène machiavélique : fonds charbon, accents de
+métal incandescent et halos néon violets ou carmin. Les formes restent discrètes
+pour préserver la lisibilité des cartes et des règles. Les informations de
+combat sont séparées visuellement afin de rester lisibles sur téléphone :
 
 | Élément | Information portée |
 | --- | --- |

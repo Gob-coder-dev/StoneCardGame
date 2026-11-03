@@ -9,6 +9,7 @@ const OpponentCatalogModel := preload("res://scripts/data/OpponentCatalog.gd")
 const Gesture := preload("res://scripts/ui/input/TapGesture.gd")
 
 @onready var npc_list: VBoxContainer = $Root/NPCListScroll/NPCList
+@onready var background: MenuBackground = $Background
 @onready var modal: Control = $Modal
 @onready var backdrop: ColorRect = $Modal/Backdrop
 @onready var profile_panel: PanelContainer = $Modal/Center/ProfilePanel
@@ -36,6 +37,7 @@ func _ready() -> void:
 	modal.visible = false
 	_selected_bracket_id = OpponentCatalogModel.default_bracket_id()
 	_selected_difficulty_id = OpponentCatalogModel.default_difficulty_id()
+	background.set_god(StoneLoader.get_god(PlayerData.player_god_id))
 	_god_group = ButtonGroup.new()
 	_god_group.allow_unpress = false
 	_build_choices()
@@ -118,6 +120,7 @@ func _on_god_selected(god_id: String) -> void:
 	var god := StoneLoader.get_god(god_id)
 	if god.is_empty():
 		return
+	background.set_god(god)
 	var god_color := Color(str(god.get("color", "#575361")))
 	profile_name.text = str(god.get("name", "?"))
 	profile_name.add_theme_color_override("font_color", god_color)

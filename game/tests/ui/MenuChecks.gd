@@ -4,6 +4,7 @@ const OpponentCatalogModel := preload("res://scripts/data/OpponentCatalog.gd")
 
 func run() -> void:
 	var fixture := ProfileFixture.new()
+	_test_screen_backgrounds()
 	await _test_god_selector_ui()
 	await _test_deck_slots()
 	await _test_home_portraits()
@@ -18,6 +19,29 @@ func run() -> void:
 	await _test_generated_opponent_battle()
 	await _test_result_uses_generated_opponent()
 	fixture.restore()
+
+
+func _test_screen_backgrounds() -> void:
+	var scenes := {
+		"res://scenes/menus/MainMenu.tscn": MenuBackground.Room.REFUGE,
+		"res://scenes/menus/CollectionScreen.tscn": MenuBackground.Room.BESTIARY,
+		"res://scenes/menus/HowToPlay.tscn": MenuBackground.Room.JOURNAL,
+		"res://scenes/menus/LevelSelect.tscn": MenuBackground.Room.ENCOUNTERS,
+		"res://scenes/menus/PreBattle.tscn": MenuBackground.Room.COIN_RITUAL,
+		"res://scenes/game/Board.tscn": MenuBackground.Room.BOARD,
+		"res://scenes/menus/Result.tscn": MenuBackground.Room.AFTERMATH,
+		"res://scenes/menus/Stats.tscn": MenuBackground.Room.PROFILE,
+	}
+	var assigned_rooms := {}
+	for scene_path in scenes:
+		var page: Control = (load(scene_path) as PackedScene).instantiate()
+		var background: MenuBackground = page.get_node("Background")
+		assigned_rooms[background.room] = true
+		_check(background.room == scenes[scene_path],
+			"l'écran %s utilise son ambiance néon dédiée" % scene_path)
+		page.free()
+	_check(assigned_rooms.size() == scenes.size(),
+		"chaque écran dispose d'une déclinaison visuelle qui lui est propre")
 
 
 func _test_preview_layout() -> void:
@@ -70,18 +94,28 @@ func _test_home_portraits() -> void:
 	add_child(menu)
 	var all_portraits_loaded := true
 	var all_identities_match := true
+	var all_neon_colors_match := true
 	for god in StoneLoader.get_all_gods():
 		PlayerData.player_god_id = str(god["id"])
 		menu._refresh()
 		var texture: Texture2D = menu.god_portrait.texture
+		var background: MenuBackground = menu.get_node("Background")
 		all_portraits_loaded = all_portraits_loaded and texture != null
 		all_identities_match = all_identities_match and menu.god_name.text == str(god["name"]).to_upper()
 		all_identities_match = all_identities_match and menu.god_family.text == god["family_name"]
-	_check(all_portraits_loaded and all_identities_match,
-		"l'accueil charge les six portraits livrés avec le jeu et suit l'identité du dieu actif")
+		all_neon_colors_match = all_neon_colors_match and background.neon_primary_color == Color(str(god["color"]))
+	_check(all_portraits_loaded and all_identities_match and all_neon_colors_match,
+		"l'accueil charge les six portraits, identités et couleurs néon des dieux")
 	_check(menu.god_portrait.mouse_filter == Control.MOUSE_FILTER_IGNORE
 		and menu.get_node("Background").mouse_filter == Control.MOUSE_FILTER_IGNORE,
 		"le portrait et le décor du refuge laissent passer les gestes vers les commandes")
+	var background: MenuBackground = menu.get_node("Background")
+	var first_god := StoneLoader.get_god("kharun")
+	var second_god := StoneLoader.get_god("nerava")
+	background.set_gods(first_god, second_god)
+	_check(background.neon_primary_color == Color(str(first_god["color"]))
+		and background.neon_secondary_color == Color(str(second_god["color"])),
+		"le fond peut afficher les accents des deux dieux d'un même écran")
 	for frame in range(6):
 		await get_tree().process_frame
 	var status: Label = menu.deck_status
@@ -355,6 +389,13 @@ func _test_prebattle_reveals_draw() -> void:
 		and page.player_god_name.text == "TOI • Véskar"
 		and page.opponent_god_name.text == "LUI • Kharûn",
 		"l'avant-combat présente les portraits et l'identité des deux dieux autour de la pièce")
+	_check(page.background.neon_primary_color == Color("#e75aa8")
+		and page.background.neon_secondary_color == Color("#72c7d8"),
+		"les néons du rituel reprennent les couleurs du joueur et de son adversaire")
+	_check(page.coin.get_script() == load("res://scripts/ui/CoinMedallion.gd")
+		and page.coin.get_theme_stylebox("panel").bg_color == Color("#35282b")
+		and page.coin.get_theme_stylebox("panel").border_color == Color("#b77451"),
+		"la pièce a un relief sombre et un bord métallique assortis au rituel")
 	await get_tree().create_timer(1.6).timeout
 	var first := BattleContext.forced_first_player
 	var face: String = page.coin_label.text

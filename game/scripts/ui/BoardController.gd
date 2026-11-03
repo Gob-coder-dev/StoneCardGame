@@ -17,6 +17,7 @@ const CardDragController := preload("res://scripts/ui/CardDragController.gd")
 @onready var board_view: BoardView = $Root/BoardArea/BoardView
 @onready var hand_view: HandView = $Root/HandView
 @onready var hud: BattleHUD = $Root/HUD
+@onready var background: MenuBackground = $Background
 
 var _ai_runner: AITurnRunner = null
 var _npc_data: Dictionary = {}
@@ -83,6 +84,7 @@ func _start_battle(human_deck: Array, npc_id: String) -> void:
 	## Renseigner les noms du HUD une fois pour toutes.
 	var human_god := StoneLoader.get_god(PlayerData.player_god_id)
 	var ai_god := StoneLoader.get_god(str(_npc_data.get("god_id", "")))
+	background.set_gods(human_god, ai_god)
 	hud.set_names(
 		PlayerData.player_name,
 		str(_npc_data.get("name", "Adversaire"))

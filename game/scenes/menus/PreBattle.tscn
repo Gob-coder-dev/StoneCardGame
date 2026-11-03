@@ -1,10 +1,11 @@
-[gd_scene load_steps=5 format=3 uid="uid://pre_battle"]
+[gd_scene load_steps=6 format=3 uid="uid://pre_battle"]
 
 [ext_resource type="Script" path="res://scripts/ui/PreBattleController.gd" id="1_prebattle"]
 [ext_resource type="Script" path="res://scripts/ui/input/TouchButton.gd" id="2_touch_button"]
 
 [ext_resource type="Script" path="res://scripts/ui/MenuBackground.gd" id="3_background"]
 [ext_resource type="Script" path="res://scripts/ui/GodPortrait.gd" id="4_god_portrait"]
+[ext_resource type="Script" path="res://scripts/ui/CoinMedallion.gd" id="5_coin_medallion"]
 
 [node name="PreBattle" type="Control"]
 layout_mode = 3
@@ -20,7 +21,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
 script = ExtResource("3_background")
-room = 3
+room = 4
 
 [node name="VBoxCenter" type="VBoxContainer" parent="."]
 layout_mode = 1
@@ -92,6 +93,7 @@ text_overrun_behavior = 3
 layout_mode = 2
 custom_minimum_size = Vector2(220, 220)
 size_flags_vertical = 4
+script = ExtResource("5_coin_medallion")
 
 [node name="CoinLabel" type="Label" parent="VBoxCenter/GodDuel/Coin"]
 layout_mode = 1

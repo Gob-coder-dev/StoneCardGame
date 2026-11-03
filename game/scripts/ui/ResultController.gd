@@ -4,6 +4,7 @@ extends Control
 
 @onready var result_label: Label = $VBoxCenter/ResultLabel
 @onready var score_label: Label = $VBoxCenter/ScoreLabel
+@onready var background: MenuBackground = $Background
 @onready var replay_btn: Button = $VBoxCenter/ReplayButton
 @onready var level_btn: Button = $VBoxCenter/LevelSelectButton
 @onready var menu_btn: Button = $VBoxCenter/MainMenuButton
@@ -24,6 +25,10 @@ func _ready() -> void:
 			result_label.text = "ÉGALITÉ"
 
 	var npc := BattleContext.current_opponent()
+	background.set_gods(
+		StoneLoader.get_god(PlayerData.player_god_id),
+		StoneLoader.get_god(str(npc.get("god_id", "")))
+	)
 	var npc_name: String = npc.get("name", "Adversaire")
 	score_label.text = "%s %d  —  %d %s" % [
 		PlayerData.player_name,

@@ -20,6 +20,7 @@ var _level_selector: NumberedSelector
 var _preview_level := 1
 
 @onready var scroll: ScrollContainer = $Content/Scroll
+@onready var background: MenuBackground = $Background
 @onready var god_button: Button = $Content/Scroll/Page/GodDeckPanel/GodDeckContent/GodDeckRow/GodButton
 @onready var god_portrait: GodPortrait = $Content/Scroll/Page/GodDeckPanel/GodDeckContent/GodDeckRow/GodButton/Portrait
 @onready var god_name: Label = $Content/Scroll/Page/GodDeckPanel/GodDeckContent/GodDeckRow/IdentityDeck/GodName
@@ -280,6 +281,8 @@ func _refresh_all(preserve_scroll: bool = true, rebuild_collection: bool = false
 
 
 func _refresh_god_panel() -> void:
+	var god := StoneLoader.get_god(PlayerData.player_god_id)
+	background.set_god(god)
 	_god_selector.refresh(PlayerData.player_god_id)
 	_deck_slot_selector.refresh(PlayerData.get_selected_deck())
 

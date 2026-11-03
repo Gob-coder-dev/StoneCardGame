@@ -15,6 +15,7 @@ extends Control
 @onready var coin_label: Label = $VBoxCenter/GodDuel/Coin/CoinLabel
 @onready var coin_flip_label: Label = $VBoxCenter/CoinFlipLabel
 @onready var start_button: Button = $VBoxCenter/StartButton
+@onready var background: MenuBackground = $Background
 
 const FACE_PLAYER := "TOI"
 const FACE_NPC := "LUI"
@@ -28,6 +29,7 @@ func _ready() -> void:
 	difficulty_label.text = _opponent_subtitle(npc)
 	var human_god := StoneLoader.get_god(PlayerData.player_god_id)
 	var npc_god := StoneLoader.get_god(str(npc.get("god_id", "")))
+	background.set_gods(human_god, npc_god)
 	_setup_god_identity(player_god_portrait, player_god_name, player_god_family,
 		human_god, "TOI • %s" % str(human_god.get("name", "?")))
 	_setup_god_identity(opponent_god_portrait, opponent_god_name, opponent_god_family,
@@ -35,7 +37,7 @@ func _ready() -> void:
 
 	coin_flip_label.text = ""
 	start_button.disabled = true
-	## Styliser la pièce une fois sa taille connue (pour un cercle exact).
+	## Garder le cadre de la pièce rond, quelle que soit sa taille.
 	coin.resized.connect(_style_coin)
 	_style_coin.call_deferred()
 
@@ -78,12 +80,12 @@ func _style_coin() -> void:
 	if radius <= 0:
 		radius = 120  ## valeur de repli si la taille n'est pas encore connue
 	var sb := StyleBoxFlat.new()
-	sb.bg_color = UITheme.COL_ACCENT
-	sb.border_color = UITheme.COL_ACCENT_LIGHT
-	sb.set_border_width_all(6)
+	sb.bg_color = Color("#35282b")
+	sb.border_color = Color("#b77451")
+	sb.set_border_width_all(4)
 	sb.set_corner_radius_all(radius)
 	coin.add_theme_stylebox_override("panel", sb)
-	coin_label.add_theme_color_override("font_color", UITheme.COL_INK)
+	coin_label.add_theme_color_override("font_color", Color("#f1d8c4"))
 
 
 ## Animation : la pièce "tourne" (écrase/étire horizontalement) plusieurs fois,

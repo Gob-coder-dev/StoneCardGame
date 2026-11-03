@@ -21,6 +21,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
 script = ExtResource("3_parchment")
+room = 5
 
 [node name="TurnManager" type="Node" parent="."]
 script = ExtResource("2_turnmgr")

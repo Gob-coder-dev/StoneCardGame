@@ -4,6 +4,7 @@ extends Control
 @onready var profile_button: Button = $Content/Header/ProfileButton
 @onready var play_button: Button = $Content/Hero/PlayButton
 @onready var deck_status: Label = $Content/Hero/DeckStatus
+@onready var background: MenuBackground = $Background
 @onready var god_portrait: TextureRect = $Content/Hero/Emblem/GodPortrait
 @onready var god_name: Label = $Content/Hero/GodName
 @onready var god_title: Label = $Content/Hero/GodTitle
@@ -36,6 +37,7 @@ func _refresh() -> void:
 	var count := deck.size()
 	var cost := DeckRules.deck_cost(deck)
 	var god := StoneLoader.get_god(PlayerData.player_god_id)
+	background.set_god(god)
 	var portrait_path := str(god.get("asset", ""))
 	god_portrait.texture = load(portrait_path) as Texture2D if portrait_path != "" else null
 	god_name.text = str(god.get("name", "Dieu")).to_upper()

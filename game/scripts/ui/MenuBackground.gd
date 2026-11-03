@@ -1,83 +1,204 @@
-## Décor du refuge, dessiné au chargement et au redimensionnement uniquement.
 @tool
 class_name MenuBackground
 extends Control
 
-enum Room { REFUGE, BESTIARY, JOURNAL, ENCOUNTERS }
+enum Room { REFUGE, BESTIARY, JOURNAL, ENCOUNTERS, COIN_RITUAL, BOARD, AFTERMATH, PROFILE }
 @export var room: Room = Room.JOURNAL
+
+const VOID := Color("#101013")
+const VIOLET_NEON := Color("#c14cff")
+const PINK_NEON := Color("#f0449c")
+const EMBER_NEON := Color("#f0784d")
+
+var neon_primary_color: Color = VIOLET_NEON
+var neon_secondary_color: Color = PINK_NEON
+var neon_tertiary_color: Color = EMBER_NEON
 
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	if room == Room.REFUGE and not Engine.is_editor_hint():
-		# Modulation côté rendu, sans redessiner le décor à chaque image.
 		var breath := create_tween().set_loops()
-		breath.tween_property(self, "self_modulate", Color(0.94, 0.96, 1.0), 4.0)
-		breath.tween_property(self, "self_modulate", Color.WHITE, 4.0)
+		breath.tween_property(self, "self_modulate", Color(1.0, 0.94, 1.0), 3.0)
+		breath.tween_property(self, "self_modulate", Color.WHITE, 3.0)
+
+
+func set_god(god: Dictionary) -> void:
+	neon_primary_color = _god_color(god)
+	neon_secondary_color = neon_primary_color.lightened(0.18)
+	neon_tertiary_color = neon_primary_color.darkened(0.16)
+	queue_redraw()
+
+
+func set_gods(first_god: Dictionary, second_god: Dictionary) -> void:
+	neon_primary_color = _god_color(first_god)
+	neon_secondary_color = _god_color(second_god)
+	neon_tertiary_color = neon_primary_color.lerp(neon_secondary_color, 0.5)
+	queue_redraw()
+
+
+func _god_color(god: Dictionary) -> Color:
+	return Color(str(god.get("color", VIOLET_NEON.to_html())))
 
 
 func _draw() -> void:
-	if size.x <= 0 or size.y <= 0:
+	if size.x <= 0.0 or size.y <= 0.0:
 		return
-	draw_set_transform(Vector2.ZERO, 0.0, size / Vector2(1080, 1920))
-	for band in range(32):
-		var t := float(band) / 31.0
-		draw_rect(Rect2(0, band * 60, 1080, 61), Color("#252b3a").lerp(UITheme.COL_BG.darkened(0.3), t))
-	for x: float in [20.0, 1040.0]:
-		draw_rect(Rect2(x, 0, 20, 1920), Color("#111722"))
-		draw_line(Vector2(x + 2, 70), Vector2(x + 2, 1810), Color("#3a3a43"), 2)
-	if room == Room.REFUGE or room == Room.ENCOUNTERS:
-		_draw_arch()
-	if room == Room.REFUGE or room == Room.BESTIARY:
-		_draw_cabinets()
-	_draw_lantern(Vector2(100, 330))
-	_draw_lantern(Vector2(980, 330))
-	# Positions fixes : aucun hasard du moteur utilisé par le décor.
-	for i in range(15):
-		var x := 65.0 + float((i * 137) % 950)
-		var y := 260.0 + float((i * 233) % 1450)
-		draw_rect(Rect2(x, y, 2 + i % 3, 2 + i % 3), Color(0.82, 0.66, 0.42, 0.12))
-	if room != Room.REFUGE:
-		draw_rect(Rect2(0, 0, 1080, 1920), Color(0.04, 0.06, 0.09, 0.25))
+
+	draw_set_transform(Vector2.ZERO, 0.0, size / Vector2(1080.0, 1920.0))
+	_draw_base()
+	match room:
+		Room.REFUGE:
+			_draw_main_menu()
+		Room.BESTIARY:
+			_draw_relic_menu()
+		Room.JOURNAL:
+			_draw_journal()
+		Room.ENCOUNTERS:
+			_draw_encounters()
+		Room.COIN_RITUAL:
+			_draw_coin_ritual()
+		Room.BOARD:
+			_draw_board()
+		Room.AFTERMATH:
+			_draw_aftermath()
+		Room.PROFILE:
+			_draw_profile()
 	draw_set_transform(Vector2.ZERO)
 
 
-func _draw_arch() -> void:
-	var outline := PackedVector2Array([Vector2(215, 1390), Vector2(215, 650),
-		Vector2(245, 500), Vector2(340, 365), Vector2(540, 275),
-		Vector2(740, 365), Vector2(835, 500), Vector2(865, 650), Vector2(865, 1390)])
-	draw_colored_polygon(outline, Color("#0e1420"))
-	draw_polyline(outline, Color("#383941"), 24, true)
-	draw_polyline(outline, Color("#514b46"), 3, true)
-	for x: float in [245.0, 835.0]:
-		draw_line(Vector2(x, 695), Vector2(x, 1370), Color("#252c39"), 10)
-	for ring in range(8, 0, -1):
-		draw_circle(Vector2(540, 1040), 125 + ring * 24, Color(0.65, 0.39, 0.20, 0.009))
+func _draw_base() -> void:
+	for band in range(32):
+		var t := float(band) / 31.0
+		draw_rect(Rect2(0.0, band * 60.0, 1080.0, 61.0),
+			Color("#1c1a20").lerp(VOID, t))
+	var edge := neon_primary_color
+	edge.a = 0.13
+	draw_line(Vector2(24.0, 0.0), Vector2(24.0, 1920.0), edge, 2.0)
+	draw_line(Vector2(1056.0, 0.0), Vector2(1056.0, 1920.0), edge, 2.0)
 
 
-func _draw_cabinets() -> void:
-	for x: float in [44.0, 868.0]:
-		for shelf in range(3):
-			var y := 690.0 + shelf * 275
-			draw_rect(Rect2(x, y, 168, 230), Color("#171c27"))
-			draw_rect(Rect2(x, y + 222, 168, 12), Color("#3b3635"))
-			for book in range(4):
-				var height := 60 + ((book + shelf) * 17) % 75
-				var bx := x + 18 + book * 31
-				draw_rect(Rect2(bx, y + 218 - height, 23, height),
-					Color("#3a3440") if book % 2 == 0 else Color("#303c3e"))
-				draw_line(Vector2(bx + 4, y + 214 - height), Vector2(bx + 4, y + 211), Color("#544844"), 2)
+func _draw_main_menu() -> void:
+	var center := Vector2(540.0, 810.0)
+	_draw_glow(center, 310.0, neon_primary_color, 0.022)
+	_draw_neon_circle(center, 264.0, neon_primary_color, 3.0)
+	_draw_neon_arc(center, 296.0, PI * 1.08, PI * 1.92, neon_secondary_color, 3.0)
+	_draw_neon_line(Vector2(352.0, 582.0), Vector2(292.0, 494.0), neon_secondary_color)
+	_draw_neon_line(Vector2(728.0, 582.0), Vector2(788.0, 494.0), neon_secondary_color)
+	_draw_corner_marks(neon_primary_color, 56.0, 110.0)
 
 
-func _draw_lantern(at: Vector2) -> void:
-	for ring in range(6, 0, -1):
-		draw_circle(at + Vector2(0, 35), 30 + ring * 20, Color(0.95, 0.61, 0.27, 0.012))
-	draw_line(at - Vector2(0, 130), at, Color("#534b43"), 4)
-	draw_rect(Rect2(at - Vector2(22, 5), Vector2(44, 68)), Color("#554337"))
-	draw_rect(Rect2(at - Vector2(13, 0), Vector2(26, 54)), Color("#c78e48"))
-	draw_rect(Rect2(at - Vector2(5, -10), Vector2(10, 34)), UITheme.COL_ACCENT_LIGHT)
-	draw_line(at + Vector2(-27, -6), at + Vector2(27, -6), Color("#877059"), 5)
-	draw_line(at + Vector2(-27, 65), at + Vector2(27, 65), Color("#877059"), 5)
+func _draw_relic_menu() -> void:
+	for x in [20.0, 1060.0]:
+		_draw_neon_line(Vector2(x, 0.0), Vector2(x, 1920.0), neon_secondary_color, 2.0)
+
+
+func _draw_journal() -> void:
+	_draw_corner_marks(neon_primary_color, 42.0, 70.0)
+	_draw_neon_line(Vector2(48.0, 152.0), Vector2(48.0, 1768.0), neon_primary_color, 1.5)
+
+
+func _draw_encounters() -> void:
+	var center := Vector2(540.0, 985.0)
+	_draw_glow(center, 430.0, neon_primary_color, 0.014)
+	_draw_neon_arc(center, 430.0, PI * 1.08, PI * 1.92, neon_secondary_color, 3.0)
+	_draw_neon_arc(center, 397.0, PI * 1.10, PI * 1.90, neon_primary_color, 2.0)
+	_draw_corner_marks(neon_secondary_color, 48.0, 88.0)
+
+
+func _draw_coin_ritual() -> void:
+	var center := Vector2(540.0, 990.0)
+	_draw_glow(center, 900.0, neon_tertiary_color, 0.008)
+	_draw_neon_circle(center, 840.0, neon_primary_color, 1.4)
+	_draw_neon_circle(center, 630.0, neon_secondary_color, 1.8)
+	_draw_neon_circle(center, 420.0, neon_tertiary_color, 2.2)
+
+
+func _draw_board() -> void:
+	var seam := Color(0.72, 0.62, 0.72, 0.075)
+	for y in [250.0, 520.0, 790.0, 1060.0, 1330.0, 1600.0]:
+		draw_line(Vector2(30.0, y), Vector2(1050.0, y), seam, 2.0)
+	for x in [270.0, 540.0, 810.0]:
+		draw_line(Vector2(x, 0.0), Vector2(x, 1920.0), seam, 2.0)
+	_draw_neon_line(Vector2(18.0, 0.0), Vector2(18.0, 1920.0),
+		neon_primary_color, 1.5)
+	_draw_neon_line(Vector2(1062.0, 0.0), Vector2(1062.0, 1920.0),
+		neon_primary_color, 1.5)
+	_draw_corner_marks(neon_primary_color, 34.0, 104.0)
+	for y in [390.0, 780.0, 1170.0, 1560.0]:
+		_draw_neon_line(Vector2(18.0, y), Vector2(42.0, y - 22.0),
+			neon_secondary_color, 1.0)
+		_draw_neon_line(Vector2(1062.0, y), Vector2(1038.0, y - 22.0),
+			neon_secondary_color, 1.0)
+
+
+func _draw_aftermath() -> void:
+	var center := Vector2(540.0, 850.0)
+	_draw_glow(center, 370.0, neon_primary_color, 0.022)
+	_draw_neon_arc(center, 330.0, PI * 0.08, PI * 0.92, neon_primary_color, 3.0)
+	_draw_neon_arc(center, 330.0, PI * 1.08, PI * 1.92, neon_secondary_color, 2.0)
+	_draw_neon_line(Vector2(270.0, 1210.0), Vector2(410.0, 1150.0), neon_tertiary_color, 2.0)
+	_draw_neon_line(Vector2(670.0, 1150.0), Vector2(810.0, 1210.0), neon_tertiary_color, 2.0)
+
+
+func _draw_profile() -> void:
+	for x in [22.0, 1058.0]:
+		_draw_neon_line(Vector2(x, 220.0), Vector2(x, 1710.0), neon_primary_color, 2.0)
+		_draw_neon_line(Vector2(x, 220.0), Vector2(x + (52.0 if x < 540.0 else -52.0), 168.0),
+			neon_tertiary_color, 2.0)
+		_draw_neon_line(Vector2(x, 1710.0), Vector2(x + (52.0 if x < 540.0 else -52.0), 1762.0),
+			neon_secondary_color, 2.0)
+	_draw_neon_line(Vector2(74.0, 195.0), Vector2(270.0, 195.0), neon_primary_color, 1.5)
+	_draw_neon_line(Vector2(810.0, 195.0), Vector2(1006.0, 195.0), neon_primary_color, 1.5)
+	_draw_neon_line(Vector2(514.0, 195.0), Vector2(540.0, 164.0), neon_tertiary_color, 2.0)
+	_draw_neon_line(Vector2(540.0, 164.0), Vector2(566.0, 195.0), neon_tertiary_color, 2.0)
+	_draw_neon_circle(Vector2(540.0, 1760.0), 22.0, neon_secondary_color, 1.5)
+
+
+func _draw_glow(center: Vector2, radius: float, color: Color, strength: float) -> void:
+	for layer in range(8, 0, -1):
+		var glow := color
+		glow.a = strength * (1.0 - float(layer) / 10.0)
+		draw_circle(center, radius * float(layer) / 8.0, glow)
+
+
+func _draw_neon_circle(center: Vector2, radius: float, color: Color, width: float) -> void:
+	_draw_neon_arc(center, radius, 0.0, TAU, color, width)
+
+
+func _draw_neon_arc(center: Vector2, radius: float, start: float, end: float,
+		color: Color, width: float) -> void:
+	var glow := color
+	glow.a = 0.12
+	draw_arc(center, radius, start, end, 64, glow, width * 7.0, true)
+	glow.a = 0.24
+	draw_arc(center, radius, start, end, 64, glow, width * 3.0, true)
+	color.a = 0.82
+	draw_arc(center, radius, start, end, 64, color, width, true)
+
+
+func _draw_neon_line(from: Vector2, to: Vector2, color: Color, width: float = 2.0) -> void:
+	var glow := color
+	glow.a = 0.10
+	draw_line(from, to, glow, width * 7.0, true)
+	glow.a = 0.25
+	draw_line(from, to, glow, width * 3.0, true)
+	color.a = 0.78
+	draw_line(from, to, color, width, true)
+
+
+func _draw_corner_marks(color: Color, margin: float, length: float) -> void:
+	color.a = 0.32
+	for horizontal in [-1.0, 1.0]:
+		for vertical in [-1.0, 1.0]:
+			var corner := Vector2(
+				margin if horizontal < 0.0 else 1080.0 - margin,
+				margin if vertical < 0.0 else 1920.0 - margin
+			)
+			var along_x := Vector2(length * horizontal, 0.0)
+			var along_y := Vector2(0.0, length * vertical)
+			draw_line(corner, corner + along_x, color, 2.0, true)
+			draw_line(corner, corner + along_y, color, 2.0, true)
 
 
 func _notification(what: int) -> void:

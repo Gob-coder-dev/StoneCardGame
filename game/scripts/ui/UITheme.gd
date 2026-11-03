@@ -61,22 +61,24 @@ const GOD_PREBATTLE_PORTRAIT_SIZE := Vector2(280, 270)
 const GOD_HUD_PORTRAIT_SIZE := Vector2(104, 104)
 
 ## ─── Couleurs récurrentes ────────────────────────────────────────────────────
-const COL_BG := Color("#151922")
-const COL_PANEL_BG := Color("#272d38")
-const COL_SURFACE := Color("#343e4d")
-const COL_BORDER := Color("#575361")
-const COL_TEXT := Color("#e9e1d1")
-const COL_TEXT_DIM := Color("#b5b6c0")
-const COL_ACCENT := Color("#d7a24d")
-const COL_ACCENT_LIGHT := Color("#f0cc8b")
+const COL_BG := Color("#101013")
+const COL_PANEL_BG := Color("#1b191e")
+const COL_SURFACE := Color("#29262e")
+const COL_BORDER := Color("#514653")
+const COL_TEXT := Color("#eee7e2")
+const COL_TEXT_DIM := Color("#bcb2bd")
+const COL_ACCENT := Color("#dd6847")
+const COL_ACCENT_LIGHT := Color("#ffad7d")
+const COL_NEON := Color("#c14cff")
+const COL_NEON_PINK := Color("#f0449c")
 const COL_INK := Color("#211b18")
 const COL_SUCCESS := Color("#a6c79a")
 const COL_WARNING := Color("#e6bc78")
 const COL_ERROR := Color("#df929c")
 const COL_DANGER := Color("#713c49")
-const COL_TAB_IDLE := Color("#1c222d")
-const COL_TAB_BORDER := Color("#434855")
-const COL_SELECTED := Color("#453c35")
+const COL_TAB_IDLE := Color("#17151b")
+const COL_TAB_BORDER := Color("#493c4d")
+const COL_SELECTED := Color("#342438")
 
 ## Lecture des cartes : le minerai sombre indique la famille, le contour extérieur
 ## indique la rareté. Un contour unique évite la confusion entre les deux canaux.
@@ -123,7 +125,7 @@ static func panel_style(bg: Color = COL_PANEL_BG, border: Color = COL_BORDER, bo
 	sb.content_margin_right = GAP_MEDIUM
 	sb.content_margin_top = GAP_SMALL
 	sb.content_margin_bottom = GAP_SMALL
-	sb.shadow_color = Color(0.025, 0.035, 0.055, 0.45)
+	sb.shadow_color = Color(0.10, 0.035, 0.09, 0.48)
 	sb.shadow_size = 5
 	sb.shadow_offset = Vector2(0, 6)
 	return sb
@@ -134,7 +136,7 @@ static func nav_tab_style(selected: bool, highlighted: bool = false) -> StyleBox
 	style.bg_color = COL_SELECTED if selected else COL_TAB_IDLE
 	if highlighted:
 		style.bg_color = style.bg_color.lightened(0.08)
-	style.border_color = COL_ACCENT if selected else COL_TAB_BORDER
+	style.border_color = COL_NEON_PINK if selected else COL_TAB_BORDER
 	style.set_border_width_all(3 if selected else 2)
 	style.set_corner_radius_all(12)
 	return style
@@ -143,7 +145,7 @@ static func nav_tab_style(selected: bool, highlighted: bool = false) -> StyleBox
 ## Cadre commun des portraits ; l'écran garde la responsabilité de leur taille.
 static func god_portrait_style(family_color: Color, emphasized: bool = false) -> StyleBoxFlat:
 	var style := panel_style(COL_BG.darkened(0.12),
-		COL_ACCENT_LIGHT if emphasized else family_color, 6 if emphasized else 3, 14)
+		COL_NEON if emphasized else family_color, 6 if emphasized else 3, 14)
 	style.content_margin_left = 8
 	style.content_margin_right = 8
 	style.content_margin_top = 8

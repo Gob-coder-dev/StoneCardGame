@@ -1,22 +1,24 @@
-# Identité des menus — Le cabinet des monstres
+# Identité des menus — L'arène machiavélique
 
-Les menus mettent en scène un refuge de collectionneur : fond bleu nuit,
-ardoise, métal patiné, texte ivoire et éclairage ambré. Les portraits et les
-couleurs des familles apportent l'identité horrifique. Les surfaces de lecture
-restent calmes et les commandes principales se distinguent par leur couleur.
+Les menus reprennent la composition sobre du jeu : fonds charbon et basalte,
+texte ivoire, métal incandescent et lueurs néon violettes ou carmin. Les halos
+et sigils sont volontairement discrets autour des zones de contenu ; ils donnent
+une identité démoniaque sans gêner la lecture des cartes et des règles.
 
 ## Palette et composants
 
 | Rôle | Couleur |
 | --- | --- |
-| Fond | `#151922` |
-| Panneau | `#272d38` |
-| Bouton secondaire | `#343e4d` |
-| Bordure | `#575361` |
-| Texte | `#e9e1d1` |
-| Texte secondaire | `#b5b6c0` |
-| Action principale | `#d7a24d` |
-| Accent clair | `#f0cc8b` |
+| Fond | `#101013` |
+| Panneau | `#1b191e` |
+| Bouton secondaire | `#29262e` |
+| Bordure | `#514653` |
+| Texte | `#eee7e2` |
+| Texte secondaire | `#bcb2bd` |
+| Action principale | `#dd6847` |
+| Accent clair | `#ffad7d` |
+| Néon rituel | `#c14cff` |
+| Néon carmin | `#f0449c` |
 
 `UITheme.gd` possède les couleurs et les fabriques de styles. `RefugeTheme.gd`
 construit la ressource `assets/ui/samstone_theme.tres` depuis ces valeurs. Les
@@ -27,15 +29,22 @@ de saisie et les barres de défilement.
 
 ## Fonds et illustrations
 
-`MenuBackground.gd` remplace `ParchmentBackground.gd`. Ses quatre ambiances
-partagent la même palette : refuge, bestiaire, carnet et rencontres. Les arches,
-les rayonnages et les lanternes sont dessinés avec les commandes natives de
-Godot. Le centre est réservé au contenu et le décor ignore les événements.
+`MenuBackground.gd` dessine un fond de pierre sombre avec quelques formes
+néon simples : halo ouvragé à l'accueil, filets roses sur toute la hauteur du
+bestiaire, angles fins dans les règles et arche des rencontres. Le rituel de
+pièce reçoit des cercles néon concentriques autour de la monnaie pour en faire le
+point focal. Les accents néon suivent la couleur du dieu affiché : le dieu
+actif sur l'accueil et dans le bestiaire, le dieu sélectionné dans les
+rencontres, puis les deux dieux en duel, sur le plateau et au résultat. Le
+plateau conserve les couleurs bleu et rouge des camps ; seuls ses détails de
+fond reprennent les couleurs divines. Les règles et les statistiques restent
+neutres. Les effets lumineux restent en marge ou à faible contraste.
+Le dessin est actualisé au chargement, au changement de dieu ou au
+redimensionnement et ignore les événements d'entrée.
 
-Le décor est redessiné au chargement et au redimensionnement, sans boucle
-`_process`. Sur l'accueil uniquement, une légère modulation du décor évolue
-par tween ; elle ne redessine pas les formes à chaque image. Le décor utilise
-des positions fixes et ne consomme aucun hasard de combat.
+La pièce du tirage reprend les codes d'une monnaie : tranche épaisse et crantée,
+champ de métal en relief, liseré gravé et poinçons d'atelier. Les couleurs bleue
+et rouge des camps sur le plateau restent inchangées.
 
 Les six portraits sont fournis dans `assets/gods/`. Le champ `asset` de
 `data/gods.json` en fournit le chemin ; Godot réutilise leurs ressources chargées.

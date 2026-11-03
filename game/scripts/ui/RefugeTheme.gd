@@ -68,6 +68,6 @@ func _buttons(type: String, primary: bool) -> void:
 	set_stylebox("pressed", type, UITheme.button_style(primary, true))
 	set_stylebox("hover_pressed", type, UITheme.button_style(primary, true, true))
 	set_stylebox("disabled", type, UITheme.panel_style(UITheme.COL_TAB_IDLE, UITheme.COL_TAB_BORDER))
-	var focus := UITheme.panel_style(Color.TRANSPARENT, UITheme.COL_ACCENT_LIGHT, 3, 14)
+	var focus := UITheme.panel_style(Color.TRANSPARENT, UITheme.COL_NEON_PINK, 3, 14)
 	focus.shadow_size = 0
 	set_stylebox("focus", type, focus)
