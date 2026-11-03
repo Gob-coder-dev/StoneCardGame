@@ -115,7 +115,7 @@ Le projet sépare volontairement les règles, la présentation et les données :
 data/                    Catalogue des cartes, dieux et adversaires
 scripts/
   data/                  Chargement du catalogue, profil et migration des sauvegardes
-  domain/                Deck, coûts, évolution, côtés et constantes de pouvoirs
+  domain/                Deck, coûts, évolution, paliers de bots, côtés et pouvoirs
   engine/                GameState, tours, résolution des combats et effets
   ai/                    Évaluation des coups, ripostes et recherche de fin de partie
   ui/                    Menus, cartes, plateau, HUD et composants tactiles
@@ -137,10 +137,13 @@ Le flux principal est le suivant :
 L'IA utilise le même moteur sur des copies de l'état : elle ne lit ni la main
 réelle du joueur ni le prochain tirage aléatoire.
 
-Les Rencontres combinent un dieu, un palier de cartes (niveau 1, niveau 2,
-niveaux 3) et une difficulté. Le deck ne dépend que du dieu et du palier ;
-la difficulté règle la précision de l'IA (0, 0,25, 0,5, 0,75 ou 1) et, au
-niveau le plus élevé, l'anticipation.
+Les Rencontres proposent les six dieux et Pr.Stone, un adversaire sans dieu qui
+utilise exclusivement des cartes neutres. Chacun se joue sur trois paliers de
+cartes et cinq difficultés. Pour les bots, les paliers tiennent compte de la
+rareté sans modifier le niveau réel des formes : les épiques commencent au
+palier 3 et les légendaires au palier 4. Le deck ne dépend que de l'adversaire et
+du palier ; la difficulté règle la précision de l'IA (0, 0,25, 0,5, 0,75 ou 1)
+et, au niveau le plus élevé, l'anticipation.
 
 Pour le détail des responsabilités, des signaux et des fichiers, voir
 [l'architecture complète](docs/ARCHITECTURE.md). Pour la palette et les choix de
@@ -158,8 +161,8 @@ Les données de contenu sont validées au démarrage :
 - `data/gods.json` : dieux, familles, couleurs, descriptions et portraits ;
 - `data/npcs.json` : six adversaires historiques, conservés pour les tests et
   les anciennes références ;
-- `OpponentCatalog` : génère les quatre-vingt-dix rencontres (six dieux, trois
-  paliers de cartes et cinq difficultés) sans dupliquer leurs decks.
+- `OpponentCatalog` : génère les 105 rencontres (six dieux et un bot neutre,
+  trois paliers de cartes et cinq difficultés) sans dupliquer leurs decks.
 
 Le profil local est enregistré dans `user://savegame.json`. Le format actuel est
 la version 4 : il conserve le pseudo, les statistiques, les trois decks de chacun

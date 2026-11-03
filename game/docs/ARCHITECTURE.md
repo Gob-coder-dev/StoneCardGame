@@ -10,8 +10,9 @@ Une IA appelle le même moteur sur une copie pour essayer un coup instantanémen
 | `data/stones.json` | — | Définition complète de chaque carte, pouvoirs compris |
 | `data/gods.json` | — | Dieux, familles, couleurs et descriptions |
 | `data/npcs.json` | — | Six adversaires historiques, leurs decks et profils d'IA |
-| `OpponentCatalog` | `build`, `deck_for`, `progression_rows` | Génère les adversaires dieu × palier × difficulté, sans fichier de quatre-vingt-dix entrées |
-| `StoneLoader` | `get_stone`, `has_stone`, `has_effect`, `stone_affinity`, `get_god`, `get_npc` | Charge les catalogues, fournit des copies et des lectures sans copie |
+| `OpponentCatalog` | `build`, `build_neutral`, `deck_for`, `neutral_deck_for`, `progression_rows` | Génère les adversaires dieu ou neutre × palier × difficulté, sans fichier de rencontres générées |
+| `BotCardTierRules` | `effective_level` | Classe les cartes des bots selon le niveau de forme et le plancher de rareté, sans changer leur niveau de jeu |
+| `StoneLoader` | `get_stone`, `has_stone`, `has_effect`, `stone_affinity`, `stone_rarity`, `get_neutral_lineages`, `get_god`, `get_npc` | Charge les catalogues, fournit des copies et des lectures sans copie |
 | `ContentValidator` | `find_problems` | Liste les incohérences des catalogues ; `StoneLoader` les signale au démarrage |
 | `PlayerData` | `get_active_deck`, `get_deck`, `get_selected_deck`, `set_player_deck`, `set_player_god`, `set_selected_deck`, `load_save`, `save` | Profil et trois decks persistants par dieu |
 | `PlayerSaveCodec` | `encode`, `decode` | Format et migration du profil sans accès disque |
@@ -324,15 +325,27 @@ autour du portrait. Voir
 
 ## Rencontres
 
-`LevelSelectController` construit la cascade dieu → palier de cartes → difficulté.
-Il ne crée que six boutons de dieux ; `OpponentCatalog` fabrique les
-quatre-vingt-dix adversaires à la demande. Le deck ne dépend que du dieu et du
-palier, tandis que la difficulté fournit le profil d'IA et l'identifiant
-`bot_<dieu>_<palier>_<difficulté>`. `BattleContext.select_opponent()` conserve la
-rencontre ; `current_opponent()` retombe sur `StoneLoader.get_npc()` pour les
-adversaires historiques de `npcs.json`. `PreBattle`, `BoardController` et l'écran
-de résultat lisent la même source. Le profil agrège les statistiques des cinq
-difficultés par dieu et par palier.
+`LevelSelectController` propose les six dieux et Pr.Stone, un bot sans dieu,
+puis le palier de cartes et la difficulté. `OpponentCatalog` génère à la demande
+les 105 rencontres. Les decks des dieux restent majoritairement composés de leur
+famille ; Pr.Stone n'utilise que des lignées neutres. La difficulté ne modifie
+pas le deck et fournit le profil d'IA ainsi que l'identifiant stable
+`bot_<adversaire>_<palier>_<difficulté>`.
+
+`BotCardTierRules` donne aux bots un niveau de puissance distinct du niveau de
+forme utilisé par le moteur : commun et rare commencent au palier 1, épique au
+palier 3 et légendaire au palier 4. Le niveau effectif est le maximum du niveau
+de forme et de ce plancher. La collection, l'évolution, les coûts et le combat
+continuent donc d'utiliser les données originales des cartes. Les règles de
+`DeckRules` restent réservées aux decks des joueurs ; `StoneLoader` fournit à la
+fabrique les lignées neutres et la rareté des formes.
+
+`BattleContext.select_opponent()` conserve la rencontre ; `current_opponent()`
+retombe sur `StoneLoader.get_npc()` pour les adversaires historiques de
+`npcs.json`. `PreBattle`, `BoardController` et l'écran de résultat lisent la même
+source. Le bot sans dieu conserve un `god_id` vide et est présenté explicitement
+comme tel, sans ajouter de dieu jouable à `gods.json`. Le profil agrège les
+statistiques des cinq difficultés par adversaire et par palier.
 
 ## Poser une carte en combat
 
@@ -356,10 +369,10 @@ profil construit par `OpponentCatalog` (ou celui de `npcs.json` pour les
 adversaires historiques) ; `ContentValidator` et `OpponentCatalog.problems()`
 en signalent les erreurs. `AITurnRunner.create_ai()` crée l'IA d'un profil.
 
-`OpponentCatalog` combine six dieux, trois paliers de cartes et cinq
-difficultés. Le deck est déterministe pour un couple dieu × palier : les cinq
-difficultés affrontent les mêmes cartes. L'identifiant
-`bot_<dieu>_<palier>_<difficulté>` sert de clé aux statistiques.
+`OpponentCatalog` combine six dieux et un bot neutre, trois paliers de cartes et
+cinq difficultés. Le deck est déterministe pour un couple adversaire × palier :
+les cinq difficultés affrontent les mêmes cartes. L'identifiant
+`bot_<adversaire>_<palier>_<difficulté>` sert de clé aux statistiques.
 
 | Difficulté | `precision` | `anticipation` | Délai minimal |
 | --- | --- | --- | --- |

@@ -59,7 +59,7 @@ apprend à partir des mêmes règles que `python`, mais encode directement les
 Godot reste le backend d'évaluation. L'observation, le codec d'actions, la
 récompense et les checkpoints restent communs.
 
-Configuration officielle : `configs/ppo_phase4_tactical.yaml`.
+Configuration officielle : `configs/ppo_phase4_vectorized.yaml`.
 
 ## 4. État des phases
 
@@ -273,17 +273,45 @@ Python et Godot n'utilisent pas le même générateur pseudo-aléatoire. Les tir
 ne sont donc pas identiques seed par seed, mais doivent suivre les mêmes lois.
 Cette différence ne peut pas promouvoir un modèle, puisque Godot reste l'oracle.
 
-Référence de performance actuelle : environ 388 parties/s et 2 914 décisions/s
-sur 1 024 000 transitions PPO. À lot identique, `python_batch` est environ
-1,9 fois plus rapide que `python`. La largeur 64 est retenue : 128 états
-n'apportent pratiquement aucun gain supplémentaire sur la machine de référence.
+Le backend `vector_engine` traite en tableaux denses les 128 placements de
+chaque partie : captures, menaces de riposte, Miasme, Corrosion, expiration des
+faiblesses, Essaim et Pillage. Les deux derniers effets possèdent un résolveur
+vectorisé spécialisé qui reproduit les composantes connexes et les tirages du
+moteur de référence. La couverture vectorisée mesurée est ainsi de 100 % sur
+les parties complètes des six dieux. Un espace de travail réutilisable évite de
+réallouer les grands tableaux contrefactuels à chaque décision.
+
+Les lots utilisent 256 environnements et 8 tours, soit toujours 2 048
+transitions par mise à jour PPO. Le réseau et Adam tournent sur DirectML ; les
+checkpoints restent stockés sur CPU et sont donc portables. Sur la machine de
+référence et au palier `precision_100_anticipation_50`, une médiane sur cinq
+mises à jour mesure 14,62 parties/s pour l'ancien chemin (64 environnements,
+CPU), 16,96 parties/s avec 256 environnements et DirectML mais sans le noyau,
+puis 44,40 parties/s avec le moteur complet. Le gain total est donc ×3,04 et le
+noyau vectorisé apporte à lui seul ×2,62 à conditions identiques. Une mise à
+jour de 2 048 décisions passe de 17,96 s à 5,77 s (×3,11). Ce chiffre est un
+benchmark local reproductible, pas une garantie pour une autre machine.
+
+Au dernier palier `precision_100_anticipation`, la comparaison strictement
+identique (256 environnements et DirectML des deux côtés) mesure 45,19
+parties/s avec le repli scalaire des effets et 47,48 parties/s avec leur
+résolution vectorisée, soit environ +5 %. Une mise à jour de 2 048 décisions
+prend 5,39 s dans cette mesure. Ces nombres restent des mesures locales et
+peuvent varier entre deux passages selon la charge de la machine.
 
 Le palier `precision_100_anticipation` utilise un cache comportemental à deux
 niveaux : enveloppes offensives immuables de chaque variante, puis profil de
 riposte public indexé par dieu et lignées déjà posées. Le plateau reste évalué
 pour chaque simulation et aucune carte cachée n'entre dans la clé. Cette
-optimisation conserve exactement les valeurs et choix du bot tout en faisant
-passer le benchmark avec anticipation de 6,74 à 26,56 parties/s (×3,9).
+optimisation conserve exactement les valeurs et choix du bot ; sa performance
+est incluse dans les mesures de bout en bout ci-dessus.
+
+Une tête auxiliaire optionnelle peut prédire la marge finale du plateau depuis
+la représentation partagée du réseau. Elle n'ajoute aucune action experte et
+aucun replay : seuls les épisodes terminés dans le rollout courant fournissent
+une cible normalisée. Son coefficient est nul dans le workflow officiel tant
+qu'un test A/B avec checkpoint, seeds et budget identiques n'a pas démontré un
+gain d'évaluation Godot. Les checkpoints antérieurs restent compatibles.
 
 ## 6. Procédure de validation
 
@@ -293,16 +321,17 @@ Avant un entraînement long :
 .\.venv311\Scripts\python.exe -m ruff check .
 .\.venv311\Scripts\python.exe -m pytest tests -q
 .\.venv311\Scripts\python.exe scripts\benchmark_fast_training.py `
-  --config configs\ppo_phase4_tactical.yaml --updates 12 --num-envs 64 `
-  --backend python_batch
+  --config configs\ppo_phase4_vectorized.yaml `
+  --updates 5 --batch-size 2048 --num-envs 256 `
+  --stage precision_100_anticipation_50 --device directml
 ```
 
 Avant la phase 5 :
 
 ```powershell
 .\.venv311\Scripts\python.exe scripts\validate_phase4.py `
-  runs\ppo_phase4_rebalanced\best.pt `
-  --config configs\ppo_phase4_tactical.yaml
+  runs\ppo_phase4_vectorized\best.pt `
+  --config configs\ppo_phase4_vectorized.yaml
 ```
 
 Avant de retenir un deck :

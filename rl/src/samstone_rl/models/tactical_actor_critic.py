@@ -17,6 +17,7 @@ class TacticalActorCritic(nn.Module):
             raise ValueError("les dimensions tactiques doivent etre positives")
         self.action_dim = int(action_dim)
         self.action_feature_dim = int(action_feature_dim)
+        self.hidden_dim = int(hidden_dim)
         self.backbone = nn.Sequential(
             nn.Linear(obs_dim, hidden_dim), nn.Tanh(),
             nn.Linear(hidden_dim, hidden_dim), nn.Tanh(),
@@ -36,16 +37,21 @@ class TacticalActorCritic(nn.Module):
         self.critic = nn.Linear(hidden_dim, 1)
         self._initialize()
 
+    def encode_state(self, observations: torch.Tensor) -> torch.Tensor:
+        return self.backbone(observations)
+
     def distribution_and_value(
             self, observations: torch.Tensor, action_mask: torch.Tensor,
             action_features: torch.Tensor) -> tuple[Categorical, torch.Tensor]:
         self._validate_inputs(observations, action_mask, action_features)
-        state = self.backbone(observations)
+        state = self.encode_state(observations)
         actions = self.action_encoder(action_features)
         expanded = state.unsqueeze(1).expand(-1, self.action_dim, -1)
         logits = (self.legacy_actor(state)
                   + self.action_scorer(torch.cat((expanded, actions), dim=-1)).squeeze(-1))
-        logits = logits.masked_fill(~action_mask, torch.finfo(logits.dtype).min)
+        # A finite sentinel avoids DirectML gradient overflow while remaining
+        # exactly zero after softmax at float32 precision.
+        logits = logits.masked_fill(~action_mask, -1.0e9)
         return Categorical(logits=logits), self.critic(state).squeeze(-1)
 
     def act(self, observations: torch.Tensor, action_mask: torch.Tensor,
@@ -54,17 +60,26 @@ class TacticalActorCritic(nn.Module):
         distribution, value = self.distribution_and_value(
             observations, action_mask, action_features)
         action = distribution.probs.argmax(dim=-1) if deterministic else distribution.sample()
-        return action, distribution.log_prob(action), value
+        selected = (action.long().unsqueeze(-1) == torch.arange(
+            self.action_dim, device=action.device)).to(distribution.logits.dtype)
+        return action, (distribution.logits * selected).sum(dim=-1), value
 
     def evaluate_actions(self, observations: torch.Tensor, action_mask: torch.Tensor,
                          action_features: torch.Tensor, actions: torch.Tensor
                          ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         distribution, value = self.distribution_and_value(
             observations, action_mask, action_features)
-        return distribution.log_prob(actions.long()), distribution.entropy(), value
+        # ``Categorical.log_prob`` backpropagates through a partial scatter,
+        # which the DirectML backend does not implement. The one-hot product
+        # is mathematically identical and remains fast on CPU as well.
+        selected = (actions.long().unsqueeze(-1) == torch.arange(
+            self.action_dim, device=actions.device)).to(distribution.logits.dtype)
+        log_prob = (distribution.logits * selected).sum(dim=-1)
+        entropy = -(distribution.probs * distribution.logits).sum(dim=-1)
+        return log_prob, entropy, value
 
     def value(self, observations: torch.Tensor) -> torch.Tensor:
-        return self.critic(self.backbone(observations)).squeeze(-1)
+        return self.critic(self.encode_state(observations)).squeeze(-1)
 
     def import_legacy_state(self, state: Mapping[str, torch.Tensor]) -> tuple[str, ...]:
         """Transfer the strategic backbone and critic, never the incompatible actor."""

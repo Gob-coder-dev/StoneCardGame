@@ -27,12 +27,20 @@ from samstone_rl.observability import (
     build_run_manifest,
 )
 from samstone_rl.tactics import TacticalActionEncoder
+from samstone_rl.training.auxiliary import (
+    AuxiliaryConfig,
+    FinalMarginHead,
+    RolloutMarginLabels,
+    auxiliary_loss,
+)
 from samstone_rl.training.curriculum import CurriculumManager, stages_from_config
 from samstone_rl.training.validation import (
     EvaluationSlice,
     PhaseFourGateReport,
     wilson_lower,
 )
+from samstone_rl.utils.device import resolve_torch_device
+from samstone_rl.utils.optim import DirectMLAdam
 from samstone_rl.utils.seeding import set_seed
 
 
@@ -46,7 +54,7 @@ class PPOTrainer:
         seed = int(self.config["seed"])
         set_seed(seed)
         self.rng = np.random.default_rng(seed)
-        self.device = torch.device(self.config.get("device", "cpu"))
+        self.device = resolve_torch_device(self.config.get("device", "cpu"))
         model_config = self.config["model"]
         self.model_architecture = str(model_config.get("architecture", "actor_critic"))
         self.tactical_features_enabled = self.model_architecture == "tactical_actor_critic"
@@ -107,7 +115,9 @@ class PPOTrainer:
         if self.training_backend == "python_batch":
             self.batch_env = BatchSamStoneEnv(
                 self.num_envs, self.reward_scheme,
-                tactical_features=self.tactical_features_enabled)
+                tactical_features=self.tactical_features_enabled,
+                vector_tactical=bool(environment.get("vector_tactical", True)),
+                vector_effects=bool(environment.get("vector_effects", True)))
             self.training_envs: list[SamStoneEnv] = []
         else:
             # Environment zero may be shared with evaluation only when both
@@ -133,7 +143,19 @@ class PPOTrainer:
             self.model = ActorCritic(
                 self.env.observation_space.shape[0], self.env.action_space.n,
                 int(model_config["hidden_dim"])).to(self.device)
-        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.config["ppo"]["learning_rate"], eps=1e-5)
+        optimizer_type = DirectMLAdam if self.device.type == "privateuseone" else torch.optim.Adam
+        self.optimizer = optimizer_type(
+            self.model.parameters(), lr=self.config["ppo"]["learning_rate"], eps=1e-5)
+        self.auxiliary_config = AuxiliaryConfig.from_mapping(
+            self.config.get("auxiliary"))
+        self.auxiliary_head: FinalMarginHead | None = None
+        self.auxiliary_optimizer: torch.optim.Optimizer | None = None
+        if self.auxiliary_config.enabled:
+            self.auxiliary_head = FinalMarginHead(self.model.hidden_dim).to(self.device)
+            auxiliary_lr = (self.auxiliary_config.learning_rate
+                            or float(self.config["ppo"]["learning_rate"]))
+            self.auxiliary_optimizer = optimizer_type(
+                self.auxiliary_head.parameters(), lr=auxiliary_lr, eps=1e-5)
         self.best_win_rate = -1.0
         self.best_stage_index = -1
         self._resume_global_step = 0
@@ -252,10 +274,14 @@ class PPOTrainer:
         batch_size = steps * self.num_envs
         self._rollout_executor = (None if self.batch_env is not None
                                   else ThreadPoolExecutor(max_workers=self.num_envs))
-        self._record_engine_manifest()
         last_evaluation = self._run_bootstrap_evaluation()
         observations, infos = self._reset_training_episodes(
             list(range(self.num_envs)), initial=self._resume_update == 0)
+        # Scalar Godot workers are started lazily by ``reset``.  Recording the
+        # engine manifest before that reset would query an inactive process.
+        # The native batch backend is already available, so the same ordering
+        # is safe for every backend and keeps the manifest authoritative.
+        self._record_engine_manifest()
         global_step = self._resume_global_step
         remaining_steps = max(0, total - global_step)
         updates_to_run = math.ceil(remaining_steps / batch_size)
@@ -270,6 +296,8 @@ class PPOTrainer:
                 profile: dict[str, float] = defaultdict(float)
                 phase_started = time.perf_counter()
                 storage = self._empty_storage(batch_size)
+                auxiliary_labels = (RolloutMarginLabels(batch_size, self.num_envs)
+                                    if self.auxiliary_config.enabled else None)
                 profile["storage_seconds"] += time.perf_counter() - phase_started
                 episodes: list[dict] = []
                 sampled_gods: dict[str, int] = defaultdict(int)
@@ -315,6 +343,8 @@ class PPOTrainer:
                     next_observations: list[np.ndarray] = []
                     next_infos: list[dict] = []
                     for index, (next_obs, reward, terminated, truncated, info) in enumerate(transitions):
+                        if auxiliary_labels is not None:
+                            auxiliary_labels.observe(index, slot.start + index)
                         storage["rewards"][slot.start + index] = float(reward)
                         storage["dones"][slot.start + index] = float(terminated or truncated)
                         capture_rewards.append(float(info.get("capture_reward", 0.0)))
@@ -326,6 +356,8 @@ class PPOTrainer:
                         if terminated or truncated:
                             if "episode" in info:
                                 episodes.append(info["episode"])
+                                if auxiliary_labels is not None:
+                                    auxiliary_labels.finish(index, info["episode"])
                             terminated_indices.append(index)
                     profile["bookkeeping_seconds"] += time.perf_counter() - phase_started
                     global_step += self.num_envs
@@ -340,6 +372,9 @@ class PPOTrainer:
                             next_infos[index] = reset_info
                         profile["reset_seconds"] += time.perf_counter() - phase_started
                     observations, infos = next_observations, next_infos
+                if auxiliary_labels is not None:
+                    storage["auxiliary_targets"] = auxiliary_labels.targets
+                    storage["auxiliary_mask"] = auxiliary_labels.mask
                 phase_started = time.perf_counter()
                 with torch.no_grad():
                     next_values = self.model.value(torch.as_tensor(
@@ -366,6 +401,8 @@ class PPOTrainer:
                     "rollout_batch_size": float(batch_size),
                     "profile": dict(profile),
                 })
+                if self.batch_env is not None:
+                    metrics["vector_engine"] = self.batch_env.vector_metrics(reset=True)
                 if sampling := self.curriculum.god_sampling_metrics(sampled_gods):
                     metrics["god_sampling"] = sampling
                 if sampling := self.curriculum.terrain_sampling_metrics(
@@ -457,8 +494,11 @@ class PPOTrainer:
                                  terrain_attempts: list[int] | None = None):
         """Configure seeds before dispatching independent reset requests."""
         if self.batch_env is not None:
-            observations: list[np.ndarray] = []
-            infos: list[dict[str, Any]] = []
+            seeds: list[int] = []
+            opponents: list[Any] = []
+            agent_players: list[int] = []
+            options_batch: list[dict[str, Any] | None] = []
+            requested_terrains: list[int | None] = []
             for index in indices:
                 opponent = self._training_opponent()
                 agent_player = int(self.rng.integers(1, 3))
@@ -474,14 +514,19 @@ class PPOTrainer:
                     scenario_index, agent_player,
                     blocked=self._sample_training_blocked(target_terrain))
                 assert options is not None
-                observation, info = self.batch_env.reset_one(
-                    index, seed=seed, opponent=opponent,
-                    agent_player=agent_player, options=options)
+                seeds.append(seed)
+                opponents.append(opponent)
+                agent_players.append(agent_player)
+                options_batch.append(options)
+                requested_terrains.append(target_terrain)
+            observations, infos = self.batch_env.reset_many(
+                indices, seeds=seeds, opponents=opponents,
+                agent_players=agent_players, options=options_batch)
+            for target_terrain, info in zip(
+                    requested_terrains, infos, strict=True):
                 if (target_terrain is not None
                         and len(info.get("blocked", [])) != target_terrain):
                     raise RuntimeError("le terrain force ne respecte pas le curriculum")
-                observations.append(observation)
-                infos.append(info)
                 if sampled_terrains is not None:
                     terrain = str(len(info.get("blocked", [])))
                     sampled_terrains[terrain] = sampled_terrains.get(terrain, 0) + 1
@@ -920,7 +965,7 @@ class PPOTrainer:
     def _checkpoint_extra(self) -> dict[str, Any]:
         return {}
 
-    def _empty_storage(self, steps: int) -> dict[str, torch.Tensor]:
+    def _empty_storage(self, steps: int) -> dict[str, Any]:
         obs_dim, action_dim = self.env.observation_space.shape[0], self.env.action_space.n
         storage = {"obs": torch.zeros((steps, obs_dim), device=self.device),
                 "masks": torch.zeros((steps, action_dim), dtype=torch.bool, device=self.device),
@@ -934,7 +979,8 @@ class PPOTrainer:
 
     def _optimize(self, storage, advantages, returns) -> dict[str, float]:
         ppo, size = self.config["ppo"], len(advantages)
-        advantages = (advantages - advantages.mean()) / (advantages.std(unbiased=False) + 1e-8)
+        advantages = advantages - advantages.mean()
+        advantages = advantages / (advantages.square().mean().sqrt() + 1e-8)
         indices = np.arange(size)
         collected: dict[str, list[float]] = defaultdict(list)
         legacy_epochs = int(ppo.get("update_epochs", 1))
@@ -948,29 +994,59 @@ class PPOTrainer:
         for _epoch in range(max_epochs):
             self.rng.shuffle(indices)
             for batch in np.array_split(indices, int(ppo["minibatches"])):
+                batch_index = torch.as_tensor(
+                    batch, dtype=torch.long, device=self.device)
                 if self.tactical_features_enabled:
                     assert isinstance(self.model, TacticalActorCritic)
                     new_log_prob, entropy, value = self.model.evaluate_actions(
-                        storage["obs"][batch], storage["masks"][batch],
-                        storage["action_features"][batch], storage["actions"][batch])
+                        storage["obs"][batch_index], storage["masks"][batch_index],
+                        storage["action_features"][batch_index],
+                        storage["actions"][batch_index])
                 else:
                     assert isinstance(self.model, ActorCritic)
                     new_log_prob, entropy, value = self.model.evaluate_actions(
-                        storage["obs"][batch], storage["masks"][batch],
-                        storage["actions"][batch])
-                log_ratio = new_log_prob - storage["log_probs"][batch]
+                        storage["obs"][batch_index], storage["masks"][batch_index],
+                        storage["actions"][batch_index])
+                log_ratio = new_log_prob - storage["log_probs"][batch_index]
                 ratio = log_ratio.exp()
-                policy_loss = torch.maximum(-advantages[batch] * ratio,
-                                            -advantages[batch] * ratio.clamp(
+                policy_loss = torch.maximum(-advantages[batch_index] * ratio,
+                                            -advantages[batch_index] * ratio.clamp(
                                                 1 - ppo["clip_coef"],
                                                 1 + ppo["clip_coef"])).mean()
-                value_loss = 0.5 * (value - returns[batch]).pow(2).mean()
+                value_loss = 0.5 * (value - returns[batch_index]).pow(2).mean()
                 loss = policy_loss + ppo["value_coef"] * value_loss - ppo["entropy_coef"] * entropy.mean()
+                auxiliary_batch_loss: torch.Tensor | None = None
+                auxiliary_batch_mae: torch.Tensor | None = None
+                if self.auxiliary_head is not None:
+                    cpu_mask = storage["auxiliary_mask"][batch]
+                    selected_positions = np.flatnonzero(cpu_mask)
+                    if len(selected_positions):
+                        selected = torch.as_tensor(
+                            selected_positions, dtype=torch.long, device=self.device)
+                        selected_indices = batch_index[selected]
+                        predictions = self.auxiliary_head(
+                            self.model.encode_state(storage["obs"][selected_indices]))
+                        targets = torch.as_tensor(
+                            storage["auxiliary_targets"][batch[selected_positions]],
+                            dtype=torch.float32, device=self.device)
+                        auxiliary_batch_loss = auxiliary_loss(
+                            predictions, targets, self.auxiliary_config.loss)
+                        auxiliary_batch_mae = (predictions - targets).abs().mean()
+                        loss = loss + self.auxiliary_config.coefficient * auxiliary_batch_loss
                 self.optimizer.zero_grad(set_to_none=True)
+                if self.auxiliary_optimizer is not None:
+                    self.auxiliary_optimizer.zero_grad(set_to_none=True)
                 loss.backward()
                 gradient_norm = nn.utils.clip_grad_norm_(self.model.parameters(), ppo["max_grad_norm"])
+                if self.auxiliary_head is not None:
+                    nn.utils.clip_grad_norm_(
+                        self.auxiliary_head.parameters(), ppo["max_grad_norm"])
                 self.optimizer.step()
-                legal_counts = storage["masks"][batch].sum(dim=-1).clamp_min(2).float()
+                if auxiliary_batch_loss is not None:
+                    assert self.auxiliary_optimizer is not None
+                    self.auxiliary_optimizer.step()
+                legal_counts = storage["masks"][batch_index].sum(
+                    dim=-1).clamp_min(2).float()
                 normalized_entropy = entropy / legal_counts.log()
                 values = {
                     "policy_loss": policy_loss,
@@ -983,6 +1059,11 @@ class PPOTrainer:
                 }
                 for name, metric in values.items():
                     collected[name].append(float(metric.detach()))
+                if auxiliary_batch_loss is not None and auxiliary_batch_mae is not None:
+                    collected["auxiliary_margin_loss"].append(
+                        float(auxiliary_batch_loss.detach()))
+                    collected["auxiliary_margin_mae"].append(
+                        float(auxiliary_batch_mae.detach()))
             epochs_used += 1
             epoch_metrics = len(np.array_split(indices, int(ppo["minibatches"])))
             epoch_kl = float(np.mean(collected["approx_kl"][-epoch_metrics:]))
@@ -992,15 +1073,45 @@ class PPOTrainer:
                 break
         with torch.no_grad():
             fitted_values = self.model.value(storage["obs"])
-        return_variance = torch.var(returns, unbiased=False)
-        explained = (1.0 - torch.var(returns - fitted_values, unbiased=False) / return_variance
+        return_variance = (returns - returns.mean()).square().mean()
+        residual = returns - fitted_values
+        residual_variance = (residual - residual.mean()).square().mean()
+        explained = (1.0 - residual_variance / return_variance
                      if float(return_variance) > 1e-12 else torch.tensor(0.0, device=self.device))
         metrics = {name: float(np.mean(values)) for name, values in collected.items()}
         metrics["epochs_used"] = float(epochs_used)
         metrics["epoch_early_stop"] = float(stopped_early)
         metrics["explained_variance"] = float(explained)
         metrics["learning_rate"] = float(self.optimizer.param_groups[0]["lr"])
+        if self.auxiliary_head is not None:
+            metrics.update(self._auxiliary_metrics(storage))
         return metrics
+
+    def _auxiliary_metrics(self, storage: dict[str, Any]) -> dict[str, float]:
+        mask = np.asarray(storage.get("auxiliary_mask", ()), dtype=np.bool_)
+        indices = np.flatnonzero(mask)
+        if self.auxiliary_head is None or not len(indices):
+            return {
+                "auxiliary_margin_samples": 0.0,
+                "auxiliary_margin_loss": 0.0,
+                "auxiliary_margin_mae": 0.0,
+                "auxiliary_margin_correlation": 0.0,
+            }
+        device_indices = torch.as_tensor(indices, dtype=torch.long, device=self.device)
+        with torch.no_grad():
+            predictions = self.auxiliary_head(
+                self.model.encode_state(storage["obs"][device_indices])).detach().cpu().numpy()
+        targets = np.asarray(storage["auxiliary_targets"], dtype=np.float32)[indices]
+        prediction_std = float(np.std(predictions))
+        target_std = float(np.std(targets))
+        correlation = (float(np.corrcoef(predictions, targets)[0, 1])
+                       if len(indices) > 1 and prediction_std > 1e-8 and target_std > 1e-8
+                       else 0.0)
+        return {
+            "auxiliary_margin_samples": float(len(indices)),
+            "auxiliary_margin_mae": float(np.mean(np.abs(predictions - targets))),
+            "auxiliary_margin_correlation": correlation,
+        }
 
     def _rollout_metrics(self, storage: dict[str, torch.Tensor], advantages: torch.Tensor,
                          returns: torch.Tensor, episodes: list[dict],
@@ -1011,13 +1122,15 @@ class PPOTrainer:
         update_seconds = len(storage["rewards"]) / max(steps_per_second, 1e-9)
         metrics = {
             "rollout_reward_mean": float(storage["rewards"].mean()),
-            "rollout_reward_std": float(storage["rewards"].std(unbiased=False)),
+            "rollout_reward_std": float((
+                storage["rewards"] - storage["rewards"].mean()).square().mean().sqrt()),
             "capture_reward_mean": float(np.mean(capture_rewards)),
             "terminal_reward_mean": float(np.mean(terminal_rewards)),
             "final_margin_reward_mean": float(np.mean(final_margin_rewards)),
             "control_delta_reward_mean": float(np.mean(control_delta_rewards)),
             "advantage_mean": float(advantages.mean()),
-            "advantage_std": float(advantages.std(unbiased=False)),
+            "advantage_std": float((
+                advantages - advantages.mean()).square().mean().sqrt()),
             "return_mean": float(returns.mean()),
             "value_mean": float(storage["values"].mean()),
             "steps_per_second": float(steps_per_second),
@@ -1151,8 +1264,17 @@ class PPOTrainer:
             },
             **self._checkpoint_extra(),
         }
+        if self.auxiliary_head is not None:
+            assert self.auxiliary_optimizer is not None
+            payload["auxiliary"] = {
+                "model": self.auxiliary_head.state_dict(),
+                "optimizer": self.auxiliary_optimizer.state_dict(),
+                "target": "final_board_margin",
+            }
         if torch.cuda.is_available():
             payload["rng"]["torch_cuda"] = torch.cuda.get_rng_state_all()
+        if self.device.type == "privateuseone":
+            payload = self._checkpoint_to_cpu(payload)
         torch.save(payload, temporary)
         temporary.replace(target)
         checksum = self._file_checksum(target)
@@ -1170,7 +1292,11 @@ class PPOTrainer:
             actual = self._file_checksum(checkpoint_path)
             if actual != expected:
                 raise RuntimeError(f"checksum invalide pour {checkpoint_path}")
-        checkpoint = torch.load(checkpoint_path, map_location=self.device, weights_only=False)
+        # torch-directml cannot currently be passed directly as map_location.
+        # Loading on CPU is portable; load_state_dict then copies tensors to
+        # the model and optimizer device.
+        load_device = "cpu" if self.device.type == "privateuseone" else self.device
+        checkpoint = torch.load(checkpoint_path, map_location=load_device, weights_only=False)
         if not load_training_state and isinstance(self.model, TacticalActorCritic):
             try:
                 self.model.load_state_dict(checkpoint["model"])
@@ -1182,6 +1308,14 @@ class PPOTrainer:
             self.model.load_state_dict(checkpoint["model"])
         if load_optimizer and "optimizer" in checkpoint:
             self.optimizer.load_state_dict(checkpoint["optimizer"])
+        auxiliary = checkpoint.get("auxiliary")
+        auxiliary_head = getattr(self, "auxiliary_head", None)
+        if auxiliary_head is not None and isinstance(auxiliary, dict):
+            auxiliary_head.load_state_dict(auxiliary["model"])
+            if load_optimizer and self.auxiliary_optimizer is not None:
+                auxiliary_optimizer = auxiliary.get("optimizer")
+                if auxiliary_optimizer is not None:
+                    self.auxiliary_optimizer.load_state_dict(auxiliary_optimizer)
         if not load_training_state:
             return checkpoint
         curriculum = checkpoint.get("curriculum", {})
@@ -1212,6 +1346,18 @@ class PPOTrainer:
             for block in iter(lambda: stream.read(1024 * 1024), b""):
                 digest.update(block)
         return digest.hexdigest()
+
+    @classmethod
+    def _checkpoint_to_cpu(cls, value: Any) -> Any:
+        if isinstance(value, torch.Tensor):
+            return value.detach().cpu()
+        if isinstance(value, dict):
+            return {key: cls._checkpoint_to_cpu(item) for key, item in value.items()}
+        if isinstance(value, list):
+            return [cls._checkpoint_to_cpu(item) for item in value]
+        if isinstance(value, tuple):
+            return tuple(cls._checkpoint_to_cpu(item) for item in value)
+        return value
 
 
 def main(argv: list[str] | None = None) -> int:

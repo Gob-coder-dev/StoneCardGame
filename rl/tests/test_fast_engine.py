@@ -18,7 +18,7 @@ ALL_SCENARIOS = (
                  "veuve_des_spores_n1", "griffe_septique_n1", "le_nud_hurlant_n1", "devoreur_de_lanternes_n1"]),
     ("kharun", ["eclat_cuirasse_n2", "heaume_errant_n2", "carapace_vide_n2", "osselet_blinde_n2",
                   "chevalier_sans_visage_n1", "golem_de_faience_n1", "avortons_des_caves_n2", "le_sac_a_murmures_n2"]),
-    ("ilyr", ["longuepine_n4", "bouche_arbalete_n3", "echassier_des_brumes_n3", "veilleur_bifurque_n2",
+    ("ilyr", ["longuepine_n3", "bouche_arbalete_n2", "echassier_des_brumes_n3", "veilleur_bifurque_n2",
                    "lil_empale_n1", "la_croisee_des_regards_n1", "avortons_des_caves_n3", "le_voyeur_n1"]),
     ("sylkha", ["nud_vivant_n3", "bourgeon_mordant_n3", "mante_des_racines_n2", "porte_nid_n2",
                     "fourmilion_des_nerfs_n2", "la_nourrice_nouee_n1", "avortons_des_caves_n2", "devoreur_de_lanternes_n2"]),
@@ -265,7 +265,7 @@ DETERMINISTIC_SCENARIOS = (
                   "chevalier_sans_visage_n1", "golem_de_faience_n1", "avortons_des_caves_n2", "le_sac_a_murmures_n2"]),
     ("nerava", ["porte_fievre_n2", "crache_cendre_n2", "clochelet_malade_n2", "machoire_moisie_n2",
                  "veuve_des_spores_n1", "griffe_septique_n1", "le_nud_hurlant_n1", "devoreur_de_lanternes_n1"]),
-    ("ilyr", ["longuepine_n4", "bouche_arbalete_n3", "echassier_des_brumes_n3", "veilleur_bifurque_n2",
+    ("ilyr", ["longuepine_n3", "bouche_arbalete_n2", "echassier_des_brumes_n3", "veilleur_bifurque_n2",
                    "lil_empale_n1", "la_croisee_des_regards_n1", "avortons_des_caves_n3", "le_voyeur_n1"]),
 )
 

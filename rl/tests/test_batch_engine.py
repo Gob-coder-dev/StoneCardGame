@@ -20,7 +20,7 @@ SCENARIOS = (
                  "veuve_des_spores_n1", "griffe_septique_n1", "le_nud_hurlant_n1", "devoreur_de_lanternes_n1"]),
     ("kharun", ["eclat_cuirasse_n2", "heaume_errant_n2", "carapace_vide_n2", "osselet_blinde_n2",
                   "chevalier_sans_visage_n1", "golem_de_faience_n1", "avortons_des_caves_n2", "le_sac_a_murmures_n2"]),
-    ("ilyr", ["longuepine_n4", "bouche_arbalete_n3", "echassier_des_brumes_n3", "veilleur_bifurque_n2",
+    ("ilyr", ["longuepine_n3", "bouche_arbalete_n2", "echassier_des_brumes_n3", "veilleur_bifurque_n2",
                    "lil_empale_n1", "la_croisee_des_regards_n1", "avortons_des_caves_n3", "le_voyeur_n1"]),
     ("sylkha", ["nud_vivant_n3", "bourgeon_mordant_n3", "mante_des_racines_n2", "porte_nid_n2",
                     "fourmilion_des_nerfs_n2", "la_nourrice_nouee_n1", "avortons_des_caves_n2", "devoreur_de_lanternes_n2"]),
@@ -147,3 +147,136 @@ def test_batch_environment_matches_profile_opponents(
     finally:
         scalar.close()
         batch.close()
+
+
+@pytest.mark.parametrize(("god", "deck"), SCENARIOS)
+def test_vector_tactical_features_match_scalar_oracle_for_complete_games(god, deck):
+    config = _config(god, deck)
+    reward = RewardScheme(terminal=2.0, board_control_delta=0.05)
+    vector = BatchSamStoneEnv(
+        1, reward, tactical_features=True, vector_tactical=True)
+    oracle = BatchSamStoneEnv(
+        1, reward, tactical_features=True, vector_tactical=False)
+    options = {"config": {**config, "blocked": [[0, 3]], "first_player": 1}}
+    try:
+        vector_obs, vector_info = vector.reset_one(
+            0, seed=87123, opponent=GodotProfileOpponent(1.0, True),
+            agent_player=1, options=options)
+        oracle_obs, oracle_info = oracle.reset_one(
+            0, seed=87123, opponent=GodotProfileOpponent(1.0, True),
+            agent_player=1, options=options)
+        while True:
+            assert np.array_equal(vector_obs, oracle_obs)
+            assert np.array_equal(vector_info["action_mask"], oracle_info["action_mask"])
+            assert np.array_equal(
+                vector_info["action_features"], oracle_info["action_features"])
+            if "episode" in oracle_info:
+                assert vector_info["episode"] == oracle_info["episode"]
+                break
+            action = int(np.flatnonzero(oracle_info["action_mask"])[-1])
+            vector_obs, vector_reward, vector_done, _, vector_info = vector.step([action])[0]
+            oracle_obs, oracle_reward, oracle_done, _, oracle_info = oracle.step([action])[0]
+            assert vector_reward == pytest.approx(oracle_reward)
+            assert vector_done == oracle_done
+        assert vector.vector_tactical is not None
+        metrics = vector.vector_tactical.metrics()
+        assert metrics["fallback_actions"] == 0
+        assert metrics["coverage"] == 1.0
+    finally:
+        vector.close()
+        oracle.close()
+
+
+def test_vector_tactical_kernel_reports_real_coverage_on_simple_deck():
+    god, deck = SCENARIOS[2]
+    batch = BatchSamStoneEnv(
+        4, RewardScheme(), tactical_features=True, vector_tactical=True)
+    options = [{"config": {**_config(god, deck), "blocked": [], "first_player": 1}}
+               for _ in range(4)]
+    try:
+        batch.reset_many(
+            range(4), seeds=range(100, 104),
+            opponents=[RandomOpponent() for _ in range(4)],
+            agent_players=[1] * 4, options=options)
+        assert batch.vector_tactical is not None
+        stats = batch.vector_tactical.last_stats
+        assert stats.vectorized_states == 4
+        assert stats.vectorized_actions > 0
+        assert stats.fallback_actions == 0
+        assert stats.coverage == 1.0
+    finally:
+        batch.close()
+
+
+def test_vector_workspace_is_reused_without_growing_for_same_batch():
+    god, deck = SCENARIOS[4]
+    batch = BatchSamStoneEnv(
+        4, RewardScheme(), tactical_features=True, vector_tactical=True)
+    options = [{"config": {**_config(god, deck), "blocked": [], "first_player": 1}}
+               for _ in range(4)]
+    try:
+        batch.reset_many(
+            range(4), seeds=range(400, 404),
+            opponents=[RandomOpponent() for _ in range(4)],
+            agent_players=[1] * 4, options=options)
+        assert batch.vector_tactical is not None
+        workspace = batch.vector_tactical.workspace
+        owners_id = id(workspace.owners)
+        allocated = workspace.allocated_bytes
+        actions = [int(np.flatnonzero(batch.action_masks[index])[0]) for index in range(4)]
+        batch.step(actions)
+        assert id(workspace.owners) == owners_id
+        assert workspace.allocated_bytes == allocated
+        assert workspace.capacity == 4
+    finally:
+        batch.close()
+
+
+def test_vector_tactical_batch_matches_scalar_across_all_phase4_scenarios():
+    size = len(SCENARIOS)
+    reward = RewardScheme(terminal=2.0, board_control_delta=0.05)
+    vector = BatchSamStoneEnv(
+        size, reward, tactical_features=True, vector_tactical=True)
+    oracle = BatchSamStoneEnv(
+        size, reward, tactical_features=True, vector_tactical=False)
+    seeds = [91000 + index * 97 for index in range(size)]
+    options = [
+        {"config": {**_config(god, deck),
+                    "blocked": [[index % 4, (index * 3) % 4]],
+                    "first_player": 1}}
+        for index, (god, deck) in enumerate(SCENARIOS)
+    ]
+    opponents_a = [GodotProfileOpponent(1.0, False, 0.5) for _ in range(size)]
+    opponents_b = [GodotProfileOpponent(1.0, False, 0.5) for _ in range(size)]
+    try:
+        vector_obs, vector_infos = vector.reset_many(
+            range(size), seeds=seeds, opponents=opponents_a,
+            agent_players=[1] * size, options=options)
+        oracle_obs, oracle_infos = oracle.reset_many(
+            range(size), seeds=seeds, opponents=opponents_b,
+            agent_players=[1] * size, options=options)
+        for turn in range(5):
+            assert np.array_equal(np.asarray(vector_obs), np.asarray(oracle_obs))
+            for vector_info, oracle_info in zip(
+                    vector_infos, oracle_infos, strict=True):
+                assert np.array_equal(
+                    vector_info["action_mask"], oracle_info["action_mask"])
+                assert np.array_equal(
+                    vector_info["action_features"], oracle_info["action_features"])
+            actions = []
+            for index, info in enumerate(oracle_infos):
+                legal = np.flatnonzero(info["action_mask"])
+                actions.append(int(legal[(turn * 11 + index * 7) % len(legal)]))
+            vector_transitions = vector.step(actions)
+            oracle_transitions = oracle.step(actions)
+            vector_obs = [item[0] for item in vector_transitions]
+            oracle_obs = [item[0] for item in oracle_transitions]
+            vector_infos = [item[4] for item in vector_transitions]
+            oracle_infos = [item[4] for item in oracle_transitions]
+            for actual, expected in zip(
+                    vector_transitions, oracle_transitions, strict=True):
+                assert actual[1] == pytest.approx(expected[1])
+                assert actual[2] == expected[2]
+    finally:
+        vector.close()
+        oracle.close()

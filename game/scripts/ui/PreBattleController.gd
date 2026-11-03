@@ -29,11 +29,13 @@ func _ready() -> void:
 	difficulty_label.text = _opponent_subtitle(npc)
 	var human_god := StoneLoader.get_god(PlayerData.player_god_id)
 	var npc_god := StoneLoader.get_god(str(npc.get("god_id", "")))
+	var npc_is_godless := npc_god.is_empty()
 	background.set_gods(human_god, npc_god)
 	_setup_god_identity(player_god_portrait, player_god_name, player_god_family,
 		human_god, "TOI • %s" % str(human_god.get("name", "?")))
 	_setup_god_identity(opponent_god_portrait, opponent_god_name, opponent_god_family,
-		npc_god, "LUI • %s" % str(npc_god.get("name", "?")))
+		npc_god, "LUI • %s" % ("Sans dieu" if npc_is_godless else str(npc_god["name"])),
+		"Cartes neutres uniquement" if npc_is_godless else "")
 
 	coin_flip_label.text = ""
 	start_button.disabled = true
@@ -46,10 +48,11 @@ func _ready() -> void:
 
 
 func _setup_god_identity(portrait: GodPortrait, name_label: Label, family_label: Label,
-		god: Dictionary, display_name: String) -> void:
+		god: Dictionary, display_name: String, family_name_override: String = "") -> void:
 	portrait.setup(god)
 	name_label.text = display_name
-	family_label.text = str(god.get("family_name", ""))
+	family_label.text = family_name_override if family_name_override != "" \
+		else str(god.get("family_name", ""))
 	family_label.add_theme_color_override(
 		"font_color", Color(str(god.get("color", UITheme.COL_TEXT.to_html())))
 	)

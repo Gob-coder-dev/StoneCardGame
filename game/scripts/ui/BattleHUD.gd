@@ -186,7 +186,7 @@ func set_gods(human_god: Dictionary, ai_god: Dictionary) -> void:
 	_human_portrait.setup(human_god)
 	_ai_portrait.setup(ai_god)
 	_human_god.text = str(human_god.get("name", "Dieu"))
-	_ai_god.text = str(ai_god.get("name", "Dieu"))
+	_ai_god.text = str(ai_god.get("name", "Sans dieu"))
 	_human_god.add_theme_color_override(
 		"font_color", Color(str(human_god.get("color", UITheme.COL_TEXT.to_html())))
 	)

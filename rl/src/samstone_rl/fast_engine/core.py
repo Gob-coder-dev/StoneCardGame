@@ -212,7 +212,9 @@ class FastSimulator:
                        for _move, value in scored]
         return dict(scored[_weighted_index(weights, self.opponent_rng)][0])
 
-    def tactical_action_scores(self, observer: int) -> dict[int, tuple[float, ...]]:
+    def tactical_action_scores(
+            self, observer: int, action_filter: set[int] | None = None
+            ) -> dict[int, tuple[float, ...]]:
         """Return deterministic public consequences for every legal action.
 
         Values use the same one-reply evaluator as the strongest profile bot,
@@ -231,8 +233,10 @@ class FastSimulator:
             stone_id = str(move["stone_id"])
             hand_slot = hand.index(stone_id)
             action = hand_slot * 16 + int(move["row"]) * 4 + int(move["col"])
-            immediate = self._move_value(state, move, False)
-            anticipated = self._move_value(state, move, True, reply_profile)
+            if action_filter is not None and action not in action_filter:
+                continue
+            immediate, anticipated = self._anticipated_consequences(
+                state, move, reply_profile)
             definition = self.catalog.definition(stone_id)
             stochastic = bool(definition.get("random_blades", 0)
                               or definition.get("coin_flip", ""))
@@ -244,6 +248,36 @@ class FastSimulator:
                 float(stochastic), float(material_delta),
             )
         return result
+
+    def _anticipated_consequences(
+            self, state: FastState, move: dict[str, Any],
+            reply_profile: ReplyThreatProfile) -> tuple[float, float]:
+        """Return captures and anticipated value from the same simulations.
+
+        Tactical features need both values. Previously every action was
+        previewed once for immediate captures and then cloned four more times
+        for anticipation. Captures are already known inside the anticipated
+        simulations, so reusing them removes a redundant rules pass.
+        """
+        definition = self.catalog.definition(str(move["stone_id"]))
+        samples = 4 if bool(
+            definition.get("random_blades", 0) or definition.get("coin_flip", "")) else 1
+        reply_player = _other(state.current_player)
+        capture_total = 0.0
+        anticipated_total = 0.0
+        for sample in range(samples):
+            preview_seed = _stable_seed(str(move["stone_id"]), int(move["row"]),
+                                        int(move["col"]), sample)
+            simulation = state.clone()
+            simulation.rng.seed(preview_seed)
+            result = self.apply_move(
+                simulation, int(move["row"]), int(move["col"]),
+                str(move["stone_id"]), state.current_player)
+            captures = float(len(result["captures"]))
+            capture_total += captures
+            anticipated_total += captures - self._public_reply_threat(
+                simulation, reply_player, reply_profile)
+        return capture_total / samples, anticipated_total / samples
 
     def apply_move(self, state: FastState, row: int, col: int, stone_id: str,
                    player: int) -> dict[str, Any]:

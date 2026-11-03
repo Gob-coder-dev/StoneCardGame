@@ -3,6 +3,7 @@
 extends "res://tests/support/CombatTestSuite.gd"
 
 const OpponentCatalogModel := preload("res://scripts/data/OpponentCatalog.gd")
+const BotCardTierRulesModel := preload("res://scripts/domain/BotCardTierRules.gd")
 
 ## Difficulté → précision fixe, anticipation et étoiles affichées.
 const EXPECTED_TIERS: Array = [
@@ -15,11 +16,30 @@ const EXPECTED_TIERS: Array = [
 
 
 func run() -> void:
+	_test_bot_card_tiers()
 	_test_difficulty_profiles()
 	_test_generated_decks()
+	_test_neutral_decks()
 	_test_deck_stability()
 	_test_progression_rows()
 	_test_battle_context()
+
+
+func _test_bot_card_tiers() -> void:
+	var cases: Array = [
+		["common", 1, 1],
+		["rare", 1, 1],
+		["epic", 1, 3],
+		["epic", 2, 3],
+		["legendary", 1, 4],
+		["common", 4, 4],
+		["rare", 3, 3],
+	]
+	var all_match := true
+	for row in cases:
+		all_match = all_match and BotCardTierRulesModel.effective_level(
+			str(row[0]), int(row[1])) == int(row[2])
+	_check(all_match, "le palier des bots tient compte de la rareté sans changer le niveau réel")
 
 
 func _test_difficulty_profiles() -> void:
@@ -57,7 +77,8 @@ func _test_generated_decks() -> void:
 					and not seen.has(lineage) \
 					and StoneLoader.is_stone_available_to_god(stone_id, god_id)
 				seen[lineage] = true
-				var level := StoneLoader.stone_level(stone_id)
+				var level := BotCardTierRulesModel.effective_level(
+					StoneLoader.stone_rarity(stone_id), StoneLoader.stone_level(stone_id))
 				in_bracket = in_bracket \
 					and level >= int(tier["min_level"]) \
 					and level <= int(tier["max_level"])
@@ -71,6 +92,41 @@ func _test_generated_decks() -> void:
 	_check(built_opponents == StoneLoader.get_all_gods().size()
 		* OpponentCatalogModel.BRACKETS.size() * OpponentCatalogModel.DIFFICULTIES.size(),
 		"les six dieux sont disponibles aux trois paliers et aux cinq difficultés")
+
+
+func _test_neutral_decks() -> void:
+	var complete := true
+	var neutral_only := true
+	var in_bracket := true
+	var built_opponents := 0
+	for tier in OpponentCatalogModel.BRACKETS:
+		var bracket_id := str(tier["id"])
+		var deck := OpponentCatalogModel.neutral_deck_for(bracket_id)
+		complete = complete and deck.size() == DeckRules.DECK_SIZE
+		var seen := {}
+		for raw_id in deck:
+			var stone_id := str(raw_id)
+			var lineage := StoneLoader.stone_lineage(stone_id)
+			complete = complete and not seen.has(lineage)
+			neutral_only = neutral_only and StoneLoader.stone_affinity(stone_id) == "neutral"
+			var level := BotCardTierRulesModel.effective_level(
+				StoneLoader.stone_rarity(stone_id), StoneLoader.stone_level(stone_id))
+			in_bracket = in_bracket \
+				and level >= int(tier["min_level"]) \
+				and level <= int(tier["max_level"])
+			seen[lineage] = true
+		for level in OpponentCatalogModel.DIFFICULTIES:
+			var opponent := OpponentCatalogModel.build_neutral(
+				bracket_id, str(level["id"]))
+			if not opponent.is_empty() and opponent["deck"] == deck \
+					and str(opponent["god_id"]) == "":
+				built_opponents += 1
+	_check(complete, "Pr.Stone reçoit huit lignées neutres distinctes à chaque palier")
+	_check(neutral_only, "le deck de Pr.Stone ne contient aucune carte de famille divine")
+	_check(in_bracket, "les cartes neutres de Pr.Stone respectent leur palier de puissance")
+	_check(built_opponents == OpponentCatalogModel.BRACKETS.size()
+		* OpponentCatalogModel.DIFFICULTIES.size(),
+		"les trois paliers et cinq difficultés de Pr.Stone réutilisent chacun le bon deck")
 
 
 func _test_deck_stability() -> void:
@@ -93,8 +149,8 @@ func _test_progression_rows() -> void:
 	for row in rows:
 		for raw_id in row["difficulty_ids"]:
 			ids[str(raw_id)] = true
-	_check(rows.size() == 18 and ids.size() == 90,
-		"le profil regroupe dix-huit dieu × palier et suit les quatre-vingt-dix rencontres")
+	_check(rows.size() == 21 and ids.size() == 105,
+		"le profil regroupe les six dieux et Pr.Stone sur trois paliers et cinq difficultés")
 
 
 func _test_battle_context() -> void:

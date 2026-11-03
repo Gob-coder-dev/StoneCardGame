@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 import numpy as np
 import pytest
 import torch
@@ -13,6 +15,7 @@ from samstone_rl.training.curriculum import (
 from samstone_rl.training.ppo_cleanrl import PPOTrainer
 from samstone_rl.training.ppo_cleanrl import main as ppo_main
 from samstone_rl.training.validation import EvaluationSlice, PhaseFourGateReport
+from samstone_rl.utils.optim import DirectMLAdam
 
 
 def test_masked_ppo_evaluation_updates_actor():
@@ -38,6 +41,30 @@ def test_masked_ppo_evaluation_updates_actor():
     assert torch.allclose(ratio, torch.ones_like(ratio))
     changed_log_prob, _, _ = model.evaluate_actions(observations, masks, actions)
     assert not torch.allclose((changed_log_prob - old_log_prob).exp(), torch.ones_like(ratio))
+
+
+def test_directml_adam_matches_torch_adam_and_loads_its_state():
+    reference = torch.nn.Parameter(torch.tensor([1.0, -2.0, 0.5]))
+    candidate = torch.nn.Parameter(reference.detach().clone())
+    reference_optimizer = torch.optim.Adam([reference], lr=1e-3, eps=1e-5)
+    candidate_optimizer = DirectMLAdam([candidate], lr=1e-3, eps=1e-5)
+    for step in range(5):
+        gradient = torch.tensor([0.2 + step * 0.01, -0.4, 0.05])
+        reference.grad = gradient.clone()
+        candidate.grad = gradient.clone()
+        reference_optimizer.step()
+        candidate_optimizer.step()
+    assert torch.allclose(candidate, reference, atol=1e-7, rtol=1e-6)
+
+    resumed = torch.nn.Parameter(reference.detach().clone())
+    resumed_optimizer = DirectMLAdam([resumed], lr=1e-3, eps=1e-5)
+    resumed_optimizer.load_state_dict(deepcopy(reference_optimizer.state_dict()))
+    gradient = torch.tensor([0.13, -0.17, 0.29])
+    reference.grad = gradient.clone()
+    resumed.grad = gradient.clone()
+    reference_optimizer.step()
+    resumed_optimizer.step()
+    assert torch.allclose(resumed, reference, atol=1e-7, rtol=1e-6)
 
 
 def test_curriculum_requires_final_stage_victory_before_phase_five():

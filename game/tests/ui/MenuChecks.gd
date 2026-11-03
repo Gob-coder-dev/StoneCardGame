@@ -16,7 +16,9 @@ func run() -> void:
 	await _test_hand_keeps_remaining_cards()
 	_test_first_player_draw()
 	await _test_prebattle_reveals_draw()
+	await _test_neutral_bot_selection()
 	await _test_generated_opponent_battle()
+	await _test_neutral_bot_battle()
 	await _test_result_uses_generated_opponent()
 	fixture.restore()
 
@@ -314,6 +316,62 @@ func _test_generated_opponent_battle() -> void:
 	PlayerData.set_selected_deck(0)
 
 
+func _test_neutral_bot_selection() -> void:
+	var page: Control = (load("res://scenes/menus/LevelSelect.tscn") as PackedScene).instantiate()
+	add_child(page)
+	await get_tree().process_frame
+	var neutral_button: Button = page.npc_list.get_child(page.npc_list.get_child_count() - 1)
+	page._on_neutral_bot_selected()
+	_check(page.npc_list.get_child_count() == 7
+		and neutral_button.text.contains(OpponentCatalogModel.NEUTRAL_BOT_NAME)
+		and page._selected_neutral_bot
+		and page.profile_name.text == OpponentCatalogModel.NEUTRAL_BOT_NAME
+		and page.profile_difficulty.text.contains("Niveau 1"),
+		"les Rencontres proposent Pr.Stone avec les paliers et difficultés habituels")
+	page.queue_free()
+	await get_tree().process_frame
+
+
+func _test_neutral_bot_battle() -> void:
+	var saved_npc := BattleContext.selected_npc_id
+	var saved_opponent := BattleContext.selected_opponent
+	var saved_first := BattleContext.forced_first_player
+	var opponent := OpponentCatalogModel.build_neutral("n1", "moyen")
+	BattleContext.select_opponent(opponent)
+	BattleContext.forced_first_player = GameState.PLAYER_HUMAN
+	PlayerData.set_selected_deck(0)
+	PlayerData.set_player_deck(ProfileFixture.DECK.duplicate())
+	var board: Control = (load("res://scenes/game/Board.tscn") as PackedScene).instantiate()
+	add_child(board)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var state: GameState = board.turn_manager.get_state()
+	var all_neutral := true
+	for stone_id in state.hand_of(GameState.PLAYER_AI):
+		all_neutral = all_neutral and StoneLoader.stone_affinity(str(stone_id)) == "neutral"
+	_check(state.npc_id == opponent["id"]
+		and state.god_of(GameState.PLAYER_AI) == ""
+		and state.hand_of(GameState.PLAYER_AI) == StoneLoader.build_hand(opponent["deck"])
+		and all_neutral,
+		"un combat contre Pr.Stone fonctionne avec huit cartes neutres et aucun dieu")
+	board.queue_free()
+	await get_tree().process_frame
+	var prebattle: Control = (load("res://scenes/menus/PreBattle.tscn") as PackedScene).instantiate()
+	add_child(prebattle)
+	await get_tree().process_frame
+	_check(prebattle.opponent_god_name.text == "LUI • Sans dieu"
+		and prebattle.opponent_god_family.text == "Cartes neutres uniquement"
+		and not prebattle.opponent_god_portrait.has_portrait(),
+		"l'avant-combat indique clairement que Pr.Stone n'a ni dieu ni portrait divin")
+	prebattle.queue_free()
+	await get_tree().process_frame
+	BattleContext.selected_npc_id = saved_npc
+	BattleContext.selected_opponent = saved_opponent
+	BattleContext.forced_first_player = saved_first
+	PlayerData.set_player_deck([])
+	PlayerData.set_selected_deck(0)
+
+
 func _test_result_uses_generated_opponent() -> void:
 	var saved_id := BattleContext.selected_npc_id
 	var saved_opponent := BattleContext.selected_opponent
@@ -420,6 +478,9 @@ func _test_hud_game_over() -> void:
 	_check(hud._human_portrait.has_portrait() and hud._ai_portrait.has_portrait()
 		and hud._human_god.text == "Véskar" and hud._ai_god.text == "Kharûn",
 		"le HUD conserve l'image et le nom du dieu de chaque camp pendant le combat")
+	hud.set_gods(StoneLoader.get_god("veskar"), {})
+	_check(hud._ai_god.text == "Sans dieu" and not hud._ai_portrait.has_portrait(),
+		"le HUD identifie explicitement un adversaire sans dieu")
 	hud.queue_free()
 	await get_tree().process_frame
 

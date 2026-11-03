@@ -158,6 +158,10 @@ func stone_level(stone_id: String) -> int:
 	return int(_stones.get(stone_id, {}).get("level", 1))
 
 
+func stone_rarity(stone_id: String) -> String:
+	return str(_stones.get(stone_id, {}).get("rarity", ""))
+
+
 func lineage_max_level(lineage_id: String) -> int:
 	return _lineages.get(lineage_id, []).size()
 
@@ -303,4 +307,17 @@ func get_lineages_for_god(god_id: String) -> Array:
 		if not seen.has(lineage):
 			seen[lineage] = true
 			result.append(stone)
+	return result
+
+
+func get_neutral_lineages() -> Array:
+	var result: Array = []
+	var seen := {}
+	for stone in _stones_list:
+		if str(stone.get("god_id", "neutral")) != "neutral":
+			continue
+		var lineage := stone_lineage(str(stone["id"]))
+		if not seen.has(lineage):
+			seen[lineage] = true
+			result.append(stone.duplicate(true))
 	return result

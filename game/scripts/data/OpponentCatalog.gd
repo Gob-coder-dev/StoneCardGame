@@ -1,18 +1,23 @@
 ## OpponentCatalog.gd
-## Fabrique les adversaires des Rencontres : un dieu, un palier de cartes et une
-## difficulté suffisent à produire un deck et un profil d'IA complets.
+## Fabrique les adversaires des Rencontres à partir d'un dieu, ou du bot neutre,
+## d'un palier de cartes et d'une difficulté.
 ##
 ## Le deck ne dépend que du dieu et du palier. Les cinq difficultés d'une même
 ## rencontre affrontent donc les mêmes cartes : seule la façon de jouer change.
 ## La génération est déterministe, afin qu'une rencontre reste identique d'une
-## session à l'autre sans stocker quatre-vingt-dix adversaires dans un fichier.
+## session à l'autre sans stocker cent cinq adversaires dans un fichier.
 class_name OpponentCatalog
 extends RefCounted
 
 const AIProfileModel := preload("res://scripts/ai/AIProfile.gd")
+const BotCardTierRulesModel := preload("res://scripts/domain/BotCardTierRules.gd")
 
-## Paliers de puissance : seules les formes dont le niveau appartient à
-## l'intervalle entrent dans le deck.
+const NEUTRAL_BOT_ID := "pr_stone"
+const NEUTRAL_BOT_NAME := "Pr.Stone"
+const NEUTRAL_BOT_COLOR := "#a89a83"
+
+## Paliers de puissance : le niveau de bot combine le niveau de forme et son
+## plancher de rareté, sans modifier le niveau utilisé par le moteur.
 const BRACKETS: Array = [
 	{"id": "n1", "name": "Niveau 1", "min_level": 1, "max_level": 1},
 	{"id": "n2", "name": "Niveau 2", "min_level": 2, "max_level": 2},
@@ -30,8 +35,8 @@ const DIFFICULTIES: Array = [
 ]
 
 ## Les decks thématiques gardent une majorité de cartes de la famille du dieu,
-## puis complètent avec les neutres. Les paliers N3-4 n'ont que huit lignées de
-## famille : les deux neutres sont indispensables pour atteindre huit cartes.
+## puis complètent avec les neutres. Le bot Pr.Stone ne prend que des lignées
+## neutres.
 const FAMILY_CARDS: int = 6
 
 
@@ -63,6 +68,10 @@ static func opponent_id(god_id: String, bracket_id: String, difficulty_id: Strin
 	return "bot_%s_%s_%s" % [god_id, bracket_id, difficulty_id]
 
 
+static func neutral_opponent_id(bracket_id: String, difficulty_id: String) -> String:
+	return "bot_%s_%s_%s" % [NEUTRAL_BOT_ID, bracket_id, difficulty_id]
+
+
 static func stars_text(count: int) -> String:
 	var filled := clampi(count, 0, 5)
 	return "★".repeat(filled) + "☆".repeat(5 - filled)
@@ -81,11 +90,46 @@ static func build(god_id: String, bracket_id: String, difficulty_id: String) -> 
 	if deck.is_empty():
 		return {}
 	var god_name := str(god.get("name", god_id))
+	return _build_opponent(
+		opponent_id(god_id, bracket_id, difficulty_id),
+		"%s — %s" % [god_name, str(tier["name"])],
+		god_id,
+		str(god.get("description", "")),
+		str(god.get("asset", "")),
+		deck,
+		tier,
+		level
+	)
+
+
+static func build_neutral(bracket_id: String, difficulty_id: String) -> Dictionary:
+	var tier := bracket(bracket_id)
+	var level := difficulty(difficulty_id)
+	if tier.is_empty() or level.is_empty():
+		return {}
+	var deck := neutral_deck_for(bracket_id)
+	if deck.is_empty():
+		return {}
+	return _build_opponent(
+		neutral_opponent_id(bracket_id, difficulty_id),
+		"%s — %s" % [NEUTRAL_BOT_NAME, str(tier["name"])],
+		"",
+		"Adversaire sans dieu, son deck est composé uniquement de cartes neutres.",
+		"",
+		deck,
+		tier,
+		level
+	)
+
+
+static func _build_opponent(opponent_id_value: String, display_name: String, god_id: String,
+		description: String, portrait: String, deck: Array, tier: Dictionary,
+		level: Dictionary) -> Dictionary:
 	return {
-		"id": opponent_id(god_id, bracket_id, difficulty_id),
-		"name": "%s — %s" % [god_name, str(tier["name"])],
+		"id": opponent_id_value,
+		"name": display_name,
 		"god_id": god_id,
-		"description": str(god.get("description", "")),
+		"description": description,
 		"quote": "",
 		"difficulty": str(level["id"]),
 		"difficulty_label": str(level["name"]),
@@ -97,7 +141,7 @@ static func build(god_id: String, bracket_id: String, difficulty_id: String) -> 
 			"anticipation": bool(level["anticipation"]),
 		},
 		"deck": deck,
-		"portrait": str(god.get("asset", "")),
+		"portrait": portrait,
 	}
 
 
@@ -107,39 +151,73 @@ static func deck_for(god_id: String, bracket_id: String) -> Array:
 	var tier := bracket(bracket_id)
 	if tier.is_empty() or StoneLoader.get_god(god_id).is_empty():
 		return []
+	return _make_deck(
+		StoneLoader.get_lineages_for_god(god_id),
+		tier,
+		_deck_seed(god_id, bracket_id),
+		false
+	)
+
+
+static func neutral_deck_for(bracket_id: String) -> Array:
+	var tier := bracket(bracket_id)
+	if tier.is_empty():
+		return []
+	return _make_deck(
+		StoneLoader.get_neutral_lineages(),
+		tier,
+		_deck_seed(NEUTRAL_BOT_ID, bracket_id),
+		true
+	)
+
+
+static func _make_deck(lineages: Array, tier: Dictionary, seed: int,
+		neutral_only: bool) -> Array:
 	var minimum := int(tier["min_level"])
 	var maximum := int(tier["max_level"])
 	var family: Array = []
 	var neutral: Array = []
-	for stone in StoneLoader.get_lineages_for_god(god_id):
+	for stone in lineages:
 		var lineage_id := StoneLoader.stone_lineage(str(stone.get("id", "")))
-		if lineage_id == "" or StoneLoader.lineage_max_level(lineage_id) < minimum:
+		if lineage_id == "" or _eligible_variants(lineage_id, minimum, maximum).is_empty():
 			continue
 		if str(stone.get("god_id", "neutral")) == "neutral":
 			neutral.append(lineage_id)
-		else:
+		elif not neutral_only:
 			family.append(lineage_id)
 	family.sort()
 	neutral.sort()
 	var rng := RandomNumberGenerator.new()
-	rng.seed = _deck_seed(god_id, bracket_id)
+	rng.seed = seed
 	family = _shuffled(family, rng)
 	neutral = _shuffled(neutral, rng)
-	var lineages: Array = []
-	_take(lineages, family, FAMILY_CARDS)
-	_take(lineages, neutral, DeckRules.DECK_SIZE)
-	_take(lineages, family, DeckRules.DECK_SIZE)
-	if lineages.size() != DeckRules.DECK_SIZE:
+	var selected_lineages: Array = []
+	if neutral_only:
+		_take(selected_lineages, neutral, DeckRules.DECK_SIZE)
+	else:
+		_take(selected_lineages, family, FAMILY_CARDS)
+		_take(selected_lineages, neutral, DeckRules.DECK_SIZE)
+		_take(selected_lineages, family, DeckRules.DECK_SIZE)
+	if selected_lineages.size() != DeckRules.DECK_SIZE:
 		return []
 	var deck: Array = []
-	for lineage_id in lineages:
-		var top_level := mini(maximum, StoneLoader.lineage_max_level(str(lineage_id)))
-		var level := rng.randi_range(minimum, top_level)
-		var stone_id := StoneLoader.variant_id(str(lineage_id), level)
-		if stone_id == "":
+	for lineage_id in selected_lineages:
+		var variants := _eligible_variants(str(lineage_id), minimum, maximum)
+		if variants.is_empty():
 			return []
-		deck.append(stone_id)
+		deck.append(variants[rng.randi_range(0, variants.size() - 1)])
 	return deck
+
+
+static func _eligible_variants(lineage_id: String, minimum: int, maximum: int) -> Array:
+	var result: Array = []
+	for raw_id in StoneLoader.variant_ids(lineage_id):
+		var stone_id := str(raw_id)
+		var effective_level := BotCardTierRulesModel.effective_level(
+			StoneLoader.stone_rarity(stone_id), StoneLoader.stone_level(stone_id))
+		if effective_level >= minimum and effective_level <= maximum:
+			result.append(stone_id)
+	return result
 
 
 ## Lignes de progression affichées par le profil : une par dieu et par palier,
@@ -158,6 +236,16 @@ static func progression_rows() -> Array:
 				"color": str(god.get("color", "")),
 				"difficulty_ids": difficulty_ids,
 			})
+	for tier in BRACKETS:
+		var bracket_id := str(tier["id"])
+		var difficulty_ids: Array = []
+		for level in DIFFICULTIES:
+			difficulty_ids.append(neutral_opponent_id(bracket_id, str(level["id"])))
+		rows.append({
+			"label": "%s • %s" % [NEUTRAL_BOT_NAME, str(tier["name"])],
+			"color": NEUTRAL_BOT_COLOR,
+			"difficulty_ids": difficulty_ids,
+		})
 	return rows
 
 
@@ -174,6 +262,8 @@ static func problems() -> Array[String]:
 		for tier in BRACKETS:
 			var bracket_id := str(tier["id"])
 			_check_deck(str(god_id), bracket_id, tier, result)
+	for tier in BRACKETS:
+		_check_deck("", str(tier["id"]), tier, result, true)
 	for tier in DIFFICULTIES:
 		var profile := {
 			"precision": float(tier["precision"]),
@@ -184,24 +274,30 @@ static func problems() -> Array[String]:
 	return result
 
 
-static func _check_deck(god_id: String, bracket_id: String, tier: Dictionary, result: Array[String]) -> void:
-	var deck := deck_for(god_id, bracket_id)
+static func _check_deck(god_id: String, bracket_id: String, tier: Dictionary,
+		result: Array[String], neutral_only: bool = false) -> void:
+	var deck := neutral_deck_for(bracket_id) if neutral_only else deck_for(god_id, bracket_id)
+	var deck_label := NEUTRAL_BOT_ID if neutral_only else god_id
 	if deck.size() != DeckRules.DECK_SIZE:
 		result.append("deck %s/%s incomplet (%d/%d)." % [
-			god_id, bracket_id, deck.size(), DeckRules.DECK_SIZE])
+			deck_label, bracket_id, deck.size(), DeckRules.DECK_SIZE])
 		return
 	var seen: Array = []
 	for raw_id in deck:
 		var stone_id := str(raw_id)
 		var lineage := StoneLoader.stone_lineage(stone_id)
 		if not StoneLoader.has_stone(stone_id) or seen.has(lineage):
-			result.append("deck %s/%s invalide." % [god_id, bracket_id])
+			result.append("deck %s/%s invalide." % [deck_label, bracket_id])
 			return
-		if not StoneLoader.is_stone_available_to_god(stone_id, god_id):
+		if neutral_only and StoneLoader.stone_affinity(stone_id) != "neutral":
+			result.append("carte '%s' non neutre dans le deck %s." % [stone_id, deck_label])
+			return
+		if not neutral_only and not StoneLoader.is_stone_available_to_god(stone_id, god_id):
 			result.append("carte '%s' inaccessible à '%s'." % [stone_id, god_id])
 			return
-		var level := StoneLoader.stone_level(stone_id)
-		if level < int(tier["min_level"]) or level > int(tier["max_level"]):
+		var effective_level := BotCardTierRulesModel.effective_level(
+			StoneLoader.stone_rarity(stone_id), StoneLoader.stone_level(stone_id))
+		if effective_level < int(tier["min_level"]) or effective_level > int(tier["max_level"]):
 			result.append("carte '%s' hors du palier '%s'." % [stone_id, bracket_id])
 			return
 		seen.append(lineage)
@@ -227,5 +323,5 @@ static func _shuffled(values: Array, rng: RandomNumberGenerator) -> Array:
 
 ## `String.hash()` est stable d'une session à l'autre : la rencontre garde son
 ## deck sans dépendre de l'ordre de chargement des dictionnaires.
-static func _deck_seed(god_id: String, bracket_id: String) -> int:
-	return ("%s:%s" % [god_id, bracket_id]).hash()
+static func _deck_seed(source_id: String, bracket_id: String) -> int:
+	return ("%s:%s" % [source_id, bracket_id]).hash()

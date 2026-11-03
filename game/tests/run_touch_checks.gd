@@ -364,8 +364,8 @@ func _check_other_menus() -> void:
 	await _tap(_center(edit))
 	_check(stats.edit_row.visible, "profil : un seul appui ouvre l'édition du pseudo")
 	stats._cancel_edit()
-	# La progression contient dix-huit lignes dieu × palier. Préparer une liste
-	# longue pour vérifier le défilement sans dépendre des stats sauvées.
+	# La progression contient vingt-et-une lignes adversaire × palier.
+	# Préparer une liste longue pour vérifier le défilement sans dépendre des stats sauvées.
 	scroll.get_node("Content/NPCPanel/NPCList").custom_minimum_size.y = 1400
 	await _settle()
 	var value_before := scroll.scroll_vertical

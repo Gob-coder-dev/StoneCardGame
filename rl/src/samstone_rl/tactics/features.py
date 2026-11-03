@@ -89,3 +89,46 @@ class TacticalActionEncoder:
                 np.clip(score.material_delta / 16.0, -1.0, 1.0),
             )
         return result
+
+    def encode_batch(self, observations: np.ndarray, action_masks: np.ndarray,
+                     scores: np.ndarray, out: np.ndarray | None = None) -> np.ndarray:
+        """Vectorized equivalent of :meth:`encode` for rollout batches."""
+        from samstone_rl.vector_engine.geometry import (
+            ACTION_CELLS,
+            ACTION_SLOTS,
+            POSITION_FEATURES,
+        )
+
+        batch = len(observations)
+        expected_scores = (batch, self.ACTION_COUNT, self.SCORE_FEATURES)
+        if observations.shape != (batch, self.OBSERVATION_SIZE):
+            raise ValueError("lot d'observations incompatible")
+        if action_masks.shape != (batch, self.ACTION_COUNT):
+            raise ValueError("lot de masques incompatible")
+        if scores.shape != expected_scores:
+            raise ValueError("lot de scores tactiques incompatible")
+        result = (np.zeros(
+            (batch, self.ACTION_COUNT, self.feature_size), dtype=np.float32)
+                  if out is None else out)
+        if result.shape != (batch, self.ACTION_COUNT, self.feature_size):
+            raise ValueError("tampon tactique batch incompatible")
+        result.fill(0.0)
+        board_end = 16 * self.BOARD_FEATURES
+        hands = observations[:, board_end:board_end + 8 * self.CARD_FEATURES].reshape(
+            batch, 8, self.CARD_FEATURES)
+        board = observations[:, :board_end].reshape(
+            batch, 16, self.BOARD_FEATURES)
+        cursor = 0
+        result[:, :, cursor:cursor + self.CARD_FEATURES] = hands[:, ACTION_SLOTS]
+        cursor += self.CARD_FEATURES
+        result[:, :, cursor:cursor + self.BOARD_FEATURES] = board[:, ACTION_CELLS]
+        cursor += self.BOARD_FEATURES
+        result[:, :, cursor:cursor + self.POSITION_FEATURES] = POSITION_FEATURES
+        cursor += self.POSITION_FEATURES
+        result[:, :, cursor] = np.clip(scores[..., 0] / 4.0, -1.0, 1.0)
+        result[:, :, cursor + 1] = np.clip(scores[..., 1] / 4.0, -1.0, 1.0)
+        result[:, :, cursor + 2] = np.clip(scores[..., 2] / 4.0, -1.0, 1.0)
+        result[:, :, cursor + 3] = scores[..., 3]
+        result[:, :, cursor + 4] = np.clip(scores[..., 4] / 16.0, -1.0, 1.0)
+        result *= action_masks[..., None]
+        return result

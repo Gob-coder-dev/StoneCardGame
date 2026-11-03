@@ -7,8 +7,13 @@ requis pour le boss embarqué dans l'APK.
 
 ## Chemin officiel
 
-La phase 4 utilise uniquement `configs/ppo_phase4_tactical.yaml` et produit ses
-artefacts dans `runs/ppo_phase4_rebalanced/`.
+La phase 4 utilise `configs/ppo_phase4_vectorized.yaml` et produit ses
+artefacts dans `runs/ppo_phase4_vectorized/`. Le moteur vectorise les coups
+contrefactuels, les menaces de riposte, les auras et les faiblesses sur des
+lots de 256 parties. Essaim et Pillage sont eux aussi traités exactement dans
+le noyau vectorisé, sans retour au simulateur partie par partie. PPO tourne sur
+DirectML afin d'utiliser aussi les GPU AMD sous Windows. Godot reste obligatoire
+pour toutes les promotions.
 
 La politique `tactical_actor_critic` évalue chaque coup légal avec les données
 publiques du plateau : carte, case, capture immédiate, menace de riposte et
@@ -45,6 +50,7 @@ src/samstone_rl/
   fast_engine/           règles Python contrôlées
   models/                politique PPO tactique
   tactics/               features par action
+  vector_engine/         noyaux d'anticipation vectorises et fallbacks exacts
   training/              PPO, curriculum, self-play et decks
   specialization/        entraînement des six boss
 tests/                   tests unitaires et intégration Godot
@@ -72,3 +78,20 @@ Depuis `rl/` :
 .\.venv311\Scripts\python.exe -m pytest -q
 .\.venv311\Scripts\python.exe -m ruff check src tests scripts
 ```
+
+Benchmark reproductible du palier tactique principal :
+
+```powershell
+.\.venv311\Scripts\python.exe scripts\benchmark_fast_training.py `
+  --config configs\ppo_phase4_vectorized.yaml `
+  --updates 5 `
+  --batch-size 2048 `
+  --num-envs 256 `
+  --stage precision_100_anticipation_50 `
+  --device directml
+```
+
+La prédiction auxiliaire de la marge finale est expérimentale et désactivée
+dans le run officiel. Elle apprend sur les épisodes du rollout courant, sans
+imitation du bot et sans mémoire de replay. Son test A/B apparié est décrit dans
+le guide des commandes.

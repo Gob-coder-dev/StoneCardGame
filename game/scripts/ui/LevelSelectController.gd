@@ -1,7 +1,7 @@
 ## LevelSelectController.gd
 ## Contrôleur de l'écran des Rencontres : choix du dieu, du palier de cartes,
 ## puis de la difficulté. L'adversaire est généré à la demande par
-## OpponentCatalog : la page ne liste que six dieux, pas quatre-vingt-dix bots.
+## OpponentCatalog : la page liste six dieux et un bot sans dieu.
 extends Control
 
 const TouchButtonScript := preload("res://scripts/ui/input/TouchButton.gd")
@@ -22,9 +22,10 @@ const Gesture := preload("res://scripts/ui/input/TapGesture.gd")
 @onready var close_button: Button = $Root/Header/CloseButton
 
 var _selected_god_id: String = ""
+var _selected_neutral_bot := false
 var _selected_bracket_id: String = ""
 var _selected_difficulty_id: String = ""
-var _god_group: ButtonGroup = null
+var _opponent_group: ButtonGroup = null
 var _bracket_buttons: Dictionary = {}
 var _difficulty_buttons: Dictionary = {}
 var _backdrop_tap := Gesture.new()
@@ -38,8 +39,8 @@ func _ready() -> void:
 	_selected_bracket_id = OpponentCatalogModel.default_bracket_id()
 	_selected_difficulty_id = OpponentCatalogModel.default_difficulty_id()
 	background.set_god(StoneLoader.get_god(PlayerData.player_god_id))
-	_god_group = ButtonGroup.new()
-	_god_group.allow_unpress = false
+	_opponent_group = ButtonGroup.new()
+	_opponent_group.allow_unpress = false
 	_build_choices()
 	_populate()
 
@@ -49,13 +50,14 @@ func _populate() -> void:
 		child.queue_free()
 	for god in StoneLoader.get_all_gods():
 		npc_list.add_child(_make_god_btn(god))
+	npc_list.add_child(_make_neutral_bot_btn())
 
 
 func _make_god_btn(god: Dictionary) -> Button:
 	var btn: Button = TouchButtonScript.new()
 	btn.text = "%s\n%s" % [str(god.get("name", "?")), str(god.get("family_name", ""))]
 	btn.toggle_mode = true
-	btn.button_group = _god_group
+	btn.button_group = _opponent_group
 	var portrait_path := str(god.get("asset", ""))
 	if portrait_path != "":
 		btn.icon = load(portrait_path) as Texture2D
@@ -69,6 +71,21 @@ func _make_god_btn(god: Dictionary) -> Button:
 	btn.autowrap_mode = TextServer.AUTOWRAP_OFF
 	btn.clip_text = true
 	btn.pressed.connect(_on_god_selected.bind(str(god.get("id", ""))))
+	return btn
+
+
+func _make_neutral_bot_btn() -> Button:
+	var btn: Button = TouchButtonScript.new()
+	btn.text = "%s\nSans dieu • Cartes neutres" % OpponentCatalogModel.NEUTRAL_BOT_NAME
+	btn.toggle_mode = true
+	btn.button_group = _opponent_group
+	btn.add_theme_font_size_override("font_size", 32)
+	btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	btn.custom_minimum_size = Vector2(0, 152)
+	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	btn.autowrap_mode = TextServer.AUTOWRAP_OFF
+	btn.clip_text = true
+	btn.pressed.connect(_on_neutral_bot_selected)
 	return btn
 
 
@@ -117,6 +134,7 @@ func _sync_choice(buttons: Dictionary, selected_id: String) -> void:
 
 func _on_god_selected(god_id: String) -> void:
 	_selected_god_id = god_id
+	_selected_neutral_bot = false
 	var god := StoneLoader.get_god(god_id)
 	if god.is_empty():
 		return
@@ -127,6 +145,22 @@ func _on_god_selected(god_id: String) -> void:
 	profile_quote.text = str(god.get("description", ""))
 	profile_panel.add_theme_stylebox_override("panel", UITheme.panel_style(
 		UITheme.COL_PANEL_BG, god_color))
+	modal.visible = true
+	_backdrop_tap.reset()
+	fight_button.disabled = false
+	_refresh_summary()
+
+
+func _on_neutral_bot_selected() -> void:
+	_selected_god_id = ""
+	_selected_neutral_bot = true
+	var color := Color(OpponentCatalogModel.NEUTRAL_BOT_COLOR)
+	background.set_god({"color": color.to_html()})
+	profile_name.text = OpponentCatalogModel.NEUTRAL_BOT_NAME
+	profile_name.add_theme_color_override("font_color", color)
+	profile_quote.text = "Un adversaire sans dieu qui combat uniquement avec des cartes neutres."
+	profile_panel.add_theme_stylebox_override("panel", UITheme.panel_style(
+		UITheme.COL_PANEL_BG, color))
 	modal.visible = true
 	_backdrop_tap.reset()
 	fight_button.disabled = false
@@ -144,7 +178,7 @@ func _on_difficulty_selected(difficulty_id: String) -> void:
 
 
 func _refresh_summary() -> void:
-	if _selected_god_id == "":
+	if _selected_god_id == "" and not _selected_neutral_bot:
 		return
 	var tier := OpponentCatalogModel.bracket(_selected_bracket_id)
 	var level := OpponentCatalogModel.difficulty(_selected_difficulty_id)
@@ -156,10 +190,12 @@ func _refresh_summary() -> void:
 
 
 func _on_fight() -> void:
-	if _selected_god_id == "":
+	if _selected_god_id == "" and not _selected_neutral_bot:
 		return
-	var opponent := OpponentCatalogModel.build(
-		_selected_god_id, _selected_bracket_id, _selected_difficulty_id)
+	var opponent := OpponentCatalogModel.build_neutral(
+		_selected_bracket_id, _selected_difficulty_id) if _selected_neutral_bot \
+		else OpponentCatalogModel.build(
+			_selected_god_id, _selected_bracket_id, _selected_difficulty_id)
 	if opponent.is_empty():
 		push_error("LevelSelectController: adversaire impossible à générer.")
 		return

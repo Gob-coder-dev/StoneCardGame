@@ -1,0 +1,144 @@
+# Phase 4 haute performance : noyau tactique vectorise + PPO DirectML.
+# Les evaluations de promotion restent executees par Godot, qui demeure
+# l'arbitre autoritaire des regles.
+seed: 20261102
+device: directml
+output_dir: runs/ppo_phase4_vectorized
+
+environment:
+  backend: python_batch
+  evaluation_backend: godot
+  vector_tactical: true
+  # Essaim et Pillage sont résolus par le noyau vectorisé exact. Mettre false
+  # uniquement pour l'ablation de performance avec repli scalaire.
+  vector_effects: true
+  godot_path: null
+  reward:
+    capture: 0.0
+    multi_capture: 0.0
+    terminal: 2.0
+    final_margin: 0.10
+    final_margin_scale: 5.0
+    board_control_delta: 0.05
+    board_control_delta_limit: 4
+  scenarios:
+    - {god: veskar, deck: [devoracle_n3, griffe_a_jetons_n3, sou_ricanant_n3, croupier_manchot_n2, jumeau_de_cuivre_n2, valet_a_lenvers_n2, avortons_des_caves_n2, le_voyeur_n1]}
+    - {god: nerava, deck: [porte_fievre_n2, crache_cendre_n2, clochelet_malade_n2, machoire_moisie_n2, veuve_des_spores_n1, griffe_septique_n1, le_nud_hurlant_n1, devoreur_de_lanternes_n1]}
+    - {god: kharun, deck: [eclat_cuirasse_n2, heaume_errant_n2, carapace_vide_n2, osselet_blinde_n2, chevalier_sans_visage_n1, golem_de_faience_n1, avortons_des_caves_n2, le_sac_a_murmures_n2]}
+    - {god: ilyr, deck: [longuepine_n3, bouche_arbalete_n2, echassier_des_brumes_n3, veilleur_bifurque_n2, lil_empale_n1, la_croisee_des_regards_n1, avortons_des_caves_n3, le_voyeur_n1]}
+    - {god: sylkha, deck: [nud_vivant_n3, bourgeon_mordant_n3, mante_des_racines_n2, porte_nid_n2, fourmilion_des_nerfs_n1, la_nourrice_nouee_n1, avortons_des_caves_n2, devoreur_de_lanternes_n2]}
+    - {god: enigma, deck: [collecteur_de_dents_n4, depeceur_rampant_n4, recycleur_thoracique_n3, porte_greffes_n2, le_demonteur_n2, la_machine_aux_mille_depouilles_n1, avortons_des_caves_n3, le_voyeur_n1]}
+
+model:
+  architecture: tactical_actor_critic
+  hidden_dim: 512
+  action_hidden_dim: 128
+
+ppo:
+  total_timesteps: 64012288
+  # 8 x 256 conserve exactement le batch PPO historique de 2048 decisions.
+  rollout_steps: 8
+  num_envs: 256
+  learning_rate: 0.00010
+  gamma: 0.99
+  gae_lambda: 0.95
+  minibatches: 8
+  min_update_epochs: 1
+  max_update_epochs: 4
+  target_kl: 0.02
+  update_epochs: 3
+  clip_coef: 0.2
+  entropy_coef: 0.01
+  value_coef: 0.5
+  max_grad_norm: 0.5
+
+# Expérience optionnelle, désactivée dans le run officiel. Utiliser
+# scripts/run_auxiliary_ab.py avant toute activation.
+auxiliary:
+  enabled: false
+  target: final_board_margin
+  coefficient: 0.02
+  loss: huber
+
+monitoring:
+  tensorboard: true
+  checkpoint_every_updates: 25
+  snapshot_every_updates: 100
+  alerts:
+    target_kl: 0.02
+    maximum_clip_fraction: 0.30
+    minimum_normalized_entropy: 0.08
+    minimum_explained_variance: -0.10
+    maximum_throughput_drop: 0.35
+    maximum_eval_regression: 0.05
+    maximum_reward_divergence: 0.25
+    minimum_anchor_win_rate: 0.65
+    plateau_evaluations: 5
+    consecutive_updates: 3
+
+curriculum:
+  bootstrap_evaluation:
+    enabled: true
+    seed_stride: 100000
+  promotion_win_rate: 0.85
+  confidence_floor: 0.81
+  maximum_loss_rate: 0.07
+  non_loss_confidence_floor: 0.90
+  promotion_confirmations: 2
+  replay_probability: 0.20
+  stages:
+    - {name: precision_0, precision: 0.0, anticipation: false}
+    - {name: precision_025, precision: 0.25, anticipation: false}
+    - {name: precision_050, precision: 0.50, anticipation: false}
+    - {name: precision_100, precision: 1.0, anticipation: false}
+    - {name: precision_100_anticipation_25, precision: 1.0, anticipation_probability: 0.25}
+    - {name: precision_100_anticipation_50, precision: 1.0, anticipation_probability: 0.50}
+    - {name: precision_100_anticipation_75, precision: 1.0, anticipation_probability: 0.75}
+    - {name: precision_100_anticipation, precision: 1.0, anticipation_probability: 1.0}
+  god_sampling:
+    enabled: true
+    target_wilson: 0.75
+    minimum_multiplier: 0.60
+    maximum_multiplier: 2.20
+    deficit_exponent: 1.0
+    smoothing: 0.35
+  terrain_sampling:
+    enabled: true
+    blocked_counts: [0, 1, 2]
+    target_wilson: 0.75
+    minimum_multiplier: 0.70
+    maximum_multiplier: 1.80
+    deficit_exponent: 1.0
+    smoothing: 0.35
+
+evaluation:
+  # Deux fois moins d'evaluations intermediaires; les promotions gardent deux
+  # confirmations Godot de 500 parties et ne perdent donc aucune exigence.
+  every_updates: 100
+  games: 500
+  num_envs: 10
+  seed_base: 2200000000
+  anchor_games_per_stage: 24
+  anchor_seed_base: 2250000000
+  final_gate:
+    games_per_slice: 100
+    seed_base: 2300000000
+    overall_win_rate: 0.85
+    confidence_floor: 0.80
+    maximum_loss_rate: 0.05
+    non_loss_confidence_floor: 0.90
+    minimum_slice_win_rate: 0.70
+    maximum_slice_loss_rate: 0.10
+
+phase5:
+  activation: after_phase4_gate
+  require_validated_phase4: true
+  league_directory: runs/ppo_phase4_vectorized/league
+  snapshot_every_updates: 100
+  weight_schedule:
+    - until_update: 100
+      weights: {current: 0.15, recent: 0.00, historical: 0.00, best: 0.05, godot: 0.80}
+    - until_update: 500
+      weights: {current: 0.30, recent: 0.10, historical: 0.05, best: 0.05, godot: 0.50}
+    - until_update: 2147483647
+      weights: {current: 0.40, recent: 0.20, historical: 0.10, best: 0.05, godot: 0.25}
