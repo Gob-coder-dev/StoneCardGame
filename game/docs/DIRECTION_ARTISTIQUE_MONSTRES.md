@@ -9,22 +9,6 @@ L’objectif est un jeu inquiétant mais lisible et accueillant sur mobile. L’
 vient des silhouettes, des matières, des expressions et des détails narratifs ;
 elle ne doit jamais nuire à la lecture des cartes ni des symboles de combat.
 
-## Rendu pixel art, couleurs et lumière
-
-- Les PNG restent à leur résolution native, avec alpha réel : aucun export
-  48 × 48 / 64 × 64, agrandissement artificiel ou filtre mosaïque.
-- Les pixels doivent être visibles dans les contours **et** les surfaces : volumes
-  construits en amas irréguliers, transitions cassées et ombres nuancées.
-  Éviter le modelé lisse, les dégradés continus et les intérieurs détaillés mais
-  sans grain pixel.
-- Une image n’a pas à être assombrie ou désaturée pour paraître horrifique.
-  Préserver les couleurs de matière, les tons moyens et des reflets ponctuels ;
-  ne pas éclairer artificiellement chaque relief ni ajouter de halo général.
-- « Moins propre » désigne la structure des couleurs et du dessin, pas l’ajout
-  automatique de saleté ou de bruit.
-- Tous les niveaux d’une lignée, y compris les N3 et N4 en haute résolution,
-  conservent un grain pixel aussi identifiable que les premiers niveaux.
-
 ## Références visuelles
 
 | Famille | Illustrations de référence |

@@ -13,7 +13,6 @@ from typing import Any
 
 import torch
 import yaml
-
 from samstone_rl.envs import SamStoneEnv
 from samstone_rl.evaluation.paired import (
     ComparisonCase,
@@ -22,8 +21,9 @@ from samstone_rl.evaluation.paired import (
     outcome_row,
     paired_delta,
 )
+from samstone_rl.models import TacticalActorCritic
 from samstone_rl.models.actor_critic import ActorCritic
-from samstone_rl.training.curriculum import DEFAULT_STAGES
+from samstone_rl.training.curriculum import stages_from_config
 
 
 def scenario_options(scenario: dict[str, Any]) -> dict[str, Any]:
@@ -48,15 +48,28 @@ def checksum(path: Path) -> str:
     return digest.hexdigest()
 
 
-def load_model(path: Path, observation_size: int, action_size: int, device: torch.device) -> ActorCritic:
+def load_model(path: Path, observation_size: int, action_size: int,
+               action_feature_size: int, device: torch.device
+               ) -> ActorCritic | TacticalActorCritic:
     checkpoint = torch.load(path, map_location=device, weights_only=False)
     state = checkpoint["model"]
     hidden = int(state["backbone.0.weight"].shape[0])
     expected_observation = int(state["backbone.0.weight"].shape[1])
-    expected_actions = int(state["actor.weight"].shape[0])
+    tactical = "action_encoder.0.weight" in state
+    actor_name = "legacy_actor.weight" if tactical else "actor.weight"
+    expected_actions = int(state[actor_name].shape[0])
     if expected_observation != observation_size or expected_actions != action_size:
         raise ValueError(f"checkpoint incompatible: {path}")
-    model = ActorCritic(observation_size, action_size, hidden).to(device)
+    if tactical:
+        feature_size = int(state["action_encoder.0.weight"].shape[1])
+        action_hidden = int(state["action_encoder.0.weight"].shape[0])
+        if feature_size != action_feature_size:
+            raise ValueError(
+                f"features tactiques incompatibles: {path} ({feature_size} != {action_feature_size})")
+        model = TacticalActorCritic(
+            observation_size, action_size, feature_size, hidden, action_hidden).to(device)
+    else:
+        model = ActorCritic(observation_size, action_size, hidden).to(device)
     model.load_state_dict(state)
     model.eval()
     return model
@@ -96,7 +109,7 @@ def build_cases(env: SamStoneEnv, scenarios: list[dict[str, Any]], games: int,
     return cases
 
 
-def play_case(env: SamStoneEnv, model: ActorCritic, case: ComparisonCase,
+def play_case(env: SamStoneEnv, model: ActorCritic | TacticalActorCritic, case: ComparisonCase,
               scenario: dict[str, Any], opponent: Any, device: torch.device) -> ComparisonOutcome:
     env.opponent = opponent
     env.agent_player = case.agent_player
@@ -108,11 +121,17 @@ def play_case(env: SamStoneEnv, model: ActorCritic, case: ComparisonCase,
     terminated = False
     while not terminated:
         with torch.no_grad():
-            action, _, _ = model.act(
-                torch.as_tensor(observation, dtype=torch.float32, device=device).unsqueeze(0),
-                torch.as_tensor(info["action_mask"], dtype=torch.bool, device=device).unsqueeze(0),
-                deterministic=True,
-            )
+            observation_tensor = torch.as_tensor(
+                observation, dtype=torch.float32, device=device).unsqueeze(0)
+            mask_tensor = torch.as_tensor(
+                info["action_mask"], dtype=torch.bool, device=device).unsqueeze(0)
+            if isinstance(model, TacticalActorCritic):
+                features_tensor = torch.as_tensor(
+                    info["action_features"], dtype=torch.float32, device=device).unsqueeze(0)
+                action, _, _ = model.act(
+                    observation_tensor, mask_tensor, features_tensor, deterministic=True)
+            else:
+                action, _, _ = model.act(observation_tensor, mask_tensor, deterministic=True)
         observation, _, ended, truncated, info = env.step(int(action.item()))
         terminated = ended or truncated
     episode = info["episode"]
@@ -161,7 +180,7 @@ def main() -> int:
     parser.add_argument("--config", type=Path,
                         default=Path(__file__).resolve().parents[1]
                         / "configs" / "ppo_phase4_tactical.yaml")
-    parser.add_argument("--stage", default="precision_025", choices=[stage.name for stage in DEFAULT_STAGES])
+    parser.add_argument("--stage", default="precision_025")
     parser.add_argument("--games", type=int, default=720,
                         help="Multiple de 72 avec les 6 dieux, 2 côtés, 2 départs et 3 terrains.")
     parser.add_argument("--seed-base", type=int, default=2100000000)
@@ -190,7 +209,12 @@ def main() -> int:
     scenarios = list(config["environment"]["scenarios"])
     if not scenarios:
         parser.error("la configuration ne contient aucun scénario")
-    stage = next(item for item in DEFAULT_STAGES if item.name == args.stage)
+    stages = stages_from_config(config.get("curriculum", {}).get("stages"))
+    try:
+        stage = next(item for item in stages if item.name == args.stage)
+    except StopIteration:
+        parser.error(
+            f"palier inconnu: {args.stage}; choix: {', '.join(item.name for item in stages)}")
     backend = str(config["environment"].get("evaluation_backend", "godot"))
     if backend != "godot":
         parser.error("la comparaison officielle doit utiliser evaluation_backend: godot")
@@ -199,6 +223,7 @@ def main() -> int:
         godot_path=config["environment"].get("godot_path"),
         opponent=stage.opponent(),
         backend="godot",
+        tactical_features=True,
     )
     try:
         cases = build_cases(env, scenarios, args.games, args.seed_base, blocked_counts,
@@ -209,13 +234,15 @@ def main() -> int:
             label = checkpoint_label(checkpoint.resolve())
             if label in models:
                 label = f"{label}#{index}"
-            model = load_model(checkpoint, env.observation_space.shape[0], env.action_space.n, device)
+            model = load_model(
+                checkpoint, env.observation_space.shape[0], env.action_space.n,
+                int(env.tactical_encoder.feature_size), device)
             outcomes: list[ComparisonOutcome] = []
             for count, case in enumerate(cases, start=1):
                 raw = play_case(env, model, case, scenarios[case.scenario_index], stage.opponent(), device)
                 outcomes.append(ComparisonOutcome(label, str(checkpoint.resolve()), raw.case, raw.winner,
                                                   raw.margin, raw.turns))
-                if count % 100 == 0 or count == len(cases):
+                if count % 24 == 0 or count == len(cases):
                     print(f"{label}: {count}/{len(cases)}")
             all_outcomes[label] = outcomes
             models[label] = {

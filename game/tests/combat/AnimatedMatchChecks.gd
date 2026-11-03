@@ -25,14 +25,14 @@ func _compare_animated_and_instant(npc: Dictionary) -> void:
 		var move: Dictionary = choices[(moves * 7) % choices.size()]
 		# Ces ouvertures garantissent que la comparaison couvre réellement les
 		# pouvoirs continus, au lieu de simplement parcourir les cartes de famille.
-		if god_id == "okuninushi" and moves < 3:
+		if god_id == "sylkha" and moves < 3:
 			move = [
-				{"row": 1, "col": 1, "stone_id": "e01_n3"},
-				{"row": 3, "col": 3, "stone_id": "e01_n3"},
-				{"row": 1, "col": 2, "stone_id": "e06_n2"}][moves]
-		elif god_id == "izanami" and moves < 2:
-			move = [{"row": 1, "col": 1, "stone_id": "d07_n1"},
-				{"row": 1, "col": 2, "stone_id": "d05_n1"}][moves]
+				{"row": 1, "col": 1, "stone_id": "nud_vivant_n3"},
+				{"row": 3, "col": 3, "stone_id": "nud_vivant_n3"},
+				{"row": 1, "col": 2, "stone_id": "porte_nid_n2"}][moves]
+		elif god_id == "nerava" and moves < 2:
+			move = [{"row": 1, "col": 1, "stone_id": "griffe_septique_n1"},
+				{"row": 1, "col": 2, "stone_id": "veuve_des_spores_n1"}][moves]
 		CombatResolverModel.apply_move(simulation, move["row"], move["col"], move["stone_id"], player)
 		if player == GameState.PLAYER_HUMAN:
 			manager.human_play(move["row"], move["col"], move["stone_id"])
@@ -49,9 +49,9 @@ func _compare_animated_and_instant(npc: Dictionary) -> void:
 		moves += 1
 	_check(consistent and moves == GameState.total_cells() and manager.get_state().is_game_over,
 		"partie animée et simulation identiques pour la famille de %s" % npc["name"])
-	if god_id == "okuninushi":
+	if god_id == "sylkha":
 		_check(saw_swarm, "la partie comparée déclenche réellement une aura d'Essaim")
-	elif god_id == "izanami":
+	elif god_id == "nerava":
 		_check(saw_miasma, "la partie comparée déclenche réellement une aura de Miasme")
 	manager.queue_free()
 	await get_tree().process_frame

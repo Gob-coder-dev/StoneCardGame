@@ -46,8 +46,8 @@ func _test_weakening() -> void:
 ## cumule et disparaît quand sa pierre passe chez un autre dieu.
 func _test_miasma_aura() -> void:
 	var later := _state_with_hands(["fx_plain"], ["fx_attack2"])
-	later.human_god_id = "izanami"
-	later.ai_god_id = "hachiman"
+	later.human_god_id = "nerava"
+	later.ai_god_id = "kharun"
 	_force_instance(later, 1, 1, "fx_miasma_guard", GameState.PLAYER_HUMAN)
 	# fx_attack2 (2 lames à droite) contre une défense de 1 : la capture n'a lieu
 	# que si la carte posée frappe avant de subir l'aura (sinon 1 contre 1).
@@ -59,18 +59,18 @@ func _test_miasma_aura() -> void:
 		"un Miasme capturé par un autre dieu n'affaiblit pas son nouveau voisin")
 
 	var placed_next := _state_with_hands(["fx_plain"], ["fx_plain"])
-	placed_next.human_god_id = "izanami"
-	placed_next.ai_god_id = "hachiman"
-	_force_instance(placed_next, 1, 1, "fx_miasma_izanami", GameState.PLAYER_HUMAN)
-	_force_instance(placed_next, 1, 3, "fx_miasma_izanami", GameState.PLAYER_HUMAN)
+	placed_next.human_god_id = "nerava"
+	placed_next.ai_god_id = "kharun"
+	_force_instance(placed_next, 1, 1, "fx_miasma_nerava", GameState.PLAYER_HUMAN)
+	_force_instance(placed_next, 1, 3, "fx_miasma_nerava", GameState.PLAYER_HUMAN)
 	var between := CombatResolverModel.apply_move(placed_next, 1, 2, "fx_plain", GameState.PLAYER_AI)
 	var squeezed: BattleStoneModel = placed_next.get_cell(1, 2)["stone"]
 	_check(between["captures"].size() == 2 and squeezed.miasma_weakness == 0,
 		"une carte qui capture les pierres Miasme voisines ne subit pas leur aura")
 
 	var cumulative := _state_with_hands(["fx_plain"], ["fx_wall"])
-	cumulative.human_god_id = "izanami"
-	cumulative.ai_god_id = "hachiman"
+	cumulative.human_god_id = "nerava"
+	cumulative.ai_god_id = "kharun"
 	# Les deux gardes résistent au mur posé entre elles, qui reste donc adverse.
 	_force_instance(cumulative, 1, 1, "fx_miasma_guard", GameState.PLAYER_HUMAN)
 	_force_instance(cumulative, 1, 3, "fx_miasma_guard", GameState.PLAYER_HUMAN)
@@ -92,7 +92,7 @@ func _test_miasma_aura() -> void:
 	_check(wall.miasma_weakness == 1 and relief.size() == 1
 		and relief[0].get("type", "") == CombatEvents.WEAKNESS_EXPIRED,
 		"une pierre Miasme capturée par un autre dieu perd son aura et soulage sa voisine")
-	cumulative.ai_god_id = "izanami"
+	cumulative.ai_god_id = "nerava"
 	WeaknessSystemModel.update_miasma(cumulative, 1, 1)
 	_check(cumulative.get_cell(0, 1)["stone"].miasma_weakness == 1,
 		"chez un adversaire du même dieu, le Miasme capturé agit pour son nouveau camp")

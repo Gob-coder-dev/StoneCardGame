@@ -13,11 +13,11 @@ def synthetic_catalog() -> DeckCatalog:
                 "lineage_id": lineage,
                 "level": level,
                 "max_level": 3,
-                "affinity": "neutral" if lineage_index < 10 else "inari",
+                "affinity": "neutral" if lineage_index < 10 else "veskar",
                 "cost": float(level + lineage_index % 3),
             })
     return DeckCatalog({"schema_version": 1, "deck_size": 8, "deck_budget": 40,
-                        "checksum": "synthetic", "gods": [{"id": "inari"}],
+                        "checksum": "synthetic", "gods": [{"id": "veskar"}],
                         "variants": variants})
 
 
@@ -26,7 +26,7 @@ def test_generation_mutation_and_crossover_stay_legal():
     rng = np.random.default_rng(123)
     generator = DeckGenerator(catalog)
     operators = DeckOperators(catalog)
-    candidates = [generator.random_candidate("inari", rng) for _ in range(100)]
+    candidates = [generator.random_candidate("veskar", rng) for _ in range(100)]
     assert all(not catalog.problems(candidate) for candidate in candidates)
     mutated = [operators.mutate(candidate, rng) for candidate in candidates]
     assert all(not catalog.problems(candidate) for candidate in mutated)
@@ -40,7 +40,7 @@ def test_generation_mutation_and_crossover_stay_legal():
 def test_candidate_hash_ignores_input_order():
     catalog = synthetic_catalog()
     generator = DeckGenerator(catalog)
-    candidate = generator.random_candidate("inari", np.random.default_rng(2))
-    reversed_candidate = catalog.candidate("inari", reversed(candidate.stone_ids))
+    candidate = generator.random_candidate("veskar", np.random.default_rng(2))
+    reversed_candidate = catalog.candidate("veskar", reversed(candidate.stone_ids))
     assert reversed_candidate.stone_ids == candidate.stone_ids
     assert reversed_candidate.deck_hash == candidate.deck_hash

@@ -15,12 +15,12 @@ from samstone_rl.opponents import RandomOpponent
 from samstone_rl.tactics import TacticalActionEncoder
 from samstone_rl.training.ppo_cleanrl import PPOTrainer
 
-DECK = ["f01_n3", "f02_n3", "f04_n3", "f05_n2",
-        "f07_n2", "f08_n2", "n01_n2", "n21_n1"]
+DECK = ["devoracle_n3", "griffe_a_jetons_n3", "sou_ricanant_n3", "croupier_manchot_n2",
+        "jumeau_de_cuivre_n2", "valet_a_lenvers_n2", "avortons_des_caves_n2", "le_voyeur_n1"]
 
 
 def _config() -> dict:
-    return {"human_god": "inari", "ai_god": "inari",
+    return {"human_god": "veskar", "ai_god": "veskar",
             "human_deck": DECK, "ai_deck": DECK,
             "first_player": 1, "blocked": [[0, 0]]}
 
@@ -116,6 +116,53 @@ def test_official_phase_four_config_keeps_basics_before_tactical_stages(tmp_path
             "precision_100_anticipation_75", "precision_100_anticipation",
         ]
         assert trainer.curriculum.promotion_confirmations == 2
+        assert trainer.config["curriculum"]["bootstrap_evaluation"]["enabled"]
+    finally:
+        trainer._close_training_envs()
+        trainer.tracker.close()
+
+
+def test_bootstrap_evaluation_promotes_solved_stages_before_training(
+        tmp_path: Path, monkeypatch):
+    source = Path(__file__).resolve().parents[1] / "configs" / "ppo_phase4_tactical.yaml"
+    config = yaml.safe_load(source.read_text(encoding="utf-8"))
+    config["output_dir"] = str(tmp_path / "run")
+    config["monitoring"]["tensorboard"] = False
+    config["curriculum"]["god_sampling"]["enabled"] = False
+    config["curriculum"]["terrain_sampling"]["enabled"] = False
+    path = tmp_path / "bootstrap.yaml"
+    path.write_text(yaml.safe_dump(config), encoding="utf-8")
+    trainer = PPOTrainer(path)
+    observed_stages: list[str] = []
+    observed_offsets: list[int] = []
+    outcomes = [(500, 0), (500, 0), (250, 0)]
+
+    def evaluate(seed_offset: int = 0) -> dict:
+        wins, draws = outcomes.pop(0)
+        games = 500
+        losses = games - wins - draws
+        observed_stages.append(trainer.curriculum.current.name)
+        observed_offsets.append(seed_offset)
+        return {
+            "wins": wins, "draws": draws, "losses": losses, "games": games,
+            "win_rate": wins / games, "wilson_lower": 0.90 if wins == games else 0.40,
+            "loss_rate": losses / games, "non_loss_rate": (wins + draws) / games,
+            "non_loss_wilson_lower": 0.90 if wins == games else 0.40,
+            "mean_margin": 1.0, "mean_turns": 10.0, "anchors": {},
+            "by_god": {}, "by_blocked_count": {},
+        }
+
+    monkeypatch.setattr(trainer, "evaluate", evaluate)
+    try:
+        result = trainer._run_bootstrap_evaluation()
+        assert result is not None
+        assert observed_stages == ["precision_0", "precision_0", "precision_025"]
+        assert observed_offsets == [100000, 200000, 300000]
+        assert trainer.curriculum.current.name == "precision_025"
+        assert trainer.curriculum.bootstrap_evaluation_completed
+        checkpoint = torch.load(tmp_path / "run" / "latest.pt", weights_only=False)
+        assert checkpoint["curriculum"]["stage_index"] == 1
+        assert checkpoint["curriculum"]["bootstrap_evaluation_completed"]
     finally:
         trainer._close_training_envs()
         trainer.tracker.close()
@@ -164,6 +211,7 @@ def test_tactical_trainer_completes_one_update_and_evaluation(tmp_path: Path):
     })
     config["curriculum"]["god_sampling"]["enabled"] = False
     config["curriculum"]["terrain_sampling"]["enabled"] = False
+    config["curriculum"]["bootstrap_evaluation"]["enabled"] = False
     config["evaluation"].update({
         "every_updates": 1,
         "games": 4,

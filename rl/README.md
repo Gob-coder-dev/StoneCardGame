@@ -8,7 +8,7 @@ requis pour le boss embarqué dans l'APK.
 ## Chemin officiel
 
 La phase 4 utilise uniquement `configs/ppo_phase4_tactical.yaml` et produit ses
-artefacts dans `runs/ppo_phase4_tactical/`.
+artefacts dans `runs/ppo_phase4_rebalanced/`.
 
 La politique `tactical_actor_critic` évalue chaque coup légal avec les données
 publiques du plateau : carte, case, capture immédiate, menace de riposte et
@@ -26,6 +26,12 @@ Chaque palier demande deux évaluations indépendantes de 500 parties avec au
 moins 85 % de victoires et au plus 7 % de défaites. La validation finale de la
 phase 4 est plus stricte : 85 % de victoires et au plus 5 % de défaites, sur
 tous les paliers, dieux, camps et ordres de départ.
+
+Lors d'une première création avec `--weights-only`, une pré-évaluation parcourt
+immédiatement les paliers déjà maîtrisés. Elle conserve les deux évaluations
+indépendantes exigées par palier, mais n'entraîne pas entre elles. Au premier
+échec, PPO reprend normalement sur ce palier ; ce point est sauvegardé dans
+`latest.pt`.
 
 ## Structure
 

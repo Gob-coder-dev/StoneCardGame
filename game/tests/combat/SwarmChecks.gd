@@ -62,8 +62,8 @@ func _test_swarm() -> void:
 ## Règle des dieux : seules les pierres Essaim d'un camp Ōkuninushi se relient.
 func _test_god_rule() -> void:
 	var state := _state_with_hands([], [])
-	state.human_god_id = "okuninushi"
-	state.ai_god_id = "hachiman"
+	state.human_god_id = "sylkha"
+	state.ai_god_id = "kharun"
 	_force_instance(state, 0, 0, "fx_swarm_okuni_a", GameState.PLAYER_HUMAN)
 	_force_instance(state, 0, 1, "fx_swarm_okuni_b", GameState.PLAYER_HUMAN)
 	CombatResolverModel.recalculate_swarm(state)
@@ -77,7 +77,7 @@ func _test_god_rule() -> void:
 	_check(_sum(first.swarm_blades) == 0 and _sum(second.swarm_blades) == 0
 		and CombatResolverModel.swarm_links(state).is_empty(),
 		"capturées par un autre dieu, les pierres Essaim ne se relient plus")
-	state.ai_god_id = "okuninushi"
+	state.ai_god_id = "sylkha"
 	CombatResolverModel.recalculate_swarm(state)
 	_check(_sum(first.swarm_blades) == 2 and CombatResolverModel.swarm_links(state).size() == 1,
 		"capturées par un joueur d'Ōkuninushi, elles se relient dans son camp")

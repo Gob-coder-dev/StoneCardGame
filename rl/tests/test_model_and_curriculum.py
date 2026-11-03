@@ -240,9 +240,17 @@ def test_curriculum_promotion_confirmation_survives_checkpoint_state():
     assert restored.consider_promotion(95, 100)
 
 
+def test_curriculum_bootstrap_completion_survives_checkpoint_state():
+    first = CurriculumManager()
+    first.complete_bootstrap_evaluation()
+    restored = CurriculumManager()
+    restored.load_state_dict(first.state_dict())
+    assert restored.bootstrap_evaluation_completed
+
+
 def test_final_gate_requires_every_stage_god_camp_and_first_player():
     stages = ("easy", "hard")
-    gods = ("inari", "izanami")
+    gods = ("veskar", "nerava")
     slices = [EvaluationSlice(stage, god, agent, first, 95, 0, 5)
               for stage in stages for god in gods for agent in (1, 2) for first in (1, 2)]
     report = PhaseFourGateReport.build(slices, stages, gods, minimum_games_per_slice=100)
@@ -253,8 +261,8 @@ def test_final_gate_requires_every_stage_god_camp_and_first_player():
 
 
 def test_final_gate_can_enforce_loss_and_non_loss_criteria():
-    stages, gods = ("hard",), ("inari",)
-    good = [EvaluationSlice("hard", "inari", agent, first, 85, 10, 5)
+    stages, gods = ("hard",), ("veskar",)
+    good = [EvaluationSlice("hard", "veskar", agent, first, 85, 10, 5)
             for agent in (1, 2) for first in (1, 2)]
     report = PhaseFourGateReport.build(
         good, stages, gods, overall_threshold=0.85, confidence_floor=0.90,
@@ -262,7 +270,7 @@ def test_final_gate_can_enforce_loss_and_non_loss_criteria():
         maximum_loss_rate=0.05, non_loss_confidence_floor=0.90,
         maximum_slice_loss_rate=0.10)
     assert report.passed
-    failing = [EvaluationSlice("hard", "inari", agent, first, 85, 0, 15)
+    failing = [EvaluationSlice("hard", "veskar", agent, first, 85, 0, 15)
                for agent in (1, 2) for first in (1, 2)]
     assert not PhaseFourGateReport.build(
         failing, stages, gods, overall_threshold=0.85, confidence_floor=0.90,

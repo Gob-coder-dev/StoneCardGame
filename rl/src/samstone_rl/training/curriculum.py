@@ -81,6 +81,11 @@ class CurriculumManager:
         self.stage_index = 0
         self.awaiting_final_validation = False
         self.completed = False
+        # A new run initialized from transferred weights may evaluate several
+        # already-mastered stages before collecting its first rollout.  Keep
+        # this marker with the curriculum so an interrupted bootstrap resumes
+        # where it stopped instead of replaying prior checks.
+        self.bootstrap_evaluation_completed = False
         self.promotion_confirmations = int(promotion_confirmations)
         self.consecutive_promotion_successes = 0
         self.maximum_loss_rate = (None if maximum_loss_rate is None
@@ -306,9 +311,14 @@ class CurriculumManager:
             self.awaiting_final_validation = False
         return self.completed
 
+    def complete_bootstrap_evaluation(self) -> None:
+        """Persist that the optional no-training stage scan has finished."""
+        self.bootstrap_evaluation_completed = True
+
     def state_dict(self) -> dict:
         return {"stage_index": self.stage_index, "awaiting_final_validation": self.awaiting_final_validation,
                 "completed": self.completed, "current": asdict(self.current),
+                "bootstrap_evaluation_completed": self.bootstrap_evaluation_completed,
                 "target_win_rate": self.target_win_rate,
                 "confidence_floor": self.confidence_floor,
                 "maximum_loss_rate": self.maximum_loss_rate,
@@ -329,6 +339,8 @@ class CurriculumManager:
         self.stage_index = int(state.get("stage_index", 0))
         self.awaiting_final_validation = bool(state.get("awaiting_final_validation", False))
         self.completed = bool(state.get("completed", False))
+        self.bootstrap_evaluation_completed = bool(
+            state.get("bootstrap_evaluation_completed", False))
         self.consecutive_promotion_successes = min(
             max(0, int(state.get("consecutive_promotion_successes", 0))),
             self.promotion_confirmations - 1)

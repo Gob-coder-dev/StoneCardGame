@@ -169,6 +169,12 @@ Les anciennes sauvegardes sont migrées automatiquement. Avant la première écr
 d'un ancien profil converti, la version d'origine est conservée dans
 `user://savegame.json.before_monsters`.
 
+Les IDs de contenu sont descriptifs et stables : une carte utilise par exemple
+`avortons_des_caves_n2`, et les dieux utilisent `veskar`, `nerava`, `kharun`,
+`ilyr`, `sylkha` et `enigma`. Les anciens IDs ne servent qu'à migrer les
+sauvegardes ; ils ne doivent pas être employés dans du nouveau code ou de
+nouveaux decks.
+
 ## Ouvrir le projet
 
 1. Installer [Godot 4.7](https://godotengine.org/download/) ou une version plus

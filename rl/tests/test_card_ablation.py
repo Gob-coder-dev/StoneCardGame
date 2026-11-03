@@ -4,13 +4,13 @@ from samstone_rl.evaluation import MatchRecord, paired_ablation, replacement_var
 
 
 def _record(deck_hash: str, seed: int, winner: int) -> MatchRecord:
-    return MatchRecord("engine", "catalog", "policy", deck_hash, "inari", ("a",),
-                       "opponent", "izanami", ("b",), seed, 1, 1, winner, 10, 6)
+    return MatchRecord("engine", "catalog", "policy", deck_hash, "veskar", ("a",),
+                       "opponent", "nerava", ("b",), seed, 1, 1, winner, 10, 6)
 
 
 def test_replacement_variants_are_legal_bounded_and_unique():
     catalog = synthetic_catalog()
-    baseline = catalog.candidate("inari", [f"n{index:02d}_n2" for index in range(8)])
+    baseline = catalog.candidate("veskar", [f"n{index:02d}_n2" for index in range(8)])
     variants = replacement_variants(catalog, baseline, alternatives_per_card=2,
                                     maximum_cost_delta=100)
     assert variants

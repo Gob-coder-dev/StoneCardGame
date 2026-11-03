@@ -78,7 +78,7 @@ def test_validated_checkpoint_activates_self_play_environment(tmp_path):
         metrics = session.record_episode(100, "policy_100", {
             "won": True, "draw": False, "margin": 4, "turns": 15,
             "agent_captures": 3, "opponent_captures": 1,
-            "god": "inari", "opponent_god": "inari",
+            "god": "veskar", "opponent_god": "veskar",
             "agent_player": 1, "first_player": 2,
         })
         assert metrics["agent_rating"] > 1500
@@ -161,7 +161,7 @@ def test_phase_five_gate_requires_complete_tournament_and_no_regression():
                 for first in (1, 2):
                     mixed[f"slice:{god}:{other}:{player}:{first}"] = MatchCount(1)
     assert judge_phase_five(godot, godot, mixed, settings)["passed"]
-    mixed.pop("slice:inari:susanoo:1:1")
+    mixed.pop("slice:veskar:enigma:1:1")
     report = judge_phase_five(godot, godot, mixed, settings)
     assert not report["passed"]
     assert any("tranche mixte incomplete" in message for message in report["failures"])

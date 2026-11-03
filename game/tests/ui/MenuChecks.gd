@@ -32,7 +32,7 @@ func _test_preview_layout() -> void:
 	var empty: Control = rows.get_child(1).get_child(3).get_child(0)
 	_check(absf(card.size.x - card.size.y) <= 1.0 and absf(card.size.y - empty.size.y) <= 1.0,
 		"les emplacements remplis et vides du deck occupent des carrés de même taille")
-	page._on_info_requested("f01_n1")
+	page._on_info_requested("devoracle_n1")
 	for frame in range(6):
 		await get_tree().process_frame
 	var info: StoneInfoSheet = page.info_sheet
@@ -170,34 +170,34 @@ func _test_deck_slots() -> void:
 	_check(PlayerData.get_selected_deck() == 1 and page._current_deck.is_empty()
 		and slots.get_child(1).button_pressed and not slots.get_child(0).button_pressed,
 		"choisir un numéro ouvre un deck vide et déplace la sélection")
-	page._on_primary_requested("f03_n1", CardActionDrawer.Source.COLLECTION)
+	page._on_primary_requested("de_boiteux_n1", CardActionDrawer.Source.COLLECTION)
 	await get_tree().process_frame
-	_check(PlayerData.get_active_deck() == ["f03_n1"] and not _shown_collection_ids(page).has("f03_n1")
-		and not page.status_label.visible and _collection_cards(page)["f03_n1"] == cards["f03_n1"]
-		and PlayerData.get_deck("inari", 0) == ProfileFixture.DECK,
+	_check(PlayerData.get_active_deck() == ["de_boiteux_n1"] and not _shown_collection_ids(page).has("de_boiteux_n1")
+		and not page.status_label.visible and _collection_cards(page)["de_boiteux_n1"] == cards["de_boiteux_n1"]
+		and PlayerData.get_deck("veskar", 0) == ProfileFixture.DECK,
 		"modifier le deuxième deck masque sa carte sans recréer la collection ni afficher de message de succès")
-	page._on_primary_requested("f03_n1", CardActionDrawer.Source.DECK)
-	_check(PlayerData.get_active_deck().is_empty() and _shown_collection_ids(page).has("f03_n1"),
+	page._on_primary_requested("de_boiteux_n1", CardActionDrawer.Source.DECK)
+	_check(PlayerData.get_active_deck().is_empty() and _shown_collection_ids(page).has("de_boiteux_n1"),
 		"retirer une carte agit seulement sur le deck sélectionné")
 	page._select_deck(0)
-	page._on_primary_requested("n01_n4", CardActionDrawer.Source.COLLECTION)
+	page._on_primary_requested("avortons_des_caves_n4", CardActionDrawer.Source.COLLECTION)
 	_check(page.replacement_panel.visible, "un deck complet ouvre le remplacement depuis le deck sélectionné")
-	page._on_replacement_requested("f03_n1")
-	_check(not page.replacement_panel.visible and PlayerData.get_active_deck().has("n01_n4")
-		and not PlayerData.get_active_deck().has("f03_n1") and PlayerData.get_deck("inari", 1).is_empty(),
+	page._on_replacement_requested("de_boiteux_n1")
+	_check(not page.replacement_panel.visible and PlayerData.get_active_deck().has("avortons_des_caves_n4")
+		and not PlayerData.get_active_deck().has("de_boiteux_n1") and PlayerData.get_deck("veskar", 1).is_empty(),
 		"le remplacement immédiat enregistre uniquement l'emplacement courant")
 	# Restaurer la composition initiale, puis vérifier les changements de contexte.
-	page._commit_operation(DeckRules.try_replace(page._current_deck, "n01_n4", "f03_n1", "inari"))
+	page._commit_operation(DeckRules.try_replace(page._current_deck, "avortons_des_caves_n4", "de_boiteux_n1", "veskar"))
 	page._select_deck(2)
-	page._on_primary_requested("f07_n1", CardActionDrawer.Source.COLLECTION)
-	page._select_god("susanoo")
+	page._on_primary_requested("jumeau_de_cuivre_n1", CardActionDrawer.Source.COLLECTION)
+	page._select_god("enigma")
 	_check(page._current_deck.is_empty() and PlayerData.get_selected_deck() == 0,
 		"changer de dieu ouvre sa banque sans copier le deck précédent")
 	page._select_deck(1)
-	page._on_primary_requested("p08_n1", CardActionDrawer.Source.COLLECTION)
-	page._select_god("inari")
-	_check(page._current_deck == ["f07_n1"] and PlayerData.get_selected_deck() == 2
-		and PlayerData.get_deck("susanoo", 1) == ["p08_n1"],
+	page._on_primary_requested("porte_greffes_n1", CardActionDrawer.Source.COLLECTION)
+	page._select_god("veskar")
+	_check(page._current_deck == ["jumeau_de_cuivre_n1"] and PlayerData.get_selected_deck() == 2
+		and PlayerData.get_deck("enigma", 1) == ["porte_greffes_n1"],
 		"revenir à un dieu retrouve son dernier deck et préserve les autres banques")
 	var menu: Control = (load("res://scenes/menus/MainMenu.tscn") as PackedScene).instantiate()
 	add_child(menu)
@@ -205,8 +205,8 @@ func _test_deck_slots() -> void:
 		and menu.play_button.text == "COMPLÉTER MON DECK", "l'accueil lit le numéro actif et refuse un deck incomplet")
 	menu.queue_free()
 	# Un ancien panneau ne doit jamais pouvoir modifier le nouveau deck.
-	page._replacement_stone_id = "n12_n2"
-	page.replacement_panel.open_for(page._current_deck, "n12_n2")
+	page._replacement_stone_id = "le_nud_hurlant_n2"
+	page.replacement_panel.open_for(page._current_deck, "le_nud_hurlant_n2")
 	page._select_deck(0)
 	_check(not page.replacement_panel.visible and page._replacement_stone_id == "",
 		"changer d'emplacement ferme le remplacement et annule sa carte en attente")
@@ -236,14 +236,14 @@ func _test_battle_uses_selected_deck() -> void:
 	var reordered := ProfileFixture.DECK.duplicate()
 	reordered.reverse()
 	PlayerData.set_player_deck(reordered)
-	BattleContext.selected_npc_id = "hiro"
+	BattleContext.selected_npc_id = "disciple_muraille"
 	BattleContext.forced_first_player = GameState.PLAYER_HUMAN
 	var board: Control = (load("res://scenes/game/Board.tscn") as PackedScene).instantiate()
 	add_child(board)
 	await get_tree().process_frame
 	await get_tree().process_frame
 	var state: GameState = board.turn_manager.get_state()
-	_check(state.hand_of(GameState.PLAYER_HUMAN) == reordered and state.god_of(GameState.PLAYER_HUMAN) == "inari",
+	_check(state.hand_of(GameState.PLAYER_HUMAN) == reordered and state.god_of(GameState.PLAYER_HUMAN) == "veskar",
 		"un vrai combat reçoit les huit cartes du troisième deck et le dieu sélectionné")
 	board.queue_free()
 	await get_tree().process_frame
@@ -257,7 +257,7 @@ func _test_generated_opponent_battle() -> void:
 	var saved_npc := BattleContext.selected_npc_id
 	var saved_opponent := BattleContext.selected_opponent
 	var saved_first := BattleContext.forced_first_player
-	var opponent := OpponentCatalogModel.build("susanoo", "n1", "moyen")
+	var opponent := OpponentCatalogModel.build("enigma", "n1", "moyen")
 	BattleContext.select_opponent(opponent)
 	BattleContext.forced_first_player = GameState.PLAYER_HUMAN
 	PlayerData.set_selected_deck(0)
@@ -268,7 +268,7 @@ func _test_generated_opponent_battle() -> void:
 	await get_tree().process_frame
 	var state: GameState = board.turn_manager.get_state()
 	_check(state.npc_id == opponent["id"]
-		and state.god_of(GameState.PLAYER_AI) == "susanoo"
+		and state.god_of(GameState.PLAYER_AI) == "enigma"
 		and state.hand_of(GameState.PLAYER_AI) == StoneLoader.build_hand(opponent["deck"]),
 		"un combat généré reçoit le deck, le dieu et l'identifiant de la rencontre choisie")
 	board.queue_free()
@@ -286,7 +286,7 @@ func _test_result_uses_generated_opponent() -> void:
 	var saved_winner := BattleContext.last_winner
 	var saved_human := BattleContext.last_score_human
 	var saved_ai := BattleContext.last_score_ai
-	var opponent := OpponentCatalogModel.build("izanami", "n2", "tres_difficile")
+	var opponent := OpponentCatalogModel.build("nerava", "n2", "tres_difficile")
 	BattleContext.select_opponent(opponent)
 	BattleContext.record_result(GameState.PLAYER_HUMAN, 42, 17)
 	var page: Control = (load("res://scenes/menus/Result.tscn") as PackedScene).instantiate()
@@ -308,8 +308,8 @@ func _test_cost_format() -> void:
 		"les coûts s'affichent avec la virgule française, sans décimale inutile")
 	_check(UIFormat.cost(1.25) == "1,25" and UIFormat.cost(3.75) == "3,75"
 		and UIFormat.cost(8.25) == "8,25", "les quarts de point ne sont jamais arrondis à un dixième")
-	_check(UIFormat.cost(StoneLoader.stone_cost("h06_n1")) == "3,75"
-		and UIFormat.cost(StoneLoader.stone_cost("h05_n3")) == "10,75",
+	_check(UIFormat.cost(StoneLoader.stone_cost("veilleur_bifurque_n1")) == "3,75"
+		and UIFormat.cost(StoneLoader.stone_cost("echassier_des_brumes_n3")) == "10,75",
 		"les coûts des cartes Horizon affichent exactement le coût du catalogue")
 
 
@@ -346,7 +346,7 @@ func _test_first_player_draw() -> void:
 func _test_prebattle_reveals_draw() -> void:
 	var saved_npc := BattleContext.selected_npc_id
 	var saved_first := BattleContext.forced_first_player
-	BattleContext.selected_npc_id = "hiro"
+	BattleContext.selected_npc_id = "disciple_muraille"
 	BattleContext.forced_first_player = 0
 	var page: Control = (load("res://scenes/menus/PreBattle.tscn") as PackedScene).instantiate()
 	add_child(page)
@@ -371,7 +371,7 @@ func _test_hud_game_over() -> void:
 	var hud := BattleHUD.new()
 	add_child(hud)
 	hud.set_names("Joueur", "Hiro")
-	hud.set_gods(StoneLoader.get_god("inari"), StoneLoader.get_god("hachiman"))
+	hud.set_gods(StoneLoader.get_god("veskar"), StoneLoader.get_god("kharun"))
 	hud.set_active_player(GameState.PLAYER_HUMAN)
 	hud.set_game_over()
 	_check(hud._banner.text == "Partie terminée" and hud._center.text == "VS",
@@ -392,43 +392,43 @@ func _test_collection_incremental_refresh() -> void:
 	await get_tree().process_frame
 	var cards := _collection_cards(page)
 	var expected: Array = []
-	for definition in StoneLoader.get_lineages_for_god("inari"):
+	for definition in StoneLoader.get_lineages_for_god("veskar"):
 		if DeckRules.lineage_index(PlayerData.get_active_deck(), StoneLoader.stone_lineage(definition["id"])) < 0:
 			expected.append(definition["id"])
 	var shown := _shown_collection_ids(page)
 	var shown_sorted := shown.duplicate()
 	shown_sorted.sort()
 	expected.sort()
-	_check(cards.size() == StoneLoader.get_lineages_for_god("inari").size() and shown_sorted == expected,
+	_check(cards.size() == StoneLoader.get_lineages_for_god("veskar").size() and shown_sorted == expected,
 		"la collection n'affiche pas les cartes déjà dans le deck")
 	# Tri FAMILLE par défaut : la première carte est la moins chère d'Inari.
 	_check(page._sort_mode == 0 and page.sort_button.text.begins_with("TRIER : FAMILLE")
-		and str(StoneLoader.get_stone(shown[0])["god_id"]) == "inari" and _is_family_order(shown, "inari"),
+		and str(StoneLoader.get_stone(shown[0])["god_id"]) == "veskar" and _is_family_order(shown, "veskar"),
 		"par défaut, les cartes du dieu passent avant les neutres, chaque groupe par coût puis par nom")
-	var kappa: StoneCard = cards["f03_n1"]
-	var identity := kappa.get_instance_id()
+	var de_boiteux_n3: StoneCard = cards["de_boiteux_n1"]
+	var identity := de_boiteux_n3.get_instance_id()
 	var without_kappa: Array = PlayerData.get_active_deck()
-	without_kappa.erase("f03_n1")
+	without_kappa.erase("de_boiteux_n1")
 	page._current_deck = without_kappa
 	page._refresh_all()
 	await get_tree().process_frame
 	var grid: GridContainer = page.collection_rows.get_child(0)
 	shown = _shown_collection_ids(page)
 	# Kappa revient à la place que lui donnent son coût et son nom.
-	_check(shown.has("f03_n1") and _is_family_order(shown, "inari")
-		and is_instance_valid(kappa) and kappa.get_instance_id() == identity and not kappa._selected,
+	_check(shown.has("de_boiteux_n1") and _is_family_order(shown, "veskar")
+		and is_instance_valid(de_boiteux_n3) and de_boiteux_n3.get_instance_id() == identity and not de_boiteux_n3._selected,
 		"une carte retirée du deck revient à sa place dans la collection, sans recréer de carte")
 	page._select_sort(3)
 	await get_tree().process_frame
 	var by_name := _shown_collection_ids(page)
 	_check(page.sort_button.text.begins_with("TRIER : NOM")
-		and _names_ascending(by_name) and not _is_family_order(by_name, "inari")
-		and _collection_cards(page)["f03_n1"] == kappa,
+		and _names_ascending(by_name) and not _is_family_order(by_name, "veskar")
+		and _collection_cards(page)["de_boiteux_n1"] == de_boiteux_n3,
 		"le tri par nom déplace les cartes existantes sans les recréer")
 	page._select_sort(0)
 	await get_tree().process_frame
 	grid = page.collection_rows.get_child(0)
-	page._current_deck = without_kappa + ["n01_n4"]
+	page._current_deck = without_kappa + ["avortons_des_caves_n4"]
 	page._refresh_all()
 	await get_tree().process_frame
 	var visible_wrappers: Array = []
@@ -436,16 +436,16 @@ func _test_collection_incremental_refresh() -> void:
 		if wrapper.visible:
 			visible_wrappers.append(wrapper)
 	# Izanagi masqué, les cartes visibles restent alignées sur trois colonnes.
-	_check(not _shown_collection_ids(page).has("n01_n1") and visible_wrappers.size() == expected.size()
+	_check(not _shown_collection_ids(page).has("avortons_des_caves_n1") and visible_wrappers.size() == expected.size()
 		and is_equal_approx(visible_wrappers[3].position.x, visible_wrappers[0].position.x)
 		and visible_wrappers[3].position.y > visible_wrappers[0].position.y,
 		"une carte ajoutée au deck disparaît et la grille referme le trou")
-	var neutral: StoneCard = _collection_cards(page)["n01_n1"]
-	page._collection_grid.rebuild("susanoo", page._current_deck, page._sort_mode)
+	var neutral: StoneCard = _collection_cards(page)["avortons_des_caves_n1"]
+	page._collection_grid.rebuild("enigma", page._current_deck, page._sort_mode)
 	await get_tree().process_frame
 	var changed_god := _collection_cards(page)
 	_check(page.collection_rows.get_child(0) == grid and changed_god.size() == 36
-		and changed_god["n01_n1"] == neutral and not changed_god.has("f03_n1"),
+		and changed_god["avortons_des_caves_n1"] == neutral and not changed_god.has("de_boiteux_n1"),
 		"changer de dieu conserve la grille et les vingt-quatre cartes neutres")
 	page.queue_free()
 	await get_tree().process_frame

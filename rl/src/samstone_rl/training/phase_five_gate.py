@@ -20,7 +20,7 @@ from samstone_rl.opponents.checkpoint import CheckpointOpponent
 from samstone_rl.training.curriculum import DEFAULT_STAGES
 from samstone_rl.training.validation import wilson_lower
 
-GODS = ("inari", "izanami", "hachiman", "tsukuyomi", "okuninushi", "susanoo")
+GODS = ("veskar", "nerava", "kharun", "ilyr", "sylkha", "enigma")
 
 
 @dataclass(frozen=True)

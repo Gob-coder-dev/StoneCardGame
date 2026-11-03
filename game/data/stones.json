@@ -1,20 +1,18 @@
 {
-  "catalogue_version": 2,
+  "catalogue_version": 3,
   "lineages": [
     {
-      "id": "n01",
-      "catalogue_ref": "N01",
+      "id": "avortons_des_caves",
       "name": "Avortons des caves",
       "rarity": "common",
       "god_id": "neutral",
       "description": "Profil équilibré ; référence simple pour comparer les coûts.",
-      "kind": "creature",
       "body_color": "#8c8172",
       "asset": "res://assets/cards/n/n01_n1.png",
       "effects": [],
       "levels": [
         {
-          "id": "n01_n1",
+          "id": "avortons_des_caves_n1",
           "blades": {
             "top": 1,
             "bottom": 1,
@@ -23,7 +21,7 @@
           }
         },
         {
-          "id": "n01_n2",
+          "id": "avortons_des_caves_n2",
           "blades": {
             "top": 2,
             "bottom": 2,
@@ -33,7 +31,7 @@
           "asset": "res://assets/cards/n/n01_n2.png"
         },
         {
-          "id": "n01_n3",
+          "id": "avortons_des_caves_n3",
           "blades": {
             "top": 3,
             "bottom": 3,
@@ -43,7 +41,7 @@
           "asset": "res://assets/cards/n/n01_n3.png"
         },
         {
-          "id": "n01_n4",
+          "id": "avortons_des_caves_n4",
           "asset": "res://assets/cards/n/n01_n4.png",
           "blades": {
             "top": 4,
@@ -55,19 +53,17 @@
       ]
     },
     {
-      "id": "n02",
-      "catalogue_ref": "N02",
+      "id": "mordeur_des_combles",
       "name": "Mordeur des combles",
       "rarity": "common",
       "god_id": "neutral",
       "description": "Attaque vers le haut à très petit budget ; trois faces ouvertes.",
-      "kind": "creature",
       "body_color": "#8c8172",
       "asset": "res://assets/cards/n/n02_n1.png",
       "effects": [],
       "levels": [
         {
-          "id": "n02_n1",
+          "id": "mordeur_des_combles_n1",
           "blades": {
             "top": 1,
             "bottom": 0,
@@ -76,7 +72,7 @@
           }
         },
         {
-          "id": "n02_n2",
+          "id": "mordeur_des_combles_n2",
           "blades": {
             "top": 2,
             "bottom": 0,
@@ -86,7 +82,7 @@
           "asset": "res://assets/cards/n/n02_n2.png"
         },
         {
-          "id": "n02_n3",
+          "id": "mordeur_des_combles_n3",
           "blades": {
             "top": 3,
             "bottom": 0,
@@ -96,7 +92,7 @@
           "asset": "res://assets/cards/n/n02_n3.png"
         },
         {
-          "id": "n02_n4",
+          "id": "mordeur_des_combles_n4",
           "blades": {
             "top": 4,
             "bottom": 0,
@@ -108,19 +104,17 @@
       ]
     },
     {
-      "id": "n03",
-      "catalogue_ref": "N03",
+      "id": "rampant_des_fosses",
       "name": "Rampant des fosses",
       "rarity": "common",
       "god_id": "neutral",
       "description": "Attaque vers le bas ; complément directionnel de N02.",
-      "kind": "creature",
       "body_color": "#8c8172",
       "asset": "res://assets/cards/n/n03_n1.png",
       "effects": [],
       "levels": [
         {
-          "id": "n03_n1",
+          "id": "rampant_des_fosses_n1",
           "blades": {
             "top": 0,
             "bottom": 1,
@@ -129,7 +123,7 @@
           }
         },
         {
-          "id": "n03_n2",
+          "id": "rampant_des_fosses_n2",
           "blades": {
             "top": 0,
             "bottom": 2,
@@ -139,7 +133,7 @@
           "asset": "res://assets/cards/n/n03_n2.png"
         },
         {
-          "id": "n03_n3",
+          "id": "rampant_des_fosses_n3",
           "blades": {
             "top": 0,
             "bottom": 3,
@@ -149,7 +143,7 @@
           "asset": "res://assets/cards/n/n03_n3.png"
         },
         {
-          "id": "n03_n4",
+          "id": "rampant_des_fosses_n4",
           "blades": {
             "top": 0,
             "bottom": 4,
@@ -161,19 +155,17 @@
       ]
     },
     {
-      "id": "n04",
-      "catalogue_ref": "N04",
+      "id": "gueule_de_travers",
       "name": "Gueule-de-travers",
       "rarity": "common",
       "god_id": "neutral",
       "description": "Attaque à droite ; flancs très exposés.",
-      "kind": "creature",
       "body_color": "#8c8172",
       "asset": "res://assets/cards/n/n04_n1.png",
       "effects": [],
       "levels": [
         {
-          "id": "n04_n1",
+          "id": "gueule_de_travers_n1",
           "blades": {
             "top": 0,
             "bottom": 0,
@@ -182,7 +174,7 @@
           }
         },
         {
-          "id": "n04_n2",
+          "id": "gueule_de_travers_n2",
           "blades": {
             "top": 0,
             "bottom": 0,
@@ -192,7 +184,7 @@
           "asset": "res://assets/cards/n/n04_n2.png"
         },
         {
-          "id": "n04_n3",
+          "id": "gueule_de_travers_n3",
           "blades": {
             "top": 0,
             "bottom": 0,
@@ -202,7 +194,7 @@
           "asset": "res://assets/cards/n/n04_n3.png"
         },
         {
-          "id": "n04_n4",
+          "id": "gueule_de_travers_n4",
           "blades": {
             "top": 0,
             "bottom": 0,
@@ -214,19 +206,17 @@
       ]
     },
     {
-      "id": "n05",
-      "catalogue_ref": "N05",
+      "id": "ogre_droitier",
       "name": "Ogre droitier",
       "rarity": "common",
       "god_id": "neutral",
       "description": "Attaque à gauche ; pendant de N04 sans rotation manuelle.",
-      "kind": "creature",
       "body_color": "#8c8172",
       "asset": "res://assets/cards/n/n05_n1.png",
       "effects": [],
       "levels": [
         {
-          "id": "n05_n1",
+          "id": "ogre_droitier_n1",
           "blades": {
             "top": 0,
             "bottom": 0,
@@ -235,7 +225,7 @@
           }
         },
         {
-          "id": "n05_n2",
+          "id": "ogre_droitier_n2",
           "blades": {
             "top": 0,
             "bottom": 0,
@@ -245,7 +235,7 @@
           "asset": "res://assets/cards/n/n05_n2.png"
         },
         {
-          "id": "n05_n3",
+          "id": "ogre_droitier_n3",
           "blades": {
             "top": 0,
             "bottom": 0,
@@ -255,7 +245,7 @@
           "asset": "res://assets/cards/n/n05_n3.png"
         },
         {
-          "id": "n05_n4",
+          "id": "ogre_droitier_n4",
           "blades": {
             "top": 0,
             "bottom": 0,
@@ -267,19 +257,17 @@
       ]
     },
     {
-      "id": "n06",
-      "catalogue_ref": "N06",
+      "id": "le_drape_du_seuil",
       "name": "Le Drapé du seuil",
       "rarity": "common",
       "god_id": "neutral",
       "description": "Deux faces opposées haut/bas ; contrôle d’un axe.",
-      "kind": "creature",
       "body_color": "#8c8172",
       "asset": "res://assets/cards/n/n06_n1.png",
       "effects": [],
       "levels": [
         {
-          "id": "n06_n1",
+          "id": "le_drape_du_seuil_n1",
           "blades": {
             "top": 1,
             "bottom": 1,
@@ -288,7 +276,7 @@
           }
         },
         {
-          "id": "n06_n2",
+          "id": "le_drape_du_seuil_n2",
           "blades": {
             "top": 2,
             "bottom": 2,
@@ -298,7 +286,7 @@
           "asset": "res://assets/cards/n/n06_n2.png"
         },
         {
-          "id": "n06_n3",
+          "id": "le_drape_du_seuil_n3",
           "blades": {
             "top": 3,
             "bottom": 3,
@@ -308,7 +296,7 @@
           "asset": "res://assets/cards/n/n06_n3.png"
         },
         {
-          "id": "n06_n4",
+          "id": "le_drape_du_seuil_n4",
           "blades": {
             "top": 4,
             "bottom": 4,
@@ -320,19 +308,17 @@
       ]
     },
     {
-      "id": "n07",
-      "catalogue_ref": "N07",
+      "id": "mache_mur",
       "name": "Mâche-mur",
       "rarity": "common",
       "god_id": "neutral",
       "description": "Deux faces opposées gauche/droite ; deux directions de capture.",
-      "kind": "creature",
       "body_color": "#8c8172",
       "asset": "res://assets/cards/n/n07_n1.png",
       "effects": [],
       "levels": [
         {
-          "id": "n07_n1",
+          "id": "mache_mur_n1",
           "blades": {
             "top": 0,
             "bottom": 0,
@@ -341,7 +327,7 @@
           }
         },
         {
-          "id": "n07_n2",
+          "id": "mache_mur_n2",
           "blades": {
             "top": 0,
             "bottom": 0,
@@ -351,7 +337,7 @@
           "asset": "res://assets/cards/n/n07_n2.png"
         },
         {
-          "id": "n07_n3",
+          "id": "mache_mur_n3",
           "blades": {
             "top": 0,
             "bottom": 0,
@@ -361,7 +347,7 @@
           "asset": "res://assets/cards/n/n07_n3.png"
         },
         {
-          "id": "n07_n4",
+          "id": "mache_mur_n4",
           "blades": {
             "top": 0,
             "bottom": 0,
@@ -373,19 +359,17 @@
       ]
     },
     {
-      "id": "n08",
-      "catalogue_ref": "N08",
+      "id": "ecorche_angle",
       "name": "Écorche-angle",
       "rarity": "common",
       "god_id": "neutral",
       "description": "Deux faces adjacentes haut/droite ; bon placement en angle.",
-      "kind": "creature",
       "body_color": "#8c8172",
       "asset": "res://assets/cards/n/n08_n1.png",
       "effects": [],
       "levels": [
         {
-          "id": "n08_n1",
+          "id": "ecorche_angle_n1",
           "blades": {
             "top": 1,
             "bottom": 0,
@@ -395,7 +379,7 @@
           "asset": "res://assets/cards/n/n08_n1.png"
         },
         {
-          "id": "n08_n2",
+          "id": "ecorche_angle_n2",
           "blades": {
             "top": 2,
             "bottom": 0,
@@ -405,7 +389,7 @@
           "asset": "res://assets/cards/n/n08_n2.png"
         },
         {
-          "id": "n08_n3",
+          "id": "ecorche_angle_n3",
           "blades": {
             "top": 3,
             "bottom": 0,
@@ -415,7 +399,7 @@
           "asset": "res://assets/cards/n/n08_n3.png"
         },
         {
-          "id": "n08_n4",
+          "id": "ecorche_angle_n4",
           "blades": {
             "top": 4,
             "bottom": 0,
@@ -427,19 +411,17 @@
       ]
     },
     {
-      "id": "n24",
-      "catalogue_ref": "N24",
+      "id": "le_sac_a_murmures",
       "name": "Le Sac à murmures",
       "rarity": "common",
       "god_id": "neutral",
       "description": "Trois faces asymétriques, saturation progressive à quatre, haut toujours ouvert.",
-      "kind": "creature",
       "body_color": "#8c8172",
       "asset": "res://assets/cards/n/n24_n1.png",
       "effects": [],
       "levels": [
         {
-          "id": "n24_n1",
+          "id": "le_sac_a_murmures_n1",
           "blades": {
             "top": 0,
             "bottom": 1,
@@ -448,7 +430,7 @@
           }
         },
         {
-          "id": "n24_n2",
+          "id": "le_sac_a_murmures_n2",
           "blades": {
             "top": 0,
             "bottom": 2,
@@ -458,7 +440,7 @@
           "asset": "res://assets/cards/n/n24_n2.png"
         },
         {
-          "id": "n24_n3",
+          "id": "le_sac_a_murmures_n3",
           "blades": {
             "top": 0,
             "bottom": 3,
@@ -468,7 +450,7 @@
           "asset": "res://assets/cards/n/n24_n3.png"
         },
         {
-          "id": "n24_n4",
+          "id": "le_sac_a_murmures_n4",
           "blades": {
             "top": 0,
             "bottom": 4,
@@ -480,19 +462,17 @@
       ]
     },
     {
-      "id": "n09",
-      "catalogue_ref": "N09",
+      "id": "charognard_courbe",
       "name": "Charognard courbe",
       "rarity": "rare",
       "god_id": "neutral",
       "description": "Angle bas/gauche ; protège deux directions à faible coût.",
-      "kind": "creature",
       "body_color": "#8c8172",
       "asset": "res://assets/cards/n/n09_n1.png",
       "effects": [],
       "levels": [
         {
-          "id": "n09_n1",
+          "id": "charognard_courbe_n1",
           "blades": {
             "top": 0,
             "bottom": 2,
@@ -501,7 +481,7 @@
           }
         },
         {
-          "id": "n09_n2",
+          "id": "charognard_courbe_n2",
           "blades": {
             "top": 0,
             "bottom": 3,
@@ -511,7 +491,7 @@
           "asset": "res://assets/cards/n/n09_n2.png"
         },
         {
-          "id": "n09_n3",
+          "id": "charognard_courbe_n3",
           "blades": {
             "top": 0,
             "bottom": 4,
@@ -523,19 +503,17 @@
       ]
     },
     {
-      "id": "n10",
-      "catalogue_ref": "N10",
+      "id": "tricorne_errant",
       "name": "Tricorne errant",
       "rarity": "rare",
       "god_id": "neutral",
       "description": "Trois faces actives, faiblesse conservée en bas.",
-      "kind": "creature",
       "body_color": "#8c8172",
       "asset": "res://assets/cards/n/n10_n1.png",
       "effects": [],
       "levels": [
         {
-          "id": "n10_n1",
+          "id": "tricorne_errant_n1",
           "blades": {
             "top": 1,
             "bottom": 0,
@@ -545,7 +523,7 @@
           "asset": "res://assets/cards/n/n10_n1.png"
         },
         {
-          "id": "n10_n2",
+          "id": "tricorne_errant_n2",
           "blades": {
             "top": 2,
             "bottom": 0,
@@ -555,7 +533,7 @@
           "asset": "res://assets/cards/n/n10_n2.png"
         },
         {
-          "id": "n10_n3",
+          "id": "tricorne_errant_n3",
           "blades": {
             "top": 3,
             "bottom": 0,
@@ -567,19 +545,17 @@
       ]
     },
     {
-      "id": "n11",
-      "catalogue_ref": "N11",
+      "id": "dos_fendu",
       "name": "Dos-fendu",
       "rarity": "rare",
       "god_id": "neutral",
       "description": "Trois faces actives, faiblesse conservée en haut.",
-      "kind": "creature",
       "body_color": "#8c8172",
       "asset": "res://assets/cards/n/n11_n1.png",
       "effects": [],
       "levels": [
         {
-          "id": "n11_n1",
+          "id": "dos_fendu_n1",
           "blades": {
             "top": 0,
             "bottom": 1,
@@ -588,7 +564,7 @@
           }
         },
         {
-          "id": "n11_n2",
+          "id": "dos_fendu_n2",
           "blades": {
             "top": 0,
             "bottom": 2,
@@ -598,7 +574,7 @@
           "asset": "res://assets/cards/n/n11_n2.png"
         },
         {
-          "id": "n11_n3",
+          "id": "dos_fendu_n3",
           "blades": {
             "top": 0,
             "bottom": 3,
@@ -610,19 +586,17 @@
       ]
     },
     {
-      "id": "n12",
-      "catalogue_ref": "N12",
+      "id": "le_nud_hurlant",
       "name": "Le Nœud hurlant",
       "rarity": "rare",
       "god_id": "neutral",
       "description": "Haut dominant, flancs secondaires, bas à zéro.",
-      "kind": "creature",
       "body_color": "#8c8172",
       "asset": "res://assets/cards/n/n12_n1.png",
       "effects": [],
       "levels": [
         {
-          "id": "n12_n1",
+          "id": "le_nud_hurlant_n1",
           "blades": {
             "top": 2,
             "bottom": 0,
@@ -631,7 +605,7 @@
           }
         },
         {
-          "id": "n12_n2",
+          "id": "le_nud_hurlant_n2",
           "blades": {
             "top": 3,
             "bottom": 0,
@@ -641,7 +615,7 @@
           "asset": "res://assets/cards/n/n12_n2.png"
         },
         {
-          "id": "n12_n3",
+          "id": "le_nud_hurlant_n3",
           "blades": {
             "top": 4,
             "bottom": 0,
@@ -653,19 +627,17 @@
       ]
     },
     {
-      "id": "n13",
-      "catalogue_ref": "N13",
+      "id": "la_veuve_suspendue",
       "name": "La Veuve suspendue",
       "rarity": "rare",
       "god_id": "neutral",
       "description": "Bas dominant, gauche à zéro ; trois forces différentes.",
-      "kind": "creature",
       "body_color": "#8c8172",
       "asset": "res://assets/cards/n/n13_n1.png",
       "effects": [],
       "levels": [
         {
-          "id": "n13_n1",
+          "id": "la_veuve_suspendue_n1",
           "blades": {
             "top": 1,
             "bottom": 2,
@@ -674,7 +646,7 @@
           }
         },
         {
-          "id": "n13_n2",
+          "id": "la_veuve_suspendue_n2",
           "blades": {
             "top": 2,
             "bottom": 3,
@@ -684,7 +656,7 @@
           "asset": "res://assets/cards/n/n13_n2.png"
         },
         {
-          "id": "n13_n3",
+          "id": "la_veuve_suspendue_n3",
           "blades": {
             "top": 3,
             "bottom": 4,
@@ -696,19 +668,17 @@
       ]
     },
     {
-      "id": "n14",
-      "catalogue_ref": "N14",
+      "id": "ogre_a_deux_bouches",
       "name": "Ogre à deux bouches",
       "rarity": "rare",
       "god_id": "neutral",
       "description": "Gauche dominante, haut/bas secondaires, droite ouverte.",
-      "kind": "creature",
       "body_color": "#8c8172",
       "asset": "res://assets/cards/n/n14_n1.png",
       "effects": [],
       "levels": [
         {
-          "id": "n14_n1",
+          "id": "ogre_a_deux_bouches_n1",
           "blades": {
             "top": 1,
             "bottom": 1,
@@ -717,7 +687,7 @@
           }
         },
         {
-          "id": "n14_n2",
+          "id": "ogre_a_deux_bouches_n2",
           "blades": {
             "top": 2,
             "bottom": 2,
@@ -727,7 +697,7 @@
           "asset": "res://assets/cards/n/n14_n2.png"
         },
         {
-          "id": "n14_n3",
+          "id": "ogre_a_deux_bouches_n3",
           "blades": {
             "top": 3,
             "bottom": 3,
@@ -739,19 +709,17 @@
       ]
     },
     {
-      "id": "n15",
-      "catalogue_ref": "N15",
+      "id": "fouisseur_aveugle",
       "name": "Fouisseur aveugle",
       "rarity": "rare",
       "god_id": "neutral",
       "description": "Flancs puissants ; attaque secondaire en bas et aucune en haut.",
-      "kind": "creature",
       "body_color": "#8c8172",
       "asset": "res://assets/cards/n/n15_n1.png",
       "effects": [],
       "levels": [
         {
-          "id": "n15_n1",
+          "id": "fouisseur_aveugle_n1",
           "blades": {
             "top": 0,
             "bottom": 1,
@@ -760,7 +728,7 @@
           }
         },
         {
-          "id": "n15_n2",
+          "id": "fouisseur_aveugle_n2",
           "blades": {
             "top": 0,
             "bottom": 2,
@@ -770,7 +738,7 @@
           "asset": "res://assets/cards/n/n15_n2.png"
         },
         {
-          "id": "n15_n3",
+          "id": "fouisseur_aveugle_n3",
           "blades": {
             "top": 0,
             "bottom": 3,
@@ -782,19 +750,17 @@
       ]
     },
     {
-      "id": "n16",
-      "catalogue_ref": "N16",
+      "id": "devoreur_de_lanternes",
       "name": "Dévoreur de lanternes",
       "rarity": "rare",
       "god_id": "neutral",
       "description": "Quatre faces actives, avec priorité bas/droite.",
-      "kind": "creature",
       "body_color": "#8c8172",
       "asset": "res://assets/cards/n/n16_n1.png",
       "effects": [],
       "levels": [
         {
-          "id": "n16_n1",
+          "id": "devoreur_de_lanternes_n1",
           "blades": {
             "top": 1,
             "bottom": 2,
@@ -803,7 +769,7 @@
           }
         },
         {
-          "id": "n16_n2",
+          "id": "devoreur_de_lanternes_n2",
           "blades": {
             "top": 2,
             "bottom": 3,
@@ -813,7 +779,7 @@
           "asset": "res://assets/cards/n/n16_n2.png"
         },
         {
-          "id": "n16_n3",
+          "id": "devoreur_de_lanternes_n3",
           "blades": {
             "top": 3,
             "bottom": 4,
@@ -825,19 +791,17 @@
       ]
     },
     {
-      "id": "n17",
-      "catalogue_ref": "N17",
+      "id": "mille_gueules",
       "name": "Mille-gueules",
       "rarity": "epic",
       "god_id": "neutral",
       "description": "Gauche dominante et haut secondaire ; bas à zéro.",
-      "kind": "creature",
       "body_color": "#8c8172",
       "asset": "res://assets/cards/n/n17_n1.png",
       "effects": [],
       "levels": [
         {
-          "id": "n17_n1",
+          "id": "mille_gueules_n1",
           "blades": {
             "top": 2,
             "bottom": 0,
@@ -846,7 +810,7 @@
           }
         },
         {
-          "id": "n17_n2",
+          "id": "mille_gueules_n2",
           "blades": {
             "top": 3,
             "bottom": 0,
@@ -858,19 +822,17 @@
       ]
     },
     {
-      "id": "n18",
-      "catalogue_ref": "N18",
+      "id": "laffame_du_puits",
       "name": "L’Affamé du puits",
       "rarity": "epic",
       "god_id": "neutral",
       "description": "Haut très fort et flanc gauche de soutien ; droite ouverte.",
-      "kind": "creature",
       "body_color": "#8c8172",
       "asset": "res://assets/cards/n/n18_n1.png",
       "effects": [],
       "levels": [
         {
-          "id": "n18_n1",
+          "id": "laffame_du_puits_n1",
           "blades": {
             "top": 3,
             "bottom": 1,
@@ -879,7 +841,7 @@
           }
         },
         {
-          "id": "n18_n2",
+          "id": "laffame_du_puits_n2",
           "blades": {
             "top": 4,
             "bottom": 2,
@@ -891,19 +853,17 @@
       ]
     },
     {
-      "id": "n19",
-      "catalogue_ref": "N19",
+      "id": "le_porte_visages",
       "name": "Le Porte-visages",
       "rarity": "epic",
       "god_id": "neutral",
       "description": "Bas très fort, droite secondaire ; gauche ouverte.",
-      "kind": "creature",
       "body_color": "#8c8172",
       "asset": "res://assets/cards/n/n19_n1.png",
       "effects": [],
       "levels": [
         {
-          "id": "n19_n1",
+          "id": "le_porte_visages_n1",
           "blades": {
             "top": 1,
             "bottom": 3,
@@ -912,7 +872,7 @@
           }
         },
         {
-          "id": "n19_n2",
+          "id": "le_porte_visages_n2",
           "blades": {
             "top": 2,
             "bottom": 4,
@@ -924,19 +884,17 @@
       ]
     },
     {
-      "id": "n20",
-      "catalogue_ref": "N20",
+      "id": "le_replie",
       "name": "Le Replié",
       "rarity": "epic",
       "god_id": "neutral",
       "description": "Droite très forte et haut/gauche secondaires ; bas à zéro.",
-      "kind": "creature",
       "body_color": "#8c8172",
       "asset": "res://assets/cards/n/n20_n1.png",
       "effects": [],
       "levels": [
         {
-          "id": "n20_n1",
+          "id": "le_replie_n1",
           "blades": {
             "top": 2,
             "bottom": 0,
@@ -945,7 +903,7 @@
           }
         },
         {
-          "id": "n20_n2",
+          "id": "le_replie_n2",
           "blades": {
             "top": 3,
             "bottom": 0,
@@ -957,19 +915,17 @@
       ]
     },
     {
-      "id": "n21",
-      "catalogue_ref": "N21",
+      "id": "le_voyeur",
       "name": "Le Voyeur",
       "rarity": "legendary",
       "god_id": "neutral",
       "description": "Profil 3/4/2/1 complet et asymétrique ; aucune face sans défense.",
-      "kind": "creature",
       "body_color": "#8c8172",
       "asset": "res://assets/cards/n/n21_n1.png",
       "effects": [],
       "levels": [
         {
-          "id": "n21_n1",
+          "id": "le_voyeur_n1",
           "blades": {
             "top": 3,
             "bottom": 4,
@@ -980,19 +936,17 @@
       ]
     },
     {
-      "id": "n22",
-      "catalogue_ref": "N22",
+      "id": "la_gueule_sous_le_lit",
       "name": "La Gueule sous le lit",
       "rarity": "legendary",
       "god_id": "neutral",
       "description": "Haut maximal, deux flancs inégaux, bas totalement ouvert.",
-      "kind": "creature",
       "body_color": "#8c8172",
       "asset": "res://assets/cards/n/n22_n1.png",
       "effects": [],
       "levels": [
         {
-          "id": "n22_n1",
+          "id": "la_gueule_sous_le_lit_n1",
           "blades": {
             "top": 4,
             "bottom": 0,
@@ -1003,19 +957,17 @@
       ]
     },
     {
-      "id": "n23",
-      "catalogue_ref": "N23",
+      "id": "le_roi_des_oubliettes",
       "name": "Le Roi des oubliettes",
       "rarity": "legendary",
       "god_id": "neutral",
       "description": "Bas et gauche au maximum ; droite faible.",
-      "kind": "creature",
       "body_color": "#8c8172",
       "asset": "res://assets/cards/n/n23_n1.png",
       "effects": [],
       "levels": [
         {
-          "id": "n23_n1",
+          "id": "le_roi_des_oubliettes_n1",
           "blades": {
             "top": 2,
             "bottom": 4,
@@ -1026,20 +978,18 @@
       ]
     },
     {
-      "id": "f01",
-      "catalogue_ref": "F01",
+      "id": "devoracle",
       "name": "Dévoracle",
       "rarity": "common",
-      "god_id": "inari",
+      "god_id": "veskar",
       "description": "Hasard pur et très bon marché ; aucune direction garantie avant la pose.",
-      "kind": "creature",
       "body_color": "#c9659e",
       "asset": "res://assets/cards/f/f01_n1.png",
       "effects": [],
       "power_text": "Fortune : les lames roses sont réparties au hasard à la pose.",
       "levels": [
         {
-          "id": "f01_n1",
+          "id": "devoracle_n1",
           "blades": {
             "top": 0,
             "bottom": 0,
@@ -1049,7 +999,7 @@
           "random_blades": 5
         },
         {
-          "id": "f01_n2",
+          "id": "devoracle_n2",
           "blades": {
             "top": 0,
             "bottom": 0,
@@ -1060,7 +1010,7 @@
           "asset": "res://assets/cards/f/f01_n2.png"
         },
         {
-          "id": "f01_n3",
+          "id": "devoracle_n3",
           "blades": {
             "top": 0,
             "bottom": 0,
@@ -1071,7 +1021,7 @@
           "asset": "res://assets/cards/f/f01_n3.png"
         },
         {
-          "id": "f01_n4",
+          "id": "devoracle_n4",
           "blades": {
             "top": 0,
             "bottom": 0,
@@ -1084,20 +1034,18 @@
       ]
     },
     {
-      "id": "f02",
-      "catalogue_ref": "F02",
+      "id": "griffe_a_jetons",
       "name": "Griffe à jetons",
       "rarity": "common",
-      "god_id": "inari",
+      "god_id": "veskar",
       "description": "Droite garantie, autres renforts aléatoires ; le côté droit finit saturé.",
-      "kind": "creature",
       "body_color": "#c9659e",
       "asset": "res://assets/cards/f/f02_n1.png",
       "effects": [],
       "power_text": "Fortune : les lames roses sont réparties au hasard à la pose.",
       "levels": [
         {
-          "id": "f02_n1",
+          "id": "griffe_a_jetons_n1",
           "blades": {
             "top": 0,
             "bottom": 0,
@@ -1107,7 +1055,7 @@
           "random_blades": 3
         },
         {
-          "id": "f02_n2",
+          "id": "griffe_a_jetons_n2",
           "blades": {
             "top": 0,
             "bottom": 0,
@@ -1118,7 +1066,7 @@
           "asset": "res://assets/cards/f/f02_n2.png"
         },
         {
-          "id": "f02_n3",
+          "id": "griffe_a_jetons_n3",
           "blades": {
             "top": 0,
             "bottom": 0,
@@ -1129,7 +1077,7 @@
           "asset": "res://assets/cards/f/f02_n3.png"
         },
         {
-          "id": "f02_n4",
+          "id": "griffe_a_jetons_n4",
           "blades": {
             "top": 0,
             "bottom": 0,
@@ -1142,20 +1090,18 @@
       ]
     },
     {
-      "id": "f03",
-      "catalogue_ref": "F03",
+      "id": "de_boiteux",
       "name": "Dé boiteux",
       "rarity": "common",
-      "god_id": "inari",
+      "god_id": "veskar",
       "description": "Haut garanti et réserve aléatoire croissante ; trois autres faces ouvertes au tirage.",
-      "kind": "creature",
       "body_color": "#c9659e",
       "asset": "res://assets/cards/f/f03_n1.png",
       "effects": [],
       "power_text": "Fortune : les lames roses sont réparties au hasard à la pose.",
       "levels": [
         {
-          "id": "f03_n1",
+          "id": "de_boiteux_n1",
           "blades": {
             "top": 1,
             "bottom": 0,
@@ -1165,7 +1111,7 @@
           "random_blades": 4
         },
         {
-          "id": "f03_n2",
+          "id": "de_boiteux_n2",
           "blades": {
             "top": 2,
             "bottom": 0,
@@ -1176,7 +1122,7 @@
           "asset": "res://assets/cards/f/f03_n2.png"
         },
         {
-          "id": "f03_n3",
+          "id": "de_boiteux_n3",
           "blades": {
             "top": 3,
             "bottom": 0,
@@ -1187,7 +1133,7 @@
           "asset": "res://assets/cards/f/f03_n3.png"
         },
         {
-          "id": "f03_n4",
+          "id": "de_boiteux_n4",
           "blades": {
             "top": 4,
             "bottom": 0,
@@ -1200,13 +1146,11 @@
       ]
     },
     {
-      "id": "f04",
-      "catalogue_ref": "F04",
+      "id": "sou_ricanant",
       "name": "Sou ricanant",
       "rarity": "common",
-      "god_id": "inari",
+      "god_id": "veskar",
       "description": "Pile ou face vertical ; l’attaque principale peut basculer du haut vers le bas.",
-      "kind": "creature",
       "body_color": "#c9659e",
       "asset": "res://assets/cards/f/f04_n1.png",
       "effects": [],
@@ -1214,7 +1158,7 @@
       "coin_flip": "vertical",
       "levels": [
         {
-          "id": "f04_n1",
+          "id": "sou_ricanant_n1",
           "blades": {
             "top": 2,
             "bottom": 0,
@@ -1223,7 +1167,7 @@
           }
         },
         {
-          "id": "f04_n2",
+          "id": "sou_ricanant_n2",
           "blades": {
             "top": 3,
             "bottom": 0,
@@ -1233,7 +1177,7 @@
           "asset": "res://assets/cards/f/f04_n2.png"
         },
         {
-          "id": "f04_n3",
+          "id": "sou_ricanant_n3",
           "blades": {
             "top": 4,
             "bottom": 0,
@@ -1243,7 +1187,7 @@
           "asset": "res://assets/cards/f/f04_n3.png"
         },
         {
-          "id": "f04_n4",
+          "id": "sou_ricanant_n4",
           "blades": {
             "top": 4,
             "bottom": 1,
@@ -1255,20 +1199,18 @@
       ]
     },
     {
-      "id": "f05",
-      "catalogue_ref": "F05",
+      "id": "croupier_manchot",
       "name": "Croupier manchot",
       "rarity": "rare",
-      "god_id": "inari",
+      "god_id": "veskar",
       "description": "Gauche/droite fiables ; au maximum les lames roses ne peuvent aller qu’en haut/bas.",
-      "kind": "creature",
       "body_color": "#c9659e",
       "asset": "res://assets/cards/f/f05_n1.png",
       "effects": [],
       "power_text": "Fortune : les lames roses sont réparties au hasard à la pose.",
       "levels": [
         {
-          "id": "f05_n1",
+          "id": "croupier_manchot_n1",
           "blades": {
             "top": 0,
             "bottom": 0,
@@ -1278,7 +1220,7 @@
           "random_blades": 2
         },
         {
-          "id": "f05_n2",
+          "id": "croupier_manchot_n2",
           "blades": {
             "top": 0,
             "bottom": 0,
@@ -1289,7 +1231,7 @@
           "asset": "res://assets/cards/f/f05_n2.png"
         },
         {
-          "id": "f05_n3",
+          "id": "croupier_manchot_n3",
           "blades": {
             "top": 0,
             "bottom": 0,
@@ -1302,20 +1244,18 @@
       ]
     },
     {
-      "id": "f06",
-      "catalogue_ref": "F06",
+      "id": "roulette_vorace",
       "name": "Roulette vorace",
       "rarity": "rare",
-      "god_id": "inari",
+      "god_id": "veskar",
       "description": "Base équilibrée, renforts incertains ; le tirage ne remplit jamais tous les emplacements.",
-      "kind": "creature",
       "body_color": "#c9659e",
       "asset": "res://assets/cards/f/f06_n1.png",
       "effects": [],
       "power_text": "Fortune : les lames roses sont réparties au hasard à la pose.",
       "levels": [
         {
-          "id": "f06_n1",
+          "id": "roulette_vorace_n1",
           "blades": {
             "top": 1,
             "bottom": 1,
@@ -1325,7 +1265,7 @@
           "random_blades": 2
         },
         {
-          "id": "f06_n2",
+          "id": "roulette_vorace_n2",
           "blades": {
             "top": 2,
             "bottom": 2,
@@ -1336,7 +1276,7 @@
           "asset": "res://assets/cards/f/f06_n2.png"
         },
         {
-          "id": "f06_n3",
+          "id": "roulette_vorace_n3",
           "blades": {
             "top": 2,
             "bottom": 3,
@@ -1349,13 +1289,11 @@
       ]
     },
     {
-      "id": "f07",
-      "catalogue_ref": "F07",
+      "id": "jumeau_de_cuivre",
       "name": "Jumeau de cuivre",
       "rarity": "rare",
-      "god_id": "inari",
+      "god_id": "veskar",
       "description": "Pile ou face horizontal ; gros écart entre gauche et droite.",
-      "kind": "creature",
       "body_color": "#c9659e",
       "asset": "res://assets/cards/f/f07_n1.png",
       "effects": [],
@@ -1363,7 +1301,7 @@
       "coin_flip": "horizontal",
       "levels": [
         {
-          "id": "f07_n1",
+          "id": "jumeau_de_cuivre_n1",
           "blades": {
             "top": 0,
             "bottom": 1,
@@ -1372,7 +1310,7 @@
           }
         },
         {
-          "id": "f07_n2",
+          "id": "jumeau_de_cuivre_n2",
           "blades": {
             "top": 1,
             "bottom": 1,
@@ -1382,7 +1320,7 @@
           "asset": "res://assets/cards/f/f07_n2.png"
         },
         {
-          "id": "f07_n3",
+          "id": "jumeau_de_cuivre_n3",
           "blades": {
             "top": 2,
             "bottom": 2,
@@ -1394,13 +1332,11 @@
       ]
     },
     {
-      "id": "f08",
-      "catalogue_ref": "F08",
+      "id": "valet_a_lenvers",
       "name": "Valet à l’envers",
       "rarity": "rare",
-      "god_id": "inari",
+      "god_id": "veskar",
       "description": "Pile ou face vertical ; départ avec une forte face basse et un haut vide.",
-      "kind": "creature",
       "body_color": "#c9659e",
       "asset": "res://assets/cards/f/f08_n1.png",
       "effects": [],
@@ -1408,7 +1344,7 @@
       "coin_flip": "vertical",
       "levels": [
         {
-          "id": "f08_n1",
+          "id": "valet_a_lenvers_n1",
           "blades": {
             "top": 0,
             "bottom": 3,
@@ -1417,7 +1353,7 @@
           }
         },
         {
-          "id": "f08_n2",
+          "id": "valet_a_lenvers_n2",
           "blades": {
             "top": 0,
             "bottom": 4,
@@ -1427,7 +1363,7 @@
           "asset": "res://assets/cards/f/f08_n2.png"
         },
         {
-          "id": "f08_n3",
+          "id": "valet_a_lenvers_n3",
           "blades": {
             "top": 1,
             "bottom": 4,
@@ -1439,20 +1375,18 @@
       ]
     },
     {
-      "id": "f09",
-      "catalogue_ref": "F09",
+      "id": "la_machine_a_malchance",
       "name": "La Machine à malchance",
       "rarity": "epic",
-      "god_id": "inari",
+      "god_id": "veskar",
       "description": "Haut toujours maximal, renforts roses ailleurs ; casino organique plutôt que robot de Pillage.",
-      "kind": "creature",
       "body_color": "#c9659e",
       "asset": "res://assets/cards/f/f09_n1.png",
       "effects": [],
       "power_text": "Fortune : les lames roses sont réparties au hasard à la pose.",
       "levels": [
         {
-          "id": "f09_n1",
+          "id": "la_machine_a_malchance_n1",
           "blades": {
             "top": 4,
             "bottom": 0,
@@ -1462,7 +1396,7 @@
           "random_blades": 3
         },
         {
-          "id": "f09_n2",
+          "id": "la_machine_a_malchance_n2",
           "blades": {
             "top": 4,
             "bottom": 0,
@@ -1475,13 +1409,11 @@
       ]
     },
     {
-      "id": "f10",
-      "catalogue_ref": "F10",
+      "id": "la_dame_aux_deux_visages",
       "name": "La Dame aux deux visages",
       "rarity": "epic",
-      "god_id": "inari",
+      "god_id": "veskar",
       "description": "Pile ou face horizontal ; bas solide, une attaque latérale forte mais incertaine.",
-      "kind": "creature",
       "body_color": "#c9659e",
       "asset": "res://assets/cards/f/f10_n1.png",
       "effects": [],
@@ -1489,7 +1421,7 @@
       "coin_flip": "horizontal",
       "levels": [
         {
-          "id": "f10_n1",
+          "id": "la_dame_aux_deux_visages_n1",
           "blades": {
             "top": 1,
             "bottom": 3,
@@ -1498,7 +1430,7 @@
           }
         },
         {
-          "id": "f10_n2",
+          "id": "la_dame_aux_deux_visages_n2",
           "blades": {
             "top": 2,
             "bottom": 4,
@@ -1510,20 +1442,18 @@
       ]
     },
     {
-      "id": "f11",
-      "catalogue_ref": "F11",
+      "id": "la_banque_vivante",
       "name": "La Banque vivante",
       "rarity": "legendary",
-      "god_id": "inari",
+      "god_id": "veskar",
       "description": "Haut/bas fixes au maximum ; six lames roses se répartissent uniquement entre gauche et droite.",
-      "kind": "creature",
       "body_color": "#c9659e",
       "asset": "res://assets/cards/f/f11_n1.png",
       "effects": [],
       "power_text": "Fortune : les lames roses sont réparties au hasard à la pose.",
       "levels": [
         {
-          "id": "f11_n1",
+          "id": "la_banque_vivante_n1",
           "blades": {
             "top": 3,
             "bottom": 3,
@@ -1535,13 +1465,11 @@
       ]
     },
     {
-      "id": "f12",
-      "catalogue_ref": "F12",
+      "id": "le_dernier_pari",
       "name": "Le Dernier Pari",
       "rarity": "legendary",
-      "god_id": "inari",
+      "god_id": "veskar",
       "description": "Profil complet et asymétrique ; le haut fort et le bas faible peuvent s’inverser.",
-      "kind": "creature",
       "body_color": "#c9659e",
       "asset": "res://assets/cards/f/f12_n1.png",
       "effects": [],
@@ -1549,7 +1477,7 @@
       "coin_flip": "vertical",
       "levels": [
         {
-          "id": "f12_n1",
+          "id": "le_dernier_pari_n1",
           "blades": {
             "top": 4,
             "bottom": 2,
@@ -1560,13 +1488,11 @@
       ]
     },
     {
-      "id": "d01",
-      "catalogue_ref": "D01",
+      "id": "porte_fievre",
       "name": "Porte-fièvre",
       "rarity": "common",
-      "god_id": "izanami",
+      "god_id": "nerava",
       "description": "Petit support d’aura ; les quatre faces s’étoffent lentement.",
-      "kind": "creature",
       "body_color": "#9671aa",
       "asset": "res://assets/cards/d/d01_n1.png",
       "effects": [
@@ -1575,40 +1501,40 @@
       "power_text": "Miasme : après les captures, chaque voisine adverse perd 1 force par face tant que l’aura est active.",
       "levels": [
         {
-          "id": "d01_n1",
+          "id": "porte_fievre_n1",
           "blades": {
             "top": 1,
             "bottom": 0,
             "left": 0,
-            "right": 0
+            "right": 1
           }
         },
         {
-          "id": "d01_n2",
+          "id": "porte_fievre_n2",
           "blades": {
-            "top": 1,
+            "top": 2,
             "bottom": 1,
             "left": 0,
-            "right": 0
+            "right": 2
           },
           "asset": "res://assets/cards/d/d01_n2.png"
         },
         {
-          "id": "d01_n3",
+          "id": "porte_fievre_n3",
           "blades": {
             "top": 1,
-            "bottom": 1,
+            "bottom": 2,
             "left": 1,
-            "right": 0
+            "right": 3
           },
           "asset": "res://assets/cards/d/d01_n3.png"
         },
         {
-          "id": "d01_n4",
+          "id": "porte_fievre_n4",
           "blades": {
-            "top": 1,
-            "bottom": 1,
-            "left": 1,
+            "top": 2,
+            "bottom": 3,
+            "left": 2,
             "right": 1
           },
           "asset": "res://assets/cards/d/d01_n4.png"
@@ -1616,13 +1542,11 @@
       ]
     },
     {
-      "id": "d02",
-      "catalogue_ref": "D02",
+      "id": "crache_cendre",
       "name": "Crache-cendre",
       "rarity": "common",
-      "god_id": "izanami",
+      "god_id": "nerava",
       "description": "Attaque basse qui prépare une cible résistante pour un prochain coup.",
-      "kind": "creature",
       "body_color": "#9671aa",
       "asset": "res://assets/cards/d/d02_n1.png",
       "effects": [
@@ -1631,54 +1555,52 @@
       "power_text": "Échec corrosif : les adversaires qui résistent à une attaque perdent 2 force par face jusqu’à la fin du prochain coup du lanceur.",
       "levels": [
         {
-          "id": "d02_n1",
+          "id": "crache_cendre_n1",
           "blades": {
             "top": 0,
             "bottom": 1,
             "left": 0,
-            "right": 0
+            "right": 1
           }
         },
         {
-          "id": "d02_n2",
+          "id": "crache_cendre_n2",
           "blades": {
             "top": 0,
             "bottom": 2,
-            "left": 0,
-            "right": 0
+            "left": 1,
+            "right": 1
           },
           "asset": "res://assets/cards/d/d02_n2.png"
         },
         {
-          "id": "d02_n3",
+          "id": "crache_cendre_n3",
           "blades": {
             "top": 0,
             "bottom": 3,
             "left": 1,
-            "right": 0
+            "right": 1
           },
           "asset": "res://assets/cards/d/d02_n3.png"
         },
         {
-          "id": "d02_n4",
+          "id": "crache_cendre_n4",
           "blades": {
             "top": 0,
             "bottom": 4,
             "left": 1,
-            "right": 1
+            "right": 2
           },
           "asset": "res://assets/cards/d/d02_n4.png"
         }
       ]
     },
     {
-      "id": "d03",
-      "catalogue_ref": "D03",
+      "id": "clochelet_malade",
       "name": "Clochelet malade",
       "rarity": "common",
-      "god_id": "izanami",
+      "god_id": "nerava",
       "description": "Aura de proximité avec haut toujours ouvert ; renforce surtout sa protection basse.",
-      "kind": "creature",
       "body_color": "#9671aa",
       "asset": "res://assets/cards/d/d03_n1.png",
       "effects": [
@@ -1687,7 +1609,7 @@
       "power_text": "Miasme : après les captures, chaque voisine adverse perd 1 force par face tant que l’aura est active.",
       "levels": [
         {
-          "id": "d03_n1",
+          "id": "clochelet_malade_n1",
           "blades": {
             "top": 0,
             "bottom": 0,
@@ -1696,7 +1618,7 @@
           }
         },
         {
-          "id": "d03_n2",
+          "id": "clochelet_malade_n2",
           "blades": {
             "top": 0,
             "bottom": 1,
@@ -1706,7 +1628,7 @@
           "asset": "res://assets/cards/d/d03_n2.png"
         },
         {
-          "id": "d03_n3",
+          "id": "clochelet_malade_n3",
           "blades": {
             "top": 0,
             "bottom": 2,
@@ -1716,7 +1638,7 @@
           "asset": "res://assets/cards/d/d03_n3.png"
         },
         {
-          "id": "d03_n4",
+          "id": "clochelet_malade_n4",
           "blades": {
             "top": 0,
             "bottom": 3,
@@ -1728,13 +1650,11 @@
       ]
     },
     {
-      "id": "d04",
-      "catalogue_ref": "D04",
+      "id": "machoire_moisie",
       "name": "Mâchoire moisie",
       "rarity": "common",
-      "god_id": "izanami",
+      "god_id": "nerava",
       "description": "Deux directions d’échec possibles, haut/gauche ; élargissement tardif vers la droite.",
-      "kind": "creature",
       "body_color": "#9671aa",
       "asset": "res://assets/cards/d/d04_n1.png",
       "effects": [
@@ -1743,7 +1663,7 @@
       "power_text": "Échec corrosif : les adversaires qui résistent à une attaque perdent 2 force par face jusqu’à la fin du prochain coup du lanceur.",
       "levels": [
         {
-          "id": "d04_n1",
+          "id": "machoire_moisie_n1",
           "blades": {
             "top": 1,
             "bottom": 0,
@@ -1752,7 +1672,7 @@
           }
         },
         {
-          "id": "d04_n2",
+          "id": "machoire_moisie_n2",
           "blades": {
             "top": 2,
             "bottom": 0,
@@ -1762,7 +1682,7 @@
           "asset": "res://assets/cards/d/d04_n2.png"
         },
         {
-          "id": "d04_n3",
+          "id": "machoire_moisie_n3",
           "blades": {
             "top": 3,
             "bottom": 0,
@@ -1772,7 +1692,7 @@
           "asset": "res://assets/cards/d/d04_n3.png"
         },
         {
-          "id": "d04_n4",
+          "id": "machoire_moisie_n4",
           "blades": {
             "top": 4,
             "bottom": 0,
@@ -1784,13 +1704,11 @@
       ]
     },
     {
-      "id": "d05",
-      "catalogue_ref": "D05",
+      "id": "veuve_des_spores",
       "name": "Veuve des spores",
       "rarity": "rare",
-      "god_id": "izanami",
+      "god_id": "nerava",
       "description": "Aura sur un corps orienté bas/droite ; faible protection de l’autre angle.",
-      "kind": "creature",
       "body_color": "#9671aa",
       "asset": "res://assets/cards/d/d05_n1.png",
       "effects": [
@@ -1799,7 +1717,7 @@
       "power_text": "Miasme : après les captures, chaque voisine adverse perd 1 force par face tant que l’aura est active.",
       "levels": [
         {
-          "id": "d05_n1",
+          "id": "veuve_des_spores_n1",
           "blades": {
             "top": 0,
             "bottom": 2,
@@ -1808,7 +1726,7 @@
           }
         },
         {
-          "id": "d05_n2",
+          "id": "veuve_des_spores_n2",
           "blades": {
             "top": 0,
             "bottom": 3,
@@ -1818,7 +1736,7 @@
           "asset": "res://assets/cards/d/d05_n2.png"
         },
         {
-          "id": "d05_n3",
+          "id": "veuve_des_spores_n3",
           "blades": {
             "top": 1,
             "bottom": 3,
@@ -1830,13 +1748,11 @@
       ]
     },
     {
-      "id": "d06",
-      "catalogue_ref": "D06",
+      "id": "sonneur_pestifere",
       "name": "Sonneur pestiféré",
       "rarity": "rare",
-      "god_id": "izanami",
+      "god_id": "nerava",
       "description": "Support assez polyvalent, avec faiblesse basse au début.",
-      "kind": "creature",
       "body_color": "#9671aa",
       "asset": "res://assets/cards/d/d06_n1.png",
       "effects": [
@@ -1845,7 +1761,7 @@
       "power_text": "Miasme : après les captures, chaque voisine adverse perd 1 force par face tant que l’aura est active.",
       "levels": [
         {
-          "id": "d06_n1",
+          "id": "sonneur_pestifere_n1",
           "blades": {
             "top": 2,
             "bottom": 0,
@@ -1854,7 +1770,7 @@
           }
         },
         {
-          "id": "d06_n2",
+          "id": "sonneur_pestifere_n2",
           "blades": {
             "top": 2,
             "bottom": 1,
@@ -1864,7 +1780,7 @@
           "asset": "res://assets/cards/d/d06_n2.png"
         },
         {
-          "id": "d06_n3",
+          "id": "sonneur_pestifere_n3",
           "blades": {
             "top": 3,
             "bottom": 1,
@@ -1876,13 +1792,11 @@
       ]
     },
     {
-      "id": "d07",
-      "catalogue_ref": "D07",
+      "id": "griffe_septique",
       "name": "Griffe septique",
       "rarity": "rare",
-      "god_id": "izanami",
+      "god_id": "nerava",
       "description": "Gauche forte, autres attaques secondaires pour contaminer plusieurs cibles résistantes.",
-      "kind": "creature",
       "body_color": "#9671aa",
       "asset": "res://assets/cards/d/d07_n1.png",
       "effects": [
@@ -1891,7 +1805,7 @@
       "power_text": "Échec corrosif : les adversaires qui résistent à une attaque perdent 2 force par face jusqu’à la fin du prochain coup du lanceur.",
       "levels": [
         {
-          "id": "d07_n1",
+          "id": "griffe_septique_n1",
           "blades": {
             "top": 0,
             "bottom": 1,
@@ -1900,7 +1814,7 @@
           }
         },
         {
-          "id": "d07_n2",
+          "id": "griffe_septique_n2",
           "blades": {
             "top": 0,
             "bottom": 1,
@@ -1910,7 +1824,7 @@
           "asset": "res://assets/cards/d/d07_n2.png"
         },
         {
-          "id": "d07_n3",
+          "id": "griffe_septique_n3",
           "blades": {
             "top": 1,
             "bottom": 2,
@@ -1922,13 +1836,11 @@
       ]
     },
     {
-      "id": "d08",
-      "catalogue_ref": "D08",
+      "id": "ronge_chair",
       "name": "Ronge-chair",
       "rarity": "rare",
-      "god_id": "izanami",
+      "god_id": "nerava",
       "description": "Quatre faces modestes ; peut appliquer la corrosion sur plusieurs attaques ratées.",
-      "kind": "creature",
       "body_color": "#9671aa",
       "asset": "res://assets/cards/d/d08_n1.png",
       "effects": [
@@ -1937,7 +1849,7 @@
       "power_text": "Échec corrosif : les adversaires qui résistent à une attaque perdent 2 force par face jusqu’à la fin du prochain coup du lanceur.",
       "levels": [
         {
-          "id": "d08_n1",
+          "id": "ronge_chair_n1",
           "blades": {
             "top": 1,
             "bottom": 1,
@@ -1946,7 +1858,7 @@
           }
         },
         {
-          "id": "d08_n2",
+          "id": "ronge_chair_n2",
           "blades": {
             "top": 2,
             "bottom": 1,
@@ -1956,7 +1868,7 @@
           "asset": "res://assets/cards/d/d08_n2.png"
         },
         {
-          "id": "d08_n3",
+          "id": "ronge_chair_n3",
           "blades": {
             "top": 2,
             "bottom": 2,
@@ -1968,13 +1880,11 @@
       ]
     },
     {
-      "id": "d09",
-      "catalogue_ref": "D09",
+      "id": "le_porte_cercueil",
       "name": "Le Porte-cercueil",
       "rarity": "epic",
-      "god_id": "izanami",
+      "god_id": "nerava",
       "description": "Aura sur une base résistante en bas, avec gauche d’abord ouverte.",
-      "kind": "creature",
       "body_color": "#9671aa",
       "asset": "res://assets/cards/d/d09_n1.png",
       "effects": [
@@ -1983,7 +1893,7 @@
       "power_text": "Miasme : après les captures, chaque voisine adverse perd 1 force par face tant que l’aura est active.",
       "levels": [
         {
-          "id": "d09_n1",
+          "id": "le_porte_cercueil_n1",
           "blades": {
             "top": 1,
             "bottom": 3,
@@ -1992,7 +1902,7 @@
           }
         },
         {
-          "id": "d09_n2",
+          "id": "le_porte_cercueil_n2",
           "blades": {
             "top": 2,
             "bottom": 4,
@@ -2004,13 +1914,11 @@
       ]
     },
     {
-      "id": "d10",
-      "catalogue_ref": "D10",
+      "id": "le_precheur_des_fievres",
       "name": "Le Prêcheur des fièvres",
       "rarity": "epic",
-      "god_id": "izanami",
+      "god_id": "nerava",
       "description": "Haut et gauche offensifs ; corrosion sur les cibles qu’il ne capture pas.",
-      "kind": "creature",
       "body_color": "#9671aa",
       "asset": "res://assets/cards/d/d10_n1.png",
       "effects": [
@@ -2019,7 +1927,7 @@
       "power_text": "Échec corrosif : les adversaires qui résistent à une attaque perdent 2 force par face jusqu’à la fin du prochain coup du lanceur.",
       "levels": [
         {
-          "id": "d10_n1",
+          "id": "le_precheur_des_fievres_n1",
           "blades": {
             "top": 3,
             "bottom": 0,
@@ -2028,7 +1936,7 @@
           }
         },
         {
-          "id": "d10_n2",
+          "id": "le_precheur_des_fievres_n2",
           "blades": {
             "top": 4,
             "bottom": 1,
@@ -2040,13 +1948,11 @@
       ]
     },
     {
-      "id": "d11",
-      "catalogue_ref": "D11",
+      "id": "la_cathedrale_malade",
       "name": "La Cathédrale malade",
       "rarity": "legendary",
-      "god_id": "izanami",
+      "god_id": "nerava",
       "description": "Aura sur un profil à trois faces moyennes et une face faible.",
-      "kind": "creature",
       "body_color": "#9671aa",
       "asset": "res://assets/cards/d/d11_n1.png",
       "effects": [
@@ -2055,7 +1961,7 @@
       "power_text": "Miasme : après les captures, chaque voisine adverse perd 1 force par face tant que l’aura est active.",
       "levels": [
         {
-          "id": "d11_n1",
+          "id": "la_cathedrale_malade_n1",
           "blades": {
             "top": 2,
             "bottom": 3,
@@ -2066,13 +1972,11 @@
       ]
     },
     {
-      "id": "d12",
-      "catalogue_ref": "D12",
+      "id": "le_dernier_souffle",
       "name": "Le Dernier Souffle",
       "rarity": "legendary",
-      "god_id": "izanami",
+      "god_id": "nerava",
       "description": "Gauche maximale, haut fort, bas faible ; attaque ou préparation d’une défense difficile.",
-      "kind": "creature",
       "body_color": "#9671aa",
       "asset": "res://assets/cards/d/d12_n1.png",
       "effects": [
@@ -2081,7 +1985,7 @@
       "power_text": "Échec corrosif : les adversaires qui résistent à une attaque perdent 2 force par face jusqu’à la fin du prochain coup du lanceur.",
       "levels": [
         {
-          "id": "d12_n1",
+          "id": "le_dernier_souffle_n1",
           "blades": {
             "top": 3,
             "bottom": 1,
@@ -2092,21 +1996,18 @@
       ]
     },
     {
-      "id": "r01",
-      "catalogue_ref": "R01",
+      "id": "eclat_cuirasse",
       "name": "Éclat cuirassé",
       "rarity": "common",
-      "god_id": "hachiman",
+      "god_id": "kharun",
       "description": "Flancs défensifs sans attaque ; haut/bas gagnent leurs lames.",
-      "kind": "creature",
       "body_color": "#83a6ad",
       "asset": "res://assets/cards/r/r01_n1.png",
       "effects": [],
       "power_text": "Les boucliers renforcent la défense sans augmenter l’attaque.",
-      "power_cost": 0.5,
       "levels": [
         {
-          "id": "r01_n1",
+          "id": "eclat_cuirasse_n1",
           "blades": {
             "top": 1,
             "bottom": 1,
@@ -2119,7 +2020,7 @@
           }
         },
         {
-          "id": "r01_n2",
+          "id": "eclat_cuirasse_n2",
           "blades": {
             "top": 1,
             "bottom": 1,
@@ -2133,7 +2034,7 @@
           "asset": "res://assets/cards/r/r01_n2.png"
         },
         {
-          "id": "r01_n3",
+          "id": "eclat_cuirasse_n3",
           "blades": {
             "top": 2,
             "bottom": 2,
@@ -2147,7 +2048,7 @@
           "asset": "res://assets/cards/r/r01_n3.png"
         },
         {
-          "id": "r01_n4",
+          "id": "eclat_cuirasse_n4",
           "blades": {
             "top": 2,
             "bottom": 2,
@@ -2163,21 +2064,18 @@
       ]
     },
     {
-      "id": "r02",
-      "catalogue_ref": "R02",
+      "id": "heaume_errant",
       "name": "Heaume errant",
       "rarity": "common",
-      "god_id": "hachiman",
+      "god_id": "kharun",
       "description": "Face haute très défensive, attaque gauche secondaire ; droite toujours vide.",
-      "kind": "creature",
       "body_color": "#83a6ad",
       "asset": "res://assets/cards/r/r02_n1.png",
       "effects": [],
       "power_text": "Les boucliers renforcent la défense sans augmenter l’attaque.",
-      "power_cost": 0.5,
       "levels": [
         {
-          "id": "r02_n1",
+          "id": "heaume_errant_n1",
           "blades": {
             "top": 1,
             "bottom": 0,
@@ -2189,7 +2087,7 @@
           }
         },
         {
-          "id": "r02_n2",
+          "id": "heaume_errant_n2",
           "blades": {
             "top": 2,
             "bottom": 0,
@@ -2202,7 +2100,7 @@
           "asset": "res://assets/cards/r/r02_n2.png"
         },
         {
-          "id": "r02_n3",
+          "id": "heaume_errant_n3",
           "blades": {
             "top": 2,
             "bottom": 0,
@@ -2215,7 +2113,7 @@
           "asset": "res://assets/cards/r/r02_n3.png"
         },
         {
-          "id": "r02_n4",
+          "id": "heaume_errant_n4",
           "blades": {
             "top": 2,
             "bottom": 1,
@@ -2230,21 +2128,18 @@
       ]
     },
     {
-      "id": "r03",
-      "catalogue_ref": "R03",
+      "id": "carapace_vide",
       "name": "Carapace vide",
       "rarity": "common",
-      "god_id": "hachiman",
+      "god_id": "kharun",
       "description": "Défenseur pur : aucune tentative de capture, même au dernier niveau.",
-      "kind": "creature",
       "body_color": "#83a6ad",
       "asset": "res://assets/cards/r/r03_n1.png",
       "effects": [],
       "power_text": "Les boucliers renforcent la défense sans augmenter l’attaque.",
-      "power_cost": 0.5,
       "levels": [
         {
-          "id": "r03_n1",
+          "id": "carapace_vide_n1",
           "blades": {
             "top": 0,
             "bottom": 0,
@@ -2259,7 +2154,7 @@
           }
         },
         {
-          "id": "r03_n2",
+          "id": "carapace_vide_n2",
           "blades": {
             "top": 0,
             "bottom": 0,
@@ -2275,7 +2170,7 @@
           "asset": "res://assets/cards/r/r03_n2.png"
         },
         {
-          "id": "r03_n3",
+          "id": "carapace_vide_n3",
           "blades": {
             "top": 0,
             "bottom": 0,
@@ -2291,7 +2186,7 @@
           "asset": "res://assets/cards/r/r03_n3.png"
         },
         {
-          "id": "r03_n4",
+          "id": "carapace_vide_n4",
           "blades": {
             "top": 0,
             "bottom": 0,
@@ -2309,21 +2204,18 @@
       ]
     },
     {
-      "id": "r04",
-      "catalogue_ref": "R04",
+      "id": "osselet_blinde",
       "name": "Osselet blindé",
       "rarity": "common",
-      "god_id": "hachiman",
+      "god_id": "kharun",
       "description": "Bas protégé et droite offensive ; couverture gauche tardive.",
-      "kind": "creature",
       "body_color": "#83a6ad",
       "asset": "res://assets/cards/r/r04_n1.png",
       "effects": [],
       "power_text": "Les boucliers renforcent la défense sans augmenter l’attaque.",
-      "power_cost": 0.5,
       "levels": [
         {
-          "id": "r04_n1",
+          "id": "osselet_blinde_n1",
           "blades": {
             "top": 0,
             "bottom": 1,
@@ -2335,7 +2227,7 @@
           }
         },
         {
-          "id": "r04_n2",
+          "id": "osselet_blinde_n2",
           "blades": {
             "top": 0,
             "bottom": 2,
@@ -2348,7 +2240,7 @@
           "asset": "res://assets/cards/r/r04_n2.png"
         },
         {
-          "id": "r04_n3",
+          "id": "osselet_blinde_n3",
           "blades": {
             "top": 1,
             "bottom": 2,
@@ -2361,7 +2253,7 @@
           "asset": "res://assets/cards/r/r04_n3.png"
         },
         {
-          "id": "r04_n4",
+          "id": "osselet_blinde_n4",
           "blades": {
             "top": 1,
             "bottom": 2,
@@ -2378,21 +2270,18 @@
       ]
     },
     {
-      "id": "r05",
-      "catalogue_ref": "R05",
+      "id": "chevalier_sans_visage",
       "name": "Chevalier sans visage",
       "rarity": "rare",
-      "god_id": "hachiman",
+      "god_id": "kharun",
       "description": "Haut/gauche attaquent et défendent ; autres côtés plus légers.",
-      "kind": "creature",
       "body_color": "#83a6ad",
       "asset": "res://assets/cards/r/r05_n1.png",
       "effects": [],
       "power_text": "Les boucliers renforcent la défense sans augmenter l’attaque.",
-      "power_cost": 0.5,
       "levels": [
         {
-          "id": "r05_n1",
+          "id": "chevalier_sans_visage_n1",
           "blades": {
             "top": 1,
             "bottom": 0,
@@ -2405,7 +2294,7 @@
           }
         },
         {
-          "id": "r05_n2",
+          "id": "chevalier_sans_visage_n2",
           "blades": {
             "top": 2,
             "bottom": 1,
@@ -2419,7 +2308,7 @@
           "asset": "res://assets/cards/r/r05_n2.png"
         },
         {
-          "id": "r05_n3",
+          "id": "chevalier_sans_visage_n3",
           "blades": {
             "top": 2,
             "bottom": 1,
@@ -2435,21 +2324,18 @@
       ]
     },
     {
-      "id": "r06",
-      "catalogue_ref": "R06",
+      "id": "golem_de_faience",
       "name": "Golem de faïence",
       "rarity": "rare",
-      "god_id": "hachiman",
+      "god_id": "kharun",
       "description": "Défense basse pure et flancs capables de capturer.",
-      "kind": "creature",
       "body_color": "#83a6ad",
       "asset": "res://assets/cards/r/r06_n1.png",
       "effects": [],
       "power_text": "Les boucliers renforcent la défense sans augmenter l’attaque.",
-      "power_cost": 0.5,
       "levels": [
         {
-          "id": "r06_n1",
+          "id": "golem_de_faience_n1",
           "blades": {
             "top": 0,
             "bottom": 0,
@@ -2463,7 +2349,7 @@
           }
         },
         {
-          "id": "r06_n2",
+          "id": "golem_de_faience_n2",
           "blades": {
             "top": 1,
             "bottom": 0,
@@ -2478,7 +2364,7 @@
           "asset": "res://assets/cards/r/r06_n2.png"
         },
         {
-          "id": "r06_n3",
+          "id": "golem_de_faience_n3",
           "blades": {
             "top": 2,
             "bottom": 0,
@@ -2495,21 +2381,18 @@
       ]
     },
     {
-      "id": "r07",
-      "catalogue_ref": "R07",
+      "id": "portail_dos",
       "name": "Portail d’os",
       "rarity": "rare",
-      "god_id": "hachiman",
+      "god_id": "kharun",
       "description": "Axe haut/bas fortifié ; deux faces secondaires modestes.",
-      "kind": "creature",
       "body_color": "#83a6ad",
       "asset": "res://assets/cards/r/r07_n1.png",
       "effects": [],
       "power_text": "Les boucliers renforcent la défense sans augmenter l’attaque.",
-      "power_cost": 0.5,
       "levels": [
         {
-          "id": "r07_n1",
+          "id": "portail_dos_n1",
           "blades": {
             "top": 1,
             "bottom": 1,
@@ -2522,7 +2405,7 @@
           }
         },
         {
-          "id": "r07_n2",
+          "id": "portail_dos_n2",
           "blades": {
             "top": 2,
             "bottom": 2,
@@ -2536,7 +2419,7 @@
           "asset": "res://assets/cards/r/r07_n2.png"
         },
         {
-          "id": "r07_n3",
+          "id": "portail_dos_n3",
           "blades": {
             "top": 2,
             "bottom": 2,
@@ -2552,21 +2435,18 @@
       ]
     },
     {
-      "id": "r08",
-      "catalogue_ref": "R08",
+      "id": "colosse_rivete",
       "name": "Colosse riveté",
       "rarity": "rare",
-      "god_id": "hachiman",
+      "god_id": "kharun",
       "description": "Haut offensif, gauche de protection, droite mixte ; bas faible.",
-      "kind": "creature",
       "body_color": "#83a6ad",
       "asset": "res://assets/cards/r/r08_n1.png",
       "effects": [],
       "power_text": "Les boucliers renforcent la défense sans augmenter l’attaque.",
-      "power_cost": 0.5,
       "levels": [
         {
-          "id": "r08_n1",
+          "id": "colosse_rivete_n1",
           "blades": {
             "top": 0,
             "bottom": 2,
@@ -2579,7 +2459,7 @@
           }
         },
         {
-          "id": "r08_n2",
+          "id": "colosse_rivete_n2",
           "blades": {
             "top": 0,
             "bottom": 3,
@@ -2593,7 +2473,7 @@
           "asset": "res://assets/cards/r/r08_n2.png"
         },
         {
-          "id": "r08_n3",
+          "id": "colosse_rivete_n3",
           "blades": {
             "top": 1,
             "bottom": 4,
@@ -2610,21 +2490,18 @@
       ]
     },
     {
-      "id": "r09",
-      "catalogue_ref": "R09",
+      "id": "le_reliquaire_ambulant",
       "name": "Le Reliquaire ambulant",
       "rarity": "epic",
-      "god_id": "hachiman",
+      "god_id": "kharun",
       "description": "Trois côtés très protecteurs et une droite qui reste accessible.",
-      "kind": "creature",
       "body_color": "#83a6ad",
       "asset": "res://assets/cards/r/r09_n1.png",
       "effects": [],
       "power_text": "Les boucliers renforcent la défense sans augmenter l’attaque.",
-      "power_cost": 0.5,
       "levels": [
         {
-          "id": "r09_n1",
+          "id": "le_reliquaire_ambulant_n1",
           "blades": {
             "top": 1,
             "bottom": 0,
@@ -2638,7 +2515,7 @@
           }
         },
         {
-          "id": "r09_n2",
+          "id": "le_reliquaire_ambulant_n2",
           "blades": {
             "top": 1,
             "bottom": 0,
@@ -2655,21 +2532,18 @@
       ]
     },
     {
-      "id": "r10",
-      "catalogue_ref": "R10",
+      "id": "le_bastion_fendu",
       "name": "Le Bastion fendu",
       "rarity": "epic",
-      "god_id": "hachiman",
+      "god_id": "kharun",
       "description": "Haut/gauche offensifs ; défense droite sans attaque et faiblesse basse.",
-      "kind": "creature",
       "body_color": "#83a6ad",
       "asset": "res://assets/cards/r/r10_n1.png",
       "effects": [],
       "power_text": "Les boucliers renforcent la défense sans augmenter l’attaque.",
-      "power_cost": 0.5,
       "levels": [
         {
-          "id": "r10_n1",
+          "id": "le_bastion_fendu_n1",
           "blades": {
             "top": 3,
             "bottom": 0,
@@ -2682,7 +2556,7 @@
           }
         },
         {
-          "id": "r10_n2",
+          "id": "le_bastion_fendu_n2",
           "blades": {
             "top": 3,
             "bottom": 1,
@@ -2699,21 +2573,18 @@
       ]
     },
     {
-      "id": "r11",
-      "catalogue_ref": "R11",
+      "id": "le_sarcophage_debout",
       "name": "Le Sarcophage debout",
       "rarity": "legendary",
-      "god_id": "hachiman",
+      "god_id": "kharun",
       "description": "Quatre côtés protégés, mais peu d’attaque ; capture possible sur les défenses à trois.",
-      "kind": "creature",
       "body_color": "#83a6ad",
       "asset": "res://assets/cards/r/r11_n1.png",
       "effects": [],
       "power_text": "Les boucliers renforcent la défense sans augmenter l’attaque.",
-      "power_cost": 0.5,
       "levels": [
         {
-          "id": "r11_n1",
+          "id": "le_sarcophage_debout_n1",
           "blades": {
             "top": 2,
             "bottom": 1,
@@ -2730,21 +2601,18 @@
       ]
     },
     {
-      "id": "r12",
-      "catalogue_ref": "R12",
+      "id": "le_gardien_des_decombres",
       "name": "Le Gardien des décombres",
       "rarity": "legendary",
-      "god_id": "hachiman",
+      "god_id": "kharun",
       "description": "Deux faces très solides, gauche secondaire, droite entièrement vulnérable.",
-      "kind": "creature",
       "body_color": "#83a6ad",
       "asset": "res://assets/cards/r/r12_n1.png",
       "effects": [],
       "power_text": "Les boucliers renforcent la défense sans augmenter l’attaque.",
-      "power_cost": 0.5,
       "levels": [
         {
-          "id": "r12_n1",
+          "id": "le_gardien_des_decombres_n1",
           "blades": {
             "top": 2,
             "bottom": 2,
@@ -2760,20 +2628,18 @@
       ]
     },
     {
-      "id": "h01",
-      "catalogue_ref": "H01",
+      "id": "longuepine",
       "name": "Longuépine",
       "rarity": "common",
-      "god_id": "tsukuyomi",
+      "god_id": "ilyr",
       "description": "Ligne droite principale ; les autres faces gagnent des lames de contact.",
-      "kind": "creature",
       "body_color": "#6c93c4",
       "asset": "res://assets/cards/h/h01_n1.png",
       "effects": [],
       "power_text": "Les lames bleues attaquent à distance, traversent les alliées et les ennemies capturées ; une résistance ou une case bloquée arrête le tir.",
       "levels": [
         {
-          "id": "h01_n1",
+          "id": "longuepine_n1",
           "blades": {
             "top": 0,
             "bottom": 0,
@@ -2785,7 +2651,7 @@
           }
         },
         {
-          "id": "h01_n2",
+          "id": "longuepine_n2",
           "blades": {
             "top": 0,
             "bottom": 1,
@@ -2798,7 +2664,7 @@
           "asset": "res://assets/cards/h/h01_n2.png"
         },
         {
-          "id": "h01_n3",
+          "id": "longuepine_n3",
           "blades": {
             "top": 0,
             "bottom": 2,
@@ -2811,7 +2677,7 @@
           "asset": "res://assets/cards/h/h01_n3.png"
         },
         {
-          "id": "h01_n4",
+          "id": "longuepine_n4",
           "blades": {
             "top": 1,
             "bottom": 3,
@@ -2826,20 +2692,18 @@
       ]
     },
     {
-      "id": "h02",
-      "catalogue_ref": "H02",
+      "id": "pique_en_haut",
       "name": "Pique-en-haut",
       "rarity": "common",
-      "god_id": "tsukuyomi",
+      "god_id": "ilyr",
       "description": "Ligne haute principale ; base tournée vers le haut du plateau.",
-      "kind": "creature",
       "body_color": "#6c93c4",
       "asset": "res://assets/cards/h/h02_n1.png",
       "effects": [],
       "power_text": "Les lames bleues attaquent à distance, traversent les alliées et les ennemies capturées ; une résistance ou une case bloquée arrête le tir.",
       "levels": [
         {
-          "id": "h02_n1",
+          "id": "pique_en_haut_n1",
           "blades": {
             "top": 0,
             "bottom": 0,
@@ -2851,7 +2715,7 @@
           }
         },
         {
-          "id": "h02_n2",
+          "id": "pique_en_haut_n2",
           "blades": {
             "top": 0,
             "bottom": 0,
@@ -2864,7 +2728,7 @@
           "asset": "res://assets/cards/h/h02_n2.png"
         },
         {
-          "id": "h02_n3",
+          "id": "pique_en_haut_n3",
           "blades": {
             "top": 0,
             "bottom": 1,
@@ -2877,7 +2741,7 @@
           "asset": "res://assets/cards/h/h02_n3.png"
         },
         {
-          "id": "h02_n4",
+          "id": "pique_en_haut_n4",
           "blades": {
             "top": 0,
             "bottom": 2,
@@ -2892,20 +2756,18 @@
       ]
     },
     {
-      "id": "h03",
-      "catalogue_ref": "H03",
+      "id": "fauche_fond",
       "name": "Fauche-fond",
       "rarity": "common",
-      "god_id": "tsukuyomi",
+      "god_id": "ilyr",
       "description": "Ligne basse principale, appui gauche et faible protection à droite.",
-      "kind": "creature",
       "body_color": "#6c93c4",
       "asset": "res://assets/cards/h/h03_n1.png",
       "effects": [],
       "power_text": "Les lames bleues attaquent à distance, traversent les alliées et les ennemies capturées ; une résistance ou une case bloquée arrête le tir.",
       "levels": [
         {
-          "id": "h03_n1",
+          "id": "fauche_fond_n1",
           "blades": {
             "top": 0,
             "bottom": 0,
@@ -2917,7 +2779,7 @@
           }
         },
         {
-          "id": "h03_n2",
+          "id": "fauche_fond_n2",
           "blades": {
             "top": 1,
             "bottom": 0,
@@ -2930,7 +2792,7 @@
           "asset": "res://assets/cards/h/h03_n2.png"
         },
         {
-          "id": "h03_n3",
+          "id": "fauche_fond_n3",
           "blades": {
             "top": 1,
             "bottom": 0,
@@ -2943,7 +2805,7 @@
           "asset": "res://assets/cards/h/h03_n3.png"
         },
         {
-          "id": "h03_n4",
+          "id": "fauche_fond_n4",
           "blades": {
             "top": 2,
             "bottom": 0,
@@ -2958,20 +2820,18 @@
       ]
     },
     {
-      "id": "h04",
-      "catalogue_ref": "H04",
+      "id": "bouche_arbalete",
       "name": "Bouche-arbalète",
       "rarity": "common",
-      "god_id": "tsukuyomi",
+      "god_id": "ilyr",
       "description": "Ligne gauche principale ; les lames normales couvrent les autres directions.",
-      "kind": "creature",
       "body_color": "#6c93c4",
       "asset": "res://assets/cards/h/h04_n1.png",
       "effects": [],
       "power_text": "Les lames bleues attaquent à distance, traversent les alliées et les ennemies capturées ; une résistance ou une case bloquée arrête le tir.",
       "levels": [
         {
-          "id": "h04_n1",
+          "id": "bouche_arbalete_n1",
           "blades": {
             "top": 0,
             "bottom": 1,
@@ -2983,7 +2843,7 @@
           }
         },
         {
-          "id": "h04_n2",
+          "id": "bouche_arbalete_n2",
           "blades": {
             "top": 1,
             "bottom": 1,
@@ -2996,7 +2856,7 @@
           "asset": "res://assets/cards/h/h04_n2.png"
         },
         {
-          "id": "h04_n3",
+          "id": "bouche_arbalete_n3",
           "blades": {
             "top": 2,
             "bottom": 1,
@@ -3009,7 +2869,7 @@
           "asset": "res://assets/cards/h/h04_n3.png"
         },
         {
-          "id": "h04_n4",
+          "id": "bouche_arbalete_n4",
           "blades": {
             "top": 3,
             "bottom": 2,
@@ -3024,20 +2884,18 @@
       ]
     },
     {
-      "id": "h05",
-      "catalogue_ref": "H05",
+      "id": "echassier_des_brumes",
       "name": "Échassier des brumes",
       "rarity": "rare",
-      "god_id": "tsukuyomi",
+      "god_id": "ilyr",
       "description": "Droite mixte : plus fort au contact qu’à distance.",
-      "kind": "creature",
       "body_color": "#6c93c4",
       "asset": "res://assets/cards/h/h05_n1.png",
       "effects": [],
       "power_text": "Les lames bleues attaquent à distance, traversent les alliées et les ennemies capturées ; une résistance ou une case bloquée arrête le tir.",
       "levels": [
         {
-          "id": "h05_n1",
+          "id": "echassier_des_brumes_n1",
           "blades": {
             "top": 0,
             "bottom": 1,
@@ -3049,7 +2907,7 @@
           }
         },
         {
-          "id": "h05_n2",
+          "id": "echassier_des_brumes_n2",
           "blades": {
             "top": 0,
             "bottom": 2,
@@ -3062,7 +2920,7 @@
           "asset": "res://assets/cards/h/h05_n2.png"
         },
         {
-          "id": "h05_n3",
+          "id": "echassier_des_brumes_n3",
           "blades": {
             "top": 1,
             "bottom": 3,
@@ -3077,20 +2935,18 @@
       ]
     },
     {
-      "id": "h06",
-      "catalogue_ref": "H06",
+      "id": "veilleur_bifurque",
       "name": "Veilleur bifurqué",
       "rarity": "rare",
-      "god_id": "tsukuyomi",
+      "god_id": "ilyr",
       "description": "Deux directions de tir opposées, avec priorité gauche.",
-      "kind": "creature",
       "body_color": "#6c93c4",
       "asset": "res://assets/cards/h/h06_n1.png",
       "effects": [],
       "power_text": "Les lames bleues attaquent à distance, traversent les alliées et les ennemies capturées ; une résistance ou une case bloquée arrête le tir.",
       "levels": [
         {
-          "id": "h06_n1",
+          "id": "veilleur_bifurque_n1",
           "blades": {
             "top": 0,
             "bottom": 0,
@@ -3103,7 +2959,7 @@
           }
         },
         {
-          "id": "h06_n2",
+          "id": "veilleur_bifurque_n2",
           "blades": {
             "top": 1,
             "bottom": 0,
@@ -3117,7 +2973,7 @@
           "asset": "res://assets/cards/h/h06_n2.png"
         },
         {
-          "id": "h06_n3",
+          "id": "veilleur_bifurque_n3",
           "blades": {
             "top": 2,
             "bottom": 1,
@@ -3133,20 +2989,18 @@
       ]
     },
     {
-      "id": "h07",
-      "catalogue_ref": "H07",
+      "id": "perce_voute",
       "name": "Perce-voûte",
       "rarity": "rare",
-      "god_id": "tsukuyomi",
+      "god_id": "ilyr",
       "description": "Haut longue portée et protection basse de contact.",
-      "kind": "creature",
       "body_color": "#6c93c4",
       "asset": "res://assets/cards/h/h07_n1.png",
       "effects": [],
       "power_text": "Les lames bleues attaquent à distance, traversent les alliées et les ennemies capturées ; une résistance ou une case bloquée arrête le tir.",
       "levels": [
         {
-          "id": "h07_n1",
+          "id": "perce_voute_n1",
           "blades": {
             "top": 0,
             "bottom": 1,
@@ -3158,7 +3012,7 @@
           }
         },
         {
-          "id": "h07_n2",
+          "id": "perce_voute_n2",
           "blades": {
             "top": 0,
             "bottom": 2,
@@ -3171,7 +3025,7 @@
           "asset": "res://assets/cards/h/h07_n2.png"
         },
         {
-          "id": "h07_n3",
+          "id": "perce_voute_n3",
           "blades": {
             "top": 0,
             "bottom": 3,
@@ -3186,20 +3040,18 @@
       ]
     },
     {
-      "id": "h08",
-      "catalogue_ref": "H08",
+      "id": "dard_de_traverse",
       "name": "Dard de traverse",
       "rarity": "rare",
-      "god_id": "tsukuyomi",
+      "god_id": "ilyr",
       "description": "Gauche longue portée, puis mélange normal/long au dernier niveau.",
-      "kind": "creature",
       "body_color": "#6c93c4",
       "asset": "res://assets/cards/h/h08_n1.png",
       "effects": [],
       "power_text": "Les lames bleues attaquent à distance, traversent les alliées et les ennemies capturées ; une résistance ou une case bloquée arrête le tir.",
       "levels": [
         {
-          "id": "h08_n1",
+          "id": "dard_de_traverse_n1",
           "blades": {
             "top": 1,
             "bottom": 0,
@@ -3211,7 +3063,7 @@
           }
         },
         {
-          "id": "h08_n2",
+          "id": "dard_de_traverse_n2",
           "blades": {
             "top": 2,
             "bottom": 1,
@@ -3224,7 +3076,7 @@
           "asset": "res://assets/cards/h/h08_n2.png"
         },
         {
-          "id": "h08_n3",
+          "id": "dard_de_traverse_n3",
           "blades": {
             "top": 3,
             "bottom": 2,
@@ -3239,20 +3091,18 @@
       ]
     },
     {
-      "id": "h09",
-      "catalogue_ref": "H09",
+      "id": "lil_empale",
       "name": "L’Œil empalé",
       "rarity": "epic",
-      "god_id": "tsukuyomi",
+      "god_id": "ilyr",
       "description": "Deux lignes de tir perpendiculaires haut/droite ; angle bas/gauche faible.",
-      "kind": "creature",
       "body_color": "#6c93c4",
       "asset": "res://assets/cards/h/h09_n1.png",
       "effects": [],
       "power_text": "Les lames bleues attaquent à distance, traversent les alliées et les ennemies capturées ; une résistance ou une case bloquée arrête le tir.",
       "levels": [
         {
-          "id": "h09_n1",
+          "id": "lil_empale_n1",
           "blades": {
             "top": 0,
             "bottom": 0,
@@ -3265,7 +3115,7 @@
           }
         },
         {
-          "id": "h09_n2",
+          "id": "lil_empale_n2",
           "blades": {
             "top": 0,
             "bottom": 1,
@@ -3281,20 +3131,18 @@
       ]
     },
     {
-      "id": "h10",
-      "catalogue_ref": "H10",
+      "id": "le_guetteur_trifide",
       "name": "Le Guetteur trifide",
       "rarity": "epic",
-      "god_id": "tsukuyomi",
+      "god_id": "ilyr",
       "description": "Trois lignes de tir ; la face basse reste une attaque de contact.",
-      "kind": "creature",
       "body_color": "#6c93c4",
       "asset": "res://assets/cards/h/h10_n1.png",
       "effects": [],
       "power_text": "Les lames bleues attaquent à distance, traversent les alliées et les ennemies capturées ; une résistance ou une case bloquée arrête le tir.",
       "levels": [
         {
-          "id": "h10_n1",
+          "id": "le_guetteur_trifide_n1",
           "blades": {
             "top": 0,
             "bottom": 1,
@@ -3308,7 +3156,7 @@
           }
         },
         {
-          "id": "h10_n2",
+          "id": "le_guetteur_trifide_n2",
           "blades": {
             "top": 0,
             "bottom": 2,
@@ -3325,20 +3173,18 @@
       ]
     },
     {
-      "id": "h11",
-      "catalogue_ref": "H11",
+      "id": "le_traverse_nuit",
       "name": "Le Traverse-nuit",
       "rarity": "legendary",
-      "god_id": "tsukuyomi",
+      "god_id": "ilyr",
       "description": "Haut maximal et gauche longue portée ; bas ouvert, droite de contact.",
-      "kind": "creature",
       "body_color": "#6c93c4",
       "asset": "res://assets/cards/h/h11_n1.png",
       "effects": [],
       "power_text": "Les lames bleues attaquent à distance, traversent les alliées et les ennemies capturées ; une résistance ou une case bloquée arrête le tir.",
       "levels": [
         {
-          "id": "h11_n1",
+          "id": "le_traverse_nuit_n1",
           "blades": {
             "top": 0,
             "bottom": 0,
@@ -3353,20 +3199,18 @@
       ]
     },
     {
-      "id": "h12",
-      "catalogue_ref": "H12",
+      "id": "la_croisee_des_regards",
       "name": "La Croisée des regards",
       "rarity": "legendary",
-      "god_id": "tsukuyomi",
+      "god_id": "ilyr",
       "description": "Tirs dans les quatre directions, mais aucune face à quatre lames longues.",
-      "kind": "creature",
       "body_color": "#6c93c4",
       "asset": "res://assets/cards/h/h12_n1.png",
       "effects": [],
       "power_text": "Les lames bleues attaquent à distance, traversent les alliées et les ennemies capturées ; une résistance ou une case bloquée arrête le tir.",
       "levels": [
         {
-          "id": "h12_n1",
+          "id": "la_croisee_des_regards_n1",
           "blades": {
             "top": 0,
             "bottom": 0,
@@ -3383,23 +3227,20 @@
       ]
     },
     {
-      "id": "e01",
-      "catalogue_ref": "E01",
+      "id": "nud_vivant",
       "name": "Nœud vivant",
       "rarity": "common",
-      "god_id": "okuninushi",
+      "god_id": "sylkha",
       "description": "Petit membre de liaison, avec beaucoup de place pour recevoir l’aura.",
-      "kind": "creature",
       "body_color": "#7d9f53",
       "asset": "res://assets/cards/e/e01_n1.png",
       "effects": [
         "swarm"
       ],
       "power_text": "Essaim : +2 lames d’aura par autre membre connecté, jusqu’à +4 par carte et dans la place disponible.",
-      "power_cost": 0.5,
       "levels": [
         {
-          "id": "e01_n1",
+          "id": "nud_vivant_n1",
           "blades": {
             "top": 1,
             "bottom": 0,
@@ -3408,7 +3249,7 @@
           }
         },
         {
-          "id": "e01_n2",
+          "id": "nud_vivant_n2",
           "blades": {
             "top": 1,
             "bottom": 1,
@@ -3418,7 +3259,7 @@
           "asset": "res://assets/cards/e/e01_n2.png"
         },
         {
-          "id": "e01_n3",
+          "id": "nud_vivant_n3",
           "blades": {
             "top": 2,
             "bottom": 1,
@@ -3428,7 +3269,7 @@
           "asset": "res://assets/cards/e/e01_n3.png"
         },
         {
-          "id": "e01_n4",
+          "id": "nud_vivant_n4",
           "blades": {
             "top": 2,
             "bottom": 2,
@@ -3440,23 +3281,20 @@
       ]
     },
     {
-      "id": "e02",
-      "catalogue_ref": "E02",
+      "id": "larve_dancrage",
       "name": "Larve d’ancrage",
       "rarity": "common",
-      "god_id": "okuninushi",
+      "god_id": "sylkha",
       "description": "Bas fort, autres faces ouvertes aux renforts du groupe.",
-      "kind": "creature",
       "body_color": "#7d9f53",
       "asset": "res://assets/cards/e/e02_n1.png",
       "effects": [
         "swarm"
       ],
       "power_text": "Essaim : +2 lames d’aura par autre membre connecté, jusqu’à +4 par carte et dans la place disponible.",
-      "power_cost": 0.5,
       "levels": [
         {
-          "id": "e02_n1",
+          "id": "larve_dancrage_n1",
           "blades": {
             "top": 0,
             "bottom": 1,
@@ -3465,7 +3303,7 @@
           }
         },
         {
-          "id": "e02_n2",
+          "id": "larve_dancrage_n2",
           "blades": {
             "top": 0,
             "bottom": 2,
@@ -3475,7 +3313,7 @@
           "asset": "res://assets/cards/e/e02_n2.png"
         },
         {
-          "id": "e02_n3",
+          "id": "larve_dancrage_n3",
           "blades": {
             "top": 0,
             "bottom": 3,
@@ -3485,7 +3323,7 @@
           "asset": "res://assets/cards/e/e02_n3.png"
         },
         {
-          "id": "e02_n4",
+          "id": "larve_dancrage_n4",
           "blades": {
             "top": 1,
             "bottom": 4,
@@ -3497,23 +3335,20 @@
       ]
     },
     {
-      "id": "e03",
-      "catalogue_ref": "E03",
+      "id": "tisse_griffe",
       "name": "Tisse-griffe",
       "rarity": "common",
-      "god_id": "okuninushi",
+      "god_id": "sylkha",
       "description": "Flancs d’abord actifs, puis priorité gauche ; bonne réserve de croissance.",
-      "kind": "creature",
       "body_color": "#7d9f53",
       "asset": "res://assets/cards/e/e03_n1.png",
       "effects": [
         "swarm"
       ],
       "power_text": "Essaim : +2 lames d’aura par autre membre connecté, jusqu’à +4 par carte et dans la place disponible.",
-      "power_cost": 0.5,
       "levels": [
         {
-          "id": "e03_n1",
+          "id": "tisse_griffe_n1",
           "blades": {
             "top": 0,
             "bottom": 0,
@@ -3522,7 +3357,7 @@
           }
         },
         {
-          "id": "e03_n2",
+          "id": "tisse_griffe_n2",
           "blades": {
             "top": 0,
             "bottom": 0,
@@ -3532,7 +3367,7 @@
           "asset": "res://assets/cards/e/e03_n2.png"
         },
         {
-          "id": "e03_n3",
+          "id": "tisse_griffe_n3",
           "blades": {
             "top": 1,
             "bottom": 0,
@@ -3542,7 +3377,7 @@
           "asset": "res://assets/cards/e/e03_n3.png"
         },
         {
-          "id": "e03_n4",
+          "id": "tisse_griffe_n4",
           "blades": {
             "top": 1,
             "bottom": 1,
@@ -3554,23 +3389,20 @@
       ]
     },
     {
-      "id": "e04",
-      "catalogue_ref": "E04",
+      "id": "bourgeon_mordant",
       "name": "Bourgeon mordant",
       "rarity": "common",
-      "god_id": "okuninushi",
+      "god_id": "sylkha",
       "description": "Haut/gauche offensifs, droite laissée aux lames d’aura.",
-      "kind": "creature",
       "body_color": "#7d9f53",
       "asset": "res://assets/cards/e/e04_n1.png",
       "effects": [
         "swarm"
       ],
       "power_text": "Essaim : +2 lames d’aura par autre membre connecté, jusqu’à +4 par carte et dans la place disponible.",
-      "power_cost": 0.5,
       "levels": [
         {
-          "id": "e04_n1",
+          "id": "bourgeon_mordant_n1",
           "blades": {
             "top": 1,
             "bottom": 0,
@@ -3579,7 +3411,7 @@
           }
         },
         {
-          "id": "e04_n2",
+          "id": "bourgeon_mordant_n2",
           "blades": {
             "top": 2,
             "bottom": 0,
@@ -3589,7 +3421,7 @@
           "asset": "res://assets/cards/e/e04_n2.png"
         },
         {
-          "id": "e04_n3",
+          "id": "bourgeon_mordant_n3",
           "blades": {
             "top": 3,
             "bottom": 0,
@@ -3599,7 +3431,7 @@
           "asset": "res://assets/cards/e/e04_n3.png"
         },
         {
-          "id": "e04_n4",
+          "id": "bourgeon_mordant_n4",
           "blades": {
             "top": 4,
             "bottom": 1,
@@ -3611,23 +3443,20 @@
       ]
     },
     {
-      "id": "e05",
-      "catalogue_ref": "E05",
+      "id": "mante_des_racines",
       "name": "Mante des racines",
       "rarity": "rare",
-      "god_id": "okuninushi",
+      "god_id": "sylkha",
       "description": "Deux faces haut/gauche très fortes ; six emplacements encore libres au maximum.",
-      "kind": "creature",
       "body_color": "#7d9f53",
       "asset": "res://assets/cards/e/e05_n1.png",
       "effects": [
         "swarm"
       ],
       "power_text": "Essaim : +2 lames d’aura par autre membre connecté, jusqu’à +4 par carte et dans la place disponible.",
-      "power_cost": 0.5,
       "levels": [
         {
-          "id": "e05_n1",
+          "id": "mante_des_racines_n1",
           "blades": {
             "top": 2,
             "bottom": 0,
@@ -3636,7 +3465,7 @@
           }
         },
         {
-          "id": "e05_n2",
+          "id": "mante_des_racines_n2",
           "blades": {
             "top": 3,
             "bottom": 0,
@@ -3646,7 +3475,7 @@
           "asset": "res://assets/cards/e/e05_n2.png"
         },
         {
-          "id": "e05_n3",
+          "id": "mante_des_racines_n3",
           "blades": {
             "top": 4,
             "bottom": 1,
@@ -3658,23 +3487,20 @@
       ]
     },
     {
-      "id": "e06",
-      "catalogue_ref": "E06",
+      "id": "porte_nid",
       "name": "Porte-nid",
       "rarity": "rare",
-      "god_id": "okuninushi",
+      "god_id": "sylkha",
       "description": "Membre polyvalent et assez symétrique, apte à recevoir l’aura sur toutes ses faces.",
-      "kind": "creature",
       "body_color": "#7d9f53",
       "asset": "res://assets/cards/e/e06_n1.png",
       "effects": [
         "swarm"
       ],
       "power_text": "Essaim : +2 lames d’aura par autre membre connecté, jusqu’à +4 par carte et dans la place disponible.",
-      "power_cost": 0.5,
       "levels": [
         {
-          "id": "e06_n1",
+          "id": "porte_nid_n1",
           "blades": {
             "top": 1,
             "bottom": 1,
@@ -3683,7 +3509,7 @@
           }
         },
         {
-          "id": "e06_n2",
+          "id": "porte_nid_n2",
           "blades": {
             "top": 2,
             "bottom": 1,
@@ -3693,7 +3519,7 @@
           "asset": "res://assets/cards/e/e06_n2.png"
         },
         {
-          "id": "e06_n3",
+          "id": "porte_nid_n3",
           "blades": {
             "top": 2,
             "bottom": 2,
@@ -3705,23 +3531,20 @@
       ]
     },
     {
-      "id": "e07",
-      "catalogue_ref": "E07",
+      "id": "fourmilion_des_nerfs",
       "name": "Fourmilion des nerfs",
       "rarity": "rare",
-      "god_id": "okuninushi",
+      "god_id": "sylkha",
       "description": "Bas/droite forts ; haut d’abord ouvert pour les renforts.",
-      "kind": "creature",
       "body_color": "#7d9f53",
       "asset": "res://assets/cards/e/e07_n1.png",
       "effects": [
         "swarm"
       ],
       "power_text": "Essaim : +2 lames d’aura par autre membre connecté, jusqu’à +4 par carte et dans la place disponible.",
-      "power_cost": 0.5,
       "levels": [
         {
-          "id": "e07_n1",
+          "id": "fourmilion_des_nerfs_n1",
           "blades": {
             "top": 0,
             "bottom": 2,
@@ -3730,7 +3553,7 @@
           }
         },
         {
-          "id": "e07_n2",
+          "id": "fourmilion_des_nerfs_n2",
           "blades": {
             "top": 0,
             "bottom": 3,
@@ -3740,7 +3563,7 @@
           "asset": "res://assets/cards/e/e07_n2.png"
         },
         {
-          "id": "e07_n3",
+          "id": "fourmilion_des_nerfs_n3",
           "blades": {
             "top": 1,
             "bottom": 4,
@@ -3752,23 +3575,20 @@
       ]
     },
     {
-      "id": "e08",
-      "catalogue_ref": "E08",
+      "id": "ronce_rampante",
       "name": "Ronce rampante",
       "rarity": "rare",
-      "god_id": "okuninushi",
+      "god_id": "sylkha",
       "description": "Haut/bas orientés, gauche faiblement développée.",
-      "kind": "creature",
       "body_color": "#7d9f53",
       "asset": "res://assets/cards/e/e08_n1.png",
       "effects": [
         "swarm"
       ],
       "power_text": "Essaim : +2 lames d’aura par autre membre connecté, jusqu’à +4 par carte et dans la place disponible.",
-      "power_cost": 0.5,
       "levels": [
         {
-          "id": "e08_n1",
+          "id": "ronce_rampante_n1",
           "blades": {
             "top": 2,
             "bottom": 1,
@@ -3777,7 +3597,7 @@
           }
         },
         {
-          "id": "e08_n2",
+          "id": "ronce_rampante_n2",
           "blades": {
             "top": 3,
             "bottom": 2,
@@ -3787,7 +3607,7 @@
           "asset": "res://assets/cards/e/e08_n2.png"
         },
         {
-          "id": "e08_n3",
+          "id": "ronce_rampante_n3",
           "blades": {
             "top": 4,
             "bottom": 3,
@@ -3799,23 +3619,20 @@
       ]
     },
     {
-      "id": "e09",
-      "catalogue_ref": "E09",
+      "id": "la_nourrice_nouee",
       "name": "La Nourrice nouée",
       "rarity": "epic",
-      "god_id": "okuninushi",
+      "god_id": "sylkha",
       "description": "Trois faces de base solides ; réserve à gauche pour la pousse.",
-      "kind": "creature",
       "body_color": "#7d9f53",
       "asset": "res://assets/cards/e/e09_n1.png",
       "effects": [
         "swarm"
       ],
       "power_text": "Essaim : +2 lames d’aura par autre membre connecté, jusqu’à +4 par carte et dans la place disponible.",
-      "power_cost": 0.5,
       "levels": [
         {
-          "id": "e09_n1",
+          "id": "la_nourrice_nouee_n1",
           "blades": {
             "top": 2,
             "bottom": 2,
@@ -3824,7 +3641,7 @@
           }
         },
         {
-          "id": "e09_n2",
+          "id": "la_nourrice_nouee_n2",
           "blades": {
             "top": 3,
             "bottom": 3,
@@ -3836,23 +3653,20 @@
       ]
     },
     {
-      "id": "e10",
-      "catalogue_ref": "E10",
+      "id": "le_tisseur_de_meutes",
       "name": "Le Tisseur de meutes",
       "rarity": "epic",
-      "god_id": "okuninushi",
+      "god_id": "sylkha",
       "description": "Bas/gauche offensifs ; haut et droite reçoivent facilement l’aura.",
-      "kind": "creature",
       "body_color": "#7d9f53",
       "asset": "res://assets/cards/e/e10_n1.png",
       "effects": [
         "swarm"
       ],
       "power_text": "Essaim : +2 lames d’aura par autre membre connecté, jusqu’à +4 par carte et dans la place disponible.",
-      "power_cost": 0.5,
       "levels": [
         {
-          "id": "e10_n1",
+          "id": "le_tisseur_de_meutes_n1",
           "blades": {
             "top": 1,
             "bottom": 3,
@@ -3861,7 +3675,7 @@
           }
         },
         {
-          "id": "e10_n2",
+          "id": "le_tisseur_de_meutes_n2",
           "blades": {
             "top": 2,
             "bottom": 4,
@@ -3873,23 +3687,20 @@
       ]
     },
     {
-      "id": "e11",
-      "catalogue_ref": "E11",
+      "id": "le_cur_de_la_colonie",
       "name": "Le Cœur de la colonie",
       "rarity": "legendary",
-      "god_id": "okuninushi",
+      "god_id": "sylkha",
       "description": "Quatre faces actives et six places libres avant l’aura.",
-      "kind": "creature",
       "body_color": "#7d9f53",
       "asset": "res://assets/cards/e/e11_n1.png",
       "effects": [
         "swarm"
       ],
       "power_text": "Essaim : +2 lames d’aura par autre membre connecté, jusqu’à +4 par carte et dans la place disponible.",
-      "power_cost": 0.5,
       "levels": [
         {
-          "id": "e11_n1",
+          "id": "le_cur_de_la_colonie_n1",
           "blades": {
             "top": 2,
             "bottom": 3,
@@ -3900,23 +3711,20 @@
       ]
     },
     {
-      "id": "e12",
-      "catalogue_ref": "E12",
+      "id": "la_mante_cathedrale",
       "name": "La Mante-cathédrale",
       "rarity": "legendary",
-      "god_id": "okuninushi",
+      "god_id": "sylkha",
       "description": "Haut/gauche maximaux ; bas très vulnérable avant les renforts.",
-      "kind": "creature",
       "body_color": "#7d9f53",
       "asset": "res://assets/cards/e/e12_n1.png",
       "effects": [
         "swarm"
       ],
       "power_text": "Essaim : +2 lames d’aura par autre membre connecté, jusqu’à +4 par carte et dans la place disponible.",
-      "power_cost": 0.5,
       "levels": [
         {
-          "id": "e12_n1",
+          "id": "la_mante_cathedrale_n1",
           "blades": {
             "top": 4,
             "bottom": 0,
@@ -3927,23 +3735,20 @@
       ]
     },
     {
-      "id": "p01",
-      "catalogue_ref": "P01",
+      "id": "collecteur_de_dents",
       "name": "Collecteur de dents",
       "rarity": "common",
-      "god_id": "susanoo",
+      "god_id": "enigma",
       "description": "Haut offensif et autres faces disponibles pour les boucliers volés.",
-      "kind": "creature",
       "body_color": "#bf8b58",
       "asset": "res://assets/cards/p/p01_n1.png",
       "effects": [
         "shield_theft"
       ],
       "power_text": "Pillage : les symboles actifs de la face vaincue deviennent des boucliers répartis sur les autres faces, selon la place restante.",
-      "power_cost": 1,
       "levels": [
         {
-          "id": "p01_n1",
+          "id": "collecteur_de_dents_n1",
           "blades": {
             "top": 2,
             "bottom": 0,
@@ -3952,7 +3757,7 @@
           }
         },
         {
-          "id": "p01_n2",
+          "id": "collecteur_de_dents_n2",
           "blades": {
             "top": 3,
             "bottom": 0,
@@ -3962,7 +3767,7 @@
           "asset": "res://assets/cards/p/p01_n2.png"
         },
         {
-          "id": "p01_n3",
+          "id": "collecteur_de_dents_n3",
           "blades": {
             "top": 4,
             "bottom": 0,
@@ -3972,7 +3777,7 @@
           "asset": "res://assets/cards/p/p01_n3.png"
         },
         {
-          "id": "p01_n4",
+          "id": "collecteur_de_dents_n4",
           "blades": {
             "top": 4,
             "bottom": 1,
@@ -3984,23 +3789,20 @@
       ]
     },
     {
-      "id": "p02",
-      "catalogue_ref": "P02",
+      "id": "scie_boiteuse",
       "name": "Scie boiteuse",
       "rarity": "common",
-      "god_id": "susanoo",
+      "god_id": "enigma",
       "description": "Droite offensive ; gauche vide pour accueillir les défenses acquises.",
-      "kind": "creature",
       "body_color": "#bf8b58",
       "asset": "res://assets/cards/p/p02_n1.png",
       "effects": [
         "shield_theft"
       ],
       "power_text": "Pillage : les symboles actifs de la face vaincue deviennent des boucliers répartis sur les autres faces, selon la place restante.",
-      "power_cost": 1,
       "levels": [
         {
-          "id": "p02_n1",
+          "id": "scie_boiteuse_n1",
           "blades": {
             "top": 0,
             "bottom": 0,
@@ -4009,7 +3811,7 @@
           }
         },
         {
-          "id": "p02_n2",
+          "id": "scie_boiteuse_n2",
           "blades": {
             "top": 0,
             "bottom": 0,
@@ -4019,7 +3821,7 @@
           "asset": "res://assets/cards/p/p02_n2.png"
         },
         {
-          "id": "p02_n3",
+          "id": "scie_boiteuse_n3",
           "blades": {
             "top": 0,
             "bottom": 1,
@@ -4029,7 +3831,7 @@
           "asset": "res://assets/cards/p/p02_n3.png"
         },
         {
-          "id": "p02_n4",
+          "id": "scie_boiteuse_n4",
           "blades": {
             "top": 1,
             "bottom": 2,
@@ -4041,23 +3843,20 @@
       ]
     },
     {
-      "id": "p03",
-      "catalogue_ref": "P03",
+      "id": "pince_carcasse",
       "name": "Pince-carcasse",
       "rarity": "common",
-      "god_id": "susanoo",
+      "god_id": "enigma",
       "description": "Bas/gauche de contact ; renforce progressivement ses côtés faibles par capture.",
-      "kind": "creature",
       "body_color": "#bf8b58",
       "asset": "res://assets/cards/p/p03_n1.png",
       "effects": [
         "shield_theft"
       ],
       "power_text": "Pillage : les symboles actifs de la face vaincue deviennent des boucliers répartis sur les autres faces, selon la place restante.",
-      "power_cost": 1,
       "levels": [
         {
-          "id": "p03_n1",
+          "id": "pince_carcasse_n1",
           "blades": {
             "top": 0,
             "bottom": 1,
@@ -4066,7 +3865,7 @@
           }
         },
         {
-          "id": "p03_n2",
+          "id": "pince_carcasse_n2",
           "blades": {
             "top": 0,
             "bottom": 2,
@@ -4076,7 +3875,7 @@
           "asset": "res://assets/cards/p/p03_n2.png"
         },
         {
-          "id": "p03_n3",
+          "id": "pince_carcasse_n3",
           "blades": {
             "top": 0,
             "bottom": 3,
@@ -4086,7 +3885,7 @@
           "asset": "res://assets/cards/p/p03_n3.png"
         },
         {
-          "id": "p03_n4",
+          "id": "pince_carcasse_n4",
           "blades": {
             "top": 1,
             "bottom": 4,
@@ -4098,23 +3897,20 @@
       ]
     },
     {
-      "id": "p04",
-      "catalogue_ref": "P04",
+      "id": "depeceur_rampant",
       "name": "Dépeceur rampant",
       "rarity": "common",
-      "god_id": "susanoo",
+      "god_id": "enigma",
       "description": "Haut/gauche puissants, droite toujours ouverte aux boucliers gagnés.",
-      "kind": "creature",
       "body_color": "#bf8b58",
       "asset": "res://assets/cards/p/p04_n1.png",
       "effects": [
         "shield_theft"
       ],
       "power_text": "Pillage : les symboles actifs de la face vaincue deviennent des boucliers répartis sur les autres faces, selon la place restante.",
-      "power_cost": 1,
       "levels": [
         {
-          "id": "p04_n1",
+          "id": "depeceur_rampant_n1",
           "blades": {
             "top": 1,
             "bottom": 0,
@@ -4123,7 +3919,7 @@
           }
         },
         {
-          "id": "p04_n2",
+          "id": "depeceur_rampant_n2",
           "blades": {
             "top": 2,
             "bottom": 0,
@@ -4133,7 +3929,7 @@
           "asset": "res://assets/cards/p/p04_n2.png"
         },
         {
-          "id": "p04_n3",
+          "id": "depeceur_rampant_n3",
           "blades": {
             "top": 3,
             "bottom": 1,
@@ -4143,7 +3939,7 @@
           "asset": "res://assets/cards/p/p04_n3.png"
         },
         {
-          "id": "p04_n4",
+          "id": "depeceur_rampant_n4",
           "blades": {
             "top": 4,
             "bottom": 1,
@@ -4155,23 +3951,20 @@
       ]
     },
     {
-      "id": "p05",
-      "catalogue_ref": "P05",
+      "id": "recycleur_thoracique",
       "name": "Recycleur thoracique",
       "rarity": "rare",
-      "god_id": "susanoo",
+      "god_id": "enigma",
       "description": "Haut/gauche forts ; bas et droite réservent les logements de protection.",
-      "kind": "creature",
       "body_color": "#bf8b58",
       "asset": "res://assets/cards/p/p05_n1.png",
       "effects": [
         "shield_theft"
       ],
       "power_text": "Pillage : les symboles actifs de la face vaincue deviennent des boucliers répartis sur les autres faces, selon la place restante.",
-      "power_cost": 1,
       "levels": [
         {
-          "id": "p05_n1",
+          "id": "recycleur_thoracique_n1",
           "blades": {
             "top": 2,
             "bottom": 0,
@@ -4180,7 +3973,7 @@
           }
         },
         {
-          "id": "p05_n2",
+          "id": "recycleur_thoracique_n2",
           "blades": {
             "top": 3,
             "bottom": 0,
@@ -4190,7 +3983,7 @@
           "asset": "res://assets/cards/p/p05_n2.png"
         },
         {
-          "id": "p05_n3",
+          "id": "recycleur_thoracique_n3",
           "blades": {
             "top": 4,
             "bottom": 0,
@@ -4202,23 +3995,20 @@
       ]
     },
     {
-      "id": "p06",
-      "catalogue_ref": "P06",
+      "id": "preleveur_de_plaques",
       "name": "Préleveur de plaques",
       "rarity": "rare",
-      "god_id": "susanoo",
+      "god_id": "enigma",
       "description": "Bas/droite offensifs ; haut/gauche de soutien.",
-      "kind": "creature",
       "body_color": "#bf8b58",
       "asset": "res://assets/cards/p/p06_n1.png",
       "effects": [
         "shield_theft"
       ],
       "power_text": "Pillage : les symboles actifs de la face vaincue deviennent des boucliers répartis sur les autres faces, selon la place restante.",
-      "power_cost": 1,
       "levels": [
         {
-          "id": "p06_n1",
+          "id": "preleveur_de_plaques_n1",
           "blades": {
             "top": 1,
             "bottom": 2,
@@ -4227,7 +4017,7 @@
           }
         },
         {
-          "id": "p06_n2",
+          "id": "preleveur_de_plaques_n2",
           "blades": {
             "top": 1,
             "bottom": 3,
@@ -4237,7 +4027,7 @@
           "asset": "res://assets/cards/p/p06_n2.png"
         },
         {
-          "id": "p06_n3",
+          "id": "preleveur_de_plaques_n3",
           "blades": {
             "top": 2,
             "bottom": 4,
@@ -4249,23 +4039,20 @@
       ]
     },
     {
-      "id": "p07",
-      "catalogue_ref": "P07",
+      "id": "chirurgien_dacier",
       "name": "Chirurgien d’acier",
       "rarity": "rare",
-      "god_id": "susanoo",
+      "god_id": "enigma",
       "description": "Attaque haute très spécialisée, puis gauche secondaire.",
-      "kind": "creature",
       "body_color": "#bf8b58",
       "asset": "res://assets/cards/p/p07_n1.png",
       "effects": [
         "shield_theft"
       ],
       "power_text": "Pillage : les symboles actifs de la face vaincue deviennent des boucliers répartis sur les autres faces, selon la place restante.",
-      "power_cost": 1,
       "levels": [
         {
-          "id": "p07_n1",
+          "id": "chirurgien_dacier_n1",
           "blades": {
             "top": 3,
             "bottom": 0,
@@ -4274,7 +4061,7 @@
           }
         },
         {
-          "id": "p07_n2",
+          "id": "chirurgien_dacier_n2",
           "blades": {
             "top": 4,
             "bottom": 0,
@@ -4284,7 +4071,7 @@
           "asset": "res://assets/cards/p/p07_n2.png"
         },
         {
-          "id": "p07_n3",
+          "id": "chirurgien_dacier_n3",
           "blades": {
             "top": 4,
             "bottom": 1,
@@ -4296,23 +4083,20 @@
       ]
     },
     {
-      "id": "p08",
-      "catalogue_ref": "P08",
+      "id": "porte_greffes",
       "name": "Porte-greffes",
       "rarity": "rare",
-      "god_id": "susanoo",
+      "god_id": "enigma",
       "description": "Profil plus polyvalent, avec faiblesse persistante à droite.",
-      "kind": "creature",
       "body_color": "#bf8b58",
       "asset": "res://assets/cards/p/p08_n1.png",
       "effects": [
         "shield_theft"
       ],
       "power_text": "Pillage : les symboles actifs de la face vaincue deviennent des boucliers répartis sur les autres faces, selon la place restante.",
-      "power_cost": 1,
       "levels": [
         {
-          "id": "p08_n1",
+          "id": "porte_greffes_n1",
           "blades": {
             "top": 2,
             "bottom": 1,
@@ -4321,7 +4105,7 @@
           }
         },
         {
-          "id": "p08_n2",
+          "id": "porte_greffes_n2",
           "blades": {
             "top": 3,
             "bottom": 1,
@@ -4331,7 +4115,7 @@
           "asset": "res://assets/cards/p/p08_n2.png"
         },
         {
-          "id": "p08_n3",
+          "id": "porte_greffes_n3",
           "blades": {
             "top": 3,
             "bottom": 2,
@@ -4343,23 +4127,20 @@
       ]
     },
     {
-      "id": "p09",
-      "catalogue_ref": "P09",
+      "id": "le_demonteur",
       "name": "Le Démonteur",
       "rarity": "epic",
-      "god_id": "susanoo",
+      "god_id": "enigma",
       "description": "Deux directions de capture majeures, haut/gauche ; deux faces pour stocker les défenses.",
-      "kind": "creature",
       "body_color": "#bf8b58",
       "asset": "res://assets/cards/p/p09_n1.png",
       "effects": [
         "shield_theft"
       ],
       "power_text": "Pillage : les symboles actifs de la face vaincue deviennent des boucliers répartis sur les autres faces, selon la place restante.",
-      "power_cost": 1,
       "levels": [
         {
-          "id": "p09_n1",
+          "id": "le_demonteur_n1",
           "blades": {
             "top": 3,
             "bottom": 0,
@@ -4368,7 +4149,7 @@
           }
         },
         {
-          "id": "p09_n2",
+          "id": "le_demonteur_n2",
           "blades": {
             "top": 4,
             "bottom": 1,
@@ -4380,23 +4161,20 @@
       ]
     },
     {
-      "id": "p10",
-      "catalogue_ref": "P10",
+      "id": "la_broyeuse_dempreintes",
       "name": "La Broyeuse d’empreintes",
       "rarity": "epic",
-      "god_id": "susanoo",
+      "god_id": "enigma",
       "description": "Bas très fort, gauche secondaire ; renforts récupérés utiles sur les deux autres faces.",
-      "kind": "creature",
       "body_color": "#bf8b58",
       "asset": "res://assets/cards/p/p10_n1.png",
       "effects": [
         "shield_theft"
       ],
       "power_text": "Pillage : les symboles actifs de la face vaincue deviennent des boucliers répartis sur les autres faces, selon la place restante.",
-      "power_cost": 1,
       "levels": [
         {
-          "id": "p10_n1",
+          "id": "la_broyeuse_dempreintes_n1",
           "blades": {
             "top": 1,
             "bottom": 3,
@@ -4405,7 +4183,7 @@
           }
         },
         {
-          "id": "p10_n2",
+          "id": "la_broyeuse_dempreintes_n2",
           "blades": {
             "top": 2,
             "bottom": 4,
@@ -4417,23 +4195,20 @@
       ]
     },
     {
-      "id": "p11",
-      "catalogue_ref": "P11",
+      "id": "le_collecteur_zero",
       "name": "Le Collecteur Zéro",
       "rarity": "legendary",
-      "god_id": "susanoo",
+      "god_id": "enigma",
       "description": "Haut maximal, bas ouvert et deux flancs inégaux ; sept logements encore libres.",
-      "kind": "creature",
       "body_color": "#bf8b58",
       "asset": "res://assets/cards/p/p11_n1.png",
       "effects": [
         "shield_theft"
       ],
       "power_text": "Pillage : les symboles actifs de la face vaincue deviennent des boucliers répartis sur les autres faces, selon la place restante.",
-      "power_cost": 1,
       "levels": [
         {
-          "id": "p11_n1",
+          "id": "le_collecteur_zero_n1",
           "blades": {
             "top": 4,
             "bottom": 0,
@@ -4444,23 +4219,20 @@
       ]
     },
     {
-      "id": "p12",
-      "catalogue_ref": "P12",
+      "id": "la_machine_aux_mille_depouilles",
       "name": "La Machine aux mille dépouilles",
       "rarity": "legendary",
-      "god_id": "susanoo",
+      "god_id": "enigma",
       "description": "Trois faces de contact fortes et une faiblesse basse ; cinq places libres pour les prises.",
-      "kind": "creature",
       "body_color": "#bf8b58",
       "asset": "res://assets/cards/p/p12_n1.png",
       "effects": [
         "shield_theft"
       ],
       "power_text": "Pillage : les symboles actifs de la face vaincue deviennent des boucliers répartis sur les autres faces, selon la place restante.",
-      "power_cost": 1,
       "levels": [
         {
-          "id": "p12_n1",
+          "id": "la_machine_aux_mille_depouilles_n1",
           "blades": {
             "top": 3,
             "bottom": 1,
@@ -4472,136 +4244,411 @@
     }
   ],
   "legacy_ids": {
-    "kappa": "f03_n3",
-    "tanuki": "f07_n1",
-    "ronin": "f08_n1",
-    "naginata_monk": "n14_n1",
-    "kitsune": "n12_n2",
-    "bakuto": "f05_n1",
-    "maneki_neko": "f02_n2",
-    "saikoro": "f01_n2",
-    "samurai_red": "p08_n1",
-    "samurai_blue": "p09_n2",
-    "susanoo": "p12_n1",
-    "izanagi": "n01_n4",
-    "oni_minor": "e06_n1",
-    "jorogumo": "e05_n2",
-    "oni_major": "e11_n1",
-    "kodama": "e01_n1",
-    "tsuchigumo": "e03_n2",
-    "nue": "e07_n1",
-    "shinobi": "d02_n3",
-    "kunoichi": "d07_n2",
-    "yasha": "d09_n2",
-    "yurei": "d03_n3",
-    "gaki": "d01_n2",
-    "nure_onna": "d05_n2",
-    "ashigaru": "r05_n1",
-    "sumo": "r03_n2",
-    "yamabushi": "r07_n2",
-    "monban": "r02_n2",
-    "kumigashira": "r06_n1",
-    "yumi_archer": "h05_n1",
-    "tengu": "h05_n3",
-    "hayabusa": "h06_n1",
-    "fujin": "h09_n2",
-    "tsuki_yumi": "h07_n2",
-    "raiju": "h10_n1",
-    "raijin": "n21_n1",
-    "tatsu": "n15_n3",
-    "ryujin": "n23_n1",
-    "amaterasu": "n16_n3",
-    "bakeneko": "f04_n3",
-    "inugami": "f10_n1",
-    "daikoku": "f06_n2",
-    "rokurokubi": "d10_n1",
-    "hannya": "d06_n2",
-    "sohei": "r12_n1",
-    "hatamoto": "r04_n3",
-    "oyoroi": "r10_n2",
-    "nagayari": "h03_n1",
-    "tsuki_usagi": "h08_n1",
-    "hoo": "h02_n4",
-    "hotaru": "e02_n2",
-    "mukade": "e09_n1",
-    "kage": "p01_n2",
-    "wako": "p05_n2",
-    "kabukimono": "p06_n1",
-    "sanzoku": "p04_n3",
-    "orochi": "p07_n3",
-    "hyakusho": "n10_n1",
-    "hikyaku": "n08_n2",
-    "matagi": "n06_n3",
-    "komainu": "n09_n1",
-    "baku": "n03_n4",
-    "kakashi": "n02_n1",
-    "chochin_obake": "n13_n1",
-    "kasa_obake": "n18_n1",
-    "ashinaga": "n11_n1",
-    "tenaga": "n17_n1",
-    "umibozu": "n19_n1",
-    "yamauba": "n24_n2",
-    "ittan_momen": "n22_n1",
-    "shojo": "n20_n1",
-    "kirin": "n07_n3",
-    "okami": "n05_n4",
-    "daimyo": "n04_n2",
-    "shogun": "n01_n3",
-    "gashadokuro": "n16_n3",
-    "bishamon": "n15_n3",
-    "yoriki": "r01_n1",
-    "doshin": "r09_n2",
-    "kenshi": "r08_n2",
-    "karo": "r11_n1",
-    "bugyo": "r08_n1",
-    "shugo": "r06_n3",
-    "omikuji": "f09_n1",
-    "kamaitachi": "f08_n1",
-    "nekomata": "f10_n1",
-    "ebisu": "f11_n1",
-    "benzaiten": "f06_n3",
-    "kaminari": "h04_n2",
-    "nobusuma": "h01_n1",
-    "hoshi": "h03_n1",
-    "tsukikage": "h12_n1",
-    "nopperabo": "d04_n1",
-    "ubume": "d03_n1",
-    "onryo": "d08_n1",
-    "kuchisake_onna": "d11_n1",
-    "shuten_doji": "d06_n3",
-    "suzume": "e04_n1",
-    "kaeru": "e08_n1",
-    "suzumebachi": "e10_n1",
-    "kawauso": "e12_n1",
-    "ushi_oni": "e06_n3",
-    "kusa": "p10_n1",
-    "kaizoku": "p03_n3",
-    "nusubito": "p02_n3",
-    "hitokiri": "p11_n1",
-    "akuma": "p10_n1",
-    "seed_balanced_n1": "n01_n1",
-    "seed_balanced_n2": "n01_n2",
-    "seed_balanced_n3": "n01_n3",
-    "seed_balanced_n4": "n01_n4",
-    "seed_random_n1": "f01_n1",
-    "seed_random_n2": "f01_n2",
-    "seed_random_n3": "f01_n3",
-    "seed_random_n4": "f01_n4",
-    "seed_coin_n1": "f08_n1",
-    "seed_coin_n2": "f08_n2",
-    "seed_coin_n3": "f08_n3",
-    "seed_shield_n1": "r01_n1",
-    "seed_shield_n2": "r01_n2",
-    "seed_shield_n3": "r01_n3",
-    "seed_shield_n4": "r01_n4",
-    "seed_lance_n1": "h05_n1",
-    "seed_lance_n2": "h05_n2",
-    "seed_lance_n3": "h05_n3",
-    "seed_miasma_n1": "d09_n1",
-    "seed_miasma_n2": "d09_n2",
-    "seed_swarm_n1": "e06_n1",
-    "seed_swarm_n2": "e06_n2",
-    "seed_swarm_n3": "e06_n3",
-    "seed_thief_n1": "p11_n1"
+    "akuma": "la_broyeuse_dempreintes_n1",
+    "amaterasu": "devoreur_de_lanternes_n3",
+    "ashigaru": "chevalier_sans_visage_n1",
+    "ashinaga": "dos_fendu_n1",
+    "bakeneko": "sou_ricanant_n3",
+    "baku": "rampant_des_fosses_n4",
+    "bakuto": "croupier_manchot_n1",
+    "benzaiten": "roulette_vorace_n3",
+    "bishamon": "fouisseur_aveugle_n3",
+    "bugyo": "colosse_rivete_n1",
+    "chochin_obake": "la_veuve_suspendue_n1",
+    "d01_n1": "porte_fievre_n1",
+    "d01_n2": "porte_fievre_n2",
+    "d01_n3": "porte_fievre_n3",
+    "d01_n4": "porte_fievre_n4",
+    "d02_n1": "crache_cendre_n1",
+    "d02_n2": "crache_cendre_n2",
+    "d02_n3": "crache_cendre_n3",
+    "d02_n4": "crache_cendre_n4",
+    "d03_n1": "clochelet_malade_n1",
+    "d03_n2": "clochelet_malade_n2",
+    "d03_n3": "clochelet_malade_n3",
+    "d03_n4": "clochelet_malade_n4",
+    "d04_n1": "machoire_moisie_n1",
+    "d04_n2": "machoire_moisie_n2",
+    "d04_n3": "machoire_moisie_n3",
+    "d04_n4": "machoire_moisie_n4",
+    "d05_n1": "veuve_des_spores_n1",
+    "d05_n2": "veuve_des_spores_n2",
+    "d05_n3": "veuve_des_spores_n3",
+    "d06_n1": "sonneur_pestifere_n1",
+    "d06_n2": "sonneur_pestifere_n2",
+    "d06_n3": "sonneur_pestifere_n3",
+    "d07_n1": "griffe_septique_n1",
+    "d07_n2": "griffe_septique_n2",
+    "d07_n3": "griffe_septique_n3",
+    "d08_n1": "ronge_chair_n1",
+    "d08_n2": "ronge_chair_n2",
+    "d08_n3": "ronge_chair_n3",
+    "d09_n1": "le_porte_cercueil_n1",
+    "d09_n2": "le_porte_cercueil_n2",
+    "d10_n1": "le_precheur_des_fievres_n1",
+    "d10_n2": "le_precheur_des_fievres_n2",
+    "d11_n1": "la_cathedrale_malade_n1",
+    "d12_n1": "le_dernier_souffle_n1",
+    "daikoku": "roulette_vorace_n2",
+    "daimyo": "gueule_de_travers_n2",
+    "doshin": "le_reliquaire_ambulant_n2",
+    "e01_n1": "nud_vivant_n1",
+    "e01_n2": "nud_vivant_n2",
+    "e01_n3": "nud_vivant_n3",
+    "e01_n4": "nud_vivant_n4",
+    "e02_n1": "larve_dancrage_n1",
+    "e02_n2": "larve_dancrage_n2",
+    "e02_n3": "larve_dancrage_n3",
+    "e02_n4": "larve_dancrage_n4",
+    "e03_n1": "tisse_griffe_n1",
+    "e03_n2": "tisse_griffe_n2",
+    "e03_n3": "tisse_griffe_n3",
+    "e03_n4": "tisse_griffe_n4",
+    "e04_n1": "bourgeon_mordant_n1",
+    "e04_n2": "bourgeon_mordant_n2",
+    "e04_n3": "bourgeon_mordant_n3",
+    "e04_n4": "bourgeon_mordant_n4",
+    "e05_n1": "mante_des_racines_n1",
+    "e05_n2": "mante_des_racines_n2",
+    "e05_n3": "mante_des_racines_n3",
+    "e06_n1": "porte_nid_n1",
+    "e06_n2": "porte_nid_n2",
+    "e06_n3": "porte_nid_n3",
+    "e07_n1": "fourmilion_des_nerfs_n1",
+    "e07_n2": "fourmilion_des_nerfs_n2",
+    "e07_n3": "fourmilion_des_nerfs_n3",
+    "e08_n1": "ronce_rampante_n1",
+    "e08_n2": "ronce_rampante_n2",
+    "e08_n3": "ronce_rampante_n3",
+    "e09_n1": "la_nourrice_nouee_n1",
+    "e09_n2": "la_nourrice_nouee_n2",
+    "e10_n1": "le_tisseur_de_meutes_n1",
+    "e10_n2": "le_tisseur_de_meutes_n2",
+    "e11_n1": "le_cur_de_la_colonie_n1",
+    "e12_n1": "la_mante_cathedrale_n1",
+    "ebisu": "la_banque_vivante_n1",
+    "f01_n1": "devoracle_n1",
+    "f01_n2": "devoracle_n2",
+    "f01_n3": "devoracle_n3",
+    "f01_n4": "devoracle_n4",
+    "f02_n1": "griffe_a_jetons_n1",
+    "f02_n2": "griffe_a_jetons_n2",
+    "f02_n3": "griffe_a_jetons_n3",
+    "f02_n4": "griffe_a_jetons_n4",
+    "f03_n1": "de_boiteux_n1",
+    "f03_n2": "de_boiteux_n2",
+    "f03_n3": "de_boiteux_n3",
+    "f03_n4": "de_boiteux_n4",
+    "f04_n1": "sou_ricanant_n1",
+    "f04_n2": "sou_ricanant_n2",
+    "f04_n3": "sou_ricanant_n3",
+    "f04_n4": "sou_ricanant_n4",
+    "f05_n1": "croupier_manchot_n1",
+    "f05_n2": "croupier_manchot_n2",
+    "f05_n3": "croupier_manchot_n3",
+    "f06_n1": "roulette_vorace_n1",
+    "f06_n2": "roulette_vorace_n2",
+    "f06_n3": "roulette_vorace_n3",
+    "f07_n1": "jumeau_de_cuivre_n1",
+    "f07_n2": "jumeau_de_cuivre_n2",
+    "f07_n3": "jumeau_de_cuivre_n3",
+    "f08_n1": "valet_a_lenvers_n1",
+    "f08_n2": "valet_a_lenvers_n2",
+    "f08_n3": "valet_a_lenvers_n3",
+    "f09_n1": "la_machine_a_malchance_n1",
+    "f09_n2": "la_machine_a_malchance_n2",
+    "f10_n1": "la_dame_aux_deux_visages_n1",
+    "f10_n2": "la_dame_aux_deux_visages_n2",
+    "f11_n1": "la_banque_vivante_n1",
+    "f12_n1": "le_dernier_pari_n1",
+    "fujin": "lil_empale_n2",
+    "gaki": "porte_fievre_n2",
+    "gashadokuro": "devoreur_de_lanternes_n3",
+    "h01_n1": "longuepine_n1",
+    "h01_n2": "longuepine_n2",
+    "h01_n3": "longuepine_n3",
+    "h01_n4": "longuepine_n4",
+    "h02_n1": "pique_en_haut_n1",
+    "h02_n2": "pique_en_haut_n2",
+    "h02_n3": "pique_en_haut_n3",
+    "h02_n4": "pique_en_haut_n4",
+    "h03_n1": "fauche_fond_n1",
+    "h03_n2": "fauche_fond_n2",
+    "h03_n3": "fauche_fond_n3",
+    "h03_n4": "fauche_fond_n4",
+    "h04_n1": "bouche_arbalete_n1",
+    "h04_n2": "bouche_arbalete_n2",
+    "h04_n3": "bouche_arbalete_n3",
+    "h04_n4": "bouche_arbalete_n4",
+    "h05_n1": "echassier_des_brumes_n1",
+    "h05_n2": "echassier_des_brumes_n2",
+    "h05_n3": "echassier_des_brumes_n3",
+    "h06_n1": "veilleur_bifurque_n1",
+    "h06_n2": "veilleur_bifurque_n2",
+    "h06_n3": "veilleur_bifurque_n3",
+    "h07_n1": "perce_voute_n1",
+    "h07_n2": "perce_voute_n2",
+    "h07_n3": "perce_voute_n3",
+    "h08_n1": "dard_de_traverse_n1",
+    "h08_n2": "dard_de_traverse_n2",
+    "h08_n3": "dard_de_traverse_n3",
+    "h09_n1": "lil_empale_n1",
+    "h09_n2": "lil_empale_n2",
+    "h10_n1": "le_guetteur_trifide_n1",
+    "h10_n2": "le_guetteur_trifide_n2",
+    "h11_n1": "le_traverse_nuit_n1",
+    "h12_n1": "la_croisee_des_regards_n1",
+    "hannya": "sonneur_pestifere_n2",
+    "hatamoto": "osselet_blinde_n3",
+    "hayabusa": "veilleur_bifurque_n1",
+    "hikyaku": "ecorche_angle_n2",
+    "hitokiri": "le_collecteur_zero_n1",
+    "hoo": "pique_en_haut_n4",
+    "hoshi": "fauche_fond_n1",
+    "hotaru": "larve_dancrage_n2",
+    "hyakusho": "tricorne_errant_n1",
+    "inugami": "la_dame_aux_deux_visages_n1",
+    "ittan_momen": "la_gueule_sous_le_lit_n1",
+    "izanagi": "avortons_des_caves_n4",
+    "jorogumo": "mante_des_racines_n2",
+    "kabukimono": "preleveur_de_plaques_n1",
+    "kaeru": "ronce_rampante_n1",
+    "kage": "collecteur_de_dents_n2",
+    "kaizoku": "pince_carcasse_n3",
+    "kakashi": "mordeur_des_combles_n1",
+    "kamaitachi": "valet_a_lenvers_n1",
+    "kaminari": "bouche_arbalete_n2",
+    "kappa": "de_boiteux_n3",
+    "karo": "le_sarcophage_debout_n1",
+    "kasa_obake": "laffame_du_puits_n1",
+    "kawauso": "la_mante_cathedrale_n1",
+    "kenshi": "colosse_rivete_n2",
+    "kirin": "mache_mur_n3",
+    "kitsune": "le_nud_hurlant_n2",
+    "kodama": "nud_vivant_n1",
+    "komainu": "charognard_courbe_n1",
+    "kuchisake_onna": "la_cathedrale_malade_n1",
+    "kumigashira": "golem_de_faience_n1",
+    "kunoichi": "griffe_septique_n2",
+    "kusa": "la_broyeuse_dempreintes_n1",
+    "maneki_neko": "griffe_a_jetons_n2",
+    "matagi": "le_drape_du_seuil_n3",
+    "monban": "heaume_errant_n2",
+    "mukade": "la_nourrice_nouee_n1",
+    "n01_n1": "avortons_des_caves_n1",
+    "n01_n2": "avortons_des_caves_n2",
+    "n01_n3": "avortons_des_caves_n3",
+    "n01_n4": "avortons_des_caves_n4",
+    "n02_n1": "mordeur_des_combles_n1",
+    "n02_n2": "mordeur_des_combles_n2",
+    "n02_n3": "mordeur_des_combles_n3",
+    "n02_n4": "mordeur_des_combles_n4",
+    "n03_n1": "rampant_des_fosses_n1",
+    "n03_n2": "rampant_des_fosses_n2",
+    "n03_n3": "rampant_des_fosses_n3",
+    "n03_n4": "rampant_des_fosses_n4",
+    "n04_n1": "gueule_de_travers_n1",
+    "n04_n2": "gueule_de_travers_n2",
+    "n04_n3": "gueule_de_travers_n3",
+    "n04_n4": "gueule_de_travers_n4",
+    "n05_n1": "ogre_droitier_n1",
+    "n05_n2": "ogre_droitier_n2",
+    "n05_n3": "ogre_droitier_n3",
+    "n05_n4": "ogre_droitier_n4",
+    "n06_n1": "le_drape_du_seuil_n1",
+    "n06_n2": "le_drape_du_seuil_n2",
+    "n06_n3": "le_drape_du_seuil_n3",
+    "n06_n4": "le_drape_du_seuil_n4",
+    "n07_n1": "mache_mur_n1",
+    "n07_n2": "mache_mur_n2",
+    "n07_n3": "mache_mur_n3",
+    "n07_n4": "mache_mur_n4",
+    "n08_n1": "ecorche_angle_n1",
+    "n08_n2": "ecorche_angle_n2",
+    "n08_n3": "ecorche_angle_n3",
+    "n08_n4": "ecorche_angle_n4",
+    "n09_n1": "charognard_courbe_n1",
+    "n09_n2": "charognard_courbe_n2",
+    "n09_n3": "charognard_courbe_n3",
+    "n10_n1": "tricorne_errant_n1",
+    "n10_n2": "tricorne_errant_n2",
+    "n10_n3": "tricorne_errant_n3",
+    "n11_n1": "dos_fendu_n1",
+    "n11_n2": "dos_fendu_n2",
+    "n11_n3": "dos_fendu_n3",
+    "n12_n1": "le_nud_hurlant_n1",
+    "n12_n2": "le_nud_hurlant_n2",
+    "n12_n3": "le_nud_hurlant_n3",
+    "n13_n1": "la_veuve_suspendue_n1",
+    "n13_n2": "la_veuve_suspendue_n2",
+    "n13_n3": "la_veuve_suspendue_n3",
+    "n14_n1": "ogre_a_deux_bouches_n1",
+    "n14_n2": "ogre_a_deux_bouches_n2",
+    "n14_n3": "ogre_a_deux_bouches_n3",
+    "n15_n1": "fouisseur_aveugle_n1",
+    "n15_n2": "fouisseur_aveugle_n2",
+    "n15_n3": "fouisseur_aveugle_n3",
+    "n16_n1": "devoreur_de_lanternes_n1",
+    "n16_n2": "devoreur_de_lanternes_n2",
+    "n16_n3": "devoreur_de_lanternes_n3",
+    "n17_n1": "mille_gueules_n1",
+    "n17_n2": "mille_gueules_n2",
+    "n18_n1": "laffame_du_puits_n1",
+    "n18_n2": "laffame_du_puits_n2",
+    "n19_n1": "le_porte_visages_n1",
+    "n19_n2": "le_porte_visages_n2",
+    "n20_n1": "le_replie_n1",
+    "n20_n2": "le_replie_n2",
+    "n21_n1": "le_voyeur_n1",
+    "n22_n1": "la_gueule_sous_le_lit_n1",
+    "n23_n1": "le_roi_des_oubliettes_n1",
+    "n24_n1": "le_sac_a_murmures_n1",
+    "n24_n2": "le_sac_a_murmures_n2",
+    "n24_n3": "le_sac_a_murmures_n3",
+    "n24_n4": "le_sac_a_murmures_n4",
+    "nagayari": "fauche_fond_n1",
+    "naginata_monk": "ogre_a_deux_bouches_n1",
+    "nekomata": "la_dame_aux_deux_visages_n1",
+    "nobusuma": "longuepine_n1",
+    "nopperabo": "machoire_moisie_n1",
+    "nue": "fourmilion_des_nerfs_n1",
+    "nure_onna": "veuve_des_spores_n2",
+    "nusubito": "scie_boiteuse_n3",
+    "okami": "ogre_droitier_n4",
+    "omikuji": "la_machine_a_malchance_n1",
+    "oni_major": "le_cur_de_la_colonie_n1",
+    "oni_minor": "porte_nid_n1",
+    "onryo": "ronge_chair_n1",
+    "orochi": "chirurgien_dacier_n3",
+    "oyoroi": "le_bastion_fendu_n2",
+    "p01_n1": "collecteur_de_dents_n1",
+    "p01_n2": "collecteur_de_dents_n2",
+    "p01_n3": "collecteur_de_dents_n3",
+    "p01_n4": "collecteur_de_dents_n4",
+    "p02_n1": "scie_boiteuse_n1",
+    "p02_n2": "scie_boiteuse_n2",
+    "p02_n3": "scie_boiteuse_n3",
+    "p02_n4": "scie_boiteuse_n4",
+    "p03_n1": "pince_carcasse_n1",
+    "p03_n2": "pince_carcasse_n2",
+    "p03_n3": "pince_carcasse_n3",
+    "p03_n4": "pince_carcasse_n4",
+    "p04_n1": "depeceur_rampant_n1",
+    "p04_n2": "depeceur_rampant_n2",
+    "p04_n3": "depeceur_rampant_n3",
+    "p04_n4": "depeceur_rampant_n4",
+    "p05_n1": "recycleur_thoracique_n1",
+    "p05_n2": "recycleur_thoracique_n2",
+    "p05_n3": "recycleur_thoracique_n3",
+    "p06_n1": "preleveur_de_plaques_n1",
+    "p06_n2": "preleveur_de_plaques_n2",
+    "p06_n3": "preleveur_de_plaques_n3",
+    "p07_n1": "chirurgien_dacier_n1",
+    "p07_n2": "chirurgien_dacier_n2",
+    "p07_n3": "chirurgien_dacier_n3",
+    "p08_n1": "porte_greffes_n1",
+    "p08_n2": "porte_greffes_n2",
+    "p08_n3": "porte_greffes_n3",
+    "p09_n1": "le_demonteur_n1",
+    "p09_n2": "le_demonteur_n2",
+    "p10_n1": "la_broyeuse_dempreintes_n1",
+    "p10_n2": "la_broyeuse_dempreintes_n2",
+    "p11_n1": "le_collecteur_zero_n1",
+    "p12_n1": "la_machine_aux_mille_depouilles_n1",
+    "r01_n1": "eclat_cuirasse_n1",
+    "r01_n2": "eclat_cuirasse_n2",
+    "r01_n3": "eclat_cuirasse_n3",
+    "r01_n4": "eclat_cuirasse_n4",
+    "r02_n1": "heaume_errant_n1",
+    "r02_n2": "heaume_errant_n2",
+    "r02_n3": "heaume_errant_n3",
+    "r02_n4": "heaume_errant_n4",
+    "r03_n1": "carapace_vide_n1",
+    "r03_n2": "carapace_vide_n2",
+    "r03_n3": "carapace_vide_n3",
+    "r03_n4": "carapace_vide_n4",
+    "r04_n1": "osselet_blinde_n1",
+    "r04_n2": "osselet_blinde_n2",
+    "r04_n3": "osselet_blinde_n3",
+    "r04_n4": "osselet_blinde_n4",
+    "r05_n1": "chevalier_sans_visage_n1",
+    "r05_n2": "chevalier_sans_visage_n2",
+    "r05_n3": "chevalier_sans_visage_n3",
+    "r06_n1": "golem_de_faience_n1",
+    "r06_n2": "golem_de_faience_n2",
+    "r06_n3": "golem_de_faience_n3",
+    "r07_n1": "portail_dos_n1",
+    "r07_n2": "portail_dos_n2",
+    "r07_n3": "portail_dos_n3",
+    "r08_n1": "colosse_rivete_n1",
+    "r08_n2": "colosse_rivete_n2",
+    "r08_n3": "colosse_rivete_n3",
+    "r09_n1": "le_reliquaire_ambulant_n1",
+    "r09_n2": "le_reliquaire_ambulant_n2",
+    "r10_n1": "le_bastion_fendu_n1",
+    "r10_n2": "le_bastion_fendu_n2",
+    "r11_n1": "le_sarcophage_debout_n1",
+    "r12_n1": "le_gardien_des_decombres_n1",
+    "raijin": "le_voyeur_n1",
+    "raiju": "le_guetteur_trifide_n1",
+    "rokurokubi": "le_precheur_des_fievres_n1",
+    "ronin": "valet_a_lenvers_n1",
+    "ryujin": "le_roi_des_oubliettes_n1",
+    "saikoro": "devoracle_n2",
+    "samurai_blue": "le_demonteur_n2",
+    "samurai_red": "porte_greffes_n1",
+    "sanzoku": "depeceur_rampant_n3",
+    "seed_balanced_n1": "avortons_des_caves_n1",
+    "seed_balanced_n2": "avortons_des_caves_n2",
+    "seed_balanced_n3": "avortons_des_caves_n3",
+    "seed_balanced_n4": "avortons_des_caves_n4",
+    "seed_coin_n1": "valet_a_lenvers_n1",
+    "seed_coin_n2": "valet_a_lenvers_n2",
+    "seed_coin_n3": "valet_a_lenvers_n3",
+    "seed_lance_n1": "echassier_des_brumes_n1",
+    "seed_lance_n2": "echassier_des_brumes_n2",
+    "seed_lance_n3": "echassier_des_brumes_n3",
+    "seed_miasma_n1": "le_porte_cercueil_n1",
+    "seed_miasma_n2": "le_porte_cercueil_n2",
+    "seed_random_n1": "devoracle_n1",
+    "seed_random_n2": "devoracle_n2",
+    "seed_random_n3": "devoracle_n3",
+    "seed_random_n4": "devoracle_n4",
+    "seed_shield_n1": "eclat_cuirasse_n1",
+    "seed_shield_n2": "eclat_cuirasse_n2",
+    "seed_shield_n3": "eclat_cuirasse_n3",
+    "seed_shield_n4": "eclat_cuirasse_n4",
+    "seed_swarm_n1": "porte_nid_n1",
+    "seed_swarm_n2": "porte_nid_n2",
+    "seed_swarm_n3": "porte_nid_n3",
+    "seed_thief_n1": "le_collecteur_zero_n1",
+    "shinobi": "crache_cendre_n3",
+    "shogun": "avortons_des_caves_n3",
+    "shojo": "le_replie_n1",
+    "shugo": "golem_de_faience_n3",
+    "shuten_doji": "sonneur_pestifere_n3",
+    "sohei": "le_gardien_des_decombres_n1",
+    "sumo": "carapace_vide_n2",
+    "susanoo": "la_machine_aux_mille_depouilles_n1",
+    "suzume": "bourgeon_mordant_n1",
+    "suzumebachi": "le_tisseur_de_meutes_n1",
+    "tanuki": "jumeau_de_cuivre_n1",
+    "tatsu": "fouisseur_aveugle_n3",
+    "tenaga": "mille_gueules_n1",
+    "tengu": "echassier_des_brumes_n3",
+    "tsuchigumo": "tisse_griffe_n2",
+    "tsuki_usagi": "dard_de_traverse_n1",
+    "tsuki_yumi": "perce_voute_n2",
+    "tsukikage": "la_croisee_des_regards_n1",
+    "ubume": "clochelet_malade_n1",
+    "umibozu": "le_porte_visages_n1",
+    "ushi_oni": "porte_nid_n3",
+    "wako": "recycleur_thoracique_n2",
+    "yamabushi": "portail_dos_n2",
+    "yamauba": "le_sac_a_murmures_n2",
+    "yasha": "le_porte_cercueil_n2",
+    "yoriki": "eclat_cuirasse_n1",
+    "yumi_archer": "echassier_des_brumes_n1",
+    "yurei": "clochelet_malade_n3"
   }
 }

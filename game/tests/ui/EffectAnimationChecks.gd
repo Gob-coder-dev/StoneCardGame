@@ -137,7 +137,7 @@ func _test_weakness_view_animation() -> void:
 
 	# Une carte posée entre deux pierres Miasme : un seul aperçu, malus total 2.
 	state = _state_with_hands([], ["fx_wall"])
-	state.human_god_id = "izanami"
+	state.human_god_id = "nerava"
 	_force_instance(state, 1, 1, "fx_miasma_guard", GameState.PLAYER_HUMAN)
 	_force_instance(state, 1, 3, "fx_miasma_guard", GameState.PLAYER_HUMAN)
 	result = CombatResolverModel.apply_move(state, 1, 2, "fx_wall", GameState.PLAYER_AI)

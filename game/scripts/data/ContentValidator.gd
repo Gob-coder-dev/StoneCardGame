@@ -16,6 +16,8 @@ static func lineage_problems(lineage: Dictionary) -> Array[String]:
 		return problems
 	if forms.size() != maximum:
 		problems.append("la lignée '%s' doit avoir %d niveaux." % [id, maximum])
+	if lineage.has("power_cost"):
+		problems.append("la lignée '%s' utilise l'ancien champ power_cost." % id)
 	var seen := {}
 	for index in range(forms.size()):
 		var form = forms[index]
@@ -26,7 +28,7 @@ static func lineage_problems(lineage: Dictionary) -> Array[String]:
 		if form_id.is_empty() or seen.has(form_id):
 			problems.append("identifiant de forme absent ou dupliqué dans '%s'." % id)
 		seen[form_id] = true
-		if form.has("god_id") or form.has("rarity") or form.has("lineage_id") or form.has("max_level"):
+		if form.has("god_id") or form.has("rarity") or form.has("lineage_id") or form.has("max_level") or form.has("power_cost"):
 			problems.append("une forme de '%s' redéfinit l'identité de sa lignée." % id)
 		if form.has("level") and form["level"] != index + 1:
 			problems.append("niveaux non consécutifs dans '%s'." % id)
@@ -50,8 +52,6 @@ static func _check_evolution_shape(stone: Dictionary, problems: Array[String]) -
 			valid = valid and StoneSide.ALL.has(side) and _integer_count(sides[side], BattleStone.MAX_MARKERS_PER_SIDE)
 	valid = valid and _integer_count(stone.get("random_blades", 0), BattleStone.MAX_MARKERS_PER_SIDE * StoneSide.ALL.size())
 	valid = valid and stone.get("effects", []) is Array
-	var cost = stone.get("power_cost", 0.0)
-	valid = valid and (cost is int or cost is float) and cost >= 0
 	if not valid:
 		problems.append("statistiques ou symboles invalides sur la forme '%s'." % stone.get("id", ""))
 	return valid

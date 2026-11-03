@@ -3,14 +3,14 @@ extends RefCounted
 const Codec := preload("res://scripts/data/PlayerSaveCodec.gd")
 const Storage := preload("res://scripts/data/PlayerSaveStorage.gd")
 const PATH := "user://samstone_test_ui_profile.json"
-const DECK := ["f03_n1", "f07_n1", "f08_n1", "n14_n1", "n12_n2", "f05_n1", "f02_n2", "f01_n2"]
+const DECK := ["de_boiteux_n1", "jumeau_de_cuivre_n1", "valet_a_lenvers_n1", "ogre_a_deux_bouches_n1", "le_nud_hurlant_n2", "croupier_manchot_n1", "griffe_a_jetons_n2", "devoracle_n2"]
 var _previous_profile: Dictionary
 var _previous_path: String
 var _previous_backup: Dictionary
 var _restored := false
 
 
-func _init(raw: Dictionary = {"player_god_id": "inari", "player_deck": DECK}) -> void:
+func _init(raw: Dictionary = {"player_god_id": "veskar", "player_deck": DECK}) -> void:
 	_previous_profile = PlayerData.get_profile()
 	_previous_path = PlayerData._save_path
 	_previous_backup = PlayerData._pending_catalogue_backup.duplicate(true)

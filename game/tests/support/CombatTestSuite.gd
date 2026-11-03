@@ -43,11 +43,11 @@ func _register_test_stones() -> void:
 	# Seule la face du bas a de la place : sa lame d'Essaim y pousse toujours.
 	_register("fx_swarm_bottom", 4, 0, 4, 4, {"effects": [StoneEffects.SWARM]})
 	# Cartes de famille : leur pouvoir continu suit la règle des dieux.
-	_register("fx_swarm_okuni_a", 1, 1, 1, 1, {"effects": [StoneEffects.SWARM], "god_id": "okuninushi"})
-	_register("fx_swarm_okuni_b", 1, 1, 1, 1, {"effects": [StoneEffects.SWARM], "god_id": "okuninushi"})
-	_register("fx_miasma_izanami", 0, 0, 0, 0, {"effects": [StoneEffects.WEAKEN_ADJACENT], "god_id": "izanami"})
+	_register("fx_swarm_okuni_a", 1, 1, 1, 1, {"effects": [StoneEffects.SWARM], "god_id": "sylkha"})
+	_register("fx_swarm_okuni_b", 1, 1, 1, 1, {"effects": [StoneEffects.SWARM], "god_id": "sylkha"})
+	_register("fx_miasma_nerava", 0, 0, 0, 0, {"effects": [StoneEffects.WEAKEN_ADJACENT], "god_id": "nerava"})
 	# Défend ses flancs avec 1 : résiste à une lame, cède à deux.
-	_register("fx_miasma_guard", 0, 0, 1, 1, {"effects": [StoneEffects.WEAKEN_ADJACENT], "god_id": "izanami"})
+	_register("fx_miasma_guard", 0, 0, 1, 1, {"effects": [StoneEffects.WEAKEN_ADJACENT], "god_id": "nerava"})
 	_register("fx_thief", 3, 3, 3, 3, {"effects": [StoneEffects.SHIELD_THEFT]})
 	# Seule la face droite a de la place : c'est aussi elle qui attaque.
 	_register("fx_thief_right_open", 4, 4, 4, 2, {"effects": [StoneEffects.SHIELD_THEFT]})

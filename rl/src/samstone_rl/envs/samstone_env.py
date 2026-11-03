@@ -17,10 +17,10 @@ from .action_space import ActionCodec
 from .observation import ObservationEncoder
 
 DEFAULT_CONFIG: dict[str, Any] = {
-    "human_deck": ["f01_n3", "f02_n3", "f04_n3", "f05_n2", "f07_n2", "f08_n2", "n01_n2", "n21_n1"],
-    "ai_deck": ["f01_n3", "f02_n3", "f04_n3", "f05_n2", "f07_n2", "f08_n2", "n01_n2", "n21_n1"],
-    "human_god": "inari",
-    "ai_god": "inari",
+    "human_deck": ["devoracle_n3", "griffe_a_jetons_n3", "sou_ricanant_n3", "croupier_manchot_n2", "jumeau_de_cuivre_n2", "valet_a_lenvers_n2", "avortons_des_caves_n2", "le_voyeur_n1"],
+    "ai_deck": ["devoracle_n3", "griffe_a_jetons_n3", "sou_ricanant_n3", "croupier_manchot_n2", "jumeau_de_cuivre_n2", "valet_a_lenvers_n2", "avortons_des_caves_n2", "le_voyeur_n1"],
+    "human_god": "veskar",
+    "ai_god": "veskar",
 }
 
 

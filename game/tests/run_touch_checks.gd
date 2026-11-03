@@ -265,7 +265,7 @@ func _check_evolution_inputs() -> void:
 		"niveaux : sélectionner quatre modifie uniquement l'aperçu de collection")
 	var card: StoneCard = null
 	for wrapper in page.collection_rows.get_child(0).get_children():
-		if wrapper.get_child(0).get_stone_id() == "n01_n4":
+		if wrapper.get_child(0).get_stone_id() == "avortons_des_caves_n4":
 			card = wrapper.get_child(0)
 	if card == null:
 		_check(false, "niveaux : la forme quatre est disponible dans la collection")
@@ -279,10 +279,10 @@ func _check_evolution_inputs() -> void:
 	await _settle()
 	await _tap(_center(info_button))
 	var info: StoneInfoSheet = page.info_sheet
-	_check(info.visible and info._shown_variant == "n01_n4", "niveaux : Infos ouvre au toucher la forme affichée")
+	_check(info.visible and info._shown_variant == "avortons_des_caves_n4", "niveaux : Infos ouvre au toucher la forme affichée")
 	var second: Button = info.get_node("InfoPanel/InfoContent/Levels").get_child(1)
 	await _tap(_center(second))
-	_check(info._shown_variant == "n01_n2" and PlayerData.get_active_deck().is_empty(),
+	_check(info._shown_variant == "avortons_des_caves_n2" and PlayerData.get_active_deck().is_empty(),
 		"niveaux : toucher deux dans Infos consulte ce niveau sans l'équiper")
 	info.description_label.custom_minimum_size.y = 900
 	await _settle()
@@ -294,8 +294,8 @@ func _check_evolution_inputs() -> void:
 	await _swipe(_center(info.use_button), Vector2(0, -120))
 	_check(info.visible and PlayerData.get_active_deck().is_empty(), "niveaux : glisser sur Utiliser n'équipe pas la carte")
 	await _tap(_center(info.use_button))
-	_check(not info.visible and PlayerData.get_active_deck() == ["n01_n2"]
-		and PlayerData.get_deck("inari", 0) == ProfileFixture.DECK,
+	_check(not info.visible and PlayerData.get_active_deck() == ["avortons_des_caves_n2"]
+		and PlayerData.get_deck("veskar", 0) == ProfileFixture.DECK,
 		"niveaux : Utiliser enregistre une seule fois le niveau consulté dans le bon emplacement")
 	PlayerData.set_player_deck([])
 	page._select_deck(0)
@@ -412,7 +412,7 @@ func _check_buffered_input() -> void:
 func _check_battle_touch() -> void:
 	var saved_npc: String = BattleContext.selected_npc_id
 	var saved_first: int = BattleContext.forced_first_player
-	BattleContext.selected_npc_id = "hiro"
+	BattleContext.selected_npc_id = "disciple_muraille"
 	BattleContext.forced_first_player = GameState.PLAYER_HUMAN
 	var board := await _open_scene("res://scenes/game/Board.tscn")
 	var hand: HandView = board.get_node("Root/HandView")
@@ -438,7 +438,7 @@ func _check_battle_touch() -> void:
 func _check_battle_drag() -> void:
 	var saved_npc: String = BattleContext.selected_npc_id
 	var saved_first: int = BattleContext.forced_first_player
-	BattleContext.selected_npc_id = "hiro"
+	BattleContext.selected_npc_id = "disciple_muraille"
 
 	var board := await _open_battle(GameState.PLAYER_HUMAN)
 	var hand: HandView = board.get_node("Root/HandView")

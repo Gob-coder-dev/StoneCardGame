@@ -17,8 +17,8 @@ environment:
   # Placeholder required by the common PPO schema. The trainer replaces this
   # scenario with the selected deck from boss_roster.json.
   scenarios:
-    - god: inari
-      deck: [f01_n3, f02_n3, f04_n3, f05_n2, f07_n2, f08_n2, n01_n2, n21_n1]
+    - god: veskar
+      deck: [devoracle_n3, griffe_a_jetons_n3, sou_ricanant_n3, croupier_manchot_n2, jumeau_de_cuivre_n2, valet_a_lenvers_n2, avortons_des_caves_n2, le_voyeur_n1]
 
 model:
   hidden_dim: 512

@@ -24,26 +24,26 @@ func _test_catalogue_images() -> void:
 		var texture := load(path) as Texture2D
 		loadable = loadable and texture != null and texture.get_width() > 0 and texture.get_height() > 0
 	_check(loadable, "toutes les illustrations déclarées dans le catalogue se chargent comme textures")
-	_check(not str(StoneLoader.get_stone("n01_n1").get("asset", "")).is_empty(),
+	_check(not str(StoneLoader.get_stone("avortons_des_caves_n1").get("asset", "")).is_empty(),
 		"les Avortons des caves utilisent leur illustration de groupe")
-	var first := str(StoneLoader.get_stone("d01_n1").get("asset", ""))
-	var fourth := str(StoneLoader.get_stone("d01_n4").get("asset", ""))
+	var first := str(StoneLoader.get_stone("porte_fievre_n1").get("asset", ""))
+	var fourth := str(StoneLoader.get_stone("porte_fievre_n4").get("asset", ""))
 	_check(not fourth.is_empty() and fourth != first and ResourceLoader.exists(fourth),
 		"le Porte-fièvre niveau quatre utilise sa propre illustration")
 
 
 func _test_art_cache() -> void:
-	CardArtCache.activate_god("inari", 1, ["n01_n4"])
-	var path := str(StoneLoader.get_stone("n01_n1")["asset"])
+	CardArtCache.activate_god("veskar", 1, ["avortons_des_caves_n4"])
+	var path := str(StoneLoader.get_stone("avortons_des_caves_n1")["asset"])
 	var loaded := load(path) as Texture2D
 	var cached := CardArtCache.texture(path)
-	var progress := CardArtCache.progress_for_god("inari")
+	var progress := CardArtCache.progress_for_god("veskar")
 	_check(progress.y == 37 and progress.x >= 1 and cached == loaded,
 		"le cache prépare le dieu actif et les formes équipées en partageant les textures")
 
 
 func _test_shared_texture_and_missing_artwork() -> void:
-	var definition := StoneLoader.get_stone("n01_n1")
+	var definition := StoneLoader.get_stone("avortons_des_caves_n1")
 	var first := StoneCard.new()
 	var second := StoneCard.new()
 	first.setup(definition)
@@ -79,7 +79,7 @@ func _test_illustration_layout() -> void:
 
 func _test_level_badge_layout() -> void:
 	var card := StoneCard.new()
-	card.setup(StoneLoader.get_stone("f01_n1"))
+	card.setup(StoneLoader.get_stone("devoracle_n1"))
 	var compact_and_aligned := true
 	for edge in [220.0, 964.0]:
 		var art := Rect2(Vector2.ONE * edge * 0.1, Vector2.ONE * edge * 0.7)

@@ -12,18 +12,18 @@ from samstone_rl.fast_engine.core import _other, _stable_seed
 from samstone_rl.fast_engine.geometry import BOARD_SIZE, DELTAS, RAYS
 
 ALL_SCENARIOS = (
-    ("inari", ["f01_n3", "f02_n3", "f04_n3", "f05_n2",
-               "f07_n2", "f08_n2", "n01_n2", "n21_n1"]),
-    ("izanami", ["d01_n2", "d02_n2", "d03_n2", "d04_n2",
-                 "d05_n1", "d07_n1", "n12_n1", "n16_n1"]),
-    ("hachiman", ["r01_n2", "r02_n2", "r03_n2", "r04_n2",
-                  "r05_n1", "r06_n1", "n01_n2", "n24_n2"]),
-    ("tsukuyomi", ["h01_n4", "h04_n3", "h05_n3", "h06_n2",
-                   "h09_n1", "h12_n1", "n01_n3", "n21_n1"]),
-    ("okuninushi", ["e01_n3", "e04_n3", "e05_n2", "e06_n2",
-                    "e07_n2", "e09_n1", "n01_n2", "n16_n2"]),
-    ("susanoo", ["p01_n4", "p04_n4", "p05_n3", "p08_n2",
-                 "p09_n2", "p12_n1", "n01_n3", "n21_n1"]),
+    ("veskar", ["devoracle_n3", "griffe_a_jetons_n3", "sou_ricanant_n3", "croupier_manchot_n2",
+               "jumeau_de_cuivre_n2", "valet_a_lenvers_n2", "avortons_des_caves_n2", "le_voyeur_n1"]),
+    ("nerava", ["porte_fievre_n2", "crache_cendre_n2", "clochelet_malade_n2", "machoire_moisie_n2",
+                 "veuve_des_spores_n1", "griffe_septique_n1", "le_nud_hurlant_n1", "devoreur_de_lanternes_n1"]),
+    ("kharun", ["eclat_cuirasse_n2", "heaume_errant_n2", "carapace_vide_n2", "osselet_blinde_n2",
+                  "chevalier_sans_visage_n1", "golem_de_faience_n1", "avortons_des_caves_n2", "le_sac_a_murmures_n2"]),
+    ("ilyr", ["longuepine_n4", "bouche_arbalete_n3", "echassier_des_brumes_n3", "veilleur_bifurque_n2",
+                   "lil_empale_n1", "la_croisee_des_regards_n1", "avortons_des_caves_n3", "le_voyeur_n1"]),
+    ("sylkha", ["nud_vivant_n3", "bourgeon_mordant_n3", "mante_des_racines_n2", "porte_nid_n2",
+                    "fourmilion_des_nerfs_n2", "la_nourrice_nouee_n1", "avortons_des_caves_n2", "devoreur_de_lanternes_n2"]),
+    ("enigma", ["collecteur_de_dents_n4", "depeceur_rampant_n4", "recycleur_thoracique_n3", "porte_greffes_n2",
+                 "le_demonteur_n2", "la_machine_aux_mille_depouilles_n1", "avortons_des_caves_n3", "le_voyeur_n1"]),
 )
 
 
@@ -132,10 +132,10 @@ def test_catalog_flattens_all_variants_and_preserves_training_cards():
     catalog = StoneCatalog()
     assert len(catalog.definitions) > 100
     assert set(catalog.gods) == {
-        "inari", "izanami", "hachiman", "tsukuyomi", "okuninushi", "susanoo"}
-    assert catalog.definition("f01_n3")["lineage_id"] == "f01"
-    assert catalog.definition("f01_n3")["level"] == 3
-    assert catalog.affinity("f01_n3") == "inari"
+        "veskar", "nerava", "kharun", "ilyr", "sylkha", "enigma"}
+    assert catalog.definition("devoracle_n3")["lineage_id"] == "devoracle"
+    assert catalog.definition("devoracle_n3")["level"] == 3
+    assert catalog.affinity("devoracle_n3") == "veskar"
 
 
 @pytest.mark.parametrize("agent_player", [1, 2])
@@ -174,11 +174,11 @@ def test_fast_profile_opponent_is_seeded_and_legal():
 
 
 def test_optimized_profile_scores_match_full_swarm_simulation():
-    deck = ["e01_n3", "e04_n3", "e05_n2", "e06_n2",
-            "e07_n2", "e09_n1", "n01_n2", "n16_n2"]
+    deck = ["nud_vivant_n3", "bourgeon_mordant_n3", "mante_des_racines_n2", "porte_nid_n2",
+            "fourmilion_des_nerfs_n2", "la_nourrice_nouee_n1", "avortons_des_caves_n2", "devoreur_de_lanternes_n2"]
     simulator = FastSimulator()
     simulator.reset({"seed": 83, "first_player": 1, "blocked": [],
-                     "human_god": "okuninushi", "ai_god": "okuninushi",
+                     "human_god": "sylkha", "ai_god": "sylkha",
                      "human_deck": deck, "ai_deck": deck})
     state = simulator.state
     assert state is not None
@@ -201,7 +201,7 @@ def test_anticipation_does_not_read_the_opponents_hidden_cards():
     assert state is not None
     move = simulator.legal_actions()[0]
     baseline = simulator._move_value(state, move, True)
-    replacement = [stone_id for stone_id in simulator.catalog.stones_for_god("inari")
+    replacement = [stone_id for stone_id in simulator.catalog.stones_for_god("veskar")
                    if stone_id not in state.hands[2]][:len(state.hands[2])]
     assert len(replacement) == len(state.hands[2])
     state.hands[2] = replacement
@@ -261,12 +261,12 @@ def test_reply_profile_cache_is_shared_and_bounded_by_public_state():
 
 
 DETERMINISTIC_SCENARIOS = (
-    ("hachiman", ["r01_n2", "r02_n2", "r03_n2", "r04_n2",
-                  "r05_n1", "r06_n1", "n01_n2", "n24_n2"]),
-    ("izanami", ["d01_n2", "d02_n2", "d03_n2", "d04_n2",
-                 "d05_n1", "d07_n1", "n12_n1", "n16_n1"]),
-    ("tsukuyomi", ["h01_n4", "h04_n3", "h05_n3", "h06_n2",
-                   "h09_n1", "h12_n1", "n01_n3", "n21_n1"]),
+    ("kharun", ["eclat_cuirasse_n2", "heaume_errant_n2", "carapace_vide_n2", "osselet_blinde_n2",
+                  "chevalier_sans_visage_n1", "golem_de_faience_n1", "avortons_des_caves_n2", "le_sac_a_murmures_n2"]),
+    ("nerava", ["porte_fievre_n2", "crache_cendre_n2", "clochelet_malade_n2", "machoire_moisie_n2",
+                 "veuve_des_spores_n1", "griffe_septique_n1", "le_nud_hurlant_n1", "devoreur_de_lanternes_n1"]),
+    ("ilyr", ["longuepine_n4", "bouche_arbalete_n3", "echassier_des_brumes_n3", "veilleur_bifurque_n2",
+                   "lil_empale_n1", "la_croisee_des_regards_n1", "avortons_des_caves_n3", "le_voyeur_n1"]),
 )
 
 

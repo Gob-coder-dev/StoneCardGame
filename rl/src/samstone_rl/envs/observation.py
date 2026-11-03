@@ -10,7 +10,7 @@ class ObservationEncoder:
     SCHEMA_VERSION = 1
     SIDES = ("top", "bottom", "left", "right")
     EFFECTS = ("weaken_adjacent", "weaken_on_failed_attack", "swarm", "shield_theft")
-    GODS = ("inari", "izanami", "hachiman", "tsukuyomi", "okuninushi", "susanoo")
+    GODS = ("veskar", "nerava", "kharun", "ilyr", "sylkha", "enigma")
     AFFINITIES = ("neutral",) + GODS
     COIN_AXES = ("", "horizontal", "vertical")
     BOARD_FEATURES = 42

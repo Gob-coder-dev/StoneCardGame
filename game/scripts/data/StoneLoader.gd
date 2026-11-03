@@ -4,7 +4,7 @@
 ## NB : pas de class_name ici — le nom "StoneLoader" est défini dans project.godot
 ##      comme AutoLoad, ce qui le rend accessible globalement sans class_name.
 ##
-## Accès depuis n'importe quel script : StoneLoader.get_stone("n01_n1")
+## Accès depuis n'importe quel script : StoneLoader.get_stone("avortons_des_caves_n1")
 extends Node
 
 const ContentChecks := preload("res://scripts/data/ContentValidator.gd")
@@ -25,11 +25,13 @@ var _legacy_ids: Dictionary = {}
 
 ## Dictionnaire indexé par npc_id -> dict complet du NPC
 var _npcs: Dictionary = {}
+var _legacy_npc_ids: Dictionary = {}
 
 ## Dieux jouables et ordre d'affichage.
 var _gods: Dictionary = {}
 var _gods_list: Array = []
 var _default_god_id: String = ""
+var _legacy_god_ids: Dictionary = {}
 
 
 func _ready() -> void:
@@ -112,6 +114,7 @@ func _load_npcs() -> void:
 
 	for npc in parsed["npcs"]:
 		_npcs[npc["id"]] = npc
+	_legacy_npc_ids = parsed.get("legacy_ids", {}).duplicate()
 
 	print("StoneLoader: %d NPCs chargés." % _npcs.size())
 
@@ -129,6 +132,7 @@ func _load_gods() -> void:
 	for god in parsed["gods"]:
 		_gods[str(god["id"])] = god
 		_gods_list.append(god)
+	_legacy_god_ids = parsed.get("legacy_ids", {}).duplicate()
 
 
 ## ─── Accès aux pierres ────────────────────────────────────────────────────────
@@ -214,7 +218,13 @@ func build_hand(stone_ids: Array) -> Array:
 ## ─── Accès aux NPCs ───────────────────────────────────────────────────────────
 
 func get_npc(npc_id: String) -> Dictionary:
-	return _npcs.get(npc_id, {}).duplicate(true)
+	return _npcs.get(resolve_saved_npc_id(npc_id), {}).duplicate(true)
+
+
+## Les identifiants historiques ne servent qu'au chargement des sauvegardes.
+## Le jeu et les nouvelles sauvegardes utilisent exclusivement les IDs actuels.
+func resolve_saved_npc_id(npc_id: String) -> String:
+	return npc_id if _npcs.has(npc_id) else str(_legacy_npc_ids.get(npc_id, npc_id))
 
 
 ## Retourne la liste des NPCs triée par difficulté (easy → hard)
@@ -230,7 +240,13 @@ func get_npcs_ordered() -> Array:
 ## ─── Accès aux dieux et aux familles ────────────────────────────────────────
 
 func get_god(god_id: String) -> Dictionary:
-	return _gods.get(god_id, {}).duplicate(true)
+	return _gods.get(resolve_saved_god_id(god_id), {}).duplicate(true)
+
+
+## Les identifiants historiques ne servent qu'au chargement des sauvegardes.
+## Le jeu et les nouvelles sauvegardes utilisent exclusivement les IDs actuels.
+func resolve_saved_god_id(god_id: String) -> String:
+	return god_id if _gods.has(god_id) else str(_legacy_god_ids.get(god_id, god_id))
 
 
 func get_all_gods() -> Array:
@@ -244,10 +260,11 @@ func default_god_id() -> String:
 
 
 func is_stone_available_to_god(stone_id: String, god_id: String) -> bool:
-	if not _gods.has(god_id):
+	var resolved_god := resolve_saved_god_id(god_id)
+	if not _gods.has(resolved_god):
 		return false
 	var affinity := stone_affinity(stone_id)
-	return affinity != "" and (affinity == "neutral" or affinity == god_id)
+	return affinity != "" and (affinity == "neutral" or affinity == resolved_god)
 
 
 ## Lecture du catalogue sans copie : famille de la pierre, ou "" si inconnue.

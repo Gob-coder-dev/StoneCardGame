@@ -14,23 +14,23 @@ func run() -> void:
 
 
 func _test_codec() -> void:
-	var legacy := {"player_deck": ["p08_n1", "p09_n2", "p12_n1", "n12_n2"],
+	var legacy := {"player_deck": ["porte_greffes_n1", "le_demonteur_n2", "la_machine_aux_mille_depouilles_n1", "le_nud_hurlant_n2"],
 		"player_name": "  Testeur  ", "stats": {"wins": 7}}
 	var profile := Codec.decode(legacy)
-	_check(profile["player_god_id"] == "susanoo" and profile["player_name"] == "Testeur",
+	_check(profile["player_god_id"] == "enigma" and profile["player_name"] == "Testeur",
 		"une ancienne sauvegarde conserve son pseudo et retrouve son dieu")
 	_check(profile["stats"]["wins"] == 7 and profile["stats"]["losses"] == 0,
 		"les statistiques anciennes sont conservées et complétées")
-	_check(profile["decks_by_god"]["susanoo"][0] == legacy["player_deck"]
-		and profile["selected_deck_by_god"]["susanoo"] == 0,
+	_check(profile["decks_by_god"]["enigma"][0] == legacy["player_deck"]
+		and profile["selected_deck_by_god"]["enigma"] == 0,
 		"l'ancien deck migre dans le premier emplacement de son dieu")
 	var round_trip := Codec.decode(Codec.encode(profile["decks_by_god"], profile["selected_deck_by_god"], profile["player_god_id"],
 		profile["player_name"], profile["stats"]))
 	_check(round_trip == profile, "le nouveau format conserve toutes les données après chargement")
 	_check(not profile.has("selected_npc_id") and not profile.has("last_winner"),
 		"le contexte du combat reste absent de la sauvegarde du joueur")
-	var version_one := Codec.decode({"save_version": 1, "player_god_id": "inari", "player_deck": ["n12_n2"]})
-	_check(version_one["decks_by_god"]["inari"] == [["n12_n2"], [], []]
+	var version_one := Codec.decode({"save_version": 1, "player_god_id": "veskar", "player_deck": ["le_nud_hurlant_n2"]})
+	_check(version_one["decks_by_god"]["veskar"] == [["le_nud_hurlant_n2"], [], []]
 		and version_one["save_version"] == 4, "la version 1 conserve son deck et crée deux emplacements vides")
 
 
@@ -40,78 +40,78 @@ func _test_banks_codec() -> void:
 	for slots in profile["decks_by_god"].values():
 		valid = valid and slots == [[], [], []]
 	_check(valid, "un nouveau profil possède trois decks vides pour chacun des six dieux")
-	profile["decks_by_god"]["inari"][1].append("n12_n2")
-	_check(profile["decks_by_god"]["inari"][0].is_empty()
-		and profile["decks_by_god"]["inari"][2].is_empty()
-		and profile["decks_by_god"]["susanoo"][1].is_empty(),
+	profile["decks_by_god"]["veskar"][1].append("le_nud_hurlant_n2")
+	_check(profile["decks_by_god"]["veskar"][0].is_empty()
+		and profile["decks_by_god"]["veskar"][2].is_empty()
+		and profile["decks_by_god"]["enigma"][1].is_empty(),
 		"aucun tableau de deck n'est partagé entre emplacements ou dieux")
-	profile["decks_by_god"]["susanoo"][2] = ["p08_n1"]
-	profile["selected_deck_by_god"]["inari"] = 1
-	profile["selected_deck_by_god"]["susanoo"] = 2
-	profile["player_god_id"] = "inari"
+	profile["decks_by_god"]["enigma"][2] = ["porte_greffes_n1"]
+	profile["selected_deck_by_god"]["veskar"] = 1
+	profile["selected_deck_by_god"]["enigma"] = 2
+	profile["player_god_id"] = "veskar"
 	var reloaded := Codec.decode(JSON.parse_string(JSON.stringify(profile)))
 	_check(reloaded["decks_by_god"] == profile["decks_by_god"]
 		and reloaded["selected_deck_by_god"] == profile["selected_deck_by_god"]
 		and reloaded["player_god_id"] == profile["player_god_id"],
 		"un aller-retour JSON conserve toutes les banques et les sélections par dieu")
-	var damaged := Codec.decode({"player_god_id": "inari",
-		"decks_by_god": {"inari": [["n12_n2", "n12_n2", "p08_n1", "inconnu"], null, ["f03_n1"], ["f07_n1"]],
-			"susanoo": [["p08_n1"]], "izanami": "incorrect", "inconnu": [["f03_n1"]]},
-		"selected_deck_by_god": {"inari": 1.5, "susanoo": 2.0, "izanami": -1, "tsukuyomi": 3, "hachiman": "2"}})
-	_check(damaged["decks_by_god"]["inari"] == [["n12_n2"], [], ["f03_n1"]]
-		and damaged["decks_by_god"]["susanoo"][0] == ["p08_n1"]
-		and damaged["decks_by_god"]["izanami"] == [[], [], []]
+	var damaged := Codec.decode({"player_god_id": "veskar",
+		"decks_by_god": {"veskar": [["le_nud_hurlant_n2", "le_nud_hurlant_n2", "porte_greffes_n1", "inconnu"], null, ["de_boiteux_n1"], ["jumeau_de_cuivre_n1"]],
+			"enigma": [["porte_greffes_n1"]], "nerava": "incorrect", "inconnu": [["de_boiteux_n1"]]},
+		"selected_deck_by_god": {"veskar": 1.5, "enigma": 2.0, "nerava": -1, "ilyr": 3, "kharun": "2"}})
+	_check(damaged["decks_by_god"]["veskar"] == [["le_nud_hurlant_n2"], [], ["de_boiteux_n1"]]
+		and damaged["decks_by_god"]["enigma"][0] == ["porte_greffes_n1"]
+		and damaged["decks_by_god"]["nerava"] == [[], [], []]
 		and not damaged["decks_by_god"].has("inconnu"),
 		"un emplacement abîmé est nettoyé sans effacer les autres dieux ni accepter une carte incompatible")
-	_check(damaged["selected_deck_by_god"]["inari"] == 0
-		and damaged["selected_deck_by_god"]["susanoo"] == 2
-		and damaged["selected_deck_by_god"]["izanami"] == 0
-		and damaged["selected_deck_by_god"]["tsukuyomi"] == 0
-		and damaged["selected_deck_by_god"]["hachiman"] == 0,
+	_check(damaged["selected_deck_by_god"]["veskar"] == 0
+		and damaged["selected_deck_by_god"]["enigma"] == 2
+		and damaged["selected_deck_by_god"]["nerava"] == 0
+		and damaged["selected_deck_by_god"]["ilyr"] == 0
+		and damaged["selected_deck_by_god"]["kharun"] == 0,
 		"les numéros invalides reviennent au premier emplacement, les indices JSON valides sont conservés")
-	_check(Codec.decode({"decks_by_god": [], "selected_deck_by_god": []})["decks_by_god"]["inari"] == [[], [], []],
+	_check(Codec.decode({"decks_by_god": [], "selected_deck_by_god": []})["decks_by_god"]["veskar"] == [[], [], []],
 		"des banques de type incorrect sont chargées comme des decks vides")
 
 
 func _test_autosave() -> void:
 	_remove_test_files()
-	Storage.write(TEST_PATH, {"player_god_id": "inari", "player_deck": ["n12_n2"], "player_name": "Testeur", "stats": {"wins": 7}})
+	Storage.write(TEST_PATH, {"player_god_id": "veskar", "player_deck": ["le_nud_hurlant_n2"], "player_name": "Testeur", "stats": {"wins": 7}})
 	var player := PlayerModel.new(TEST_PATH)
 	player.load_save()
-	_check(player.get_active_deck() == ["n12_n2"], "PlayerData charge l'ancien deck avant toute écriture")
+	_check(player.get_active_deck() == ["le_nud_hurlant_n2"], "PlayerData charge l'ancien deck avant toute écriture")
 	_check(player.set_selected_deck(1) and player.get_active_deck().is_empty(), "choisir le deuxième emplacement ouvre son propre deck")
-	var add := DeckRules.try_add(player.get_active_deck(), "f03_n1", "inari")
+	var add := DeckRules.try_add(player.get_active_deck(), "de_boiteux_n1", "veskar")
 	_check(player.set_player_deck(add["deck"])
-		and Codec.decode(Storage.read(TEST_PATH))["decks_by_god"]["inari"][1] == ["f03_n1"],
+		and Codec.decode(Storage.read(TEST_PATH))["decks_by_god"]["veskar"][1] == ["de_boiteux_n1"],
 		"ajouter une carte dans un deck incomplet l'enregistre immédiatement en JSON")
-	var replace := DeckRules.try_replace(player.get_active_deck(), "f03_n1", "f07_n1", "inari")
+	var replace := DeckRules.try_replace(player.get_active_deck(), "de_boiteux_n1", "jumeau_de_cuivre_n1", "veskar")
 	_check(player.set_player_deck(replace["deck"])
-		and Codec.decode(Storage.read(TEST_PATH))["decks_by_god"]["inari"][1] == ["f07_n1"],
+		and Codec.decode(Storage.read(TEST_PATH))["decks_by_god"]["veskar"][1] == ["jumeau_de_cuivre_n1"],
 		"remplacer une carte enregistre immédiatement le même emplacement")
-	var remove := DeckRules.try_remove(player.get_active_deck(), "f07_n1")
+	var remove := DeckRules.try_remove(player.get_active_deck(), "jumeau_de_cuivre_n1")
 	_check(player.set_player_deck(remove["deck"])
-		and Codec.decode(Storage.read(TEST_PATH))["decks_by_god"]["inari"][1].is_empty(),
+		and Codec.decode(Storage.read(TEST_PATH))["decks_by_god"]["veskar"][1].is_empty(),
 		"retirer la dernière carte enregistre aussi un deck vide")
-	_check(player.set_player_deck(["n12_n2"]) and player.get_deck("inari", 0) == ["n12_n2"],
+	_check(player.set_player_deck(["le_nud_hurlant_n2"]) and player.get_deck("veskar", 0) == ["le_nud_hurlant_n2"],
 		"une même carte peut appartenir à plusieurs decks indépendants")
 	var untouched := player.get_profile()
 	var copy := player.get_active_deck()
 	copy.clear()
 	var snapshot := player.get_profile()
-	snapshot["decks_by_god"]["inari"][1].clear()
+	snapshot["decks_by_god"]["veskar"][1].clear()
 	_check(player.get_profile() == untouched, "les lectures du profil et du deck ne permettent pas de modifier les données persistantes")
-	_check(not player.set_player_deck(["n12_n2", "n12_n2"])
-		and not player.set_player_deck(["p08_n1"]) and not player.set_player_deck(["inconnu"])
+	_check(not player.set_player_deck(["le_nud_hurlant_n2", "le_nud_hurlant_n2"])
+		and not player.set_player_deck(["porte_greffes_n1"]) and not player.set_player_deck(["inconnu"])
 		and not player.set_selected_deck(-1) and not player.set_selected_deck(3)
 		and not player.set_player_god("inconnu") and player.get_profile() == untouched,
 		"une modification invalide ne change ni les cartes, ni le dieu, ni le numéro actif")
-	_check(player.set_player_god("susanoo") and player.get_active_deck().is_empty(),
+	_check(player.set_player_god("enigma") and player.get_active_deck().is_empty(),
 		"un autre dieu ouvre sa banque au lieu de filtrer le deck précédent")
 	player.set_selected_deck(2)
-	player.set_player_deck(["p08_n1"])
-	player.set_player_god("inari")
-	_check(player.get_selected_deck() == 1 and player.get_active_deck() == ["n12_n2"]
-		and player.get_deck("susanoo", 2) == ["p08_n1"], "chaque dieu retrouve son dernier numéro et conserve tous ses decks")
+	player.set_player_deck(["porte_greffes_n1"])
+	player.set_player_god("veskar")
+	_check(player.get_selected_deck() == 1 and player.get_active_deck() == ["le_nud_hurlant_n2"]
+		and player.get_deck("enigma", 2) == ["porte_greffes_n1"], "chaque dieu retrouve son dernier numéro et conserve tous ses decks")
 	var reloaded := PlayerModel.new(TEST_PATH)
 	reloaded.load_save()
 	_check(reloaded.get_profile()["decks_by_god"] == player.get_profile()["decks_by_god"]
@@ -128,7 +128,7 @@ func _test_autosave() -> void:
 
 func _test_failed_save() -> void:
 	_remove_test_files()
-	Storage.write(TEST_PATH, {"player_god_id": "inari", "player_deck": ["n12_n2"]})
+	Storage.write(TEST_PATH, {"player_god_id": "veskar", "player_deck": ["le_nud_hurlant_n2"]})
 	var player := PlayerModel.new(TEST_PATH)
 	player.load_save()
 	var previous := player.get_profile()
@@ -136,13 +136,13 @@ func _test_failed_save() -> void:
 	# TEST_PATH est un fichier, donc aucun enfant ne peut y être créé.
 	player._save_path = TEST_PATH + "/missing/profile.json"
 	_expect_log("PlayerData: profil non enregistré")
-	_check(not player.set_player_deck(["f03_n1"]) and player.get_profile() == previous,
+	_check(not player.set_player_deck(["de_boiteux_n1"]) and player.get_profile() == previous,
 		"un échec d'enregistrement annule la modification du deck")
 	_expect_log("PlayerData: profil non enregistré")
 	_check(not player.set_selected_deck(2) and player.get_profile() == previous,
 		"un échec d'enregistrement garde le numéro précédent actif")
 	_expect_log("PlayerData: profil non enregistré")
-	_check(not player.set_player_god("susanoo") and player.get_profile() == previous and Storage.read(TEST_PATH) == disk,
+	_check(not player.set_player_god("enigma") and player.get_profile() == previous and Storage.read(TEST_PATH) == disk,
 		"un échec d'enregistrement garde le dieu et le fichier précédents intacts")
 	_expect_log("PlayerData: profil non enregistré")
 	_check(player.set_player_name("Nouveau nom") == PlayerModel.ProfileChange.SAVE_FAILED

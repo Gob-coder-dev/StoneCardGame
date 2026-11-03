@@ -5,7 +5,7 @@ import argparse
 import json
 from pathlib import Path
 
-GODS = ("inari", "izanami", "hachiman", "tsukuyomi", "okuninushi", "susanoo")
+GODS = ("veskar", "nerava", "kharun", "ilyr", "sylkha", "enigma")
 
 
 def main() -> int:

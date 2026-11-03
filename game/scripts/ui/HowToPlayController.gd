@@ -5,7 +5,7 @@ const Badge := preload("res://scripts/ui/PowerBadge.gd")
 const Effects := preload("res://scripts/domain/StoneEffects.gd")
 
 const GOD_RULES := {
-	"inari": [
+	"veskar": [
 		{"kind": "fortune", "count": 2, "title": "Lames aléatoires ×2",
 			"text": "Le nombre indique combien de lames roses seront ajoutées. À la pose, elles tournent puis rejoignent leurs faces tirées au sort. Chaque lame coûte {random_cost} point. Une face pleine ne peut plus en recevoir."},
 		{"kind": "coin_horizontal", "title": "Pile ou face horizontal ↔",
@@ -13,25 +13,25 @@ const GOD_RULES := {
 		{"kind": "coin_vertical", "title": "Pile ou face vertical ↕",
 			"text": "Même lancer, mais ✓ échange le haut et le bas. L'échange est révélé avant les captures. Une carte Fortune possède un seul de ces trois pouvoirs."}
 	],
-	"izanami": [
+	"nerava": [
 		{"kind": "weaken_miss", "title": "Échec corrosif −{corrosion}",
 			"text": "Quand cette carte attaque une pierre adverse sans réussir à la capturer, de près ou avec une lame bleue, un poison atteint cette pierre et lui retire {corrosion} de force sur chaque face. Les pierres capturées, non attaquées ou hors de portée ne sont pas touchées. Le malus reste actif pendant le tour adverse puis pendant votre coup suivant, et expire après ce coup. Les lames neutralisées apparaissent fissurées ; les boucliers restent fonctionnels."},
 		{"kind": "weaken_adjacent", "title": "Miasme autour de la pierre",
 			"text": "Le point central et ses quatre voisins représentent les cases adjacentes. Tant que la carte reste dans le camp de Nérava, une aura violette retire 1 force sur chaque face à chaque pierre adverse voisine, y compris à une carte posée plus tard à côté : celle-ci attaque d'abord normalement, puis subit le malus. Deux pierres Miasme voisines retirent 2 de force. Si la carte Miasme est capturée par un autre dieu, ou si la voisine passe dans ton camp, le malus disparaît. Chaque niveau de faiblesse brise visuellement une lame par face, sans affecter les boucliers. Une carte Déclin ne possède qu'un seul pouvoir."}
 	],
-	"hachiman": [
+	"kharun": [
 		{"kind": "shield", "title": "Rempart : le demi-cercle",
 			"text": "Un demi-cercle est un bouclier : il occupe un emplacement comme une lame, mais défend uniquement. Exemple : 2 lames + 1 bouclier = 2 d'attaque et 3 de défense. Il coûte {shield_cost} point. Lames et boucliers ne dépassent jamais {max_markers} symboles au total sur une face."}
 	],
-	"tsukuyomi": [
+	"ilyr": [
 		{"kind": "long", "title": "Horizon : la grande lame bleue",
 			"text": "Une lame bleue attaque au contact et sur toute sa ligne. Exemple : 2 lames normales + 2 lames longues = 4 d'attaque voisine et 2 à distance. Après chaque capture, les bleues transpercent la pierre et continuent avec leur force distante inchangée. Elles traversent les alliés et les cases vides ; un ennemi qui résiste ou une case bloquée les arrête. Aucun tir ne part sans ennemi atteignable sur la ligne. À distance, seules les lames bleues s'activent. Une lame longue coûte {long_cost} point."}
 	],
-	"okuninushi": [
+	"sylkha": [
 		{"kind": "swarm", "title": "Essaim : les trois points reliés",
 			"text": "Les pierres Essaim alliées reliées par leurs côtés forment un groupe. Plusieurs lianes vertes croisées restent visibles entre toute la largeur de leurs bords, puis une impulsion y fait pousser leurs lames d'aura. Chaque membre reçoit {swarm_per_ally} lames par autre membre du groupe, jusqu'à +{swarm_cap}, dans ses emplacements libres. Exemple : deux pierres reliées gagnent chacune 2 lames, trois pierres ou plus 4 lames chacune. Seul un joueur dont le dieu est Sylkha relie ses pierres Essaim : une pierre capturée par un autre dieu perd son aura et ne renforce pas l'adversaire. Capturer un maillon coupe les lianes concernées et rétracte les bonus perdus."}
 	],
-	"susanoo": [
+	"enigma": [
 		{"kind": "theft", "title": "Pillage : le cercle avec un +",
 			"text": "Après une capture, les symboles vaincus sont aspirés puis un répartiteur orange révèle les boucliers gagnés. Exemple : vaincre une face avec 2 lames et 1 bouclier donne jusqu'à 3 boucliers, distribués au hasard dans les emplacements libres des trois autres faces : la face qui a capturé n'en reçoit pas, et un symbole sans place est perdu. La pierre capturée conserve ses symboles. Chaque face reste limitée à {max_markers} symboles au total."}
 	]

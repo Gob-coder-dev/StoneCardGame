@@ -74,10 +74,10 @@ func _test_generated_decks() -> void:
 
 
 func _test_deck_stability() -> void:
-	var first := OpponentCatalogModel.build("inari", "n34", "moyen")
-	var same := OpponentCatalogModel.build("inari", "n34", "moyen")
-	var harder := OpponentCatalogModel.build("inari", "n34", "tres_difficile")
-	var other_bracket := OpponentCatalogModel.build("inari", "n2", "moyen")
+	var first := OpponentCatalogModel.build("veskar", "n34", "moyen")
+	var same := OpponentCatalogModel.build("veskar", "n34", "moyen")
+	var harder := OpponentCatalogModel.build("veskar", "n34", "tres_difficile")
+	var other_bracket := OpponentCatalogModel.build("veskar", "n2", "moyen")
 	_check(first["deck"] == same["deck"] and first["deck"] == harder["deck"],
 		"une rencontre garde son deck d'une difficulté à l'autre et d'une session à l'autre")
 	_check(first["deck"] != other_bracket["deck"],
@@ -100,15 +100,15 @@ func _test_progression_rows() -> void:
 func _test_battle_context() -> void:
 	var saved_id := BattleContext.selected_npc_id
 	var saved_opponent := BattleContext.selected_opponent
-	var opponent := OpponentCatalogModel.build("inari", "n34", "difficile")
+	var opponent := OpponentCatalogModel.build("veskar", "n34", "difficile")
 	BattleContext.select_opponent(opponent)
 	var current := BattleContext.current_opponent()
 	_check(BattleContext.selected_npc_id == opponent["id"]
 		and current.get("id", "") == opponent["id"] and current["deck"] == opponent["deck"],
 		"le contexte mémorise l'adversaire généré et son identifiant de statistiques")
 	BattleContext.selected_opponent = {}
-	BattleContext.selected_npc_id = "hiro"
-	_check(BattleContext.current_opponent().get("id", "") == "hiro",
+	BattleContext.selected_npc_id = "disciple_muraille"
+	_check(BattleContext.current_opponent().get("id", "") == "disciple_muraille",
 		"un adversaire historique reste accessible quand aucun adversaire généré ne correspond")
 	BattleContext.selected_npc_id = saved_id
 	BattleContext.selected_opponent = saved_opponent

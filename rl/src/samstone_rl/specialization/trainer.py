@@ -109,7 +109,8 @@ class BossSpecialistTrainer(PPOTrainer):
     def _training_opponent(self) -> LeagueOpponent:
         return LeagueOpponent(self.league)
 
-    def _training_scenario_options(self, scenario_index: int, agent_player: int) -> dict:
+    def _training_scenario_options(self, scenario_index: int, agent_player: int,
+                                   blocked: list[list[int]] | None = None) -> dict:
         del scenario_index
         own = self._specialist_scenario
         mirror_probability = float(self.config["specialization"].get("mirror_probability", 0.10))
@@ -117,7 +118,10 @@ class BossSpecialistTrainer(PPOTrainer):
             other = own
         else:
             other = self._roster_scenarios[int(self.rng.integers(len(self._roster_scenarios)))]
-        return self._match_options(own, other, agent_player)
+        options = self._match_options(own, other, agent_player)
+        if blocked is not None:
+            options["config"]["blocked"] = blocked
+        return options
 
     @staticmethod
     def _match_options(own: dict, other: dict, agent_player: int) -> dict:

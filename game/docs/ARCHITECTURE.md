@@ -91,10 +91,13 @@ fournissent des lectures de l'index ; `get_lineages_for_god` fournit une entrée
 par monstre pour la collection. Une forme demandée hors limites est refusée ;
 seul `preview_variant` sature le niveau demandé. Le dictionnaire facultatif
 `legacy_ids` décrit les correspondances explicites d'anciens identifiants.
-Les identifiants suivent la référence du catalogue : `n01` désigne une lignée,
-`n01_n2` sa deuxième forme. Les 131 identifiants historiques ne sont plus
-indexés comme cartes jouables ; `resolve_saved_id` les résout seulement pour
-les sauvegardes.
+Les identifiants décrivent maintenant le contenu : `avortons_des_caves` désigne
+une lignée, `avortons_des_caves_n2` sa deuxième forme. Les 406 identifiants de
+cartes historiques ne sont plus indexés comme cartes jouables ;
+`resolve_saved_id` les résout seulement pour les sauvegardes. Les mêmes règles
+s'appliquent aux IDs de dieux et de PNJ via `resolve_saved_god_id` et
+`resolve_saved_npc_id`. Les champs historiques `catalogue_ref` et `kind` ont
+été retirés : ils étaient redondants et aucun système de jeu ne les lisait.
 
 La version 4 lit les profils antérieurs. `PlayerSaveCodec` confie les tableaux
 contenant des alias à `DeckCatalogueMigration`. Cette conversion déterministe

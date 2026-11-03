@@ -6,7 +6,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
-BOSS_GODS = ("inari", "izanami", "hachiman", "tsukuyomi", "okuninushi", "susanoo")
+BOSS_GODS = ("veskar", "nerava", "kharun", "ilyr", "sylkha", "enigma")
 
 
 def file_checksum(path: str | Path) -> str:

@@ -27,7 +27,7 @@ func run() -> void:
 	_test_complete_matches()
 
 func _test_clone_and_hidden_random() -> void:
-	var state := _state_with_hands(["f03_n1"], ["f07_n1"])
+	var state := _state_with_hands(["de_boiteux_n1"], ["jumeau_de_cuivre_n1"])
 	state.set_random_seed(9988)
 	var clone := state.clone()
 	clone.draw_random_index(4)
@@ -84,8 +84,8 @@ func _test_profiles() -> void:
 
 func _test_ai_moves() -> void:
 	for data in [RANDOM, HALF, GREEDY, CAREFUL]:
-		var state := _state_with_hands(["n12_n2"], ["f03_n1", "f07_n1", "f08_n1"])
-		state.human_god_id = "inari"
+		var state := _state_with_hands(["le_nud_hurlant_n2"], ["de_boiteux_n1", "jumeau_de_cuivre_n1", "valet_a_lenvers_n1"])
+		state.human_god_id = "veskar"
 		_force_instance(state, 1, 1, "fx_plain", GameState.PLAYER_HUMAN)
 		var view := state.clone_for_ai()
 		var random_before := view.random_state
@@ -98,7 +98,7 @@ func _test_ai_moves() -> void:
 
 
 func _test_evaluation() -> void:
-	var deferred := RiposteModel.new(_state_with_hands(["n12_n2"], []).clone_for_ai())
+	var deferred := RiposteModel.new(_state_with_hands(["le_nud_hurlant_n2"], []).clone_for_ai())
 	_check(not deferred.is_prepared() and deferred.prepare_step() and deferred.is_prepared(),
 		"le modèle de riposte diffère sa préparation jusqu'au lancement de la recherche")
 	# Seul fx_attack2 posé en (1,1) capture la pierre humaine : 2 lames contre 1.
@@ -113,8 +113,8 @@ func _test_evaluation() -> void:
 		{"row": 1, "col": 0, "stone_id": "fx_ranged"}, 0)
 	_check(is_equal_approx(outcome["value"], 2.0) and not outcome["random"],
 		"l'évaluation compte les captures transperçantes")
-	var fortune := MoveEvaluatorModel.new(_state_with_hands([], ["f03_n1"]).clone_for_ai(), false).evaluate(
-		{"row": 1, "col": 1, "stone_id": "f03_n1"}, 0)
+	var fortune := MoveEvaluatorModel.new(_state_with_hands([], ["de_boiteux_n1"]).clone_for_ai(), false).evaluate(
+		{"row": 1, "col": 1, "stone_id": "de_boiteux_n1"}, 0)
 	_check(fortune["random"], "un coup qui utilise le hasard est signalé pour être évalué sur plusieurs tirages")
 
 
@@ -142,16 +142,16 @@ func _test_precision() -> void:
 
 
 func _test_opponent_model() -> void:
-	var state := _state_with_hands(["r05_n1"], ["fx_strong_wall"])
-	state.human_god_id = "hachiman"
-	CombatResolverModel.apply_move(state, 0, 0, "r05_n1", GameState.PLAYER_HUMAN)
+	var state := _state_with_hands(["chevalier_sans_visage_n1"], ["fx_strong_wall"])
+	state.human_god_id = "kharun"
+	CombatResolverModel.apply_move(state, 0, 0, "chevalier_sans_visage_n1", GameState.PLAYER_HUMAN)
 	CombatResolverModel.apply_move(state, 0, 1, "fx_strong_wall", GameState.PLAYER_AI)
 	var captured := state.get_cell(0, 0)
 	_check(captured["owner"] == GameState.PLAYER_AI and captured["placed_by"] == GameState.PLAYER_HUMAN,
 		"une case capturée garde l'auteur de sa pose")
 	var cards := Opponent.possible_cards(state.clone_for_ai())
-	_check(cards.size() == StoneLoader.get_stones_for_god("hachiman").size() - StoneLoader.lineage_max_level("r05") and not cards.has("r05_n1")
-		and cards.has("n01_n4") and cards.has("r04_n3") and not cards.has("f03_n1"),
+	_check(cards.size() == StoneLoader.get_stones_for_god("kharun").size() - StoneLoader.lineage_max_level("chevalier_sans_visage") and not cards.has("chevalier_sans_visage_n1")
+		and cards.has("avortons_des_caves_n4") and cards.has("osselet_blinde_n3") and not cards.has("de_boiteux_n1"),
 		"l'IA suppose les cartes du dieu adverse et les neutres, moins celles déjà posées")
 	_check(Opponent.possible_cards(_state_with_hands([""], [])).size() == StoneLoader.get_all_stones().size(),
 		"avec un dieu inconnu, toutes les cartes du catalogue restent possibles")
@@ -164,7 +164,7 @@ func _test_opponent_model() -> void:
 		and is_equal_approx(Opponent.expected_best(captures, weights), 2.0)
 		and Opponent.rank_weights(3, 5) == PackedFloat64Array([1.0, 0.0, 0.0]),
 		"la riposte attendue pondère chaque carte par sa chance d'être la meilleure de la main")
-	var card_ids: Array[String] = ["f07_n1", "n12_n2"]
+	var card_ids: Array[String] = ["jumeau_de_cuivre_n1", "le_nud_hurlant_n2"]
 	var variants := Opponent.attack_variants(card_ids)
 	_check(variants[0].size() == 2 and variants[0][0].normal_blades("left") == 3 and variants[0][1].normal_blades("right") == 3
 		and variants[0][1].normal_blades("left") == 0 and variants[1].size() == 1,
@@ -177,7 +177,7 @@ func _test_opponent_model() -> void:
 ## La seule carte possible du joueur est un mur 4/4/4/4 (voir _use_catalog).
 func _trap_state(human_hand: Array) -> GameState:
 	var state := _state_3x3(human_hand, ["fx_attack2", "fx_ranged_target"])
-	state.human_god_id = "hachiman"
+	state.human_god_id = "kharun"
 	_force_instance(state, 0, 0, "fx_ranged_target", GameState.PLAYER_AI)
 	_force_instance(state, 0, 2, "fx_ranged_target", GameState.PLAYER_AI)
 	_force_instance(state, 1, 2, "fx_plain", GameState.PLAYER_HUMAN)
@@ -186,14 +186,14 @@ func _trap_state(human_hand: Array) -> GameState:
 
 func _test_anticipation_trap() -> void:
 	var catalog := _use_catalog(["fx_strong_wall"])
-	var greedy: Dictionary = _ai(GREEDY).choose_move(_trap_state(["n12_n2"]).clone_for_ai())
+	var greedy: Dictionary = _ai(GREEDY).choose_move(_trap_state(["le_nud_hurlant_n2"]).clone_for_ai())
 	_check(greedy == {"row": 1, "col": 1, "stone_id": "fx_attack2"}, "sans anticipation, l'IA prend la capture immédiate")
 	var all_careful := true
 	for seed_value in range(6):
-		var careful: Dictionary = _ai(CAREFUL, seed_value).choose_move(_trap_state(["n12_n2"]).clone_for_ai())
+		var careful: Dictionary = _ai(CAREFUL, seed_value).choose_move(_trap_state(["le_nud_hurlant_n2"]).clone_for_ai())
 		all_careful = all_careful and careful["row"] == 0 and careful["col"] == 1
 	_check(all_careful, "avec anticipation, l'IA renonce à une capture qui offre une riposte plus forte")
-	var view := _trap_state(["n12_n2"]).clone_for_ai()
+	var view := _trap_state(["le_nud_hurlant_n2"]).clone_for_ai()
 	var evaluator := MoveEvaluatorModel.new(view, true)
 	var trap_value: float = evaluator.evaluate({"row": 1, "col": 1, "stone_id": "fx_attack2"}, 0)["value"]
 	var safe_value: float = evaluator.evaluate({"row": 0, "col": 1, "stone_id": "fx_attack2"}, 0)["value"]
@@ -236,15 +236,15 @@ func _test_threat_by_direction() -> void:
 ## Pour chaque coup d'une vraie position (captures, Essaim, Pillage, Miasme et
 ## lames bleues compris), elle doit valoir le calcul refait de zéro sur le résultat.
 func _test_threat_reuse() -> void:
-	var state := _state_with_hands(["n12_n2"], ["e06_n1", "d07_n2", "p08_n1", "h09_n2", "e01_n1"])
-	state.human_god_id = "okuninushi"
-	_force_instance(state, 0, 0, "e05_n2", GameState.PLAYER_AI)
-	_force_instance(state, 0, 1, "e11_n1", GameState.PLAYER_AI)
+	var state := _state_with_hands(["le_nud_hurlant_n2"], ["porte_nid_n1", "griffe_septique_n2", "porte_greffes_n1", "lil_empale_n2", "nud_vivant_n1"])
+	state.human_god_id = "sylkha"
+	_force_instance(state, 0, 0, "mante_des_racines_n2", GameState.PLAYER_AI)
+	_force_instance(state, 0, 1, "le_cur_de_la_colonie_n1", GameState.PLAYER_AI)
 	_force_instance(state, 1, 1, "fx_plain", GameState.PLAYER_HUMAN)
-	_force_instance(state, 2, 2, "r07_n2", GameState.PLAYER_HUMAN)
+	_force_instance(state, 2, 2, "portail_dos_n2", GameState.PLAYER_HUMAN)
 	_force_instance(state, 3, 0, "fx_wall", GameState.PLAYER_AI)
 	state.apply_blocked_cells([[2, 0]])
-	for god_id in ["okuninushi", "izanami"]:
+	for god_id in ["sylkha", "nerava"]:
 		state.ai_god_id = god_id
 		CombatResolverModel.recalculate_swarm(state)
 		var view := state.clone_for_ai()
@@ -267,7 +267,7 @@ func _test_hidden_hand() -> void:
 	for data in [HALF, CAREFUL]:
 		for seed_value in range(4):
 			var moves: Array = []
-			for hand in [["n12_n2"], ["n01_n4"], ["r05_n1"]]:
+			for hand in [["le_nud_hurlant_n2"], ["avortons_des_caves_n4"], ["chevalier_sans_visage_n1"]]:
 				moves.append(_ai(data, seed_value).choose_move(_trap_state(hand).clone_for_ai()))
 			same = same and moves[0] == moves[1] and moves[1] == moves[2]
 	_restore_catalog(catalog)
@@ -276,8 +276,8 @@ func _test_hidden_hand() -> void:
 
 func _test_endgame() -> void:
 	# Dernière case libre (2,2) sous une pierre humaine : seul le mur la capture.
-	var last := _state_3x3(["n12_n2"], ["fx_ranged_target", "fx_strong_wall"])
-	last.human_god_id = "hachiman"
+	var last := _state_3x3(["le_nud_hurlant_n2"], ["fx_ranged_target", "fx_strong_wall"])
+	last.human_god_id = "kharun"
 	for index in [0, 1, 2, 3, 5, 6, 7]:
 		var owner := GameState.PLAYER_HUMAN if index == 5 else GameState.PLAYER_AI
 		_force_instance(last, index / 3, index % 3, "fx_plain", owner)
@@ -293,8 +293,8 @@ func _test_endgame() -> void:
 	# qui capture la pierre sans défense de l'IA en (1,1). La riposte immédiate
 	# ne pose pas la carte et ne voit pas cette aura ; le calcul exact la pose.
 	var catalog := _use_catalog(["fx_swarm_bottom"])
-	var aura := _state_3x3(["n12_n2"], ["fx_ranged_target"])
-	aura.human_god_id = "okuninushi"
+	var aura := _state_3x3(["le_nud_hurlant_n2"], ["fx_ranged_target"])
+	aura.human_god_id = "sylkha"
 	_force_instance(aura, 0, 0, "fx_swarm_a", GameState.PLAYER_HUMAN)
 	for index in [2, 3, 5, 6, 7]:
 		_force_instance(aura, index / 3, index % 3, "fx_strong_wall", GameState.PLAYER_AI)
@@ -327,8 +327,8 @@ func _test_turn_runner() -> void:
 	manager.turn_started.connect(func(player: int):
 		if player == GameState.PLAYER_AI:
 			runner.run_turn())
-	var deck: Array = StoneLoader.get_npc("kaguya")["deck"]
-	manager.start_game(deck, deck, [], "kaguya", GameState.PLAYER_AI, "susanoo", "susanoo")
+	var deck: Array = StoneLoader.get_npc("maitre_carcasses")["deck"]
+	manager.start_game(deck, deck, [], "maitre_carcasses", GameState.PLAYER_AI, "enigma", "enigma")
 	var frames := 0
 	while manager.get_state().ai_hand.size() == DeckRules.DECK_SIZE and frames < 300:
 		await get_tree().process_frame
@@ -342,16 +342,16 @@ func _test_turn_runner() -> void:
 	_check(placed == 1 and state.ai_hand.size() == DeckRules.DECK_SIZE - 1 and frames >= 70 and frames < 300,
 		"le tour de l'IA joue un seul coup légal, après son délai de réflexion")
 
-	manager.start_game(deck, deck, [], "kaguya", GameState.PLAYER_AI, "susanoo", "susanoo")
+	manager.start_game(deck, deck, [], "maitre_carcasses", GameState.PLAYER_AI, "enigma", "enigma")
 	await get_tree().process_frame
 	var thinking := runner.is_thinking()
-	manager.start_game(deck, deck, [], "kaguya", GameState.PLAYER_HUMAN, "susanoo", "susanoo")
+	manager.start_game(deck, deck, [], "maitre_carcasses", GameState.PLAYER_HUMAN, "enigma", "enigma")
 	for frame in range(100):
 		await get_tree().process_frame
 	_check(thinking and not runner.is_thinking() and manager.get_state().ai_hand.size() == DeckRules.DECK_SIZE,
 		"relancer la partie pendant la réflexion abandonne le coup prévu")
 
-	manager.start_game(deck, deck, [], "kaguya", GameState.PLAYER_AI, "susanoo", "susanoo")
+	manager.start_game(deck, deck, [], "maitre_carcasses", GameState.PLAYER_AI, "enigma", "enigma")
 	await get_tree().process_frame
 	remove_child(runner)
 	for frame in range(100):

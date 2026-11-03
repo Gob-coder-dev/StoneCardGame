@@ -21,8 +21,8 @@ from samstone_rl.training.deck_evolution import (
 
 
 def record(candidate_hash: str, opponent: str, seed: int, won: bool) -> MatchRecord:
-    return MatchRecord("engine", "catalog", "policy", candidate_hash, "inari", ("a",),
-                       opponent, "inari", ("b",), seed, 1, 1, 1 if won else 2,
+    return MatchRecord("engine", "catalog", "policy", candidate_hash, "veskar", ("a",),
+                       opponent, "veskar", ("b",), seed, 1, 1, 1 if won else 2,
                        10 if won else 6, 6 if won else 10)
 
 
@@ -43,7 +43,7 @@ def test_sqlite_cache_and_conservative_fitness(tmp_path):
 
 
 def test_paired_checkpoint_summary_compares_identical_cases():
-    cases = tuple(ComparisonCase(index, 100 + index, 0, "inari", 1, 1, 0)
+    cases = tuple(ComparisonCase(index, 100 + index, 0, "veskar", 1, 1, 0)
                   for index in range(3))
     reference = (
         ComparisonOutcome("reference", "a.pt", cases[0], 1, 2, 10),
@@ -57,7 +57,7 @@ def test_paired_checkpoint_summary_compares_identical_cases():
     )
     summary = grouped_summary(candidate)
     assert summary["overall"]["wins"] == 2
-    assert summary["by_god"]["inari"]["games"] == 3
+    assert summary["by_god"]["veskar"]["games"] == 3
     delta = paired_delta(reference, candidate)
     assert delta == {"games": 3, "candidate_better": 1, "same": 2,
                      "candidate_worse": 0, "decisive_games": 1,
@@ -83,34 +83,34 @@ def test_evolution_is_resumable_and_improves_toy_objective(tmp_path):
                              tournament_size=3, generations=3)
     state = EvolutionStateStore(tmp_path / "state.json")
     evolution = DeckEvolution(catalog, AcceptAll(), evaluate, "policy", config, state, 91)
-    ranking = evolution.run("inari")
+    ranking = evolution.run("veskar")
     assert len(ranking) == 12
     assert state.path.is_file()
     resumed = DeckEvolution(catalog, AcceptAll(), evaluate, "policy", config, state, 999)
-    assert resumed.run("inari")[0].candidate == ranking[0].candidate
+    assert resumed.run("veskar")[0].candidate == ranking[0].candidate
     changed = EvolutionConfig(population_size=12, elites=2, crossover_children=6,
                               strong_mutations=2, random_immigrants=2,
                               tournament_size=3, generations=4)
     with pytest.raises(ValueError, match="configuration"):
-        DeckEvolution(catalog, AcceptAll(), evaluate, "policy", changed, state, 999).run("inari")
+        DeckEvolution(catalog, AcceptAll(), evaluate, "policy", changed, state, 999).run("veskar")
 
 
 def test_phase_six_gate_is_strict_and_writes_atomic_artifact(tmp_path):
     catalog = synthetic_catalog()
-    candidate = catalog.candidate("inari", [f"n{index:02d}_n3" for index in range(8)])
+    candidate = catalog.candidate("veskar", [f"n{index:02d}_n3" for index in range(8)])
     evaluation = CandidateEvaluation(candidate.deck_hash, 2400, 1440, 0, 960,
                                      0.60, 0.58, 0.45, 0.1, 0.55)
     ranking = (RankedCandidate(candidate, evaluation),)
     gate = PhaseSixGate(0.55, 0.40)
 
-    payload = write_gate_result(tmp_path / "gate.json", "inari", ranking, gate,
+    payload = write_gate_result(tmp_path / "gate.json", "veskar", ranking, gate,
                                 "engine", "catalog", "policy")
 
     assert payload["passed"] is True
     assert (tmp_path / "gate.json").is_file()
     assert not (tmp_path / "gate.json.tmp").exists()
     assert PhaseSixGate(0.61, 0.40).passes(ranking) is False
-    pilot = write_gate_result(tmp_path / "pilot.json", "inari", ranking, gate,
+    pilot = write_gate_result(tmp_path / "pilot.json", "veskar", ranking, gate,
                               "engine", "catalog", "policy", official=False)
     assert pilot["thresholds_passed"] is True
     assert pilot["passed"] is False

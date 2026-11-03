@@ -195,6 +195,11 @@ class PPOTrainer:
             raise ValueError("la fréquence et le nombre de matchs d'évaluation doivent être positifs")
         if int(evaluation.get("num_envs", 1)) <= 0:
             raise ValueError("evaluation.num_envs doit etre strictement positif")
+        bootstrap = self.config.get("curriculum", {}).get("bootstrap_evaluation", {})
+        if not isinstance(bootstrap, dict):
+            raise TypeError("curriculum.bootstrap_evaluation doit etre un objet")
+        if int(bootstrap.get("seed_stride", 100000)) <= 0:
+            raise ValueError("curriculum.bootstrap_evaluation.seed_stride doit etre positif")
 
     def train(self) -> None:
         self._train_vectorized()
@@ -247,14 +252,15 @@ class PPOTrainer:
         batch_size = steps * self.num_envs
         self._rollout_executor = (None if self.batch_env is not None
                                   else ThreadPoolExecutor(max_workers=self.num_envs))
+        self._record_engine_manifest()
+        last_evaluation = self._run_bootstrap_evaluation()
         observations, infos = self._reset_training_episodes(
             list(range(self.num_envs)), initial=self._resume_update == 0)
-        self._record_engine_manifest()
         global_step = self._resume_global_step
         remaining_steps = max(0, total - global_step)
         updates_to_run = math.ceil(remaining_steps / batch_size)
         final_update = self._resume_update + updates_to_run
-        last_evaluation: dict[str, Any] = {}
+        last_evaluation = last_evaluation or {}
         monitoring = self.config.get("monitoring", {})
         checkpoint_every = int(monitoring.get("checkpoint_every_updates", 50))
         snapshot_every = int(monitoring.get("snapshot_every_updates", 200))
@@ -554,7 +560,95 @@ class PPOTrainer:
             with ThreadPoolExecutor(max_workers=len(extra)) as executor:
                 list(executor.map(lambda env: env.close(), extra))
 
-    def evaluate(self) -> dict[str, Any]:
+    def _run_bootstrap_evaluation(self) -> dict[str, Any] | None:
+        """Skip already-solved early stages without changing the policy.
+
+        This is only enabled for the official phase-4 run.  Every stage still
+        needs the usual number of independent held-out confirmations; the
+        difference is that they are run consecutively before PPO collection.
+        At the first failed confirmation we persist the current curriculum and
+        return to normal training on that exact stage.
+        """
+        settings = self.config.get("curriculum", {}).get("bootstrap_evaluation", {})
+        if (not bool(settings.get("enabled", False))
+                or self.curriculum.bootstrap_evaluation_completed):
+            return None
+        seed_stride = int(settings.get("seed_stride", 100000))
+        attempt = 0
+        last_result: dict[str, Any] | None = None
+        while not self.curriculum.awaiting_final_validation and not self.curriculum.completed:
+            evaluated_stage_index = self.curriculum.stage_index
+            evaluated_stage = self.curriculum.current.name
+            attempt += 1
+            started = time.perf_counter()
+            results = self.evaluate(seed_offset=attempt * seed_stride)
+            evaluation_seconds = max(time.perf_counter() - started, 1e-9)
+            evaluated_games = int(results["games"]) + sum(
+                int(item["games"]) for item in results["anchors"].values())
+            results["evaluation_seconds"] = evaluation_seconds
+            results["games_per_second"] = evaluated_games / evaluation_seconds
+            promoted = self.curriculum.consider_promotion(
+                int(results["wins"]), int(results["games"]), int(results["draws"]))
+            promotion = self.curriculum.promotion_metrics(
+                int(results["wins"]), int(results["draws"]), int(results["games"]))
+            results.update({
+                "promotion": promotion,
+                "promoted": promoted,
+                "evaluated_stage_index": evaluated_stage_index,
+                "next_stage_index": self.curriculum.stage_index,
+                "selection_score": self._evaluation_score(results),
+                "bootstrap": {
+                    "enabled": True,
+                    "attempt": attempt,
+                    "seed_offset": attempt * seed_stride,
+                    "stage": evaluated_stage,
+                    "eligible": bool(promotion["eligible"]),
+                },
+            })
+            results["promotion"]["consecutive_promotion_successes"] = (
+                self.curriculum.consecutive_promotion_successes)
+            if sampling := self.curriculum.update_god_sampling(results["by_god"]):
+                results["god_sampling"] = sampling
+            if sampling := self.curriculum.update_terrain_sampling(results["by_blocked_count"]):
+                results["terrain_sampling"] = sampling
+            context = {
+                "update": 0,
+                "stage": evaluated_stage,
+                "phase_five_ready": self.curriculum.phase_five_ready,
+                "environment_count": self.num_envs,
+                "bootstrap_evaluation": True,
+                "bootstrap_attempt": attempt,
+            }
+            self.tracker.log("evaluation", 0, results, context)
+            self._observe_health(0, {
+                "evaluation_win_rate": float(results["win_rate"]),
+                "evaluation_wilson_lower": float(results["wilson_lower"]),
+            }, 0)
+            score = float(results["selection_score"])
+            if (evaluated_stage_index > self.best_stage_index
+                    or (evaluated_stage_index == self.best_stage_index
+                        and score > self.best_win_rate)):
+                self.best_stage_index = evaluated_stage_index
+                self.best_win_rate = score
+                self._save("best.pt", 0, results, 0)
+            # Persist every confirmation. Ctrl+C or a Godot interruption can
+            # therefore resume the scan at the exact remaining confirmation.
+            self._save("latest.pt", 0, results, 0)
+            print(json.dumps({"update": 0, "steps": 0, "stage": evaluated_stage,
+                              "bootstrap_evaluation": True, **results}, ensure_ascii=False))
+            last_result = results
+            if not bool(promotion["eligible"]):
+                break
+            if promoted:
+                continue
+            # The evaluation passed but a further independent confirmation is
+            # needed for this same stage.
+        self.curriculum.complete_bootstrap_evaluation()
+        if last_result is not None:
+            self._save("latest.pt", 0, last_result, 0)
+        return last_result
+
+    def evaluate(self, seed_offset: int = 0) -> dict[str, Any]:
         evaluation = self.config["evaluation"]
         games, wins, draws = int(evaluation["games"]), 0, 0
         margins: list[float] = []
@@ -568,12 +662,14 @@ class PPOTrainer:
         chunks = [list(range(worker, games, self.evaluation_num_envs))
                   for worker in range(self.evaluation_num_envs)]
         if self.evaluation_num_envs == 1:
-            completed = self._evaluate_offsets(self.evaluation_envs[0], chunks[0])
+            completed = self._evaluate_offsets(
+                self.evaluation_envs[0], chunks[0], int(evaluation["seed_base"]) + seed_offset)
         else:
             with ThreadPoolExecutor(max_workers=self.evaluation_num_envs) as executor:
                 batches = executor.map(
-                    lambda request: self._evaluate_offsets(request[0], request[1]),
-                    zip(self.evaluation_envs, chunks, strict=True))
+                    lambda request: self._evaluate_offsets(*request),
+                    zip(self.evaluation_envs, chunks,
+                        [int(evaluation["seed_base"]) + seed_offset] * len(chunks), strict=True))
                 completed = [item for batch in batches for item in batch]
         for offset, agent_player, first_player, final_info in sorted(completed):
             winner = int(final_info["winner"])
@@ -605,11 +701,11 @@ class PPOTrainer:
             **{name: {key: self._outcome_stats(values) for key, values in group.items()}
                for name, group in buckets.items()},
         }
-        result["anchors"] = self._evaluate_anchors()
+        result["anchors"] = self._evaluate_anchors(seed_offset)
         return result
 
     def _evaluate_offsets(
-            self, env: SamStoneEnv, offsets: list[int],
+            self, env: SamStoneEnv, offsets: list[int], seed_base: int,
     ) -> list[tuple[int, int, int, dict[str, Any]]]:
         evaluation = self.config["evaluation"]
         max_attempts = int(evaluation.get("godot_retry_attempts", 2))
@@ -624,7 +720,7 @@ class PPOTrainer:
                 first_player = 1 if cycle % 2 == 0 else 2
                 info = self._evaluation_game_with_retry(
                     self.curriculum.current.opponent(), offset % len(self.scenarios),
-                    agent_player, first_player, int(evaluation["seed_base"]) + offset,
+                    agent_player, first_player, seed_base + offset,
                     env, max_attempts)
                 completed.append((offset, agent_player, first_player, info))
         finally:
@@ -650,13 +746,13 @@ class PPOTrainer:
                         f"(seed={seed}, scenario={scenario_index}).\n{detail}") from exc
         raise AssertionError("boucle de reprise d'évaluation inaccessible")
 
-    def _evaluate_anchors(self) -> dict[str, dict[str, float | int]]:
+    def _evaluate_anchors(self, seed_offset: int = 0) -> dict[str, dict[str, float | int]]:
         evaluation = self.config["evaluation"]
         games = int(evaluation.get("anchor_games_per_stage", 0))
         if games <= 0 or self.curriculum.stage_index <= 0:
             return {}
         base_seed = int(evaluation.get(
-            "anchor_seed_base", int(evaluation["seed_base"]) + 50000000))
+            "anchor_seed_base", int(evaluation["seed_base"]) + 50000000)) + seed_offset
         anchors: dict[str, dict[str, float | int]] = {}
         env = self.evaluation_env
         previous = env.opponent

@@ -137,8 +137,8 @@ def test_balance_report_uses_match_and_action_telemetry(tmp_path):
     for seed in range(8):
         won = seed < 6
         record = MatchRecord(
-            "engine", "catalog", "policy", f"deck-{seed % 2}", "inari",
-            ("f01_n3", "n01_n2"), "opponent", "izanami", ("d01_n2",),
+            "engine", "catalog", "policy", f"deck-{seed % 2}", "veskar",
+            ("devoracle_n3", "avortons_des_caves_n2"), "opponent", "nerava", ("porte_fievre_n2",),
             seed, 1 if seed % 2 == 0 else 2, 1, 1 if won and seed % 2 == 0 else (
                 2 if won else (2 if seed % 2 == 0 else 1)),
             10 if won else 6, 6 if won else 10, ((0, 0),), 2, 1, 0, True)
@@ -146,8 +146,8 @@ def test_balance_report_uses_match_and_action_telemetry(tmp_path):
         actions.append(MatchAction(
             "engine", "catalog", "policy", record.candidate_hash, "opponent",
             seed, record.agent_player, 1, 1, record.agent_player,
-            "f01_n3", 1, 2, 1, ({"type": "swarm"},), (),
-            ("f01_n3", "n01_n2")))
+            "devoracle_n3", 1, 2, 1, ({"type": "swarm"},), (),
+            ("devoracle_n3", "avortons_des_caves_n2")))
     with MatchStore(database) as store:
         store.insert_many(records, actions)
         assert store.has_hand_telemetry(records[0])
@@ -156,11 +156,11 @@ def test_balance_report_uses_match_and_action_telemetry(tmp_path):
 
     assert report["matches"] == 8
     assert report["overall"]["wins"] == 6
-    assert report["tables"]["card_played"][0]["key"] == "f01_n3"
+    assert report["tables"]["card_played"][0]["key"] == "devoracle_n3"
     assert report["tables"]["triggered_effect"][0]["key"] == "swarm"
     assert report["card_action_statistics"][0]["captures_per_play"] == 1.0
     usage = next(item for item in report["card_usage_statistics"]
-                 if item["stone_id"] == "f01_n3")
+                 if item["stone_id"] == "devoracle_n3")
     assert usage["available_decisions"] == 8
     assert usage["selection_rate_when_available"] == 1.0
     assert (tmp_path / "report" / "balance_report.html").is_file()
@@ -186,8 +186,8 @@ def test_balance_report_lists_cards_never_selected_from_catalog(tmp_path):
     catalog_path = tmp_path / "catalog_snapshot.json"
     catalog_path.write_text(json.dumps(snapshot), encoding="utf-8")
     records = [MatchRecord(
-        "engine", catalog.checksum, "policy", f"deck-{index}", "inari",
-        ("n00_n1",), "opponent", "inari", ("n01_n1",), index,
+        "engine", catalog.checksum, "policy", f"deck-{index}", "veskar",
+        ("n00_n1",), "opponent", "veskar", ("avortons_des_caves_n1",), index,
         1, 1, 1, 10, 5) for index in range(5)]
     database = tmp_path / "matches.sqlite3"
     with MatchStore(database) as store:

@@ -1,8 +1,8 @@
 {
-  "default_god_id": "inari",
+  "default_god_id": "veskar",
   "gods": [
     {
-      "id": "inari",
+      "id": "veskar",
       "name": "Véskar",
       "family_name": "Les Aléators",
       "color": "#e75aa8",
@@ -11,7 +11,7 @@
       "asset": "res://assets/gods/veskar.png"
     },
     {
-      "id": "izanami",
+      "id": "nerava",
       "name": "Nérava",
       "family_name": "Les Flétris",
       "color": "#9b6bc7",
@@ -20,7 +20,7 @@
       "asset": "res://assets/gods/nerava.png"
     },
     {
-      "id": "hachiman",
+      "id": "kharun",
       "name": "Kharûn",
       "family_name": "Les Remparts",
       "color": "#72c7d8",
@@ -29,7 +29,7 @@
       "asset": "res://assets/gods/kharun.png"
     },
     {
-      "id": "tsukuyomi",
+      "id": "ilyr",
       "name": "Ilyr",
       "family_name": "Les Veilleurs",
       "color": "#5fa8ff",
@@ -38,7 +38,7 @@
       "asset": "res://assets/gods/ilyr.png"
     },
     {
-      "id": "okuninushi",
+      "id": "sylkha",
       "name": "Sylkha",
       "family_name": "L’Essaim",
       "color": "#7fc95b",
@@ -47,7 +47,7 @@
       "asset": "res://assets/gods/sylkha.png"
     },
     {
-      "id": "susanoo",
+      "id": "enigma",
       "name": "Énigma",
       "family_name": "Les Assimilateurs",
       "color": "#ef8b45",
@@ -55,5 +55,13 @@
       "title": "la Machine Première",
       "asset": "res://assets/gods/enigma.png"
     }
-  ]
+  ],
+  "legacy_ids": {
+    "inari": "veskar",
+    "izanami": "nerava",
+    "hachiman": "kharun",
+    "tsukuyomi": "ilyr",
+    "okuninushi": "sylkha",
+    "susanoo": "enigma"
+  }
 }

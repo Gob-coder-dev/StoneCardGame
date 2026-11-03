@@ -52,9 +52,9 @@ def test_roster_requires_six_official_consistent_reports(tmp_path):
     roster = _build_roster(tmp_path, checkpoint)
     assert tuple(item.god_id for item in roster.decks) == BOSS_GODS
     assert BossRoster.load(tmp_path / "boss_roster.json").checksum() == roster.checksum()
-    payload = json.loads((tmp_path / "reports" / "phase6_gate_inari.json").read_text())
+    payload = json.loads((tmp_path / "reports" / "phase6_gate_veskar.json").read_text())
     payload["official"] = False
-    (tmp_path / "reports" / "phase6_gate_inari.json").write_text(json.dumps(payload))
+    (tmp_path / "reports" / "phase6_gate_veskar.json").write_text(json.dumps(payload))
     with pytest.raises(ValueError, match="non officiel"):
         build_boss_roster(tmp_path / "reports", checkpoint, tmp_path / "bad.json")
 
@@ -76,20 +76,20 @@ def test_specialist_trainer_uses_fixed_god_and_final_deck_and_resumes(tmp_path):
     config_path = tmp_path / "boss.yaml"
     config_path.write_text(yaml.safe_dump(config), encoding="utf-8")
     trainer = BossSpecialistTrainer(
-        config_path, "inari", tmp_path / "boss_roster.json",
+        config_path, "veskar", tmp_path / "boss_roster.json",
         universal_checkpoint=universal)
-    assert trainer.scenarios == [{"god": "inari", "deck": list(roster.deck("inari").stone_ids)}]
+    assert trainer.scenarios == [{"god": "veskar", "deck": list(roster.deck("veskar").stone_ids)}]
     for player in (1, 2):
         options = trainer._training_scenario_options(0, player)["config"]
         own_key = "human_god" if player == 1 else "ai_god"
-        assert options[own_key] == "inari"
+        assert options[own_key] == "veskar"
     trainer.train()
-    run = tmp_path / "runs" / "inari"
+    run = tmp_path / "runs" / "veskar"
     checkpoint = torch.load(run / "latest.pt", map_location="cpu", weights_only=False)
-    assert checkpoint["specialization"]["god_id"] == "inari"
+    assert checkpoint["specialization"]["god_id"] == "veskar"
     assert checkpoint["specialization"]["completed"] is False
     resumed = BossSpecialistTrainer(
-        config_path, "inari", tmp_path / "boss_roster.json", resume=run / "latest.pt")
+        config_path, "veskar", tmp_path / "boss_roster.json", resume=run / "latest.pt")
     try:
         assert resumed._resume_global_step == 64
     finally:
@@ -109,10 +109,10 @@ def test_specialist_gate_and_global_roster_gate(tmp_path):
                                   for god in BOSS_GODS}}
     assert judge_specialist(candidate, universal, {"win_rate": 0.80},
                             {"win_rate": 0.82}, settings)[0]
-    matchup["susanoo"] = {"games": 100, "score": 0.30}
+    matchup["enigma"] = {"games": 100, "score": 0.30}
     assert not judge_specialist(candidate, universal, {"win_rate": 0.80},
                                 {"win_rate": 0.82}, settings)[0]
-    matchup["susanoo"] = {"games": 100, "score": 0.55}
+    matchup["enigma"] = {"games": 100, "score": 0.55}
     candidate["overall"]["score"] = 0.505
     assert not judge_specialist(candidate, universal, {"win_rate": 0.80},
                                 {"win_rate": 0.82}, settings)[0]
@@ -163,18 +163,18 @@ def test_specialist_validator_plays_a_real_godot_match(tmp_path):
     config_path = tmp_path / "boss.yaml"
     config_path.write_text(yaml.safe_dump(config), encoding="utf-8")
     trainer = BossSpecialistTrainer(
-        config_path, "inari", tmp_path / "boss_roster.json",
+        config_path, "veskar", tmp_path / "boss_roster.json",
         universal_checkpoint=universal)
     trainer.tracker.close()
     trainer._close_training_envs()
-    checkpoint = tmp_path / "runs" / "inari" / "latest.pt"
+    checkpoint = tmp_path / "runs" / "veskar" / "latest.pt"
     validator = BossSpecialistValidator(
-        config_path, tmp_path / "boss_roster.json", "inari", checkpoint)
+        config_path, tmp_path / "boss_roster.json", "veskar", checkpoint)
     try:
         value = validator._play(
             validator.models["candidate"],
             CheckpointOpponent(validator.universal_path, deterministic=True),
-            roster.deck("izanami"), 1, 1, 123456)
+            roster.deck("nerava"), 1, 1, 123456)
         assert value in (-1, 0, 1)
     finally:
         validator.env.close()

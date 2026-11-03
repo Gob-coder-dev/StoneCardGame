@@ -301,7 +301,7 @@ Avant la phase 5 :
 
 ```powershell
 .\.venv311\Scripts\python.exe scripts\validate_phase4.py `
-  runs\ppo_phase4_tactical\best.pt `
+  runs\ppo_phase4_rebalanced\best.pt `
   --config configs\ppo_phase4_tactical.yaml
 ```
 

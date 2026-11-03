@@ -6,6 +6,7 @@ Pour lancer le jeu et ses tests, consulter le [README du projet](../README.md).
 | --- | --- |
 | [Architecture](ARCHITECTURE.md) | Organisation du code, données, IA, interface et vérifications. |
 | [Direction artistique](DIRECTION_ARTISTIQUE_MONSTRES.md) | Univers horrifique, pixel art, couleurs, familles et règles de cohérence. |
+| [Guide de prompts Fooocus](PROMPTS_FOOOCUS.md) | Références validées, palettes et prompts pour refaire les dieux et les 222 cartes restantes. |
 | [Bestiaire](BESTIAIRE.md) | Description des six dieux et des 96 lignées de monstres. |
 | [Identité visuelle des menus](IDENTITE_VISUELLE_MENUS.md) | Palette de l’interface, composants, cartes et plateau. |
 

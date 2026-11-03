@@ -123,7 +123,7 @@ def test_godot_catalog_validation_and_batch_protocol():
         assert len(catalog.gods) == 6
         assert len(catalog.variants) == 275
         generator = DeckGenerator(catalog)
-        candidates = [generator.random_candidate("inari", np.random.default_rng(index))
+        candidates = [generator.random_candidate("veskar", np.random.default_rng(index))
                       for index in range(32)]
         GodotDeckValidator(bridge, catalog).require_all_valid(candidates)
         requests = [{"match_id": str(index), "observer": 1,
@@ -182,9 +182,9 @@ def test_deck_evaluator_runs_real_matches_and_resumes_from_cache(tmp_path):
     try:
         bridge.start()
         catalog = DeckCatalog(bridge.deck_catalog())
-        candidate = catalog.candidate("inari", env_config()["human_deck"])
+        candidate = catalog.candidate("veskar", env_config()["human_deck"])
         opponent_policy = CheckpointOpponent(checkpoint_path)
-        opponent = EvaluationOpponent("mirror", "inari", candidate.stone_ids, opponent_policy)
+        opponent = EvaluationOpponent("mirror", "veskar", candidate.stone_ids, opponent_policy)
         manifest = bridge.engine_manifest()
         evaluator = DeckEvaluator(env, checkpoint_path, (opponent,), store,
                                   str(manifest["catalogue_checksum"]), catalog.checksum)
@@ -216,8 +216,8 @@ def test_batched_deck_evaluator_runs_policy_on_both_sides(tmp_path):
         bridge.start()
         pool.start()
         catalog = DeckCatalog(bridge.deck_catalog())
-        candidate = catalog.candidate("inari", env_config()["human_deck"])
-        opponent = EvaluationOpponent("mirror", "inari", candidate.stone_ids)
+        candidate = catalog.candidate("veskar", env_config()["human_deck"])
+        opponent = EvaluationOpponent("mirror", "veskar", candidate.stone_ids)
         evaluator = BatchedDeckEvaluator(
             pool, checkpoint_path, (opponent,), store, "engine", catalog.checksum,
             batch_size=4)
@@ -266,8 +266,8 @@ def test_phase_six_cli_pilot_end_to_end(tmp_path):
         },
         "final_gate": {"minimum_win_rate": 0.0, "minimum_worst_matchup": 0.0},
         "opponents": [{
-            "id": "mirror_inari",
-            "god": "inari",
+            "id": "mirror_veskar",
+            "god": "veskar",
             "deck": env_config()["human_deck"],
         }],
     }
@@ -276,17 +276,17 @@ def test_phase_six_cli_pilot_end_to_end(tmp_path):
     output = tmp_path / "output"
 
     command = [sys.executable, str(root / "scripts" / "run_deck_evolution.py"),
-               "inari", str(checkpoint_path), "--config", str(config_path),
+               "veskar", str(checkpoint_path), "--config", str(config_path),
                "--output", str(output), "--pilot"]
     completed = subprocess.run(
         command,
         cwd=root, capture_output=True, text=True, timeout=90, check=False)
 
     assert completed.returncode == 0, completed.stdout + completed.stderr
-    assert (output / "state_inari.json").is_file()
+    assert (output / "state_veskar.json").is_file()
     assert (output / "matches.sqlite3").is_file()
-    assert (output / "reports" / "phase6_inari.json").is_file()
-    assert (output / "reports" / "phase6_gate_inari.json").is_file()
+    assert (output / "reports" / "phase6_veskar.json").is_file()
+    assert (output / "reports" / "phase6_gate_veskar.json").is_file()
     with sqlite3.connect(output / "matches.sqlite3") as connection:
         match_count = int(connection.execute("SELECT COUNT(*) FROM matches").fetchone()[0])
         action_count = int(connection.execute("SELECT COUNT(*) FROM match_actions").fetchone()[0])
@@ -300,7 +300,7 @@ def test_phase_six_cli_pilot_end_to_end(tmp_path):
         assert int(connection.execute("SELECT COUNT(*) FROM matches").fetchone()[0]) == match_count
         assert int(connection.execute("SELECT COUNT(*) FROM match_actions").fetchone()[0]) == action_count
     events = [json.loads(line) for line in (
-        output / "monitoring" / "inari" / "metrics.jsonl").read_text(
+        output / "monitoring" / "veskar" / "metrics.jsonl").read_text(
         encoding="utf-8").splitlines() if line]
     assert {event["stream"] for event in events} >= {
         "deck_evolution/generation", "deck_evolution/medium", "deck_evolution/final"}
@@ -311,7 +311,7 @@ def test_phase_six_cli_pilot_end_to_end(tmp_path):
         cwd=root, capture_output=True, text=True, timeout=30, check=False)
     progress = subprocess.run(
         [sys.executable, str(root / "scripts" / "generate_training_report.py"),
-         str(output / "monitoring" / "inari"), "--output", str(output / "progress")],
+         str(output / "monitoring" / "veskar"), "--output", str(output / "progress")],
         cwd=root, capture_output=True, text=True, timeout=30, check=False)
     assert balance.returncode == 0, balance.stdout + balance.stderr
     assert progress.returncode == 0, progress.stdout + progress.stderr
@@ -534,7 +534,7 @@ def test_adaptive_god_sampling_is_logged_by_vectorized_ppo(tmp_path):
         encoding="utf-8").splitlines() if line]
     training = next(event for event in events if event["stream"] == "training")
     evaluation = next(event for event in events if event["stream"] == "evaluation")
-    assert set(training["metrics"]["god_sampling"]["weights"]) == {"inari", "izanami"}
+    assert set(training["metrics"]["god_sampling"]["weights"]) == {"veskar", "nerava"}
     assert "episodes" in training["metrics"]["god_sampling"]
     assert set(training["metrics"]["terrain_sampling"]["weights"]) == {"0", "1", "2"}
     assert "episodes" in training["metrics"]["terrain_sampling"]
