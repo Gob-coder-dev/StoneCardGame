@@ -110,16 +110,87 @@ static func build_neutral(bracket_id: String, difficulty_id: String) -> Dictiona
 	var deck := neutral_deck_for(bracket_id)
 	if deck.is_empty():
 		return {}
+	var source := neutral_source()
 	return _build_opponent(
 		neutral_opponent_id(bracket_id, difficulty_id),
-		"%s — %s" % [NEUTRAL_BOT_NAME, str(tier["name"])],
+		"%s — %s" % [str(source["name"]), str(tier["name"])],
 		"",
-		"Adversaire sans dieu, son deck est composé uniquement de cartes neutres.",
+		str(source["description"]),
 		"",
 		deck,
 		tier,
 		level
 	)
+
+
+## Fiche de la source sans dieu. Elle reste hors de gods.json : Pr.Stone ne
+## doit jamais devenir un dieu jouable.
+static func neutral_source() -> Dictionary:
+	return {
+		"id": NEUTRAL_BOT_ID,
+		"name": NEUTRAL_BOT_NAME,
+		"family_name": "Sans dieu • cartes neutres",
+		"color": NEUTRAL_BOT_COLOR,
+		"description": "Adversaire sans dieu, son deck est composé uniquement de cartes neutres.",
+		"asset": "",
+	}
+
+
+static func source_for(source_id: String) -> Dictionary:
+	if source_id == NEUTRAL_BOT_ID:
+		return neutral_source()
+	return StoneLoader.get_god(source_id)
+
+
+## Les quinze niveaux d'un chemin, du palier le plus faible au plus fort puis
+## dans l'ordre d'affichage des difficultés. Cet ordre est un contrat : il
+## décide des déblocages et ne doit pas être recopié ailleurs.
+static func levels_for(source_id: String) -> Array:
+	var neutral := source_id == NEUTRAL_BOT_ID
+	if not neutral and StoneLoader.get_god(source_id).is_empty():
+		return []
+	var levels: Array = []
+	for chapter_index in range(BRACKETS.size()):
+		var tier: Dictionary = BRACKETS[chapter_index]
+		var bracket_id := str(tier["id"])
+		for difficulty_index in range(DIFFICULTIES.size()):
+			var level: Dictionary = DIFFICULTIES[difficulty_index]
+			var difficulty_id := str(level["id"])
+			var opponent_id_value := opponent_id(source_id, bracket_id, difficulty_id)
+			if neutral:
+				opponent_id_value = neutral_opponent_id(bracket_id, difficulty_id)
+			levels.append({
+				"index": levels.size(),
+				"source_id": source_id,
+				"opponent_id": opponent_id_value,
+				"bracket_id": bracket_id,
+				"bracket_label": str(tier["name"]),
+				"chapter_index": chapter_index,
+				"chapter_start": difficulty_index == 0,
+				"difficulty_id": difficulty_id,
+				"difficulty_label": str(level["name"]),
+				"stars": int(level["stars"]),
+			})
+	return levels
+
+
+## Retrouve la source d'un adversaire généré. Un PNJ historique de npcs.json
+## ne porte pas de palier : il n'appartient à aucun chemin et renvoie "".
+static func source_id_of(opponent: Dictionary) -> String:
+	if str(opponent.get("bracket_id", "")) == "" or str(opponent.get("difficulty", "")) == "":
+		return ""
+	var god_id := str(opponent.get("god_id", ""))
+	if god_id == "":
+		return NEUTRAL_BOT_ID
+	return god_id if not StoneLoader.get_god(god_id).is_empty() else ""
+
+
+## Construit l'adversaire d'un niveau de chemin, avec ou sans dieu.
+static func build_for_source(source_id: String, bracket_id: String,
+		difficulty_id: String) -> Dictionary:
+	if source_id == NEUTRAL_BOT_ID:
+		return build_neutral(bracket_id, difficulty_id)
+	return build(source_id, bracket_id, difficulty_id)
 
 
 static func _build_opponent(opponent_id_value: String, display_name: String, god_id: String,
@@ -220,33 +291,12 @@ static func _eligible_variants(lineage_id: String, minimum: int, maximum: int) -
 	return result
 
 
-## Lignes de progression affichées par le profil : une par dieu et par palier,
-## avec les cinq identifiants de difficulté à agréger.
-static func progression_rows() -> Array:
-	var rows: Array = []
-	for god in StoneLoader.get_all_gods():
-		var god_id := str(god.get("id", ""))
-		for tier in BRACKETS:
-			var bracket_id := str(tier["id"])
-			var difficulty_ids: Array = []
-			for level in DIFFICULTIES:
-				difficulty_ids.append(opponent_id(god_id, bracket_id, str(level["id"])))
-			rows.append({
-				"label": "%s • %s" % [str(god.get("name", god_id)), str(tier["name"])],
-				"color": str(god.get("color", "")),
-				"difficulty_ids": difficulty_ids,
-			})
-	for tier in BRACKETS:
-		var bracket_id := str(tier["id"])
-		var difficulty_ids: Array = []
-		for level in DIFFICULTIES:
-			difficulty_ids.append(neutral_opponent_id(bracket_id, str(level["id"])))
-		rows.append({
-			"label": "%s • %s" % [NEUTRAL_BOT_NAME, str(tier["name"])],
-			"color": NEUTRAL_BOT_COLOR,
-			"difficulty_ids": difficulty_ids,
-		})
-	return rows
+## Les sept sources de rencontre, dans l'ordre d'affichage : les six dieux
+## puis Pr.Stone. La grille et le profil lisent la même liste complète.
+static func sources() -> Array:
+	var result: Array = StoneLoader.get_all_gods().duplicate(true)
+	result.append(neutral_source())
+	return result
 
 
 ## Validation appelée par StoneLoader après le chargement des catalogues.

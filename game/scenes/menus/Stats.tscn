@@ -147,7 +147,7 @@ theme_override_constants/separation = 18
 theme_type_variation = &"SectionTitle"
 layout_mode = 2
 theme_override_font_sizes/font_size = 42
-text = "PROGRESSION PAR DIEU ET PALIER"
+text = "PROGRESSION DES CHEMINS"
 horizontal_alignment = 1
 
 [node name="NPCPanel" type="PanelContainer" parent="Root/Scroll/Content"]

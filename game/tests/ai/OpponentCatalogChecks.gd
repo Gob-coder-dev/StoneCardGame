@@ -21,7 +21,7 @@ func run() -> void:
 	_test_generated_decks()
 	_test_neutral_decks()
 	_test_deck_stability()
-	_test_progression_rows()
+	_test_progress_sources()
 	_test_battle_context()
 
 
@@ -143,14 +143,22 @@ func _test_deck_stability() -> void:
 		"le profil d'IA suit la difficulté choisie")
 
 
-func _test_progression_rows() -> void:
-	var rows := OpponentCatalogModel.progression_rows()
+func _test_progress_sources() -> void:
+	var sources := OpponentCatalogModel.sources()
 	var ids := {}
-	for row in rows:
-		for raw_id in row["difficulty_ids"]:
-			ids[str(raw_id)] = true
-	_check(rows.size() == 21 and ids.size() == 105,
-		"le profil regroupe les six dieux et Pr.Stone sur trois paliers et cinq difficultés")
+	for source in sources:
+		ids[str(source["id"])] = true
+	_check(sources.size() == 7 and ids.size() == 7
+		and ids.has(OpponentCatalogModel.NEUTRAL_BOT_ID),
+		"le profil liste les six dieux et Pr.Stone comme sept chemins")
+	_check(str(sources[-1]["id"]) == OpponentCatalogModel.NEUTRAL_BOT_ID
+		and str(sources[0].get("asset", "")) != "",
+		"la grille et le profil lisent les mêmes sept sources, dieux puis Pr.Stone")
+	var all_fifteen := true
+	for source in sources:
+		all_fifteen = all_fifteen \
+			and OpponentCatalogModel.levels_for(str(source["id"])).size() == 15
+	_check(all_fifteen, "chaque chemin du profil compte quinze niveaux")
 
 
 func _test_battle_context() -> void:

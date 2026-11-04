@@ -53,12 +53,31 @@ const BUTTON_WIDTH: int = 640      ## largeur standard d'un bouton de menu
 const NUMBERED_BUTTON_SIZE := Vector2(128, 112)
 const HOME_PORTRAIT_MIN_HEIGHT: float = 300.0
 const HOME_PORTRAIT_MAX_HEIGHT: float = 620.0
-const HOME_RESERVED_HEIGHT: float = 1320.0
+const HOME_IDENTITY_HEIGHT: float = 470.0
 const GOD_DECK_PANEL_HEIGHT: int = 310
 const GOD_DECK_PORTRAIT_WIDTH: int = 470
 const GOD_DRAWER_TILE_HEIGHT: int = 300
 const GOD_PREBATTLE_PORTRAIT_SIZE := Vector2(280, 270)
 const GOD_HUD_PORTRAIT_SIZE := Vector2(104, 104)
+
+## ─── Rencontres : grille des dieux et chemin des niveaux ────────────────────
+const ENCOUNTER_COLUMNS: int = 2
+const GOD_TILE_HEIGHT: int = 430          ## case d'un dieu, portrait compris
+const GOD_TILE_PORTRAIT_HEIGHT: int = 286
+const GOD_TILE_NEUTRAL_HEIGHT: int = 206  ## ligne dédiée à Pr.Stone
+const PATH_NODE_SIZE: int = 148
+const PATH_STEP: int = 236                ## écart vertical entre deux ronds
+const PATH_SWING: float = 208.0           ## amplitude horizontale du serpentin
+const PATH_TOP_PAD: int = 214
+const PATH_BOTTOM_PAD: int = 130
+const PATH_CHAPTER_LABEL_HEIGHT: int = 56
+
+## Chemin : le tracé verrouillé reste discret et chaque état garde une forme
+## propre (cadenas, numéro, coche) en plus de sa couleur.
+const COL_PATH_TRACE := Color("#6b5f6d")
+const COL_NODE_LOCKED_BG := Color("#141218")
+const COL_NODE_LOCKED_BORDER := Color("#3c3542")
+const COL_NODE_LOCKED_TEXT := Color("#726a79")
 
 ## ─── Couleurs récurrentes ────────────────────────────────────────────────────
 const COL_BG := Color("#101013")

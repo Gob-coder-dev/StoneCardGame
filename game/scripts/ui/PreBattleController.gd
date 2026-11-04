@@ -139,8 +139,11 @@ func _notification(what: int) -> void:
 		_go_back()
 
 
+## Le retour retrouve le chemin du dieu affronté, pour choisir un autre niveau
+## sans repasser par la grille.
 func _go_back() -> void:
-	get_tree().change_scene_to_file("res://scenes/menus/LevelSelect.tscn")
+	BattleContext.select_source(BattleContext.navigation_source_id())
+	get_tree().change_scene_to_file("res://scenes/menus/EncounterPath.tscn")
 
 
 func _on_start() -> void:

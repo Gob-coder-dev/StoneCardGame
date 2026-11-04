@@ -23,8 +23,14 @@ func _test_aliases() -> void:
 	var current := ["avortons_des_caves_n3", "devoracle_n4", "valet_a_lenvers_n2"]
 	_check(Migration.convert(current, "veskar") == current and not Migration.requires_conversion(current),
 		"une sauvegarde déjà convertie conserve exactement ses niveaux et son ordre")
-	var mixed := Migration.convert(["n01_n4", "n01_n2", "n01_n3", "kappa", "inconnu", "kappa"], "veskar")
-	_check(mixed.size() == 3 and mixed.has("avortons_des_caves_n2") and DeckRules.validate_deck(mixed, false, "veskar")["valid"],
+	var mixed_input := ["n01_n4", "avortons_des_caves_n4", "n01_n2", "n01_n3", "kappa", "inconnu", "kappa"]
+	var mixed := Migration.convert(mixed_input, "veskar")
+	var lineages := {}
+	for card_id in mixed:
+		lineages[StoneLoader.stone_lineage(str(card_id))] = true
+	_check(mixed.has("avortons_des_caves_n4") and mixed.size() == lineages.size()
+		and DeckRules.validate_deck(mixed, false, "veskar")["valid"]
+		and mixed == Migration.convert(mixed_input, "veskar") and mixed == Migration.convert(mixed, "veskar"),
 		"une conversion mixte protège une lignée actuelle et ignore doublons et identifiants inconnus")
 
 

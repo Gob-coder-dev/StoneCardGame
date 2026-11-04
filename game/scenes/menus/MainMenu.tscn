@@ -45,96 +45,122 @@ layout_mode = 2
 custom_minimum_size = Vector2(420, 108)
 layout_mode = 2
 theme_override_font_sizes/font_size = 32
-text = "Joueur\nProfil & statistiques"
+text = "Joueur
+Profil & statistiques"
 script = ExtResource("4_touch_button")
 
 [node name="Spacer" type="Control" parent="Content/Header" unique_id=53395186]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Hero" type="VBoxContainer" parent="Content" unique_id=1506783815]
+[node name="GameTitle" type="VBoxContainer" parent="Content"]
 layout_mode = 2
-size_flags_vertical = 3
-theme_override_constants/separation = 18
+theme_override_constants/separation = 0
 alignment = 1
 
-[node name="Title" type="Label" parent="Content/Hero" unique_id=1468223497]
-theme_type_variation = &"ScreenTitle"
+[node name="Title" type="Label" parent="Content/GameTitle" unique_id=1468223497]
 layout_mode = 2
+theme_type_variation = &"ScreenTitle"
 theme_override_font_sizes/font_size = 96
 text = "SAMSTONE"
 horizontal_alignment = 1
 
-[node name="Subtitle" type="Label" parent="Content/Hero" unique_id=1396934591]
+[node name="Subtitle" type="Label" parent="Content/GameTitle" unique_id=1396934591]
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
 text = "LE CABINET DES MONSTRES"
 horizontal_alignment = 1
 
-[node name="Emblem" type="Control" parent="Content/Hero"]
-custom_minimum_size = Vector2(0, 620)
+[node name="Hero" type="Control" parent="Content" unique_id=1506783815]
 layout_mode = 2
+size_flags_vertical = 3
+
+[node name="PortraitArea" type="Control" parent="Content/Hero"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 mouse_filter = 2
 
-[node name="GodPortrait" type="TextureRect" parent="Content/Hero/Emblem"]
+[node name="Emblem" type="Control" parent="Content/Hero/PortraitArea" unique_id=1268178240]
+layout_mode = 1
+anchor_left = 0.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+mouse_filter = 2
+
+[node name="GodPortrait" type="TextureRect" parent="Content/Hero/PortraitArea/Emblem" unique_id=1157303682]
+texture_filter = 4
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 90.0
 offset_right = -90.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
-texture_filter = 4
 
-[node name="GodName" type="Label" parent="Content/Hero"]
+[node name="Identity" type="VBoxContainer" parent="Content/Hero"]
+layout_mode = 1
+anchors_preset = 15
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+alignment = 1
+theme_override_constants/separation = 8
+
+[node name="GodName" type="Label" parent="Content/Hero/Identity" unique_id=423652340]
 layout_mode = 2
 theme_override_font_sizes/font_size = 62
-horizontal_alignment = 1
 text = "VÉSKAR"
+horizontal_alignment = 1
 
-[node name="GodTitle" type="Label" parent="Content/Hero"]
+[node name="GodTitle" type="Label" parent="Content/Hero/Identity" unique_id=1235665134]
 layout_mode = 2
 theme_override_font_sizes/font_size = 40
-horizontal_alignment = 1
 text = "Le Manipulateur"
+horizontal_alignment = 1
 
-[node name="GodFamily" type="Label" parent="Content/Hero"]
+[node name="GodFamily" type="Label" parent="Content/Hero/Identity" unique_id=486216483]
 layout_mode = 2
 theme_override_font_sizes/font_size = 40
-horizontal_alignment = 1
 text = "Les Aléators"
+horizontal_alignment = 1
 
-[node name="DeckStatus" type="Label" parent="Content/Hero" unique_id=1503925981]
+[node name="DeckStatus" type="Label" parent="Content/Hero/Identity" unique_id=1503925981]
 layout_mode = 2
 theme_override_font_sizes/font_size = 44
 text = "Deck 1 • 0/8 cartes • 0/80 points"
 horizontal_alignment = 1
 autowrap_mode = 2
 
-[node name="ArtWarmup" type="VBoxContainer" parent="Content/Hero"]
+[node name="ArtWarmup" type="VBoxContainer" parent="Content/Hero/Identity" unique_id=1665497224]
 visible = false
 layout_mode = 2
 theme_override_constants/separation = 6
 
-[node name="Label" type="Label" parent="Content/Hero/ArtWarmup"]
+[node name="Label" type="Label" parent="Content/Hero/Identity/ArtWarmup" unique_id=1893421633]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.74, 0.70, 0.62, 1)
+theme_override_colors/font_color = Color(0.74, 0.7, 0.62, 1)
 theme_override_font_sizes/font_size = 24
 text = "PRÉPARATION DES ILLUSTRATIONS"
 horizontal_alignment = 1
 
-[node name="Progress" type="ProgressBar" parent="Content/Hero/ArtWarmup"]
+[node name="Progress" type="ProgressBar" parent="Content/Hero/Identity/ArtWarmup" unique_id=1334290512]
 custom_minimum_size = Vector2(0, 16)
 layout_mode = 2
 show_percentage = false
 
-[node name="PlayButton" type="Button" parent="Content/Hero" unique_id=1162903087]
-theme_type_variation = &"PrimaryButton"
+[node name="PlayButton" type="Button" parent="Content/Hero/Identity" unique_id=1162903087]
 custom_minimum_size = Vector2(760, 152)
 layout_mode = 2
 size_flags_horizontal = 4
+theme_type_variation = &"PrimaryButton"
 theme_override_font_sizes/font_size = 56
 text = "JOUER"
 script = ExtResource("4_touch_button")

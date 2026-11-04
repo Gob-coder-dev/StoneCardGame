@@ -107,11 +107,11 @@ func _test_catalog_and_decks() -> void:
 	_check(catalog_respects_slots, "tout le catalogue respecte quatre symboles communs par face")
 	_check(StoneLoader.get_all_stones().size() == 275 and StoneLoader.get_lineages_for_god("veskar").size() == 36,
 		"le catalogue contient 275 formes et chaque dieu voit 24 neutres et ses 12 lignées")
-	_check(not StoneLoader.has_stone("de_boiteux_n3") and StoneLoader.get_stone("chevalier_sans_visage_n1").is_empty()
-		and not StoneLoader.has_stone("avortons_des_caves_n1"), "les cartes japonaises et les prototypes ne sont plus jouables")
+	_check(not StoneLoader.has_stone("kappa") and StoneLoader.has_stone(StoneLoader.resolve_saved_id("kappa")),
+		"les anciennes cartes japonaises restent hors du catalogue actif et gardent une correspondance")
 	_check(StoneLoader.get_stone("le_voyeur_n1")["name"] == "Le Voyeur"
-		and StoneLoader.get_stone("devoracle_n1")["random_blades"] == 4
-		and StoneLoader.get_stone("devoracle_n2")["random_blades"] == 5
+		and StoneLoader.get_stone("devoracle_n1")["random_blades"] == 5
+		and StoneLoader.get_stone("devoracle_n2")["random_blades"] == 7
 		and StoneLoader.stone_cost("devoracle_n1") == 3.5 and StoneLoader.stone_cost("eclat_cuirasse_n2") == 5.0,
 		"les modifications de l'utilisateur sont intégrées avec les coûts calculés")
 	var veskar_deck := ["de_boiteux_n1", "jumeau_de_cuivre_n1", "valet_a_lenvers_n1", "ogre_a_deux_bouches_n1", "le_nud_hurlant_n2", "croupier_manchot_n1", "griffe_a_jetons_n2", "devoracle_n2"]

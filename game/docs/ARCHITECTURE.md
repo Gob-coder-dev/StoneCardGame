@@ -10,7 +10,8 @@ Une IA appelle le même moteur sur une copie pour essayer un coup instantanémen
 | `data/stones.json` | — | Définition complète de chaque carte, pouvoirs compris |
 | `data/gods.json` | — | Dieux, familles, couleurs et descriptions |
 | `data/npcs.json` | — | Six adversaires historiques, leurs decks et profils d'IA |
-| `OpponentCatalog` | `build`, `build_neutral`, `deck_for`, `neutral_deck_for`, `progression_rows` | Génère les adversaires dieu ou neutre × palier × difficulté, sans fichier de rencontres générées |
+| `OpponentCatalog` | `build`, `build_neutral`, `deck_for`, `neutral_deck_for`, `levels_for`, `source_id_of`, `sources` | Génère les adversaires dieu ou neutre × palier × difficulté, leurs chemins ordonnés et les sept sources complètes |
+| `EncounterPath` | `states`, `current_index`, `next_level`, `completed_count` | États verrouillé, disponible et terminé d'un chemin, et successeur immédiat, sans interface ni sauvegarde |
 | `BotCardTierRules` | `effective_level` | Classe les cartes des bots selon le niveau de forme et le plancher de rareté, sans changer leur niveau de jeu |
 | `StoneLoader` | `get_stone`, `has_stone`, `has_effect`, `stone_affinity`, `stone_rarity`, `get_neutral_lineages`, `get_god`, `get_npc` | Charge les catalogues, fournit des copies et des lectures sans copie |
 | `ContentValidator` | `find_problems` | Liste les incohérences des catalogues ; `StoneLoader` les signale au démarrage |
@@ -19,7 +20,7 @@ Une IA appelle le même moteur sur une copie pour essayer un coup instantanémen
 | `DeckCatalogueMigration` | `requires_conversion`, `convert` | Remplace les anciennes cartes par des formes compatibles, distinctes et dans le budget |
 | `CardArtCache` | `activate_god`, `texture`, `progress_for_god` | Préchauffe les illustrations utiles hors du thread principal et borne les références conservées |
 | `PlayerSaveStorage` | `write`, `read` | Écriture sûre du profil sur le disque |
-| `BattleContext` | `select_opponent`, `current_opponent`, `record_result` | Adversaire sélectionné, premier joueur et dernier résultat |
+| `BattleContext` | `select_opponent`, `current_opponent`, `navigation_source_id`, `record_result` | Adversaire sélectionné, premier joueur et dernier résultat |
 | `StoneCostRules` | `cost` | Règle du coût d'une carte |
 | `StoneEffects` | — | Identifiants et valeurs des pouvoirs (corrosion, renfort et plafond d'Essaim) |
 | `StoneEvolutionRules` | `max_level`, `preview_level`, `is_valid_level` | Limites par rareté et saturation des seuls aperçus |
@@ -325,9 +326,19 @@ autour du portrait. Voir
 
 ## Rencontres
 
-`LevelSelectController` propose les six dieux et Pr.Stone, un bot sans dieu,
-puis le palier de cartes et la difficulté. `OpponentCatalog` génère à la demande
-les 105 rencontres. Les decks des dieux restent majoritairement composés de leur
+`EncounterSelectController` affiche une case par dieu, plus Pr.Stone, puis ouvre
+le chemin de la source choisie. `EncounterPathController` présente les quinze
+niveaux de cette source — trois paliers de cartes et cinq difficultés — et
+lance le combat. `OpponentCatalog.levels_for()` est le seul endroit qui ordonne
+ces niveaux ; `EncounterPath` en déduit les états verrouillé, disponible et
+terminé à partir de `PlayerData.is_npc_beaten()`. Une victoire débloque le
+niveau suivant ; une victoire antérieure hors séquence reste enregistrée dans le
+profil mais ne valide pas un rond isolé, elle compte dès que les niveaux
+précédents ont été gagnés. Aucun champ de sauvegarde n'est ajouté, et les ronds
+terminés comme le rond ouvert restent sélectionnables. `OpponentCatalog` génère
+à la demande les 105 rencontres.
+
+Les decks des dieux restent majoritairement composés de leur
 famille ; Pr.Stone n'utilise que des lignées neutres. La difficulté ne modifie
 pas le deck et fournit le profil d'IA ainsi que l'identifiant stable
 `bot_<adversaire>_<palier>_<difficulté>`.
@@ -343,9 +354,17 @@ fabrique les lignées neutres et la rareté des formes.
 `BattleContext.select_opponent()` conserve la rencontre ; `current_opponent()`
 retombe sur `StoneLoader.get_npc()` pour les adversaires historiques de
 `npcs.json`. `PreBattle`, `BoardController` et l'écran de résultat lisent la même
-source. Le bot sans dieu conserve un `god_id` vide et est présenté explicitement
-comme tel, sans ajouter de dieu jouable à `gods.json`. Le profil agrège les
-statistiques des cinq difficultés par adversaire et par palier.
+source. `BattleContext.selected_source_id` retient le chemin ouvert, ce qui
+permet à `PreBattle` et au résultat d'y revenir ; `source_id_of()` déduit la
+source d'un adversaire généré. Depuis le résultat, `Niveau suivant` prépare
+directement le rond suivant du même chemin, `Rejouer` relance le même duel,
+`Choisir un autre niveau` rouvre le serpentin, `Choisir un autre dieu` revient
+à la grille et `Accueil` au menu principal ; le bouton du suivant disparaît
+après une défaite ou au dernier rond. Le bot sans dieu conserve un `god_id` vide et est présenté explicitement
+comme tel, sans ajouter de dieu jouable à `gods.json`. Le profil affiche un
+chemin par dieu et pour Pr.Stone avec le nombre de niveaux terminés sur quinze ;
+ce décompte suit la même règle linéaire que le serpentin, pas les anciennes
+victoires agrégées par palier.
 
 ## Poser une carte en combat
 
@@ -497,8 +516,9 @@ Les dieux sont équipés dans les deux camps, et des ouvertures dédiées garant
 que les comparaisons Déclin et Essaim déclenchent réellement leurs auras.
 `TurnSequenceChecks` vérifie aussi les fins retardées et l'annulation des présentations.
 
-Au dernier contrôle automatisé, `GodSystemChecks` compte 451 réussites et
-`TouchInputChecks` 76 vérifications tactiles, sans échec ni erreur Godot.
+Au dernier contrôle automatisé, `GodSystemChecks` compte 514 réussites,
+sans échec et sans erreur Godot ; `TouchInputChecks` réussit ses
+80 vérifications tactiles.
 
 Les lanceurs chargent les suites à l'exécution et enregistrent `tests/support/TestLog.gd`
 auprès de Godot. Une suite qui ne compile pas, une erreur ou un avertissement

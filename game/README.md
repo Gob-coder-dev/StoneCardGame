@@ -91,6 +91,17 @@ page Cartes comporte :
 - la collection, le tri, le remplacement d'une carte et les fiches détaillées ;
 - le choix du niveau à équiper, sans bouton de sauvegarde séparé.
 
+Les Rencontres se lisent en deux temps : une grille de grandes cases illustrées
+(portrait, nom, famille et motif du dieu), puis un chemin serpentin de quinze
+niveaux par adversaire. Chaque palier de cartes forme un chapitre et chaque
+difficulté un rond ; un rond s'ouvre quand le précédent a été gagné. La
+progression est déduite des victoires déjà enregistrées, sans nouveau champ de
+sauvegarde. Le profil reprend la même règle : statistiques générales, puis un
+chemin par dieu et pour Pr.Stone avec le nombre de niveaux terminés sur quinze.
+Après une victoire, le résultat propose le niveau suivant du même chemin, une
+revanche, un autre niveau, un autre dieu ou l'accueil ; après une défaite ou au
+dernier rond, la sortie « Niveau suivant » disparaît.
+
 L'interface adopte un thème d'arène machiavélique : fonds charbon, accents de
 métal incandescent et halos néon violets ou carmin. Les formes restent discrètes
 pour préserver la lisibilité des cartes et des règles. Les informations de
@@ -121,6 +132,7 @@ scripts/
   ui/                    Menus, cartes, plateau, HUD et composants tactiles
     collection/          Sélection de dieu/deck, collection et panneaux de cartes
     combat/              Présentations, géométrie et animations de combat
+    encounters/          Grille des dieux et chemin des niveaux
 scenes/                  Scènes Godot des menus, du combat et des composants
 assets/                  Illustrations, portraits, icônes et thème
 tests/                   Suites de règles, IA, interface et interactions tactiles
@@ -139,7 +151,10 @@ réelle du joueur ni le prochain tirage aléatoire.
 
 Les Rencontres proposent les six dieux et Pr.Stone, un adversaire sans dieu qui
 utilise exclusivement des cartes neutres. Chacun se joue sur trois paliers de
-cartes et cinq difficultés. Pour les bots, les paliers tiennent compte de la
+cartes et cinq difficultés, présentés comme un chemin de quinze niveaux : un
+niveau s'ouvre quand le précédent est gagné. Une victoire antérieure hors
+séquence reste enregistrée mais ne valide le rond qu'une fois les précédents
+gagnés. Pour les bots, les paliers tiennent compte de la
 rareté sans modifier le niveau réel des formes : les épiques commencent au
 palier 3 et les légendaires au palier 4. Le deck ne dépend que de l'adversaire et
 du palier ; la difficulté règle la précision de l'IA (0, 0,25, 0,5, 0,75 ou 1)
@@ -213,9 +228,12 @@ modaux et la pose de cartes. Au dernier contrôle, les suites terminent
 respectivement par :
 
 ```text
-GOD_SYSTEM_CHECKS: 451 passed, 0 failed, 0 Godot errors
-TACTILE : 76 vérifications, 0 échec(s), 0 erreur(s) Godot.
+GOD_SYSTEM_CHECKS: 514 passed, 0 failed, 0 Godot errors
+TACTILE : 80 vérifications, 0 échec(s), 0 erreur(s) Godot.
 ```
+
+Toutes les suites passent, y compris les migrations de cartes, les coûts
+Horizon et les animations Fortune.
 
 Les tests automatisés ne remplacent pas une vérification visuelle sur téléphone
 après export : les animations, le confort des gestes et la lisibilité doivent

@@ -31,7 +31,7 @@ func _test_catalogue() -> void:
 		and StoneLoader.preview_variant("le_porte_cercueil_n1", 4) == "le_porte_cercueil_n2"
 		and StoneLoader.preview_variant("le_collecteur_zero_n1", 4) == "le_collecteur_zero_n1",
 		"l'aperçu niveau quatre conserve les rares, épiques et légendaires à leur vrai maximum")
-	_check(not StoneLoader.has_stone("de_boiteux_n3") and StoneLoader.has_stone(StoneLoader.resolve_saved_id("de_boiteux_n3")),
+	_check(not StoneLoader.has_stone("kappa") and StoneLoader.has_stone(StoneLoader.resolve_saved_id("kappa")),
 		"une ancienne carte possède une correspondance sans rester dans le catalogue actif")
 	_check(StoneLoader.stone_cost("avortons_des_caves_n1") == 4.0 and StoneLoader.stone_cost("avortons_des_caves_n4") == 16.0
 		and StoneLoader.stone_cost("devoracle_n1") == 3.5 and StoneLoader.stone_cost("echassier_des_brumes_n1") == 5.5,
@@ -95,7 +95,7 @@ func _test_migration() -> void:
 	var raw := Codec.decode({"player_god_id": "veskar", "player_deck": ["le_nud_hurlant_n2", "de_boiteux_n1"]})
 	for god in raw["decks_by_god"]:
 		for slot in range(3):
-			raw["decks_by_god"][god][slot] = ["n01_n%d" % (slot + 1)]
+			raw["decks_by_god"][god][slot] = [StoneLoader.variant_id("avortons_des_caves", slot + 1)]
 	raw["player_name"] = "Évolutions"
 	raw["stats"]["wins"] = 9
 	var decoded := Codec.decode(JSON.parse_string(JSON.stringify(raw)))

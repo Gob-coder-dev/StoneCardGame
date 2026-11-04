@@ -2,6 +2,7 @@
 extends Control
 
 const OpponentCatalogModel := preload("res://scripts/data/OpponentCatalog.gd")
+const EncounterPathModel := preload("res://scripts/domain/EncounterPath.gd")
 
 @onready var close_button: Button = $Root/Header/CloseButton
 @onready var scroll: ScrollContainer = $Root/Scroll
@@ -110,55 +111,63 @@ func _make_stat_row(label_text: String, value_text: String) -> HBoxContainer:
 	var label := Label.new()
 	label.text = label_text
 	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	label.add_theme_font_size_override("font_size", 34)
+	label.add_theme_font_size_override("font_size", UITheme.FONT_BODY)
 	label.add_theme_color_override("font_color", UITheme.COL_TEXT)
 	var value := Label.new()
 	value.text = value_text
 	value.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	value.add_theme_color_override("font_color", UITheme.COL_ACCENT_LIGHT)
-	value.add_theme_font_size_override("font_size", 40)
+	value.add_theme_font_size_override("font_size", UITheme.FONT_SUBTITLE)
 	row.add_child(label)
 	row.add_child(value)
 	return row
 
 
+## Un chemin par dieu et pour Pr.Stone. Le compteur suit la même règle
+## linéaire que le serpentin : seuls les niveaux gagnés dans l'ordre comptent.
 func _build_npc_progression() -> void:
-	for matchup in OpponentCatalogModel.progression_rows():
-		var wins := 0
-		var games := 0
-		var beaten := false
-		for raw_id in matchup["difficulty_ids"]:
-			var npc_id := str(raw_id)
-			var record := PlayerData.npc_record(npc_id)
-			wins += int(record.get("wins", 0))
-			games += int(record.get("games", 0))
-			beaten = beaten or PlayerData.is_npc_beaten(npc_id)
+	for source in OpponentCatalogModel.sources():
+		var levels := OpponentCatalogModel.levels_for(str(source.get("id", "")))
+		if levels.is_empty():
+			continue
+		var path := EncounterPathModel.states(levels, PlayerData.is_npc_beaten)
+		var completed := EncounterPathModel.completed_count(path)
+		var total := levels.size()
 		var row := HBoxContainer.new()
 		row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.add_theme_constant_override("separation", 8)
 
 		var status := Label.new()
-		status.text = "✔" if beaten else "◇"
-		status.add_theme_color_override("font_color", UITheme.COL_SUCCESS if beaten else UITheme.COL_TEXT_DIM)
-		status.add_theme_font_size_override("font_size", 36)
+		var status_color := UITheme.COL_TEXT_DIM
+		if completed == total:
+			status.text = "✔"
+			status_color = UITheme.COL_SUCCESS
+		elif completed > 0:
+			status.text = "◆"
+			status_color = UITheme.COL_ACCENT_LIGHT
+		else:
+			status.text = "◇"
+		status.add_theme_color_override("font_color", status_color)
+		status.add_theme_font_size_override("font_size", UITheme.FONT_BODY)
 		status.custom_minimum_size = Vector2(50, 0)
 
 		var name_label := Label.new()
-		name_label.text = str(matchup.get("label", ""))
+		name_label.text = str(source.get("name", ""))
 		name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		name_label.clip_text = true
-		name_label.add_theme_font_size_override("font_size", 32)
-		var color_hex := str(matchup.get("color", ""))
+		name_label.add_theme_font_size_override("font_size", UITheme.FONT_BODY)
+		var color_hex := str(source.get("color", ""))
 		if color_hex != "":
 			name_label.add_theme_color_override("font_color", Color(color_hex))
 
-		var record_label := Label.new()
-		record_label.text = "%d/%d" % [wins, games] if games > 0 else "—"
-		record_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-		record_label.custom_minimum_size = Vector2(120, 0)
-		record_label.add_theme_font_size_override("font_size", 32)
+		var count_label := Label.new()
+		count_label.text = "%d/%d" % [completed, total]
+		count_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		count_label.custom_minimum_size = Vector2(130, 0)
+		count_label.add_theme_font_size_override("font_size", UITheme.FONT_BODY)
+		count_label.add_theme_color_override("font_color", UITheme.COL_TEXT)
 
 		row.add_child(status)
 		row.add_child(name_label)
-		row.add_child(record_label)
+		row.add_child(count_label)
 		npc_list.add_child(row)

@@ -33,7 +33,7 @@ offset_top = -460.0
 offset_right = 420.0
 offset_bottom = 460.0
 alignment = 1
-theme_override_constants/separation = 28
+theme_override_constants/separation = 16
 
 [node name="ResultLabel" type="Label" parent="VBoxCenter"]
 theme_type_variation = &"ScreenTitle"
@@ -51,23 +51,36 @@ autowrap_mode = 2
 
 [node name="Separator" type="Control" parent="VBoxCenter"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 40)
+custom_minimum_size = Vector2(0, 24)
 
-[node name="ReplayButton" type="Button" parent="VBoxCenter"]
+[node name="NextButton" type="Button" parent="VBoxCenter"]
 theme_type_variation = &"PrimaryButton"
 layout_mode = 2
+visible = false
 script = ExtResource("2_touch_button")
-custom_minimum_size = Vector2(0, 130)
-text = "Rejouer"
+custom_minimum_size = Vector2(0, 120)
+text = "Niveau suivant"
 
-[node name="LevelSelectButton" type="Button" parent="VBoxCenter"]
+[node name="ReplayButton" type="Button" parent="VBoxCenter"]
 layout_mode = 2
 script = ExtResource("2_touch_button")
-custom_minimum_size = Vector2(0, 130)
-text = "Choisir un adversaire"
+custom_minimum_size = Vector2(0, 120)
+text = "Rejouer"
+
+[node name="LevelsButton" type="Button" parent="VBoxCenter"]
+layout_mode = 2
+script = ExtResource("2_touch_button")
+custom_minimum_size = Vector2(0, 120)
+text = "Choisir un autre niveau"
+
+[node name="GodsButton" type="Button" parent="VBoxCenter"]
+layout_mode = 2
+script = ExtResource("2_touch_button")
+custom_minimum_size = Vector2(0, 120)
+text = "Choisir un autre dieu"
 
 [node name="MainMenuButton" type="Button" parent="VBoxCenter"]
 layout_mode = 2
 script = ExtResource("2_touch_button")
-custom_minimum_size = Vector2(0, 130)
+custom_minimum_size = Vector2(0, 120)
 text = "Accueil"

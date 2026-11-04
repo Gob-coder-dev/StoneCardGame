@@ -1,0 +1,81 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/encounters/EncounterSelectController.gd" id="1_select"]
+[ext_resource type="Script" path="res://scripts/ui/MenuBackground.gd" id="2_background"]
+[ext_resource type="Script" path="res://scripts/ui/input/TouchButton.gd" id="3_touch"]
+[ext_resource type="Script" path="res://scripts/ui/input/TouchScrollContainer.gd" id="4_scroll"]
+
+[node name="EncounterSelect" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_select")
+
+[node name="Background" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2_background")
+room = 3
+
+[node name="Root" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 48.0
+offset_top = 70.0
+offset_right = -48.0
+offset_bottom = -40.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 28
+
+[node name="Header" type="HBoxContainer" parent="Root"]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="BackButton" type="Button" parent="Root/Header"]
+layout_mode = 2
+script = ExtResource("3_touch")
+custom_minimum_size = Vector2(110, 110)
+theme_override_font_sizes/font_size = 52
+text = "←"
+
+[node name="TitleLabel" type="Label" parent="Root/Header"]
+theme_type_variation = &"ScreenTitle"
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 52
+text = "LES RENCONTRES"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Scroll" type="ScrollContainer" parent="Root"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+script = ExtResource("4_scroll")
+
+[node name="Content" type="VBoxContainer" parent="Root/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 32
+
+[node name="Gods" type="GridContainer" parent="Root/Scroll/Content"]
+layout_mode = 2
+size_flags_horizontal = 3
+columns = 2
+theme_override_constants/h_separation = 24
+theme_override_constants/v_separation = 24
+
+[node name="Godless" type="VBoxContainer" parent="Root/Scroll/Content"]
+layout_mode = 2
+theme_override_constants/separation = 16

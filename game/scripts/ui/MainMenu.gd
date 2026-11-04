@@ -2,16 +2,19 @@
 extends Control
 
 @onready var profile_button: Button = $Content/Header/ProfileButton
-@onready var play_button: Button = $Content/Hero/PlayButton
-@onready var deck_status: Label = $Content/Hero/DeckStatus
+@onready var play_button: Button = $Content/Hero/Identity/PlayButton
+@onready var deck_status: Label = $Content/Hero/Identity/DeckStatus
 @onready var background: MenuBackground = $Background
-@onready var god_portrait: TextureRect = $Content/Hero/Emblem/GodPortrait
-@onready var god_name: Label = $Content/Hero/GodName
-@onready var god_title: Label = $Content/Hero/GodTitle
-@onready var god_family: Label = $Content/Hero/GodFamily
-@onready var art_warmup: VBoxContainer = $Content/Hero/ArtWarmup
-@onready var art_warmup_label: Label = $Content/Hero/ArtWarmup/Label
-@onready var art_warmup_bar: ProgressBar = $Content/Hero/ArtWarmup/Progress
+@onready var portrait_area: Control = $Content/Hero/PortraitArea
+@onready var emblem: Control = $Content/Hero/PortraitArea/Emblem
+@onready var identity_panel: Control = $Content/Hero/Identity
+@onready var god_portrait: TextureRect = $Content/Hero/PortraitArea/Emblem/GodPortrait
+@onready var god_name: Label = $Content/Hero/Identity/GodName
+@onready var god_title: Label = $Content/Hero/Identity/GodTitle
+@onready var god_family: Label = $Content/Hero/Identity/GodFamily
+@onready var art_warmup: VBoxContainer = $Content/Hero/Identity/ArtWarmup
+@onready var art_warmup_label: Label = $Content/Hero/Identity/ArtWarmup/Label
+@onready var art_warmup_bar: ProgressBar = $Content/Hero/Identity/ArtWarmup/Progress
 
 
 func _ready() -> void:
@@ -19,16 +22,19 @@ func _ready() -> void:
 	play_button.pressed.connect(_on_play_pressed)
 	CardArtCache.warmup_progress.connect(_on_art_warmup_progress)
 	CardArtCache.warmup_finished.connect(_on_art_warmup_finished)
-	resized.connect(_fit_portrait)
+	portrait_area.offset_bottom = -UITheme.HOME_IDENTITY_HEIGHT
+	identity_panel.offset_top = -UITheme.HOME_IDENTITY_HEIGHT
+	portrait_area.resized.connect(_fit_portrait)
 	_fit_portrait.call_deferred()
 	_refresh()
 	CardArtCache.preload_god_portraits()
 
 
 func _fit_portrait() -> void:
-	# Réserve les commandes et la navigation sur les écrans moins hauts.
-	$Content/Hero/Emblem.custom_minimum_size.y = clampf(size.y - UITheme.HOME_RESERVED_HEIGHT,
+	var portrait_height := clampf(portrait_area.size.y - 80.0,
 		UITheme.HOME_PORTRAIT_MIN_HEIGHT, UITheme.HOME_PORTRAIT_MAX_HEIGHT)
+	emblem.offset_top = -portrait_height * 0.5
+	emblem.offset_bottom = portrait_height * 0.5
 
 
 func _refresh() -> void:
@@ -76,7 +82,7 @@ func _on_art_warmup_finished(god_id: String) -> void:
 
 func _on_play_pressed() -> void:
 	if DeckRules.is_deck_valid(PlayerData.get_active_deck(), PlayerData.player_god_id):
-		get_tree().change_scene_to_file("res://scenes/menus/LevelSelect.tscn")
+		get_tree().change_scene_to_file("res://scenes/menus/EncounterSelect.tscn")
 	else:
 		get_tree().change_scene_to_file("res://scenes/menus/CollectionScreen.tscn")
 

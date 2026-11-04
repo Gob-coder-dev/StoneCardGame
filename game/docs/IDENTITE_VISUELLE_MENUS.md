@@ -31,7 +31,8 @@ de saisie et les barres de défilement.
 
 `MenuBackground.gd` dessine un fond de pierre sombre avec quelques formes
 néon simples : halo ouvragé à l'accueil, filets roses sur toute la hauteur du
-bestiaire, angles fins dans les règles et arche des rencontres. Le rituel de
+bestiaire, angles fins dans les règles, arche des rencontres et rails du chemin
+des niveaux. Le rituel de
 pièce reçoit des cercles néon concentriques autour de la monnaie pour en faire le
 point focal. Les accents néon suivent la couleur du dieu affiché : le dieu
 actif sur l'accueil et dans le bestiaire, le dieu sélectionné dans les
@@ -66,18 +67,25 @@ Les six portraits sont fournis dans `assets/gods/`. Le champ `asset` de
   remplit la largeur disponible ; son conteneur réserve la même hauteur pour
   qu'elle reste carrée et ne recouvre pas les textes. Son logo de pouvoir est
   agrandi pour cette vue et le même pictogramme précède le texte d'explication.
-- Rencontres : six portraits de dieux, puis une carte modale qui regroupe le
-  palier de cartes, la difficulté et le bouton Affronter. La carte tient
-  entièrement à l'écran et ne défile pas ; un appui sur le fond assombri, la
-  touche Échap ou le retour Android la referme sans quitter l'écran.
+- Rencontres : une grille de cases de dieux (portrait, nom, famille, cadre et
+  motif de famille), puis un chemin serpentin de quinze ronds par adversaire.
+  Chaque palier de cartes forme un chapitre et chaque difficulté un rond ;
+  terminé, ouvert et verrouillé se distinguent par la couleur et par la forme
+  (coche, numéro, cadenas). Les ronds terminés et le rond ouvert sont
+  sélectionnables pour rejouer un niveau ; un rond verrouillé reste inactif.
+  Le pied de page fixe rappelle le dieu, le niveau choisi et la progression,
+  avec le bouton Affronter toujours accessible.
 - Règles : texte ivoire et titres ambrés, logos des pouvoirs aux couleurs
   de leur famille ; valeurs toujours lues dans les règles du jeu. Une marge
   finale permet de défiler après la dernière ligne.
-- Profil : pseudo modifiable, statistiques et progression, sans avatar.
+- Profil : pseudo modifiable, statistiques générales et progression des sept
+  chemins (niveaux terminés sur quinze), sans avatar.
 - Avant-combat : les portraits des deux dieux encadrent la pièce ; le cadre du
   dieu désigné par le tirage est renforcé. En combat, ces portraits restent dans
   les plaques du HUD, avec le nom du combattant, celui du dieu et le score.
-  L'écran de résultat conserve le même décor et ses commandes.
+  L'écran de résultat conserve le même décor et propose le niveau suivant après
+  une victoire, puis revanche, autre niveau, autre dieu et accueil ; le suivant
+  disparaît après une défaite ou au dernier rond.
 - Navigation : trois onglets avec icônes SVG au-dessus des libellés. Les
   enfants décoratifs ignorent la souris et le tactile ; les boutons d'origine
   conservent les connexions et la gestion des glissements.
@@ -127,8 +135,9 @@ existants. `MenuChecks` vérifie en plus le chargement des six portraits et le
 passage des gestes à travers le décor de l'accueil. Les essais utilisent un profil
 temporaire, restauré ensuite.
 
-Au dernier contrôle automatisé, 451 vérifications générales et 76 vérifications
-tactiles ont réussi sans échec ni erreur Godot. Une validation visuelle doit
+Au dernier contrôle automatisé, 514 vérifications générales réussissent, sans
+échec et sans erreur Godot ; les 80 vérifications tactiles réussissent. Une
+validation visuelle doit
 compléter ces suites après chaque changement de composition : chaque dieu, les
 fiches de cartes, les tiroirs ouverts, les quatre raretés, les deux propriétaires
 du plateau et les cases interdites doivent être relus à la taille mobile. Un essai

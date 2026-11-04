@@ -2,7 +2,7 @@
 class_name MenuBackground
 extends Control
 
-enum Room { REFUGE, BESTIARY, JOURNAL, ENCOUNTERS, COIN_RITUAL, BOARD, AFTERMATH, PROFILE }
+enum Room { REFUGE, BESTIARY, JOURNAL, ENCOUNTERS, COIN_RITUAL, BOARD, AFTERMATH, PROFILE, ENCOUNTER_PATH }
 @export var room: Room = Room.JOURNAL
 
 const VOID := Color("#101013")
@@ -56,6 +56,8 @@ func _draw() -> void:
 			_draw_journal()
 		Room.ENCOUNTERS:
 			_draw_encounters()
+		Room.ENCOUNTER_PATH:
+			_draw_encounter_path()
 		Room.COIN_RITUAL:
 			_draw_coin_ritual()
 		Room.BOARD:
@@ -80,11 +82,11 @@ func _draw_base() -> void:
 
 func _draw_main_menu() -> void:
 	var center := Vector2(540.0, 810.0)
-	_draw_glow(center, 310.0, neon_primary_color, 0.022)
-	_draw_neon_circle(center, 264.0, neon_primary_color, 3.0)
-	_draw_neon_arc(center, 296.0, PI * 1.08, PI * 1.92, neon_secondary_color, 3.0)
-	_draw_neon_line(Vector2(352.0, 582.0), Vector2(292.0, 494.0), neon_secondary_color)
-	_draw_neon_line(Vector2(728.0, 582.0), Vector2(788.0, 494.0), neon_secondary_color)
+	_draw_glow(center, 430.0, neon_primary_color, 0.022)
+	_draw_neon_circle(center, 370.0, neon_primary_color, 3.0)
+	_draw_neon_arc(center, 410.0, PI * 1.08, PI * 1.92, neon_secondary_color, 3.0)
+	_draw_neon_line(Vector2(294.0, 480.0), Vector2(222.0, 374.0), neon_secondary_color)
+	_draw_neon_line(Vector2(786.0, 480.0), Vector2(858.0, 374.0), neon_secondary_color)
 	_draw_corner_marks(neon_primary_color, 56.0, 110.0)
 
 
@@ -104,6 +106,16 @@ func _draw_encounters() -> void:
 	_draw_neon_arc(center, 430.0, PI * 1.08, PI * 1.92, neon_secondary_color, 3.0)
 	_draw_neon_arc(center, 397.0, PI * 1.10, PI * 1.90, neon_primary_color, 2.0)
 	_draw_corner_marks(neon_secondary_color, 48.0, 88.0)
+
+
+## Le serpentin reste au centre ; le décor se contente de deux rails et d'un
+## halo, pour ne jamais concurrencer les ronds et leur tracé.
+func _draw_encounter_path() -> void:
+	var center := Vector2(540.0, 1010.0)
+	_draw_glow(center, 520.0, neon_primary_color, 0.013)
+	_draw_neon_line(Vector2(52.0, 150.0), Vector2(52.0, 1770.0), neon_secondary_color, 2.0)
+	_draw_neon_line(Vector2(1028.0, 150.0), Vector2(1028.0, 1770.0), neon_secondary_color, 2.0)
+	_draw_corner_marks(neon_primary_color, 44.0, 86.0)
 
 
 func _draw_coin_ritual() -> void:

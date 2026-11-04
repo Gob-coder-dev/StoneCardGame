@@ -5,6 +5,7 @@ func run() -> void:
 	await _test_coin_flip()
 
 func _test_random_blades() -> void:
+	var expected := int(StoneLoader.get_stone("de_boiteux_n1").get("random_blades", 0))
 	var first := _state_with_hands(["de_boiteux_n1"], [])
 	first.set_random_seed(1337)
 	var first_result := CombatResolverModel.apply_move(first, 1, 1, "de_boiteux_n1", GameState.PLAYER_HUMAN)
@@ -13,8 +14,9 @@ func _test_random_blades() -> void:
 	second.set_random_seed(1337)
 	CombatResolverModel.apply_move(second, 1, 1, "de_boiteux_n1", GameState.PLAYER_HUMAN)
 	var second_stone: BattleStoneModel = second.get_cell(1, 1)["stone"]
-	_check(first_result["placement"]["placement_effects"].size() == 2, "deux lames Fortune sont révélées")
-	_check(_sum(first_stone.random_blades) == 2, "les deux lames aléatoires sont conservées dans l'instance")
+	_check(expected > 0 and first_result["placement"]["placement_effects"].size() == expected,
+		"les lames Fortune du catalogue sont révélées")
+	_check(_sum(first_stone.random_blades) == expected, "les lames aléatoires sont conservées dans l'instance")
 	_check(first_stone.random_blades == second_stone.random_blades, "un seed identique reproduit le tirage")
 	var under_cap := true
 	for side in BattleStoneModel.SIDES:
@@ -43,6 +45,7 @@ func _test_coin_flip() -> void:
 	var events: Array = result["placement"]["placement_effects"]
 	_check(events.size() == 1 and events[0].get("axis", "") == "vertical",
 		"le Valet à l'envers possède uniquement le pile ou face vertical")
+	var expected_count := int(StoneLoader.get_stone("de_boiteux_n1").get("random_blades", 0))
 	var badge: Dictionary = Symbols.badges_for(StoneLoader.get_stone("de_boiteux_n1"))[0]
-	_check(badge.get("kind") == "fortune" and badge.get("count") == 2,
-		"le badge de Dé boiteux annonce exactement les deux lames à révéler")
+	_check(badge.get("kind") == "fortune" and badge.get("count") == expected_count,
+		"le badge de Dé boiteux annonce exactement les lames à révéler")

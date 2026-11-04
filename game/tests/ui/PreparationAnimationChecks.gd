@@ -10,6 +10,7 @@ func _test_fortune_view_animation() -> void:
 	add_child(view)
 	view.build()
 	var state := _state_with_hands(["de_boiteux_n1"], [])
+	var expected_random := int(StoneLoader.get_stone("de_boiteux_n1").get("random_blades", 0))
 	state.set_random_seed(2026)
 	var placement := CombatResolverModel.place_stone(state, 1, 1, "de_boiteux_n1", GameState.PLAYER_HUMAN)
 	view.refresh(state)
@@ -19,7 +20,8 @@ func _test_fortune_view_animation() -> void:
 	_check(_sum(card.displayed_stone().random_blades) == 0, "Fortune ne dévoile aucune lame pendant le rebond initial")
 	await get_tree().create_timer(Timeline.PLACEMENT + 0.04).timeout
 	view.animations.animate_preparation(1, 1, placement["placement_effects"], Timeline.PREPARATION)
-	_check(_sum(card.displayed_stone().random_blades) == 0 and _sum(card.get_battle_stone().random_blades) == 2,
+	_check(expected_random > 0 and _sum(card.displayed_stone().random_blades) == 0
+		and _sum(card.get_battle_stone().random_blades) == expected_random,
 		"la spirale Fortune masque les lames jusqu'à leur révélation sans changer le moteur")
 	await get_tree().create_timer(1.3).timeout
 	_check(card._combat_preview == null and is_zero_approx(card.rotation) and view.animations.get_node_or_null("RandomReveal") == null,

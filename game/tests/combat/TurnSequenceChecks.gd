@@ -14,8 +14,9 @@ func run() -> void:
 func _test_turn_manager_sequence() -> void:
 	var manager := _animated_manager()
 	var observed := {"preparing": false, "placed": false}
+	var fortune_count := int(StoneLoader.get_stone("de_boiteux_n1").get("random_blades", 0))
 	manager.stone_preparing.connect(func(_row: int, _col: int, events: Array):
-		observed["preparing"] = events.size() == 2
+		observed["preparing"] = events.size() == fortune_count
 	)
 	manager.stone_placed.connect(func(_row: int, _col: int, _stone_id: String, _owner: int):
 		observed["placed"] = true
