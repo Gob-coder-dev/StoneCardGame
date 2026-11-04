@@ -1,8 +1,18 @@
-## Accueil principal : pseudo, identité du jeu et lancement d'un combat.
+## Accueil principal : pseudo, identité du jeu et accès aux deux modes.
 extends Control
 
+## Destination de chaque mode, après validation du deck.
+const MODE_SCENES: Dictionary = {
+	"campaign": "res://scenes/menus/EncounterSelect.tscn",
+	"pvp": "res://scenes/menus/PvpLobby.tscn",
+}
+const DECK_WARNING: String = "VEUILLEZ COMPLÉTER VOTRE DECK"
+const DECK_WARNING_SECONDS: float = 2.5
+
 @onready var profile_button: Button = $Content/Header/ProfileButton
-@onready var play_button: Button = $Content/Hero/Identity/PlayButton
+@onready var mode_buttons: HBoxContainer = $Content/Hero/Identity/ModeButtons
+@onready var campaign_button: Button = $Content/Hero/Identity/ModeButtons/CampaignButton
+@onready var pvp_button: Button = $Content/Hero/Identity/ModeButtons/PvpButton
 @onready var deck_status: Label = $Content/Hero/Identity/DeckStatus
 @onready var background: MenuBackground = $Background
 @onready var portrait_area: Control = $Content/Hero/PortraitArea
@@ -16,10 +26,21 @@ extends Control
 @onready var art_warmup_label: Label = $Content/Hero/Identity/ArtWarmup/Label
 @onready var art_warmup_bar: ProgressBar = $Content/Hero/Identity/ArtWarmup/Progress
 
+## Navigation injectable : les tests vérifient la destination réelle sans
+## changer de scène. Vide en jeu, la scène est alors ouverte normalement.
+var scene_changer: Callable = Callable()
+var _warning_timer: Timer = null
+
 
 func _ready() -> void:
 	profile_button.pressed.connect(_on_profile_pressed)
-	play_button.pressed.connect(_on_play_pressed)
+	campaign_button.pressed.connect(_on_mode_pressed.bind("campaign"))
+	pvp_button.pressed.connect(_on_mode_pressed.bind("pvp"))
+	_warning_timer = Timer.new()
+	_warning_timer.name = "DeckWarningTimer"
+	_warning_timer.one_shot = true
+	_warning_timer.timeout.connect(_restore_deck_status)
+	add_child(_warning_timer)
 	CardArtCache.warmup_progress.connect(_on_art_warmup_progress)
 	CardArtCache.warmup_finished.connect(_on_art_warmup_finished)
 	portrait_area.offset_bottom = -UITheme.HOME_IDENTITY_HEIGHT
@@ -40,9 +61,6 @@ func _fit_portrait() -> void:
 
 func _refresh() -> void:
 	profile_button.text = "%s\nProfil & statistiques" % PlayerData.player_name
-	var deck := PlayerData.get_active_deck()
-	var count := deck.size()
-	var cost := DeckRules.deck_cost(deck)
 	var god := StoneLoader.get_god(PlayerData.player_god_id)
 	background.set_god(god)
 	var portrait_path := str(god.get("asset", ""))
@@ -52,19 +70,51 @@ func _refresh() -> void:
 	god_family.text = str(god.get("family_name", ""))
 	god_family.add_theme_color_override("font_color", Color(str(god.get("color", "#e9e1d1"))))
 	god_title.add_theme_color_override("font_color", UITheme.COL_TEXT_DIM)
-	deck_status.text = "Deck %d • %d/%d cartes • %s/%d points" % [
-		PlayerData.get_selected_deck() + 1, count, DeckRules.DECK_SIZE,
-		UIFormat.cost(cost), DeckRules.DECK_BUDGET
-	]
-	if DeckRules.is_deck_valid(deck, PlayerData.player_god_id):
-		play_button.text = "JOUER"
-		deck_status.add_theme_color_override("font_color", UITheme.COL_TEXT)
-	else:
-		play_button.text = "COMPLÉTER MON DECK"
-		deck_status.add_theme_color_override("font_color", UITheme.COL_WARNING)
+	_restore_deck_status()
+	var deck := PlayerData.get_active_deck()
 	CardArtCache.activate_god(PlayerData.player_god_id, 1, deck)
 	var progress := CardArtCache.progress_for_god(PlayerData.player_god_id)
 	_on_art_warmup_progress(PlayerData.player_god_id, progress.x, progress.y)
+
+
+## État normal du deck : texte recalculé depuis le profil, jamais depuis une
+## chaîne mémorisée. Un ancien minuteur ne peut donc pas restaurer un texte
+## obsolète après plusieurs clics rapides.
+func _restore_deck_status() -> void:
+	var deck := PlayerData.get_active_deck()
+	deck_status.text = "Deck %d • %d/%d cartes • %s/%d points" % [
+		PlayerData.get_selected_deck() + 1, deck.size(), DeckRules.DECK_SIZE,
+		UIFormat.cost(DeckRules.deck_cost(deck)), DeckRules.DECK_BUDGET
+	]
+	deck_status.add_theme_color_override("font_color", UITheme.COL_TEXT)
+
+
+## Condition unique, partagée par les deux modes.
+func _deck_is_ready() -> bool:
+	return DeckRules.is_deck_valid(PlayerData.get_active_deck(), PlayerData.player_god_id)
+
+
+func _on_mode_pressed(mode: String) -> void:
+	if not _deck_is_ready():
+		_show_deck_warning()
+		return
+	_go_to(str(MODE_SCENES[mode]))
+
+
+func _show_deck_warning() -> void:
+	# Redémarrer le même minuteur évite qu'une restauration ancienne remplace
+	# l'avertissement d'un clic plus récent.
+	if _warning_timer != null:
+		_warning_timer.start(DECK_WARNING_SECONDS)
+	deck_status.text = DECK_WARNING
+	deck_status.add_theme_color_override("font_color", UITheme.COL_WARNING)
+
+
+func _go_to(path: String) -> void:
+	if scene_changer.is_valid():
+		scene_changer.call(path)
+		return
+	get_tree().change_scene_to_file(path)
 
 
 func _on_art_warmup_progress(god_id: String, loaded: int, total: int) -> void:
@@ -79,13 +129,6 @@ func _on_art_warmup_progress(god_id: String, loaded: int, total: int) -> void:
 func _on_art_warmup_finished(god_id: String) -> void:
 	if god_id == PlayerData.player_god_id:
 		art_warmup.visible = false
-
-
-func _on_play_pressed() -> void:
-	if DeckRules.is_deck_valid(PlayerData.get_active_deck(), PlayerData.player_god_id):
-		get_tree().change_scene_to_file("res://scenes/menus/EncounterSelect.tscn")
-	else:
-		get_tree().change_scene_to_file("res://scenes/menus/CollectionScreen.tscn")
 
 
 func _notification(what: int) -> void:

@@ -9,6 +9,7 @@ Pour lancer le jeu et ses tests, consulter le [README du projet](../README.md).
 | [Guide de prompts Fooocus](PROMPTS_FOOOCUS.md) | Références validées, palettes et prompts pour refaire les dieux et les 222 cartes restantes. |
 | [Bestiaire](BESTIAIRE.md) | Description des six dieux et des 96 lignées de monstres. |
 | [Identité visuelle des menus](IDENTITE_VISUELLE_MENUS.md) | Palette de l’interface, composants, cartes et plateau. |
+| [PVP local](PVP_LOCAL.md) | Hôte et client, ports, découverte, protocole, déterminisme, permissions Android et dépannage. |
 
 Les règles de jeu et les statistiques font référence aux fichiers data/stones.json
 et data/gods.json. Les illustrations sont stockées dans assets/cards/ et

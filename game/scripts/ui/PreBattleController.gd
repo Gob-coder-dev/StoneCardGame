@@ -1,8 +1,15 @@
 ## PreBattleController.gd
 ## Écran de transition avant le combat.
-## Affiche "Duel contre X" et anime un tirage pile/face qui décide du premier joueur.
+## Affiche "Duel contre X" et anime un tirage pile/face qui décide du premier
+## joueur. En PVP local, le tirage a déjà été fait par l'hôte : l'écran le
+## révèle sans consommer de hasard, pour que les deux appareils annoncent le
+## même premier joueur.
 extends Control
 
+const SessionLink := preload("res://scripts/network/LanSessionLink.gd")
+const CoordinatorModel := preload("res://scripts/network/LanMatchCoordinator.gd")
+
+@onready var duel_label: Label = $VBoxCenter/DuelLabel
 @onready var npc_label: Label = $VBoxCenter/NPCLabel
 @onready var difficulty_label: Label = $VBoxCenter/DifficultyLabel
 @onready var player_god_portrait: GodPortrait = $VBoxCenter/GodDuel/PlayerGod/Portrait
@@ -14,16 +21,47 @@ extends Control
 @onready var coin: Panel = $VBoxCenter/GodDuel/Coin
 @onready var coin_label: Label = $VBoxCenter/GodDuel/Coin/CoinLabel
 @onready var coin_flip_label: Label = $VBoxCenter/CoinFlipLabel
+@onready var status_label: Label = $VBoxCenter/StatusLabel
 @onready var start_button: Button = $VBoxCenter/StartButton
 @onready var background: MenuBackground = $Background
 
 const FACE_PLAYER := "TOI"
 const FACE_NPC := "LUI"
 
+var _link: LanSessionLink = null
+## En PVP, le plateau ne s'ouvre qu'une fois les deux téléphones d'accord.
+var _start_link: LanMatchCoordinator = null
+var _remote_ready := false
+var _leaving := false
+
 
 func _ready() -> void:
 	start_button.pressed.connect(_on_start)
+	if _is_pvp():
+		_setup_pvp()
+	else:
+		_setup_campaign()
 
+	coin_flip_label.text = ""
+	status_label.text = ""
+	start_button.disabled = true
+	if _is_pvp():
+		_open_start_link()
+	## Garder le cadre de la pièce rond, quelle que soit sa taille.
+	coin.resized.connect(_style_coin)
+	_style_coin.call_deferred()
+
+	## Lancer l'animation de pièce
+	_animate_coin_flip()
+
+
+func _is_pvp() -> bool:
+	return PvpMatchContext.is_active()
+
+
+## ─── Campagne ────────────────────────────────────────────────────────────────
+
+func _setup_campaign() -> void:
 	var npc := BattleContext.current_opponent()
 	npc_label.text = npc.get("name", "???")
 	difficulty_label.text = _opponent_subtitle(npc)
@@ -37,14 +75,23 @@ func _ready() -> void:
 		npc_god, "LUI • %s" % ("Sans dieu" if npc_is_godless else str(npc_god["name"])),
 		"Cartes neutres uniquement" if npc_is_godless else "")
 
-	coin_flip_label.text = ""
-	start_button.disabled = true
-	## Garder le cadre de la pièce rond, quelle que soit sa taille.
-	coin.resized.connect(_style_coin)
-	_style_coin.call_deferred()
 
-	## Lancer l'animation de pièce
-	_animate_coin_flip()
+## ─── PVP local ───────────────────────────────────────────────────────────────
+
+## Les deux camps viennent du salon : mêmes pseudos et mêmes dieux que sur le
+## téléphone d'en face, et surtout le même premier joueur tiré par l'hôte.
+func _setup_pvp() -> void:
+	duel_label.text = "Duel local contre"
+	npc_label.text = PvpMatchContext.remote_name if PvpMatchContext.remote_name != "" \
+		else "Adversaire"
+	difficulty_label.text = "PVP LOCAL • un appareil chacun"
+	var local_god := StoneLoader.get_god(PvpMatchContext.local_god_id)
+	var remote_god := StoneLoader.get_god(PvpMatchContext.remote_god_id)
+	background.set_gods(local_god, remote_god)
+	_setup_god_identity(player_god_portrait, player_god_name, player_god_family,
+		local_god, "TOI • %s" % str(local_god.get("name", "?")))
+	_setup_god_identity(opponent_god_portrait, opponent_god_name, opponent_god_family,
+		remote_god, "LUI • %s" % str(remote_god.get("name", "?")))
 
 
 func _setup_god_identity(portrait: GodPortrait, name_label: Label, family_label: Label,
@@ -91,10 +138,29 @@ func _style_coin() -> void:
 	coin_label.add_theme_color_override("font_color", Color("#f1d8c4"))
 
 
+## Le premier joueur ne change qu'ici : la campagne tire au sort, le PVP lit le
+## tirage déjà transmis par l'hôte et le mémorise pour le moteur.
+func _starting_player() -> int:
+	if _is_pvp():
+		return PvpMatchContext.starting_player
+	var drawn := BoardSetupGenerator.draw_first_player()
+	BattleContext.forced_first_player = drawn
+	return drawn
+
+
+## Le camp de cet appareil : l'hôte ou le client en PVP, l'humain en campagne.
+## La pièce parle toujours au joueur local, jamais au camp de l'hôte : sinon
+## les deux téléphones annoncent la même face et personne ne sait qui commence.
+func _local_side() -> int:
+	if _is_pvp():
+		return PvpMatchContext.local_side
+	return GameState.PLAYER_HUMAN
+
+
 ## Animation : la pièce "tourne" (écrase/étire horizontalement) plusieurs fois,
 ## alterne les faces, puis s'arrête sur le résultat tiré par le moteur.
 func _animate_coin_flip() -> void:
-	var player_starts := BoardSetupGenerator.draw_first_player() == GameState.PLAYER_HUMAN
+	var player_starts := _starting_player() == _local_side()
 
 	coin.pivot_offset = coin.size * 0.5
 
@@ -114,12 +180,18 @@ func _animate_coin_flip() -> void:
 
 func _finish_flip(player_starts: bool) -> void:
 	_show_coin_face(player_starts)
-	var npc := BattleContext.current_opponent()
-	var npc_name: String = npc.get("name", "L'adversaire")
-	coin_flip_label.text = "Tu commences !" if player_starts else "%s commence !" % npc_name
-	## Mémoriser qui commence pour que la partie respecte ce tirage
-	BattleContext.forced_first_player = GameState.PLAYER_HUMAN if player_starts else GameState.PLAYER_AI
+	coin_flip_label.text = "Tu commences !" if player_starts \
+		else "%s commence !" % _opponent_name()
 	start_button.disabled = false
+	if _remote_ready:
+		status_label.text = "L'adversaire est prêt. Touchez COMMENCER."
+
+
+func _opponent_name() -> String:
+	if _is_pvp():
+		return PvpMatchContext.remote_name if PvpMatchContext.remote_name != "" \
+			else "L'adversaire"
+	return str(BattleContext.current_opponent().get("name", "L'adversaire"))
 
 
 func _show_coin_face(show_player: bool) -> void:
@@ -140,11 +212,97 @@ func _notification(what: int) -> void:
 
 
 ## Le retour retrouve le chemin du dieu affronté, pour choisir un autre niveau
-## sans repasser par la grille.
+## sans repasser par la grille. En PVP, il rend la main au salon en fermant la
+## session réseau, sinon deux téléphones resteraient attachés à un match mort.
 func _go_back() -> void:
+	if _is_pvp():
+		_leaving = true
+		_close_start_link()
+		PvpMatchContext.clear()
+		LanSession.leave_with_notice("Partie annulée avant le premier coup.")
+		get_tree().change_scene_to_file("res://scenes/menus/PvpLobby.tscn")
+		return
 	BattleContext.select_source(BattleContext.navigation_source_id())
 	get_tree().change_scene_to_file("res://scenes/menus/EncounterPath.tscn")
 
 
 func _on_start() -> void:
+	if _leaving:
+		return
+	if _is_pvp() and _start_link != null:
+		_request_start()
+		return
+	_open_board()
+
+
+## ─── Lancement négocié en PVP ────────────────────────────────────────────────
+
+## Le coordinateur ne sert qu'à la poignée de main : après le feu vert de
+## l'hôte, le plateau créera le sien, comme pour la revanche.
+func _open_start_link() -> void:
+	if not LanSession.is_online():
+		set_status("Session locale : le plateau s'ouvre directement.")
+		return
+	var is_host := PvpMatchContext.local_side == GameState.PLAYER_ONE
+	var client_peer := PvpMatchContext.peer_of_side(GameState.PLAYER_TWO) if is_host else 0
+	_link = SessionLink.new()
+	_link.attach(LanSession)
+	_start_link = CoordinatorModel.new()
+	_start_link.attach(_link, PvpMatchContext.match_id, is_host,
+		PvpMatchContext.local_side, client_peer)
+	_start_link.enable_start(PvpMatchContext.config())
+	_start_link.start_pending.connect(_on_start_pending)
+	_start_link.match_ready.connect(_on_match_ready)
+	_start_link.aborted.connect(_on_start_aborted)
+
+
+## Chacun doit toucher COMMENCER : le premier qui appuie attend l'autre, et
+## c'est l'hôte qui donne le départ aux deux appareils en même temps.
+func _request_start() -> void:
+	if not _start_link.request_start():
+		_open_board()
+		return
+	start_button.disabled = true
+	status_label.text = "En attente de l'adversaire…"
+
+
+func _on_start_pending() -> void:
+	if start_button.disabled:
+		## La pièce tourne encore : le message s'affichera à son atterrissage.
+		_remote_ready = true
+		return
+	status_label.text = "L'adversaire est prêt. Touchez COMMENCER."
+
+
+func _on_match_ready(_config: Dictionary) -> void:
+	_open_board()
+
+
+func _on_start_aborted(message: String) -> void:
+	status_label.text = message
+	start_button.disabled = true
+
+
+func set_status(message: String) -> void:
+	status_label.text = message
+
+
+func _open_board() -> void:
+	if _leaving:
+		return
+	_leaving = true
+	_close_start_link()
 	get_tree().change_scene_to_file("res://scenes/game/Board.tscn")
+
+
+func _close_start_link() -> void:
+	if _start_link != null:
+		_start_link.close()
+		_start_link = null
+	if _link != null:
+		_link.detach()
+		_link = null
+
+
+func _exit_tree() -> void:
+	_close_start_link()

@@ -28,6 +28,9 @@ var _drop_target := Vector2i(-1, -1)
 var _drop_style: StyleBoxFlat = null
 var _drop_previous_style: StyleBox = null
 var _cell_styles: Dictionary = {}
+## Camp affiché en bleu sur cet appareil. La campagne garde PLAYER_HUMAN ; le
+## client PVP reçoit PLAYER_TWO pour retrouver ses propres cases en bleu.
+var local_owner: int = GameState.PLAYER_HUMAN
 
 
 ## Construit le plateau une fois, à une taille carrée fixe calculée sur la
@@ -151,7 +154,8 @@ func _apply_cell_style(index: int, owner: int, blocked: bool = false) -> void:
 
 
 func _cell_style(owner: int, blocked: bool = false) -> StyleBoxFlat:
-	var key := "blocked" if blocked else str(owner)
+	var shown := owner if blocked else _display_owner(owner)
+	var key := "blocked" if blocked else str(shown)
 	if _cell_styles.has(key):
 		return _cell_styles[key]
 	var style := StyleBoxFlat.new()
@@ -160,12 +164,12 @@ func _cell_style(owner: int, blocked: bool = false) -> StyleBoxFlat:
 		style.border_color = UITheme.COL_BOARD_BLOCKED_EDGE
 		style.set_border_width_all(6)
 		style.set_corner_radius_all(4)
-	elif owner == GameState.PLAYER_HUMAN:
+	elif shown == GameState.PLAYER_HUMAN:
 		style.bg_color = UITheme.COL_BOARD_HUMAN_BG
 		style.border_color = UITheme.COL_BOARD_HUMAN_EDGE
 		style.set_border_width_all(7)
 		style.set_corner_radius_all(12)
-	elif owner == GameState.PLAYER_AI:
+	elif shown == GameState.PLAYER_AI:
 		style.bg_color = UITheme.COL_BOARD_AI_BG
 		style.border_color = UITheme.COL_BOARD_AI_EDGE
 		# Bord plus anguleux et horizontalement renforcé : le camp reste
@@ -182,6 +186,17 @@ func _cell_style(owner: int, blocked: bool = false) -> StyleBoxFlat:
 		style.set_corner_radius_all(7)
 	_cell_styles[key] = style
 	return style
+
+
+## Le camp local reste bleu sur son propre téléphone ; l'adversaire reste rouge.
+func _display_owner(owner: int) -> int:
+	if local_owner == GameState.PLAYER_ONE:
+		return owner
+	if owner == GameState.PLAYER_ONE:
+		return GameState.PLAYER_AI
+	if owner == GameState.PLAYER_AI:
+		return GameState.PLAYER_HUMAN
+	return owner
 
 
 

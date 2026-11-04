@@ -3,6 +3,44 @@
 Le moteur calcule les résultats. La présentation les montre, puis annonce sa fin.
 Une IA appelle le même moteur sur une copie pour essayer un coup instantanément.
 
+## Deux modes de match
+
+Campagne et PVP local partagent la même scène `Board.tscn`, les mêmes vues et le
+même moteur. `BoardController` ne choisit qu'un `MatchDriver` :
+
+| Fichier | Entrées | Responsabilité |
+| --- | --- | --- |
+| `BoardController` | `_ready`, `_on_turn_started`, gestes | écoute le `TurnManager`, rafraîchit les vues, transmet les gestes au driver |
+| `MatchDriver` | `setup`, `start`, `request_move`, `on_turn_started`, `on_turn_ended` | contrat commun : `local_side`, `can_submit()`, `records_campaign_stats`, `aborted`, `finished` |
+| `CampaignMatchDriver` | `start` | adversaire du catalogue, deck du bot, `AITurnRunner`, statistiques de campagne |
+| `LanMatchDriver` | `start`, `request_move` | commandes réseau validées par l'hôte, camp local, aucune statistique |
+| `TurnManager` | `play`, `human_play`, `ai_play` | entrée générique `play(player, row, col, stone_id)` ; les deux wrappers restent pour la campagne |
+
+`GameState` nomme ses camps `PLAYER_ONE` et `PLAYER_TWO` ; `PLAYER_HUMAN` et
+`PLAYER_AI` restent des alias vers ces deux valeurs. `CombatResolver`,
+`PlacementRules`, `BoardView`, `HandView` et `BattleHUD` gardent donc leur
+contrat. La vue remappe seulement la coloration du plateau avec
+`BoardView.local_owner`, pour que le camp local reste bleu sur les deux
+téléphones. Le hasard du combat vient de `GameState.random_seed` et
+`random_state` : l'hôte du PVP impose la graine, la campagne continue de tirer
+la sienne.
+
+## Réseau local
+
+| Fichier | Responsabilité |
+| --- | --- |
+| `scripts/network/LanProtocol.gd` | version, types de messages, validation stricte et bornes ; aucun socket |
+| `scripts/network/LanDiscovery.gd` | beacon UDP, écoute, dédoublonnage et expiration ; aucune boucle bloquante |
+| `scripts/network/LanSession.gd` (autoload) | cycle ENet, états, signaux, RPC sur `/root/LanSession`, reset idempotent |
+| `scripts/network/LanLobbyCoordinator.gd` | poignée de main, camps, PRÊT, configuration autoritaire du match |
+| `scripts/network/LanMatchCoordinator.gd` | commandes, séquences, accusés, empreintes et désynchronisation |
+| `scripts/data/PvpMatchContext.gd` (autoload) | données transitoires du match, sans écriture de profil |
+| `scripts/ui/pvp/PvpLobbyController.gd` | salon affiché ; ne contient ni transport ni règle |
+| `scripts/network/LanTransportLink.gd` | façade de transport, remplacée par `FakeLanTransport` dans les tests |
+
+Le détail du protocole, des ports, des permissions et des limites est dans
+[PVP_LOCAL.md](PVP_LOCAL.md).
+
 ## Données
 
 | Fichier | Fonction principale | Responsabilité |
@@ -40,6 +78,11 @@ migre les profils sans version et la version 1 : l'ancien `player_deck` devient
 l'emplacement 1 du dieu équipé, ou du dieu déduit des cartes si nécessaire.
 Chaque emplacement est nettoyé dans sa propre famille ; les autres emplacements
 commencent vides. Un chargement seul ne réécrit pas le fichier.
+
+`PvpMatchContext` ne contient que des données de match (participants, camps,
+profils, decks, graine, cases bloquées, premier joueur, dernier résultat) : il
+ne touche jamais `PlayerData`, donc un match PVP ne modifie ni les statistiques
+de campagne ni `per_npc`.
 
 `PlayerData` possède les banques et renvoie des copies via ses lectures. Les
 modifications du deck, du dieu et du numéro sélectionné sont validées et

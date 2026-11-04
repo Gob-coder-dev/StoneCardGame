@@ -15,7 +15,7 @@ mais se lance également sur ordinateur avec Godot.
 
 | Moteur | Version du projet | Cible principale |
 | --- | --- | --- |
-| Godot 4.7 | 0.6.0 | Android, portrait 9:16 |
+| Godot 4.7 | 0.7.0 | Android, portrait 9:16 |
 
 ## Aperçu du jeu
 
@@ -31,6 +31,14 @@ mais se lance également sur ordinateur avec Godot.
 Une pierre se pose par toucher successif (carte, puis case) ou par glisser-déposer.
 Les gestes tactiles sont prévus pour laisser défiler les écrans lorsqu'ils ne
 deviennent pas un appui volontaire.
+
+L'accueil propose deux modes de largeur égale : **CAMPAGNE**, qui ouvre les
+rencontres contre l'IA, et **PVP**, qui ouvre un salon local. Deux téléphones
+Android sur le même Wi-Fi peuvent créer et rejoindre une partie sans serveur
+Internet, sans compte et sans service externe. Les deux modes partagent le même
+plateau, le même moteur et les mêmes vues ; seul le driver du match change. Un
+deck incomplet laisse le joueur sur l'accueil et affiche
+« VEUILLEZ COMPLÉTER VOTRE DECK » pendant 2,5 s, sans navigation.
 
 ## Dieux et familles
 
@@ -107,6 +115,13 @@ métal incandescent et halos néon violets ou carmin. Les formes restent discrè
 pour préserver la lisibilité des cartes et des règles. Les informations de
 combat sont séparées visuellement afin de rester lisibles sur téléphone :
 
+Le salon PVP garde la même arche de pierre et deux épées néon croisées à chaque
+étape. Les écrans de résultat de campagne et de PVP partagent trois illustrations
+selon le verdict : feux d'artifice aux nuances du dieu gagnant, crâne de cette
+couleur en cas de défaite, ou deux épées aux couleurs des dieux en cas d'égalité.
+Le détail de la direction artistique est dans
+[IDENTITE_VISUELLE_MENUS.md](docs/IDENTITE_VISUELLE_MENUS.md).
+
 | Élément | Information portée |
 | --- | --- |
 | Cadre minéral sombre de la carte | Famille du dieu |
@@ -163,6 +178,8 @@ et, au niveau le plus élevé, l'anticipation.
 Pour le détail des responsabilités, des signaux et des fichiers, voir
 [l'architecture complète](docs/ARCHITECTURE.md). Pour la palette et les choix de
 mise en page, voir [l'identité visuelle des menus](docs/IDENTITE_VISUELLE_MENUS.md).
+Le PVP local (rôles, ports, protocole, autorité de l'hôte, limites et dépannage)
+est décrit dans [PVP_LOCAL.md](docs/PVP_LOCAL.md).
 L’univers, les familles et les dieux sont décrits dans la
 [direction artistique](docs/DIRECTION_ARTISTIQUE_MONSTRES.md).
 L’[index de la documentation](docs/README.md) regroupe les références du projet,
@@ -216,7 +233,8 @@ godot --headless --fixed-fps 60 --path . res://tests/GodSystemChecks.tscn
 ```
 
 Cette suite couvre le catalogue, les sauvegardes, les règles de combat, les six
-familles, l'IA, les animations, les menus et les régressions de rendu.
+familles, l'IA, les animations, les menus, les régressions de rendu et le PVP
+local (protocole, salon et commandes validées par l'hôte).
 
 ```sh
 godot --headless --fixed-fps 60 --path . res://tests/TouchInputChecks.tscn
@@ -228,8 +246,8 @@ modaux et la pose de cartes. Au dernier contrôle, les suites terminent
 respectivement par :
 
 ```text
-GOD_SYSTEM_CHECKS: 514 passed, 0 failed, 0 Godot errors
-TACTILE : 80 vérifications, 0 échec(s), 0 erreur(s) Godot.
+GOD_SYSTEM_CHECKS: 716 passed, 0 failed, 0 Godot errors
+TACTILE : 86 vérifications, 0 échec(s), 0 erreur(s) Godot.
 ```
 
 Toutes les suites passent, y compris les migrations de cartes, les coûts

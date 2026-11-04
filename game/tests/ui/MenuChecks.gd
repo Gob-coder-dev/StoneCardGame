@@ -2,6 +2,8 @@ extends "res://tests/support/CombatTestSuite.gd"
 const ProfileFixture := preload("res://tests/support/PlayerProfileFixture.gd")
 const OpponentCatalogModel := preload("res://scripts/data/OpponentCatalog.gd")
 const EncounterPathModel := preload("res://scripts/domain/EncounterPath.gd")
+const TouchButtonScript := preload("res://scripts/ui/input/TouchButton.gd")
+const LobbyCoordinator := preload("res://scripts/network/LanLobbyCoordinator.gd")
 
 func run() -> void:
 	var fixture := ProfileFixture.new()
@@ -9,6 +11,7 @@ func run() -> void:
 	await _test_god_selector_ui()
 	await _test_deck_slots()
 	await _test_home_portraits()
+	await _test_menu_modes()
 	await _test_preview_layout()
 	await _test_rules_legends()
 	await _test_collection_incremental_refresh()
@@ -17,6 +20,10 @@ func run() -> void:
 	await _test_hand_keeps_remaining_cards()
 	_test_first_player_draw()
 	await _test_prebattle_reveals_draw()
+	await _test_pvp_prebattle()
+	await _test_pvp_board_opens_ready()
+	await _test_pvp_result()
+	await _test_pvp_lobby_screens()
 	await _test_encounter_selection()
 	await _test_encounter_path()
 	await _test_stats_progress()
@@ -38,6 +45,7 @@ func _test_screen_backgrounds() -> void:
 		"res://scenes/game/Board.tscn": MenuBackground.Room.BOARD,
 		"res://scenes/menus/Result.tscn": MenuBackground.Room.AFTERMATH,
 		"res://scenes/menus/Stats.tscn": MenuBackground.Room.PROFILE,
+		"res://scenes/menus/PvpLobby.tscn": MenuBackground.Room.PVP,
 	}
 	var assigned_rooms := {}
 	for scene_path in scenes:
@@ -148,6 +156,57 @@ func _test_home_portraits() -> void:
 	menu.queue_free()
 	await get_tree().process_frame
 
+## Les deux modes partagent une ligne de largeur égale, gardent leur libellé et
+## n'ouvrent leur destination qu'avec un deck valide.
+func _test_menu_modes() -> void:
+	var god_id: String = PlayerData.player_god_id
+	var slot: int = PlayerData.get_selected_deck(god_id)
+	var original: Array = PlayerData.get_deck(god_id, slot)
+	var menu: Control = (load("res://scenes/menus/MainMenu.tscn") as PackedScene).instantiate()
+	var visited: Array = []
+	menu.scene_changer = func(path: String) -> void: visited.append(path)
+	add_child(menu)
+	for frame in range(3):
+		await get_tree().process_frame
+	_check(menu.campaign_button.get_script() == TouchButtonScript
+		and menu.pvp_button.get_script() == TouchButtonScript,
+		"les boutons CAMPAGNE et PVP utilisent tous deux TouchButton")
+	_check(menu.campaign_button.text == "CAMPAGNE" and menu.pvp_button.text == "PVP",
+		"chaque mode garde un libellé permanent")
+	_check(menu.mode_buttons.get_child_count() == 2
+		and absf(menu.campaign_button.size.x - menu.pvp_button.size.x) <= 1.0
+		and menu.campaign_button.size.y >= 108.0,
+		"les deux modes partagent la même largeur tactile dans une ligne non absolue")
+	_check(menu.campaign_button.get_theme_stylebox("normal")
+		!= menu.pvp_button.get_theme_stylebox("normal"),
+		"PVP reste distinct sans concurrencer le bouton principal")
+	PlayerData._decks_by_god[god_id][slot] = []
+	menu._refresh()
+	menu.campaign_button.pressed.emit()
+	_check(menu.deck_status.text == "VEUILLEZ COMPLÉTER VOTRE DECK"
+		and menu.deck_status.get_theme_color("font_color") == UITheme.COL_WARNING
+		and menu.deck_status.visible and visited.is_empty(),
+		"un deck incomplet affiche le message exact sans changer de scène")
+	menu.campaign_button.pressed.emit()
+	menu.pvp_button.pressed.emit()
+	_check(visited.is_empty() and menu.deck_status.text == "VEUILLEZ COMPLÉTER VOTRE DECK"
+		and menu._warning_timer.time_left > 0.0
+		and menu._warning_timer.time_left <= menu.DECK_WARNING_SECONDS,
+		"plusieurs clics rapides relancent un seul avertissement complet")
+	PlayerData._decks_by_god[god_id][slot] = original
+	menu._refresh()
+	menu._warning_timer.stop()
+	menu.pvp_button.pressed.emit()
+	_check(visited == ["res://scenes/menus/PvpLobby.tscn"],
+		"un deck valide ouvre le salon PVP")
+	visited.clear()
+	menu.campaign_button.pressed.emit()
+	_check(visited == ["res://scenes/menus/EncounterSelect.tscn"],
+		"un deck valide ouvre aussi la sélection de campagne")
+	menu.queue_free()
+	await get_tree().process_frame
+
+
 func _test_god_selector_ui() -> void:
 	var scene: PackedScene = load("res://scenes/menus/CollectionScreen.tscn")
 	var page: Control = scene.instantiate()
@@ -254,8 +313,8 @@ func _test_deck_slots() -> void:
 		"revenir à un dieu retrouve son dernier deck et préserve les autres banques")
 	var menu: Control = (load("res://scenes/menus/MainMenu.tscn") as PackedScene).instantiate()
 	add_child(menu)
-	_check(menu.deck_status.text.contains("Deck 3") and menu.deck_status.text.contains("1/8")
-		and menu.play_button.text == "COMPLÉTER MON DECK", "l'accueil lit le numéro actif et refuse un deck incomplet")
+	_check(menu.deck_status.text.contains("Deck 3") and menu.deck_status.text.contains("1/8"),
+		"l'accueil lit le numéro de deck actif et signale un deck incomplet")
 	menu.queue_free()
 	# Un ancien panneau ne doit jamais pouvoir modifier le nouveau deck.
 	page._replacement_stone_id = "le_nud_hurlant_n2"
@@ -563,6 +622,14 @@ func _test_result_actions() -> void:
 	_check(page.next_btn.visible
 		and str(page._next_level().get("opponent_id", "")) == str(levels[1]["opponent_id"]),
 		"après une victoire, le résultat prépare le niveau suivant du même chemin")
+	var winner_color := Color(str(StoneLoader.get_god(PlayerData.player_god_id)["color"]))
+	_check(page.background.room == MenuBackground.Room.AFTERMATH
+		and page.background.neon_primary_color == winner_color
+		and page.background._winner_firework_color(0) != page.background._winner_firework_color(1)
+		and page.background._winner_firework_color(1) != page.background._winner_firework_color(2)
+		and page.background._winner_firework_color(2) != page.background._winner_firework_color(3)
+		and page.background._winner_firework_color(3) != page.background._winner_firework_color(4),
+		"la victoire de campagne dessine des feux d'artifice aux nuances du dieu gagnant")
 	BattleContext.select_opponent(OpponentCatalogModel.build("veskar", "n34", "tres_difficile"))
 	page._refresh_next_button()
 	_check(not page.next_btn.visible and page._next_level().is_empty(),
@@ -573,6 +640,18 @@ func _test_result_actions() -> void:
 	_check(not page.next_btn.visible and page.replay_btn.visible
 		and page.level_btn.visible and page.gods_btn.visible and page.menu_btn.visible,
 		"une défaite retire le niveau suivant et laisse les quatre autres sorties")
+	BattleContext.select_opponent(OpponentCatalogModel.build("kharun", "n1", "tres_facile"))
+	var defeat_page: Control = (load("res://scenes/menus/Result.tscn") as PackedScene).instantiate()
+	add_child(defeat_page)
+	await get_tree().process_frame
+	var campaign_winner_color := Color(str(StoneLoader.get_god("kharun")["color"]))
+	_check(defeat_page.background.room == MenuBackground.Room.AFTERMATH_DEFEAT
+		and defeat_page.background.neon_primary_color == campaign_winner_color
+		and defeat_page.background.neon_secondary_color == campaign_winner_color
+		and defeat_page.background.neon_tertiary_color == campaign_winner_color,
+		"la défaite de campagne affiche un crâne dans la couleur du dieu gagnant")
+	defeat_page.queue_free()
+	await get_tree().process_frame
 	page.queue_free()
 	await get_tree().process_frame
 	BattleContext.selected_npc_id = saved_id
@@ -650,6 +729,265 @@ func _test_prebattle_reveals_draw() -> void:
 	BattleContext.selected_npc_id = saved_npc
 	BattleContext.forced_first_player = saved_first
 	await get_tree().process_frame
+
+
+## Le salon envoie le premier joueur tiré par l'hôte : l'écran de pile ou face
+## doit le révéler sans retirer un nouveau nombre au hasard, et il doit parler
+## au camp de l'appareil qui regarde. Deux téléphones annonçaient « LUI » à la
+## fois alors que le client commençait : la face est désormais locale.
+func _test_pvp_prebattle() -> void:
+	PvpMatchContext.clear()
+	var saved_first := BattleContext.forced_first_player
+	BattleContext.forced_first_player = 0
+	PvpMatchContext.begin(_pvp_config(GameState.PLAYER_TWO, []), GameState.PLAYER_TWO, 2,
+		{"name": "Client", "god_id": "veskar", "deck": ProfileFixture.DECK.duplicate()},
+		{"name": "Hôte", "god_id": "veskar", "deck": ProfileFixture.DECK.duplicate()})
+	var page: Control = (load("res://scenes/menus/PreBattle.tscn") as PackedScene).instantiate()
+	add_child(page)
+	await get_tree().process_frame
+	_check(page.npc_label.text == "Hôte" and page.difficulty_label.text.contains("PVP"),
+		"l'avant-combat PVP nomme l'adversaire du salon et annonce le mode local")
+	await get_tree().create_timer(1.6).timeout
+	_check(page.coin_label.text == "TOI" and page.coin_flip_label.text == "Tu commences !",
+		"le pile ou face PVP parle au joueur local : le client qui commence voit TOI")
+	_check(BattleContext.forced_first_player == 0,
+		"l'avant-combat PVP ne réécrit pas le tirage de la campagne")
+	_check(not page.start_button.disabled,
+		"le plateau s'ouvre une fois la pièce retombée, même en PVP")
+	page.queue_free()
+	await get_tree().process_frame
+
+	PvpMatchContext.begin(_pvp_config(GameState.PLAYER_TWO, []), GameState.PLAYER_ONE, 1,
+		{"name": "Hôte", "god_id": "veskar", "deck": ProfileFixture.DECK.duplicate()},
+		{"name": "Client", "god_id": "veskar", "deck": ProfileFixture.DECK.duplicate()})
+	var host_page: Control = (load("res://scenes/menus/PreBattle.tscn") as PackedScene).instantiate()
+	add_child(host_page)
+	await get_tree().process_frame
+	await get_tree().create_timer(1.6).timeout
+	_check(host_page.coin_label.text == "LUI" and host_page.coin_flip_label.text == "Client commence !",
+		"le même tirage montre la face adverse sur le téléphone de l'hôte")
+	_check(host_page.npc_label.text == "Client" and host_page.player_god_name.text.contains("TOI")
+		and host_page.opponent_god_name.text.contains("LUI"),
+		"chaque appareil garde son dieu à gauche et celui de l'adversaire à droite")
+	host_page.queue_free()
+	await get_tree().process_frame
+	PvpMatchContext.clear()
+	BattleContext.forced_first_player = saved_first
+
+
+## Deux régressions corrigées : les cases bloquées étaient dessinées après le
+## premier coup, et le plateau ne se rouvrait jamais après la confirmation de
+## l'hôte, ce qui bloquait le joueur suivant.
+func _test_pvp_board_opens_ready() -> void:
+	PvpMatchContext.clear()
+	PvpMatchContext.begin(_pvp_config(GameState.PLAYER_ONE, [[1.0, 2.0]]),
+		GameState.PLAYER_ONE, 1,
+		{"name": "Hôte", "god_id": "veskar", "deck": ProfileFixture.DECK.duplicate()},
+		{"name": "Client", "god_id": "veskar", "deck": ProfileFixture.DECK.duplicate()})
+	var board: Control = (load("res://scenes/game/Board.tscn") as PackedScene).instantiate()
+	add_child(board)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	await get_tree().process_frame
+	_check(board.board_view.slot_at(1, 2).get_node_or_null("BlockedMark") != null,
+		"les cases bloquées du salon sont marquées dès l'ouverture du plateau PVP")
+	_check(board.board_view.slot_at(0, 0).get_node_or_null("BlockedMark") == null,
+		"une case libre du plateau PVP ne porte pas de marque de blocage")
+	_check(board.board_view.slot_at(0, 0).mouse_filter == Control.MOUSE_FILTER_STOP,
+		"le premier joueur peut toucher le plateau dès son ouverture")
+	var coordinator = board._driver._coordinator
+	coordinator._set_can_submit(false)
+	await get_tree().process_frame
+	_check(board.board_view.slot_at(0, 0).mouse_filter == Control.MOUSE_FILTER_IGNORE,
+		"le plateau se referme tant que l'hôte n'a pas confirmé le tour")
+	coordinator._set_can_submit(true)
+	await get_tree().process_frame
+	_check(board.board_view.slot_at(0, 0).mouse_filter == Control.MOUSE_FILTER_STOP,
+		"la confirmation de l'hôte rouvre le plateau du joueur suivant")
+	board.queue_free()
+	await get_tree().process_frame
+	PvpMatchContext.clear()
+	LanSession.reset()
+
+
+## Le salon PVP ne montre qu'un écran à la fois : choix du mode, recherche,
+## puis salle d'attente. L'adresse proposée est celle du Wi-Fi, pas celle d'un
+## VPN, qui n'est pas joignable depuis l'autre téléphone.
+func _test_pvp_lobby_screens() -> void:
+	var lobby_page := load("res://scripts/ui/pvp/PvpLobbyController.gd")
+	_check(lobby_page.rank_addresses(
+		["10.143.85.142", "192.168.1.98", "127.0.0.1", "169.254.2.3"]).size() == 2
+		and lobby_page.rank_addresses(["10.143.85.142", "192.168.1.98"])[0] == "192.168.1.98",
+		"l'adresse proposée par l'hôte est celle du Wi-Fi, pas celle d'un VPN")
+	_check(lobby_page.host_only("192.168.1.98:45555") == "192.168.1.98"
+		and lobby_page.host_only(" 192.168.1.98 ") == "192.168.1.98"
+		and lobby_page.host_only(" :45555") == "",
+		"une adresse collée avec son port reste utilisable telle quelle")
+	var page: Control = (load("res://scenes/menus/PvpLobby.tscn") as PackedScene).instantiate()
+	add_child(page)
+	await get_tree().process_frame
+	_check(page.mode_screen.visible and not page.join_screen.visible
+		and not page.lobby_screen.visible,
+		"le salon PVP n'ouvre que le choix du mode")
+	_check(page.background.room == MenuBackground.Room.PVP,
+		"le choix de mode utilise le décor d'entrée dans l'arène")
+	_check(page.create_button.text == "CRÉER UNE PARTIE"
+		and page.join_button.text == "REJOINDRE UNE PARTIE",
+		"le choix du mode propose de créer ou de rejoindre une partie")
+	var refresh := false
+	for button in page.find_children("*", "Button"):
+		if str((button as Button).text).contains("ACTUALISER"):
+			refresh = true
+	_check(not refresh,
+		"la liste des salons se met à jour toute seule, sans bouton ACTUALISER")
+	page.join_button.pressed.emit()
+	await get_tree().process_frame
+	_check(page.join_screen.visible and not page.mode_screen.visible,
+		"rejoindre ouvre directement la recherche de salons")
+	_check(page.background.room == MenuBackground.Room.PVP,
+		"la recherche conserve le même décor d'arène que le choix du mode")
+	_check(page.address_input.visible and page.connect_button.text == "REJOINDRE"
+		and page.connect_button.is_inside_tree(),
+		"la saisie d'adresse reste disponible sur le même écran que la liste")
+	_check(page.join_refresh.visible and page.join_refresh.text == "RELANCER",
+		"la recherche conserve un bouton pour relancer l'écoute")
+	page._attempted_address = "192.0.2.44"
+	page._attempted_host_name = "Hôte de test"
+	page._connection_attempt_pending = true
+	LanSession.state = LanSession.State.CONNECTING
+	page._refresh_status()
+	_check(page.connection_overlay.visible and page.cancel_connection_button.visible
+		and page.join_refresh.visible and page.address_row.visible,
+		"la connexion s'affiche en fenêtre modale sans masquer la recherche")
+	_check(page.connection_target.text.contains("Hôte de test")
+		and page.connection_target.text.contains("192.0.2.44:45555"),
+		"la fenêtre indique l'hôte et l'adresse réseau réellement visée")
+	page.cancel_connection_button.pressed.emit()
+	await get_tree().process_frame
+	_check(not page.connection_overlay.visible and page.address_input.text == "192.0.2.44"
+		and LanSession.state == LanSession.State.DISCOVERING,
+		"annuler ferme la tentative, conserve l'adresse et reprend la recherche")
+	LanSession._on_connection_failed()
+	_check(LanSession.state == LanSession.State.DISCOVERING,
+		"un rappel ENet tardif ne ferme pas la recherche après annulation")
+	page._attempted_address = "192.0.2.44"
+	page._attempted_host_name = "Hôte de test"
+	page._connection_attempt_pending = true
+	LanSession.state = LanSession.State.DISCONNECTED
+	LanSession.last_notice = "Délai de connexion dépassé."
+	page._refresh_status()
+	_check(page.connection_overlay.visible and page.connection_error.visible
+		and page.connection_error.text == "Délai de connexion dépassé."
+		and page.retry_connection_button.visible and page.close_connection_button.visible,
+		"un échec affiche sa cause, l'adresse tentée et les actions adaptées")
+	page.close_connection_button.pressed.emit()
+	await get_tree().process_frame
+	_check(not page.connection_overlay.visible and page.join_screen.visible
+		and LanSession.state == LanSession.State.DISCOVERING,
+		"fermer l'échec ramène à la recherche et relance l'écoute")
+	var abandoned_lobby := LobbyCoordinator.new()
+	abandoned_lobby._connected = true
+	abandoned_lobby._local["deck_valid"] = true
+	abandoned_lobby._status = LobbyCoordinator.STATUS_CONNECTED
+	page._lobby = abandoned_lobby
+	page._refresh_status()
+	_check(not page.ready_button.disabled
+		and page.background.room == MenuBackground.Room.PVP,
+		"un client connecté peut se déclarer prêt avant le départ de l'hôte")
+	LanSession.last_notice = "L'hôte a quitté le salon."
+	LanSession.state = LanSession.State.DISCONNECTED
+	page._on_session_state(LanSession.State.DISCONNECTED)
+	_check(page._lobby == null and page.join_screen.visible and page.ready_button.disabled
+		and page.background.room == MenuBackground.Room.PVP
+		and page.notice_label.visible
+		and page.notice_label.text == "L'hôte a quitté le salon."
+		and LanSession.state == LanSession.State.DISCOVERING,
+		"le départ de l'hôte ferme le salon client, bloque PRÊT et conserve le décor commun")
+	page.back_button.pressed.emit()
+	await get_tree().process_frame
+	_check(page.mode_screen.visible and not page.join_screen.visible,
+		"le retour ramène au choix du mode au lieu de quitter le PVP")
+	page.free()
+	await get_tree().process_frame
+	LanSession.reset()
+
+
+## L'écran de fin remplace le retour au salon avec un simple message : il
+## annonce le verdict et le score du joueur local, puis propose la revanche.
+func _test_pvp_result() -> void:
+	PvpMatchContext.clear()
+	PvpMatchContext.begin(_pvp_config(GameState.PLAYER_ONE, []), GameState.PLAYER_ONE, 1,
+		{"name": "Hôte", "god_id": "veskar", "deck": ProfileFixture.DECK.duplicate()},
+		{"name": "Client", "god_id": "veskar", "deck": ProfileFixture.DECK.duplicate()})
+	PvpMatchContext.record_result(GameState.PLAYER_ONE, 9, 4)
+	var page: Control = (load("res://scenes/menus/PvpResult.tscn") as PackedScene).instantiate()
+	add_child(page)
+	await get_tree().process_frame
+	_check(page.result_label.text == "VICTOIRE !"
+		and page.score_label.text.contains("Hôte 9") and page.score_label.text.contains("4 Client"),
+		"l'écran de fin PVP annonce la victoire et le score du joueur local")
+	var pvp_winner_color := Color(str(StoneLoader.get_god("veskar")["color"]))
+	_check(page.background.room == MenuBackground.Room.AFTERMATH
+		and page.background.neon_primary_color == pvp_winner_color
+		and page.background._winner_firework_color(0) != page.background._winner_firework_color(1)
+		and page.background._winner_firework_color(1) != page.background._winner_firework_color(2),
+		"la victoire PVP affiche les feux d'artifice du dieu vainqueur")
+	_check(page.rematch_button.visible and page.quit_button.visible
+		and page.rematch_button.text == "Revanche" and page.quit_button.text == "Quitter",
+		"l'écran de fin PVP propose une revanche et une sortie")
+	page.queue_free()
+	await get_tree().process_frame
+
+	PvpMatchContext.begin(_pvp_config(GameState.PLAYER_ONE, []), GameState.PLAYER_TWO, 2,
+		{"name": "Client", "god_id": "veskar", "deck": ProfileFixture.DECK.duplicate()},
+		{"name": "Hôte", "god_id": "kharun", "deck": ProfileFixture.DECK.duplicate()})
+	PvpMatchContext.record_result(GameState.PLAYER_ONE, 12, 6)
+	var defeat: Control = (load("res://scenes/menus/PvpResult.tscn") as PackedScene).instantiate()
+	add_child(defeat)
+	await get_tree().process_frame
+	_check(defeat.result_label.text == "DÉFAITE..." and defeat.score_label.text.contains("Client 6")
+		and defeat.score_label.text.contains("12 Hôte"),
+		"le même écran parle au client : son score reste à gauche et la défaite est annoncée")
+	var pvp_remote_winner_color := Color(str(StoneLoader.get_god("kharun")["color"]))
+	_check(defeat.background.room == MenuBackground.Room.AFTERMATH_DEFEAT
+		and defeat.background.neon_primary_color == pvp_remote_winner_color
+		and defeat.background.neon_secondary_color == pvp_remote_winner_color
+		and defeat.background.neon_tertiary_color == pvp_remote_winner_color,
+		"la défaite PVP affiche un crâne lié au dieu gagnant distant")
+	defeat.queue_free()
+	await get_tree().process_frame
+
+	PvpMatchContext.begin(_pvp_config(GameState.PLAYER_ONE, []), GameState.PLAYER_ONE, 1,
+		{"name": "Hôte", "god_id": "veskar", "deck": ProfileFixture.DECK.duplicate()},
+		{"name": "Client", "god_id": "kharun", "deck": ProfileFixture.DECK.duplicate()})
+	PvpMatchContext.record_result(GameState.PLAYER_NONE, 8, 8)
+	var draw: Control = (load("res://scenes/menus/PvpResult.tscn") as PackedScene).instantiate()
+	add_child(draw)
+	await get_tree().process_frame
+	_check(draw.background.room == MenuBackground.Room.AFTERMATH_DRAW
+		and draw.background.neon_primary_color == Color(str(StoneLoader.get_god("veskar")["color"]))
+		and draw.background.neon_secondary_color == Color(str(StoneLoader.get_god("kharun")["color"])),
+		"une égalité montre deux épées croisées aux couleurs des dieux des deux joueurs")
+	draw.queue_free()
+	await get_tree().process_frame
+	PvpMatchContext.clear()
+	LanSession.reset()
+
+
+## Configuration minimale d'un match PVP, identique à celle validée par l'hôte.
+func _pvp_config(starting_player: int, blocked_cells: Array) -> Dictionary:
+	return {
+		"match_id": "check-pvp",
+		"seed": 4242,
+		"blocked_cells": blocked_cells,
+		"starting_player": starting_player,
+		"participants": [
+			{"peer_id": 1, "side": GameState.PLAYER_ONE, "name": "Hôte",
+				"god_id": "veskar", "deck": ProfileFixture.DECK.duplicate()},
+			{"peer_id": 2, "side": GameState.PLAYER_TWO, "name": "Client",
+				"god_id": "veskar", "deck": ProfileFixture.DECK.duplicate()},
+		],
+	}
 
 
 func _test_hud_game_over() -> void:

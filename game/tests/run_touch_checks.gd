@@ -60,6 +60,7 @@ func _run() -> void:
 	await _check_evolution_inputs()
 	await _check_button_inputs()
 	await _check_main_menu()
+	await _check_pvp_lobby()
 	await _check_other_menus()
 	await _check_result_actions()
 	await _check_buffered_input()
@@ -345,7 +346,8 @@ func _check_button_inputs() -> void:
 
 func _check_main_menu() -> void:
 	var menu := await _open_scene("res://scenes/menus/MainMenu.tscn")
-	for path in ["Content/Header/ProfileButton", "Content/Hero/Identity/PlayButton"]:
+	for path in ["Content/Header/ProfileButton", "Content/Hero/Identity/ModeButtons/CampaignButton",
+			"Content/Hero/Identity/ModeButtons/PvpButton"]:
 		var button: Button = menu.get_node(path)
 		# Les vrais changements de scène fermeraient la suite : on compte seulement.
 		for connection in button.pressed.get_connections():
@@ -357,6 +359,43 @@ func _check_main_menu() -> void:
 		await _swipe(_center(button), Vector2(0, -150))
 		_check(activations[0] == 1, "accueil : glisser depuis %s ne déclenche rien" % button.name)
 	await _remove(menu)
+
+
+## Le salon PVP doit rester utilisable au toucher sans ouvrir de socket :
+## deck incomplet, bouton PRÊT inactif et message d'attente lisible.
+func _check_pvp_lobby() -> void:
+	var god_id: String = PlayerData.player_god_id
+	var slot: int = PlayerData.get_selected_deck(god_id)
+	var original: Array = PlayerData.get_deck(god_id, slot)
+	var page := await _open_scene("res://scenes/menus/PvpLobby.tscn")
+	var create: Button = page.get_node(
+		"Root/Scroll/Content/ModeScreen/CreateCard/CreateBox/CreateButton")
+	var ready_button: Button = page.get_node("Root/Scroll/Content/LobbyScreen/ReadyButton")
+	var notice: Label = page.get_node("Root/Scroll/Content/NoticeLabel")
+	var title: Label = page.get_node("Root/Scroll/Content/ModeScreen/ModeTitle")
+	_check(title.text == "JOUER À DEUX" and ready_button.disabled
+		and not page.lobby_screen.visible,
+		"salon : l'écran initial choisit le mode et PRÊT reste inactif sans adversaire")
+	PlayerData._decks_by_god[god_id][slot] = []
+	await _tap(_center(create))
+	_check(notice.visible and notice.text == "VEUILLEZ COMPLÉTER VOTRE DECK"
+		and LanSession.state == LanSession.State.IDLE,
+		"salon : un deck incomplet affiche l'avertissement sans ouvrir de socket")
+	_check(ready_button.disabled and not page.lobby_screen.visible,
+		"salon : un deck incomplet n'ouvre jamais la salle d'attente")
+	PlayerData._decks_by_god[god_id][slot] = original
+	var join: Button = page.get_node(
+		"Root/Scroll/Content/ModeScreen/JoinCard/JoinBox/JoinButton")
+	await _tap(_center(join))
+	page._attempted_address = "192.0.2.44"
+	page._connection_attempt_pending = true
+	LanSession.state = LanSession.State.CONNECTING
+	page._refresh_status()
+	await _tap(_center(page.cancel_connection_button))
+	_check(not page.connection_overlay.visible and page.address_input.text == "192.0.2.44"
+		and LanSession.state == LanSession.State.DISCOVERING,
+		"salon : le bouton tactile annule la connexion et reprend la recherche")
+	await _remove(page)
 
 
 func _check_other_menus() -> void:

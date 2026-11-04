@@ -156,13 +156,26 @@ custom_minimum_size = Vector2(0, 16)
 layout_mode = 2
 show_percentage = false
 
-[node name="PlayButton" type="Button" parent="Content/Hero/Identity" unique_id=1162903087]
-custom_minimum_size = Vector2(760, 152)
+[node name="ModeButtons" type="HBoxContainer" parent="Content/Hero/Identity"]
 layout_mode = 2
-size_flags_horizontal = 4
+theme_override_constants/separation = 20
+
+[node name="CampaignButton" type="Button" parent="Content/Hero/Identity/ModeButtons"]
+custom_minimum_size = Vector2(0, 152)
+layout_mode = 2
+size_flags_horizontal = 3
 theme_type_variation = &"PrimaryButton"
-theme_override_font_sizes/font_size = 56
-text = "JOUER"
+theme_override_font_sizes/font_size = 52
+text = "CAMPAGNE"
+script = ExtResource("4_touch_button")
+
+[node name="PvpButton" type="Button" parent="Content/Hero/Identity/ModeButtons"]
+custom_minimum_size = Vector2(0, 152)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"PvpButton"
+theme_override_font_sizes/font_size = 52
+text = "PVP"
 script = ExtResource("4_touch_button")
 
 [node name="BottomNav" parent="." unique_id=2090898695 instance=ExtResource("3_nav")]

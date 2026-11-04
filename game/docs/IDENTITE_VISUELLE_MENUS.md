@@ -61,7 +61,13 @@ Les six portraits sont fournis dans `assets/gods/`. Le champ `asset` de
 ## Déclinaison par écran
 
 - Accueil : pseudo ouvrant le profil, logo, portrait du dieu actif, identité
-  de sa famille, état du deck et bouton de lancement. La hauteur du portrait
+  de sa famille, état du deck, puis deux modes de même largeur : CAMPAGNE en
+  action principale et PVP dans la variation secondaire `PvpButton`. La ligne
+  `ModeButtons` suit le flux du conteneur, sans position absolue ; PVP reste
+  visible sans concurrencer CAMPAGNE. Un deck incomplet affiche
+  « VEUILLEZ COMPLÉTER VOTRE DECK » en `COL_WARNING` pendant 2,5 s sans changer
+  d'écran, et un nouveau clic relance le même minuteur au lieu d'en empiler un
+  second. La hauteur du portrait
   s'adapte à l'espace disponible pour conserver les commandes accessibles.
   Le titre et la famille utilisent 40 pixels, l'état du deck 44 pixels sur une
   ligne, dans le canevas de référence.
@@ -88,12 +94,26 @@ Les six portraits sont fournis dans `assets/gods/`. Le champ `asset` de
   finale permet de défiler après la dernière ligne.
 - Profil : pseudo modifiable, statistiques générales et progression des sept
   chemins (niveaux terminés sur quinze), sans avatar.
+- Salon PVP : les trois étapes partagent la même arche de pierre et les deux
+  épées croisées en néon : choix du mode (créer ou rejoindre), recherche (liste
+  vivante et saisie d'adresse), puis salle d'attente (adresse copiable, deux
+  cartes joueur et bouton PRÊT). L'état réseau est toujours écrit en toutes
+  lettres, jamais indiqué par une couleur seule.
 - Avant-combat : les portraits des deux dieux encadrent la pièce ; le cadre du
   dieu désigné par le tirage est renforcé. En combat, ces portraits restent dans
   les plaques du HUD, avec le nom du combattant, celui du dieu et le score.
-  L'écran de résultat conserve le même décor et propose le niveau suivant après
-  une victoire, puis revanche, autre niveau, autre dieu et accueil ; le suivant
-  disparaît après une défaite ou au dernier rond.
+  l'écran de résultat partage son traitement avec le PVP : feux d'artifice néon
+  aux nuances du dieu vainqueur, crâne néon de cette couleur en cas de défaite,
+  épées croisées aux couleurs des deux dieux en cas d'égalité. Il propose le
+  niveau suivant après une victoire, puis revanche, autre niveau, autre dieu et
+  accueil ; le suivant disparaît après une défaite ou au dernier rond.
+- Fin de match PVP : mêmes illustrations de victoire, défaite et égalité que la
+  campagne, accordées au dieu gagnant ou aux deux dieux en cas d'égalité.
+  Verdict local (VICTOIRE, DÉFAITE ou ÉGALITÉ), score « joueur local —
+  adversaire », puis Revanche et Quitter. Un seul camp ne peut pas relancer la
+  partie : la revanche attend que les deux téléphones la demandent. Même règle
+  avant le premier coup : après le pile ou face, `COMMENCER` attend l'accord des
+  deux appareils.
 - Navigation : trois onglets avec icônes SVG au-dessus des libellés. Les
   enfants décoratifs ignorent la souris et le tactile ; les boutons d'origine
   conservent les connexions et la gestion des glissements.
@@ -143,8 +163,10 @@ existants. `MenuChecks` vérifie en plus le chargement des six portraits et le
 passage des gestes à travers le décor de l'accueil. Les essais utilisent un profil
 temporaire, restauré ensuite.
 
-Au dernier contrôle automatisé, 514 vérifications générales réussissent, sans
-échec et sans erreur Godot ; les 80 vérifications tactiles réussissent. Une
+Au dernier contrôle automatisé, 716 vérifications générales réussissent, sans
+échec et sans erreur Godot ; les 86 vérifications tactiles réussissent. Les
+suites PVP vérifient en plus le protocole, le salon et les commandes validées
+par l'hôte, avec un transport simulé (voir [PVP_LOCAL.md](PVP_LOCAL.md)). Une
 validation visuelle doit
 compléter ces suites après chaque changement de composition : chaque dieu, les
 fiches de cartes, les tiroirs ouverts, les quatre raretés, les deux propriétaires

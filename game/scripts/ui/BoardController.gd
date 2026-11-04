@@ -1,17 +1,19 @@
 ## BoardController.gd
 ## Coordinateur de l'écran de jeu. Ne dessine rien lui-même : il relie les
 ## briques entre elles.
+##   - MatchDriver   : campagne (bot) ou PVP local (commandes réseau validées)
 ##   - TurnManager   : logique de jeu (émet les signaux)
 ##   - BoardView     : affichage du plateau
 ##   - HandView      : affichage de la main
-##   - AITurnRunner  : tour de l'IA
 ##
 ## Rôle : écouter les signaux du TurnManager, dire aux vues de se rafraîchir,
-## transmettre les gestes du joueur, enchaîner vers l'écran de résultat.
+## transmettre les gestes du joueur, enchaîner vers l'écran suivant.
 extends Control
 
 const CombatResolverModel := preload("res://scripts/engine/CombatResolver.gd")
 const CardDragController := preload("res://scripts/ui/CardDragController.gd")
+const CampaignDriver := preload("res://scripts/ui/match/CampaignMatchDriver.gd")
+const LanDriver := preload("res://scripts/ui/match/LanMatchDriver.gd")
 
 @onready var turn_manager: TurnManager = $TurnManager
 @onready var board_view: BoardView = $Root/BoardArea/BoardView
@@ -19,26 +21,69 @@ const CardDragController := preload("res://scripts/ui/CardDragController.gd")
 @onready var hud: BattleHUD = $Root/HUD
 @onready var background: MenuBackground = $Background
 
-var _ai_runner: AITurnRunner = null
-var _npc_data: Dictionary = {}
+var _driver: MatchDriver = null
 var _selected_stone_id: String = ""
-var _human_captures: int = 0
+var _local_captures: int = 0
 var _card_drag: CardDragController = null  ## couche du glisser-déposer
+var _leaving := false
+## Un match PVP terminé passe la main à l'écran de résultat, qui garde la
+## session ouverte pour proposer une revanche.
+var _finished_pvp := false
 
 
 func _ready() -> void:
 	_connect_signals()
 	## Construire le plateau une fois la taille connue (point 7).
 	board_view.build.call_deferred()
-	var deck := PlayerData.get_active_deck()
-	if DeckRules.is_deck_valid(deck, PlayerData.player_god_id) and BattleContext.selected_npc_id != "":
-		call_deferred("_start_battle", deck, BattleContext.selected_npc_id)
+	_driver = (LanDriver.new() if PvpMatchContext.is_active() else CampaignDriver.new()) as MatchDriver
+	add_child(_driver)
+	_driver.setup(turn_manager)
+	_driver.aborted.connect(_on_match_aborted)
+	_driver.finished.connect(_on_match_finished)
+	_driver.interaction_changed.connect(_update_interaction)
+	if not _driver.start():
+		_on_start_failed()
+		return
+	_apply_match_identity()
+	## Le premier `turn_started` part dans `start()`, avant que le plateau ne
+	## soit construit : sans ce second passage, les cases bloquées et l'état des
+	## cases n'apparaîtraient qu'après le premier coup.
+	_refresh_after_build.call_deferred()
+
+
+func _refresh_after_build() -> void:
+	var state := turn_manager.get_state()
+	if state == null:
+		return
+	board_view.refresh(state)
+	hand_view.refresh(state.hand_of(_driver.local_side))
+	_update_interaction()
+
+
+func _apply_match_identity() -> void:
+	background.set_gods(_driver.local_god, _driver.opponent_god)
+	hud.set_names(_driver.local_name, _driver.opponent_name)
+	hud.set_gods(_driver.local_god, _driver.opponent_god)
+	hud.set_scores(0, 0)
+	## Les cases colorées suivent le camp du joueur local sur chaque appareil.
+	board_view.local_owner = _driver.local_side
+
+
+func _on_start_failed() -> void:
+	if PvpMatchContext.is_active():
+		PvpMatchContext.clear()
+		LanSession.leave_with_notice("Impossible de démarrer la partie PVP.")
+		call_deferred("_return_to_pvp_lobby")
 	else:
 		call_deferred("_return_to_cards")
 
 
 func _return_to_cards() -> void:
 	get_tree().change_scene_to_file("res://scenes/menus/CollectionScreen.tscn")
+
+
+func _return_to_pvp_lobby() -> void:
+	get_tree().change_scene_to_file("res://scenes/menus/PvpLobby.tscn")
 
 
 func _connect_signals() -> void:
@@ -62,47 +107,10 @@ func _connect_signals() -> void:
 	_card_drag.drop_requested.connect(_on_card_dropped)
 
 
-func _start_battle(human_deck: Array, npc_id: String) -> void:
-	_npc_data = BattleContext.current_opponent()
-	if str(_npc_data.get("id", "")) != npc_id:
-		_npc_data = StoneLoader.get_npc(npc_id)
-	if _npc_data.is_empty():
-		push_error("BoardController: adversaire '%s' introuvable." % npc_id)
-		return
-
-	board_view.build()  ## garantit la construction si pas encore faite
-
-	var human_hand := StoneLoader.build_hand(human_deck)
-	var ai_hand := StoneLoader.build_hand(_npc_data["deck"])
-
-	## Préparer l'IA et son runner.
-	var ai := AITurnRunner.create_ai(_npc_data.get("ai", {}))
-	_ai_runner = AITurnRunner.new()
-	add_child(_ai_runner)
-	_ai_runner.setup(ai, turn_manager)
-
-	## Renseigner les noms du HUD une fois pour toutes.
-	var human_god := StoneLoader.get_god(PlayerData.player_god_id)
-	var ai_god := StoneLoader.get_god(str(_npc_data.get("god_id", "")))
-	background.set_gods(human_god, ai_god)
-	hud.set_names(
-		PlayerData.player_name,
-		str(_npc_data.get("name", "Adversaire"))
-	)
-	hud.set_gods(human_god, ai_god)
-	hud.set_scores(0, 0)
-
-	var blocked := BoardSetupGenerator.generate()
-	turn_manager.start_game(
-		human_hand, ai_hand, blocked, npc_id, BattleContext.forced_first_player,
-		PlayerData.player_god_id, str(_npc_data.get("god_id", ""))
-	)
-
-
 ## ─── Gestes du joueur ─────────────────────────────────────────────────────────
 
 func _on_card_selected(stone_id: String) -> void:
-	if turn_manager.get_state().current_player != GameState.PLAYER_HUMAN:
+	if _driver == null or not _driver.can_submit():
 		return
 	_selected_stone_id = stone_id
 	hand_view.set_selected(stone_id)
@@ -111,7 +119,7 @@ func _on_card_selected(stone_id: String) -> void:
 func _on_cell_pressed(row: int, col: int) -> void:
 	if _selected_stone_id == "":
 		return
-	if turn_manager.human_play(row, col, _selected_stone_id):
+	if _driver.request_move(row, col, _selected_stone_id):
 		_selected_stone_id = ""
 		hand_view.clear_selection()
 
@@ -129,20 +137,30 @@ func _on_card_drag_started(_stone_id: String) -> void:
 
 
 func _on_card_dropped(stone_id: String, row: int, col: int) -> void:
-	turn_manager.human_play(row, col, stone_id)
+	_driver.request_move(row, col, stone_id)
 
 
 ## Mêmes règles que pour un appui : PlacementRules décide, au tour du joueur.
 func _can_drop(stone_id: String, row: int, col: int) -> bool:
 	return _human_can_play() \
-		and PlacementRules.is_valid(turn_manager.get_state(), row, col, stone_id, GameState.PLAYER_HUMAN)
+		and PlacementRules.is_valid(turn_manager.get_state(), row, col, stone_id, _driver.local_side)
 
 
 func _human_can_play() -> bool:
+	return _driver != null and _driver.can_submit()
+
+
+## Seul le camp local peut toucher le plateau, et seulement quand le driver
+## autorise réellement un coup (en PVP : après confirmation de l'hôte).
+func _update_interaction() -> void:
+	if _driver == null:
+		return
 	var state := turn_manager.get_state()
-	return state != null and not state.is_game_over \
-		and state.current_player == GameState.PLAYER_HUMAN \
-		and turn_manager.phase == TurnManager.Phase.WAITING_INPUT
+	if state == null or state.is_game_over:
+		board_view.set_input_enabled(false)
+		return
+	board_view.set_input_enabled(state.current_player == _driver.local_side \
+		and _driver.can_submit())
 
 
 ## ─── Réactions aux signaux du TurnManager ────────────────────────────────────
@@ -150,42 +168,52 @@ func _human_can_play() -> bool:
 func _on_turn_started(player: int) -> void:
 	var state := turn_manager.get_state()
 	board_view.refresh(state)
-	board_view.animations.set_swarm_links(CombatResolverModel.swarm_links(state))
-	hand_view.refresh(state.human_hand)
-	## Surligne la plaque du joueur actif (indicateur de tour visuel).
-	hud.set_active_player(player)
+	## Le plateau n'est construit qu'à la première frame : il n'y a encore
+	## aucun lien d'Essaim à dessiner avant le premier coup.
+	if board_view.animations != null:
+		board_view.animations.set_swarm_links(CombatResolverModel.swarm_links(state))
+	hand_view.refresh(state.hand_of(_driver.local_side))
+	## Surligne la plaque du joueur actif : la plaque de gauche est toujours le
+	## joueur local, même lorsque le camp réseau est PLAYER_TWO.
+	hud.set_active_player(GameState.PLAYER_HUMAN if player == _driver.local_side else GameState.PLAYER_AI)
 
-	if player == GameState.PLAYER_HUMAN:
-		board_view.set_input_enabled(true)
-	else:
-		board_view.set_input_enabled(false)
-		_ai_runner.run_turn()
+	## Le PVP n'ouvre son tour qu'après la confirmation de l'hôte : l'écoute de
+	## `interaction_changed` réactive les cases à ce moment-là.
+	_update_interaction()
+	_driver.on_turn_started(player)
 
 
 func _on_stone_placed(row: int, col: int, _stone_id: String, _owner: int) -> void:
 	var state := turn_manager.get_state()
 	board_view.refresh(state)
-	hand_view.refresh(state.human_hand)
+	hand_view.refresh(state.hand_of(_driver.local_side))
 	board_view.set_input_enabled(false)
 
 
 func _on_stone_captured(row: int, col: int, new_owner: int) -> void:
-	if new_owner == GameState.PLAYER_HUMAN:
-		_human_captures += 1
+	if new_owner == _driver.local_side:
+		_local_captures += 1
 	board_view.animations.animate_capture(row, col, new_owner)
 
 
 func _on_turn_ended(score_human: int, score_ai: int) -> void:
-	hud.set_scores(score_human, score_ai)
+	## Le HUD affiche toujours le local à gauche.
+	var local_score := score_human if _driver.local_side == GameState.PLAYER_ONE else score_ai
+	var remote_score := score_ai if _driver.local_side == GameState.PLAYER_ONE else score_human
+	hud.set_scores(local_score, remote_score)
+	_driver.on_turn_ended()
 
 
 func _on_game_over(winner: int, score_human: int, score_ai: int) -> void:
 	hud.set_game_over()
-	BattleContext.record_result(winner, score_human, score_ai)
-	PlayerData.record_game(BattleContext.selected_npc_id, winner, score_human, score_ai,
-		_human_captures)
-	await get_tree().create_timer(1.5).timeout
-	get_tree().change_scene_to_file("res://scenes/menus/Result.tscn")
+	if _driver.records_campaign_stats:
+		BattleContext.record_result(winner, score_human, score_ai)
+		PlayerData.record_game(BattleContext.selected_npc_id, winner, score_human, score_ai,
+			_local_captures)
+		await get_tree().create_timer(1.5).timeout
+		get_tree().change_scene_to_file("res://scenes/menus/Result.tscn")
+		return
+	_driver.on_game_over(winner, score_human, score_ai)
 
 
 func _on_invalid_move(_reason: String) -> void:
@@ -198,3 +226,38 @@ func _on_presentation_requested(step: CombatPresentation) -> void:
 	if step.kind == CombatPresentation.Kind.EFFECTS:
 		board_view.refresh(turn_manager.get_state())
 	board_view.animations.present(step)
+
+
+## ─── Fin de match PVP local ──────────────────────────────────────────────────
+
+func _on_match_finished(winner: int, score_one: int, score_two: int) -> void:
+	if _leaving:
+		return
+	_leaving = true
+	PvpMatchContext.record_result(winner, score_one, score_two)
+	await get_tree().create_timer(1.5).timeout
+	## Le verdict, le score et la revanche appartiennent à l'écran de résultat :
+	## la session réseau reste ouverte jusqu'à ce qu'il soit quitté.
+	_finished_pvp = true
+	get_tree().change_scene_to_file("res://scenes/menus/PvpResult.tscn")
+
+
+func _on_match_aborted(message: String) -> void:
+	if _leaving:
+		return
+	_leaving = true
+	PvpMatchContext.clear()
+	LanSession.leave_with_notice(message)
+	get_tree().change_scene_to_file("res://scenes/menus/PvpLobby.tscn")
+
+
+func _exit_tree() -> void:
+	if _driver != null:
+		_driver.shutdown()
+	if _finished_pvp:
+		return
+	if PvpMatchContext.is_active():
+		## Quitter le plateau ferme toujours la session réseau, même si la scène
+		## est libérée avant la fin du match.
+		PvpMatchContext.clear()
+		LanSession.reset()

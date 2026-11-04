@@ -14,9 +14,13 @@ const BattleStoneModel := preload("res://scripts/engine/BattleStone.gd")
 ## agrandir le terrain ; tout le reste en dérive.
 const BOARD_SIZE: int = 4
 
-## Identifiants des joueurs
-const PLAYER_HUMAN: int = 1
-const PLAYER_AI: int = 2
+## Identifiants génériques des deux camps. La campagne et le PVP local utilisent
+## exactement les mêmes valeurs : PLAYER_ONE est l'hôte en réseau, PLAYER_TWO le
+## client. Les anciens noms restent des alias pour ne pas casser la campagne.
+const PLAYER_ONE: int = 1
+const PLAYER_TWO: int = 2
+const PLAYER_HUMAN: int = PLAYER_ONE
+const PLAYER_AI: int = PLAYER_TWO
 const PLAYER_NONE: int = 0  ## case vide ou bloquée
 
 ## Types de cases
@@ -88,8 +92,9 @@ func _reset_board() -> void:
 ## Applique une liste de cases bloquées (Array de Vector2i ou [row, col]).
 func apply_blocked_cells(blocked: Array) -> void:
 	for pos in blocked:
-		var row: int = pos[0] if pos is Array else pos.x
-		var col: int = pos[1] if pos is Array else pos.y
+		## Les cases reçues du réseau ont traversé JSON : 1 devient 1.0.
+		var row: int = int(pos[0]) if pos is Array else int(pos.x)
+		var col: int = int(pos[1]) if pos is Array else int(pos.y)
 		var idx: int = cell_index(row, col)
 		if board[idx]["cell_type"] != CELL_BLOCKED:
 			board[idx]["cell_type"] = CELL_BLOCKED

@@ -42,7 +42,7 @@ script = ExtResource("2_touch_button")
 custom_minimum_size = Vector2(0, 132)
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 28
-text = "JOUER"
+text = "ACCUEIL"
 
 [node name="RulesButton" type="Button" parent="Tabs"]
 layout_mode = 2

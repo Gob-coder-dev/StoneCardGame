@@ -1,0 +1,80 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/pvp/PvpResultController.gd" id="1_result"]
+[ext_resource type="Script" path="res://scripts/ui/input/TouchButton.gd" id="2_touch_button"]
+[ext_resource type="Script" path="res://scripts/ui/MenuBackground.gd" id="3_background"]
+
+[node name="PvpResult" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_result")
+
+[node name="Background" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("3_background")
+room = 6
+
+[node name="VBoxCenter" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -420.0
+offset_top = -420.0
+offset_right = 420.0
+offset_bottom = 420.0
+alignment = 1
+theme_override_constants/separation = 16
+
+[node name="ResultLabel" type="Label" parent="VBoxCenter"]
+theme_type_variation = &"ScreenTitle"
+layout_mode = 2
+theme_override_font_sizes/font_size = 76
+text = "RÉSULTAT DU DUEL"
+horizontal_alignment = 1
+
+[node name="DetailLabel" type="Label" parent="VBoxCenter"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "PVP LOCAL"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="ScoreLabel" type="Label" parent="VBoxCenter"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 48
+text = "0 — 0"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="Separator" type="Control" parent="VBoxCenter"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 24)
+
+[node name="StatusLabel" type="Label" parent="VBoxCenter"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = ""
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="RematchButton" type="Button" parent="VBoxCenter"]
+theme_type_variation = &"PrimaryButton"
+layout_mode = 2
+script = ExtResource("2_touch_button")
+custom_minimum_size = Vector2(0, 120)
+text = "Revanche"
+
+[node name="QuitButton" type="Button" parent="VBoxCenter"]
+layout_mode = 2
+script = ExtResource("2_touch_button")
+custom_minimum_size = Vector2(0, 120)
+text = "Quitter"

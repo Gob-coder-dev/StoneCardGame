@@ -33,10 +33,13 @@ func _ready() -> void:
 			result_label.text = "ÉGALITÉ"
 
 	var npc := BattleContext.current_opponent()
-	background.set_gods(
-		StoneLoader.get_god(PlayerData.player_god_id),
-		StoneLoader.get_god(str(npc.get("god_id", "")))
-	)
+	if BattleContext.last_winner == GameState.PLAYER_HUMAN:
+		background.set_result_victory(StoneLoader.get_god(PlayerData.player_god_id))
+	elif BattleContext.last_winner == GameState.PLAYER_AI:
+		background.set_result_defeat(StoneLoader.get_god(str(npc.get("god_id", ""))))
+	else:
+		background.set_result_draw(StoneLoader.get_god(PlayerData.player_god_id),
+			StoneLoader.get_god(str(npc.get("god_id", ""))))
 	var npc_name: String = npc.get("name", "Adversaire")
 	score_label.text = "%s %d  —  %d %s" % [
 		PlayerData.player_name,

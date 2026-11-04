@@ -33,6 +33,24 @@ func _init() -> void:
 	danger_hover.bg_color = UITheme.COL_DANGER.lightened(0.1)
 	set_stylebox("hover", "DangerButton", danger_hover)
 	set_stylebox("pressed", "DangerButton", danger)
+	# Le mode PVP reste secondaire par rapport à CAMPAGNE : ardoise plus sombre
+	# et liseré néon, jamais le fond d'action principale.
+	set_type_variation("PvpButton", "Button")
+	_buttons("PvpButton", false)
+	var pvp := UITheme.button_style()
+	pvp.bg_color = UITheme.COL_SURFACE.darkened(0.22)
+	pvp.border_color = UITheme.COL_NEON
+	pvp.set_border_width_all(3)
+	set_stylebox("normal", "PvpButton", pvp)
+	var pvp_hover := pvp.duplicate() as StyleBoxFlat
+	pvp_hover.bg_color = UITheme.COL_SURFACE.darkened(0.05)
+	pvp_hover.border_color = UITheme.COL_ACCENT_LIGHT
+	set_stylebox("hover", "PvpButton", pvp_hover)
+	var pvp_pressed := pvp.duplicate() as StyleBoxFlat
+	pvp_pressed.bg_color = UITheme.COL_SURFACE.darkened(0.35)
+	set_stylebox("pressed", "PvpButton", pvp_pressed)
+	set_stylebox("hover_pressed", "PvpButton", pvp_pressed)
+	set_color("font_color", "PvpButton", UITheme.COL_ACCENT_LIGHT)
 	set_stylebox("normal", "LineEdit", UITheme.panel_style(UITheme.COL_TAB_IDLE))
 	set_stylebox("focus", "LineEdit", UITheme.panel_style(Color.TRANSPARENT, UITheme.COL_ACCENT))
 	set_color("font_color", "LineEdit", UITheme.COL_TEXT)

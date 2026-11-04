@@ -22,7 +22,9 @@ var phase: Phase = Phase.WAITING_INPUT
 var _pending_step: CombatPresentation
 var _state: GameState
 
-func start_game(human_hand: Array, ai_hand: Array, blocked_cells: Array, npc_id: String = "", forced_first_player: int = 0, human_god_id: String = "", ai_god_id: String = "") -> void:
+## `random_seed` fixe le hasard du combat. Le PVP local transmet la graine
+## choisie par l'hôte ; 0 conserve le tirage habituel de la campagne.
+func start_game(human_hand: Array, ai_hand: Array, blocked_cells: Array, npc_id: String = "", forced_first_player: int = 0, human_god_id: String = "", ai_god_id: String = "", random_seed: int = 0) -> void:
 	phase = Phase.WAITING_INPUT
 	_state = GameState.new()
 	if _pending_step != null:
@@ -31,7 +33,7 @@ func start_game(human_hand: Array, ai_hand: Array, blocked_cells: Array, npc_id:
 	_state.npc_id = npc_id
 	_state.human_god_id = human_god_id
 	_state.ai_god_id = ai_god_id
-	_state.set_random_seed(randi())
+	_state.set_random_seed(random_seed if random_seed != 0 else randi())
 	_state.apply_blocked_cells(blocked_cells)
 	_state.setup_hands(human_hand, ai_hand)
 	_coin_flip(forced_first_player)
@@ -49,20 +51,31 @@ func _coin_flip(forced_first_player: int = 0) -> void:
 
 ## ─── Jouer un coup ────────────────────────────────────────────────────────────
 
-func human_play(row: int, col: int, stone_id: String) -> bool:
+## Entrée générique des deux camps. La campagne passe par les deux wrappers
+## ci-dessous ; le mode PVP local appelle directement `play()` avec le camp
+## désigné par la commande réseau validée.
+func play(player: int, row: int, col: int, stone_id: String) -> bool:
 	if _state == null or _state.is_game_over or phase != Phase.WAITING_INPUT:
 		return false
-	if _state.current_player != GameState.PLAYER_HUMAN:
+	if player != GameState.PLAYER_ONE and player != GameState.PLAYER_TWO:
+		return false
+	if _state.current_player != player:
+		return false
+	return _apply_move(row, col, stone_id, player)
+
+
+## Wrapper de compatibilité de la campagne : conserve le message affiché quand
+## le joueur tente de jouer hors de son tour.
+func human_play(row: int, col: int, stone_id: String) -> bool:
+	if _state != null and not _state.is_game_over and phase == Phase.WAITING_INPUT \
+			and _state.current_player != GameState.PLAYER_HUMAN:
 		emit_signal("invalid_move", "Ce n'est pas ton tour.")
 		return false
-	return _apply_move(row, col, stone_id, GameState.PLAYER_HUMAN)
+	return play(GameState.PLAYER_HUMAN, row, col, stone_id)
+
 
 func ai_play(row: int, col: int, stone_id: String) -> bool:
-	if _state == null or _state.is_game_over or phase != Phase.WAITING_INPUT:
-		return false
-	if _state.current_player != GameState.PLAYER_AI:
-		return false
-	return _apply_move(row, col, stone_id, GameState.PLAYER_AI)
+	return play(GameState.PLAYER_AI, row, col, stone_id)
 
 
 ## ─── Application d'un coup (orchestration courte) ────────────────────────────
@@ -148,7 +161,7 @@ func _advance_turn(player: int) -> void:
 		emit_signal("game_over", _state.winner, _state.score_human, _state.score_ai)
 		return
 
-	_state.current_player = GameState.PLAYER_AI if player == GameState.PLAYER_HUMAN else GameState.PLAYER_HUMAN
+	_state.current_player = GameState.PLAYER_TWO if player == GameState.PLAYER_ONE else GameState.PLAYER_ONE
 	emit_signal("turn_started", _state.current_player)
 
 
