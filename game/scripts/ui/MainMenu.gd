@@ -23,7 +23,8 @@ func _ready() -> void:
 	CardArtCache.warmup_progress.connect(_on_art_warmup_progress)
 	CardArtCache.warmup_finished.connect(_on_art_warmup_finished)
 	portrait_area.offset_bottom = -UITheme.HOME_IDENTITY_HEIGHT
-	identity_panel.offset_top = -UITheme.HOME_IDENTITY_HEIGHT
+	identity_panel.offset_top = -UITheme.HOME_IDENTITY_HEIGHT - UITheme.HOME_IDENTITY_LIFT
+	identity_panel.offset_bottom = -UITheme.HOME_IDENTITY_LIFT
 	portrait_area.resized.connect(_fit_portrait)
 	_fit_portrait.call_deferred()
 	_refresh()

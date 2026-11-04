@@ -129,7 +129,7 @@ func _test_home_portraits() -> void:
 	var game_title: Control = menu.get_node("Content/GameTitle")
 	var emblem: Control = menu.get_node("Content/Hero/PortraitArea/Emblem")
 	var identity: Control = menu.get_node("Content/Hero/Identity")
-	var ring_top := background.global_position.y + background.size.y * 400.0 / 1920.0
+	var ring_top := background.global_position.y + background.size.y * 480.0 / 1920.0
 	var ring_bottom := background.global_position.y + background.size.y * 1220.0 / 1920.0
 	_check(game_title.get_global_rect().end.y < ring_top
 		and game_title.get_global_rect().end.y < emblem.get_global_rect().position.y,

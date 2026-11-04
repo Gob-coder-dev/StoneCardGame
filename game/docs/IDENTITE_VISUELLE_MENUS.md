@@ -36,10 +36,18 @@ des niveaux. Le rituel de
 pièce reçoit des cercles néon concentriques autour de la monnaie pour en faire le
 point focal. Les accents néon suivent la couleur du dieu affiché : le dieu
 actif sur l'accueil et dans le bestiaire, le dieu sélectionné dans les
-rencontres, puis les deux dieux en duel, sur le plateau et au résultat. Le
-plateau conserve les couleurs bleu et rouge des camps ; seuls ses détails de
-fond reprennent les couleurs divines. Les règles et les statistiques restent
-neutres. Les effets lumineux restent en marge ou à faible contraste.
+rencontres, puis les deux dieux en duel, sur le plateau et au résultat. Les
+deux accents secondaires d'un dieu décalent sa teinte d'environ 40° de part et
+d'autre, l'un plus clair et saturé, l'autre plus sombre : trois néons distincts
+restent dans la gamme du dieu sans se confondre. En duel, le troisième accent
+provient de la teinte intermédiaire des deux dieux. Les filets néon sont plus
+épais sur tous les décors sauf le profil et le bestiaire, dont les panneaux
+occupent déjà la largeur ; le rituel de la pièce et le résultat les épaississent
+davantage encore. À l'accueil, le cercle est calé sur le portrait du dieu et le
+nom comme les commandes remontent au-dessus de la barre de navigation. Le plateau conserve les couleurs bleu et rouge des
+camps ; seuls ses détails de fond reprennent les couleurs divines. Les règles et
+les statistiques restent neutres. Les effets lumineux restent en marge ou à
+faible contraste.
 Le dessin est actualisé au chargement, au changement de dieu ou au
 redimensionnement et ignore les événements d'entrée.
 

@@ -54,6 +54,7 @@ const NUMBERED_BUTTON_SIZE := Vector2(128, 112)
 const HOME_PORTRAIT_MIN_HEIGHT: float = 300.0
 const HOME_PORTRAIT_MAX_HEIGHT: float = 620.0
 const HOME_IDENTITY_HEIGHT: float = 470.0
+const HOME_IDENTITY_LIFT: float = 28.0  ## remonte le nom et les commandes au-dessus de la barre
 const GOD_DECK_PANEL_HEIGHT: int = 310
 const GOD_DECK_PORTRAIT_WIDTH: int = 470
 const GOD_DRAWER_TILE_HEIGHT: int = 300
