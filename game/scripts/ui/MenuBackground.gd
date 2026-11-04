@@ -116,8 +116,10 @@ func _draw() -> void:
 	if size.x <= 0.0 or size.y <= 0.0:
 		return
 
-	draw_set_transform(Vector2.ZERO, 0.0, size / Vector2(1080.0, 1920.0))
 	_draw_base()
+	var scale := _artwork_scale_for_size(size)
+	draw_set_transform(_artwork_offset_for_size(size, scale), 0.0,
+		Vector2.ONE * scale)
 	match room:
 		Room.REFUGE:
 			_draw_main_menu()
@@ -149,12 +151,25 @@ func _draw() -> void:
 func _draw_base() -> void:
 	for band in range(32):
 		var t := float(band) / 31.0
-		draw_rect(Rect2(0.0, band * 60.0, 1080.0, 61.0),
+		var band_top := size.y * float(band) / 32.0
+		var band_bottom := size.y * float(band + 1) / 32.0
+		draw_rect(Rect2(0.0, band_top, size.x, band_bottom - band_top),
 			Color("#1c1a20").lerp(VOID, t))
 	var edge := neon_primary_color
 	edge.a = 0.13
-	draw_line(Vector2(24.0, 0.0), Vector2(24.0, 1920.0), edge, 2.0)
-	draw_line(Vector2(1056.0, 0.0), Vector2(1056.0, 1920.0), edge, 2.0)
+	draw_line(Vector2(size.x * 0.022, 0.0),
+		Vector2(size.x * 0.022, size.y), edge, 2.0)
+	draw_line(Vector2(size.x * 0.978, 0.0),
+		Vector2(size.x * 0.978, size.y), edge, 2.0)
+
+
+func _artwork_scale_for_size(viewport_size: Vector2) -> float:
+	return minf(viewport_size.x / 1080.0, viewport_size.y / 1920.0)
+
+
+func _artwork_offset_for_size(viewport_size: Vector2, scale: float) -> Vector2:
+	var artwork_size := Vector2(1080.0, 1920.0) * scale
+	return (viewport_size - artwork_size) * 0.5
 
 
 ## Le cercle se cale sur le portrait du dieu ; les flicks supérieurs suivent le

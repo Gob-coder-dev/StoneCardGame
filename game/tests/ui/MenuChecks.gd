@@ -57,6 +57,22 @@ func _test_screen_backgrounds() -> void:
 		page.free()
 	_check(assigned_rooms.size() == scenes.size(),
 		"chaque écran dispose d'une déclinaison visuelle qui lui est propre")
+	var background := MenuBackground.new()
+	var formats := [Vector2(1080.0, 1920.0), Vector2(1200.0, 1920.0),
+		Vector2(1000.0, 1920.0), Vector2(1080.0, 2160.0)]
+	var artwork_fits_without_crop := true
+	for viewport_size in formats:
+		var scale: float = background._artwork_scale_for_size(viewport_size)
+		var offset: Vector2 = background._artwork_offset_for_size(viewport_size, scale)
+		var artwork_size := Vector2(1080.0, 1920.0) * scale
+		artwork_fits_without_crop = artwork_fits_without_crop \
+			and is_equal_approx(artwork_size.x, artwork_size.y * 1080.0 / 1920.0) \
+			and offset.x >= 0.0 and offset.y >= 0.0 \
+			and offset.x + artwork_size.x <= viewport_size.x \
+			and offset.y + artwork_size.y <= viewport_size.y
+	_check(artwork_fits_without_crop,
+		"les fonds gardent leur proportion et tiennent entièrement dans plusieurs formats portrait")
+	background.free()
 
 
 func _test_preview_layout() -> void:

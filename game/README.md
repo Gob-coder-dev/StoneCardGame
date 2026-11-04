@@ -220,8 +220,9 @@ nouveaux decks.
 
 Le projet utilise un canevas de référence de 1080 × 1920 avec étirement
 `canvas_items` et l'aspect `expand` : les écrans plus hauts que le 9:16
-reçoivent de l'espace supplémentaire au lieu de bandes noires, sans déformer
-l'interface portrait.
+reçoivent de l'espace supplémentaire au lieu de bandes noires. Les dessins des
+fonds gardent une échelle uniforme et se centrent dans cet espace ; le fond
+charbon couvre le reste de l'écran sans ovaliser ni rogner les motifs.
 
 ## Tests
 
