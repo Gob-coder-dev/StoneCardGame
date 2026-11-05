@@ -72,6 +72,37 @@ func _test_screen_backgrounds() -> void:
 			and offset.y + artwork_size.y <= viewport_size.y
 	_check(artwork_fits_without_crop,
 		"les fonds gardent leur proportion et tiennent entièrement dans plusieurs formats portrait")
+	var curve := background._firework_curve_points(
+		Vector2.ZERO, 0.0, 100.0, -1.0, 8)
+	var adjacent_curve := background._firework_curve_points(
+		Vector2.ZERO, 0.4, 100.0, -1.0, 8)
+	var firework_colors: Array[Color] = []
+	for ray in range(5):
+		firework_colors.append(background._firework_color(Color("#e75aa8"), ray))
+	var mixed_firework_colors := true
+	for index in range(1, firework_colors.size()):
+		mixed_firework_colors = mixed_firework_colors \
+			and firework_colors[index] != firework_colors[index - 1]
+	var rays_keep_their_order := true
+	for index in range(1, curve.size() - 1):
+		var first_angle: float = curve[index].angle()
+		var second_angle: float = adjacent_curve[index].angle()
+		rays_keep_their_order = rays_keep_their_order \
+			and second_angle > first_angle
+	var ribbon := background._firework_ribbon(curve, 3.2)
+	var skull_width := 460.0 * MenuBackground.SKULL_SCALE
+	var skull_height := 635.0 * MenuBackground.SKULL_SCALE
+	_check(curve[4].y < curve[2].y and rays_keep_their_order
+		and mixed_firework_colors and ribbon[0].distance_to(ribbon[-1])
+		> ribbon[8].distance_to(ribbon[9]),
+		"un bouquet combine des traînées courbes, évasées et de plusieurs nuances")
+	_check(typeof(MenuBackground.SKULL_SCALE) == TYPE_FLOAT
+		and skull_width >= 1080.0 * 0.9 and skull_height >= 1920.0 * 0.68,
+		"le crâne de défaite garde ses proportions et remplit presque la largeur")
+	_check(is_equal_approx(background._artwork_bottom_for_size(
+		Vector2(1080.0, 2160.0)), 2040.0)
+		and MenuBackground.PVP_ARCH_BOTTOM == 1920.0,
+		"l'arche PVP atteint le bord bas, y compris sur un écran plus haut que le canevas")
 	background.free()
 
 

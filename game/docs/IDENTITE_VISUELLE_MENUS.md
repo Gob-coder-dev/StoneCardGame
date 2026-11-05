@@ -95,15 +95,17 @@ Les six portraits sont fournis dans `assets/gods/`. Le champ `asset` de
 - Profil : pseudo modifiable, statistiques générales et progression des sept
   chemins (niveaux terminés sur quinze), sans avatar.
 - Salon PVP : les trois étapes partagent la même arche de pierre et les deux
-  épées croisées en néon : choix du mode (créer ou rejoindre), recherche (liste
-  vivante et saisie d'adresse), puis salle d'attente (adresse copiable, deux
-  cartes joueur et bouton PRÊT). L'état réseau est toujours écrit en toutes
-  lettres, jamais indiqué par une couleur seule.
+  épées croisées en néon ; les montants rejoignent le bord bas, même si le
+  format d'écran est plus haut que le canevas de référence. Choix du mode (créer
+  ou rejoindre), recherche (liste vivante et saisie d'adresse), puis salle
+  d'attente (adresse copiable, deux cartes joueur et bouton PRÊT). L'état réseau
+  est toujours écrit en toutes lettres, jamais indiqué par une couleur seule.
 - Avant-combat : les portraits des deux dieux encadrent la pièce ; le cadre du
   dieu désigné par le tirage est renforcé. En combat, ces portraits restent dans
   les plaques du HUD, avec le nom du combattant, celui du dieu et le score.
-  l'écran de résultat partage son traitement avec le PVP : feux d'artifice néon
-  aux nuances du dieu vainqueur, crâne néon de cette couleur en cas de défaite,
+  l'écran de résultat partage son traitement avec le PVP : bouquets de feux
+  d'artifice aux traînées courbes, effilées et multicolores dans les nuances du
+  dieu vainqueur, grand crâne néon non déformé de cette couleur en cas de défaite,
   épées croisées aux couleurs des deux dieux en cas d'égalité. Il propose le
   niveau suivant après une victoire, puis revanche, autre niveau, autre dieu et
   accueil ; le suivant disparaît après une défaite ou au dernier rond.

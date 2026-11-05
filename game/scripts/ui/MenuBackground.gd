@@ -13,6 +13,8 @@ const VIOLET_NEON := Color("#c14cff")
 const PINK_NEON := Color("#f0449c")
 const EMBER_NEON := Color("#f0784d")
 const RESULT_NEUTRAL := Color("#bcb2bd")
+const PVP_ARCH_BOTTOM := 1920.0
+const SKULL_SCALE := 2.15
 
 ## Écart entre les trois néons d'un même décor : la teinte tourne d'environ 40°
 ## de part et d'autre du dieu, la valeur monte ou descend nettement. Un simple
@@ -172,6 +174,12 @@ func _artwork_offset_for_size(viewport_size: Vector2, scale: float) -> Vector2:
 	return (viewport_size - artwork_size) * 0.5
 
 
+func _artwork_bottom_for_size(viewport_size: Vector2) -> float:
+	var scale := _artwork_scale_for_size(viewport_size)
+	var offset := _artwork_offset_for_size(viewport_size, scale)
+	return (viewport_size.y - offset.y) / scale
+
+
 ## Le cercle se cale sur le portrait du dieu ; les flicks supérieurs suivent le
 ## même décalage pour rester dans l'axe de l'arche.
 func _draw_main_menu() -> void:
@@ -268,73 +276,123 @@ func _draw_aftermath_draw() -> void:
 
 
 func _winner_firework_color(index: int) -> Color:
+	return _firework_color(neon_primary_color, index)
+
+
+func _firework_color(base: Color, index: int) -> Color:
 	var hue_shifts: Array[float] = [-0.075, -0.04, 0.0, 0.04, 0.075]
 	var hue_shift: float = hue_shifts[posmod(index, hue_shifts.size())]
-	var hue: float = fposmod(neon_primary_color.h + hue_shift, 1.0)
-	var saturation := clampf(neon_primary_color.s * 0.88, 0.55, 1.0)
-	var brightness := clampf(neon_primary_color.v + 0.28, 0.0, 1.0)
+	var hue: float = fposmod(base.h + hue_shift, 1.0)
+	var saturation := clampf(base.s * 0.88, 0.55, 1.0)
+	var brightness := clampf(base.v + 0.28, 0.0, 1.0)
 	return Color.from_hsv(hue, saturation, brightness)
 
 
 func _draw_firework(center: Vector2, radius: float, ray_count: int,
-	color: Color, phase: float, ring_style: int) -> void:
+	base_color: Color, phase: float, ring_style: int) -> void:
+	var curve_direction := -1.0 if ring_style % 2 == 0 else 1.0
 	for ray in range(ray_count):
 		var angle := phase + TAU * float(ray) / float(ray_count)
-		var direction := Vector2(cos(angle), sin(angle))
-		var length := radius * (1.0 if ray % 2 == 0 else 0.68)
-		var start := center + direction * radius * 0.16
-		var finish := center + direction * length
-		_draw_neon_line(start, finish, color, 1.0 if ray % 3 == 0 else 0.7)
-	if ring_style > 0:
-		_draw_neon_circle(center, radius * 0.34, color, 0.8)
-	if ring_style > 1:
-		_draw_neon_circle(center, radius * 0.16, color, 0.7)
-	_draw_neon_circle(center, maxf(3.0, radius * 0.035), color, 1.0)
+		var length_factor: float = 1.0 if ray % 3 == 0 \
+			else 0.82 if ray % 3 == 1 else 0.68
+		var ray_length := radius * length_factor
+		var points := _firework_curve_points(center, angle, ray_length,
+			curve_direction, 12)
+		var color := _firework_color(base_color, ray + ring_style * 2)
+		var glow := color
+		glow.a = 0.14
+		draw_polyline(points, glow, 7.0, true)
+		var ribbon := _firework_ribbon(points, 3.2)
+		color.a = 0.92
+		draw_colored_polygon(ribbon, color)
+		var finish := points[points.size() - 1]
+		draw_circle(finish, maxf(2.0, radius * 0.018), color)
+	var core := _firework_color(base_color, ring_style * 2)
+	core.a = 0.9
+	draw_circle(center, maxf(3.0, radius * 0.035), core)
+
+
+func _firework_curve_points(center: Vector2, angle: float, length: float,
+	curve_direction: float, segments: int) -> PackedVector2Array:
+	var points := PackedVector2Array()
+	for index in range(segments + 1):
+		var t := float(index) / float(segments)
+		var curved_angle := angle + curve_direction * 0.34 * t * t
+		points.append(center + Vector2(cos(curved_angle), sin(curved_angle))
+			* length * t)
+	return points
+
+
+func _firework_ribbon(points: PackedVector2Array,
+	start_width: float) -> PackedVector2Array:
+	var left_edge := PackedVector2Array()
+	var right_edge := PackedVector2Array()
+	for index in range(points.size()):
+		var previous := points[maxi(0, index - 1)]
+		var following := points[mini(points.size() - 1, index + 1)]
+		var tangent := (following - previous).normalized()
+		var normal := Vector2(-tangent.y, tangent.x)
+		var t := float(index) / float(points.size() - 1)
+		var half_width := start_width * pow(1.0 - t, 0.72) * 0.5
+		left_edge.append(points[index] + normal * half_width)
+		right_edge.append(points[index] - normal * half_width)
+	right_edge.reverse()
+	left_edge.append_array(right_edge)
+	return left_edge
 
 
 func _draw_skull(center: Vector2, color: Color) -> void:
 	var outline := PackedVector2Array()
 	for index in range(25):
 		var angle := PI + PI * float(index) / 24.0
-		outline.append(Vector2(center.x + cos(angle) * 230.0,
-			center.y - 125.0 + sin(angle) * 250.0))
+		outline.append(_skull_point(center, Vector2(cos(angle) * 230.0,
+			-125.0 + sin(angle) * 250.0)))
 	for point in [
-		Vector2(center.x + 212.0, center.y + 42.0),
-		Vector2(center.x + 174.0, center.y + 145.0),
-		Vector2(center.x + 105.0, center.y + 204.0),
-		Vector2(center.x + 80.0, center.y + 260.0),
-		Vector2(center.x - 80.0, center.y + 260.0),
-		Vector2(center.x - 105.0, center.y + 204.0),
-		Vector2(center.x - 174.0, center.y + 145.0),
-		Vector2(center.x - 212.0, center.y + 42.0),
+		Vector2(212.0, 42.0),
+		Vector2(174.0, 145.0),
+		Vector2(105.0, 204.0),
+		Vector2(80.0, 260.0),
+		Vector2(-80.0, 260.0),
+		Vector2(-105.0, 204.0),
+		Vector2(-174.0, 145.0),
+		Vector2(-212.0, 42.0),
 	]:
-		outline.append(point)
+		outline.append(_skull_point(center, point))
 	outline.append(outline[0])
 	draw_polyline(outline, color, 4.0, true)
 
-	for eye_x in [center.x - 105.0, center.x + 105.0]:
-		draw_circle(Vector2(eye_x, center.y - 35.0), 68.0, Color("#101013"))
-		_draw_neon_circle(Vector2(eye_x, center.y - 35.0), 68.0,
-			color, 2.2)
-	_draw_neon_line(Vector2(center.x - 48.0, center.y - 138.0),
-		Vector2(center.x + 48.0, center.y - 138.0), color, 2.0)
+	for eye_x in [-105.0, 105.0]:
+		var eye_center := _skull_point(center, Vector2(eye_x, -35.0))
+		var eye_outline := PackedVector2Array()
+		for index in range(25):
+			var angle := TAU * float(index) / 24.0
+			eye_outline.append(eye_center + Vector2(
+				cos(angle) * 68.0 * SKULL_SCALE,
+				sin(angle) * 68.0 * SKULL_SCALE))
+		eye_outline.append(eye_outline[0])
+		draw_colored_polygon(eye_outline.slice(0, -1), Color("#101013"))
+		draw_polyline(eye_outline, color, 2.2, true)
 
 	var nose := PackedVector2Array([
-		Vector2(center.x, center.y + 45.0),
-		Vector2(center.x - 35.0, center.y + 112.0),
-		Vector2(center.x + 35.0, center.y + 112.0),
+		_skull_point(center, Vector2(0.0, 45.0)),
+		_skull_point(center, Vector2(-35.0, 112.0)),
+		_skull_point(center, Vector2(35.0, 112.0)),
 	])
 	draw_colored_polygon(nose, Color("#101013"))
 	_draw_neon_line(nose[0], nose[1], color, 1.8)
 	_draw_neon_line(nose[1], nose[2], color, 1.8)
 	_draw_neon_line(nose[2], nose[0], color, 1.8)
-	_draw_neon_line(Vector2(center.x - 142.0, center.y + 142.0),
-		Vector2(center.x + 142.0, center.y + 142.0), color, 2.0)
+	_draw_neon_line(_skull_point(center, Vector2(-142.0, 142.0)),
+		_skull_point(center, Vector2(142.0, 142.0)), color, 2.0)
 	for tooth in range(7):
-		var x := center.x - 105.0 + float(tooth) * 35.0
-		_draw_neon_line(Vector2(x, center.y + 142.0),
-			Vector2(x, center.y + (190.0 if tooth % 2 == 0 else 176.0)),
+		var x := -105.0 + float(tooth) * 35.0
+		_draw_neon_line(_skull_point(center, Vector2(x, 142.0)),
+			_skull_point(center, Vector2(x, 190.0 if tooth % 2 == 0 else 176.0)),
 			color, 1.2)
+
+
+func _skull_point(center: Vector2, point: Vector2) -> Vector2:
+	return center + point * SKULL_SCALE
 
 
 func _draw_profile() -> void:
@@ -353,19 +411,21 @@ func _draw_profile() -> void:
 
 ## Le choix, la recherche et la salle partagent le même décor d'arène.
 func _draw_pvp() -> void:
-	_draw_arena_architecture(neon_primary_color)
+	_draw_arena_architecture(neon_primary_color,
+		maxf(PVP_ARCH_BOTTOM, _artwork_bottom_for_size(size)))
 	_draw_crossed_swords(Vector2(540.0, 1030.0),
 		neon_primary_color, neon_secondary_color)
 
 
-func _draw_arena_architecture(accent: Color) -> void:
+func _draw_arena_architecture(accent: Color,
+	bottom: float = PVP_ARCH_BOTTOM) -> void:
 	var center := Vector2(540.0, 820.0)
-	_draw_arena_arch(center, 510.0, 1790.0, Color("#1a171d"))
-	_draw_arena_arch(center, 405.0, 1790.0, Color("#111014"))
-	_draw_arch_outline(center, 510.0, accent, 2.2)
-	_draw_arch_outline(center, 405.0, accent, 1.2)
+	_draw_arena_arch(center, 510.0, bottom, Color("#1a171d"))
+	_draw_arena_arch(center, 405.0, bottom, Color("#111014"))
+	_draw_arch_outline(center, 510.0, accent, 2.2, bottom)
+	_draw_arch_outline(center, 405.0, accent, 1.2, bottom)
 	_draw_arch_keystone(center, accent)
-	_draw_arena_floor(accent)
+	_draw_arena_floor(accent, bottom)
 
 
 func _draw_crossed_swords(center: Vector2, first_color: Color,
@@ -411,12 +471,13 @@ func _draw_arena_arch(center: Vector2, radius: float, bottom: float, color: Colo
 	draw_colored_polygon(points, color)
 
 
-func _draw_arch_outline(center: Vector2, radius: float, color: Color, width: float) -> void:
+func _draw_arch_outline(center: Vector2, radius: float, color: Color,
+		width: float, bottom: float = PVP_ARCH_BOTTOM) -> void:
 	_draw_neon_arc(center, radius, PI, TAU, color, width)
 	_draw_neon_line(Vector2(center.x - radius, center.y),
-		Vector2(center.x - radius, 1780.0), color, width)
+		Vector2(center.x - radius, bottom), color, width)
 	_draw_neon_line(Vector2(center.x + radius, center.y),
-		Vector2(center.x + radius, 1780.0), color, width)
+		Vector2(center.x + radius, bottom), color, width)
 
 
 func _draw_arch_keystone(center: Vector2, color: Color) -> void:
@@ -430,13 +491,13 @@ func _draw_arch_keystone(center: Vector2, color: Color) -> void:
 	_draw_neon_line(stone[1], stone[2], color, 1.4)
 
 
-func _draw_arena_floor(accent: Color) -> void:
+func _draw_arena_floor(accent: Color, bottom: float = PVP_ARCH_BOTTOM) -> void:
 	var seam := Color("#a49aa5")
 	seam.a = 0.11
 	for y in [1530.0, 1640.0, 1740.0]:
 		draw_line(Vector2(80.0, y), Vector2(1000.0, y), seam, 2.0)
 	for x in [220.0, 390.0, 690.0, 860.0]:
-		draw_line(Vector2(540.0, 1410.0), Vector2(x, 1790.0), seam, 2.0)
+		draw_line(Vector2(540.0, 1410.0), Vector2(x, bottom), seam, 2.0)
 	_draw_neon_line(Vector2(80.0, 1530.0), Vector2(260.0, 1530.0), accent, 1.0)
 	_draw_neon_line(Vector2(1000.0, 1530.0), Vector2(820.0, 1530.0), accent, 1.0)
 
