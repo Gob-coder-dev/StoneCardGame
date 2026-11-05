@@ -520,9 +520,11 @@ func _fill_lobby() -> void:
 	var is_host := bool(lobby["is_host"])
 	var local: Dictionary = lobby["host"] if is_host else lobby["client"]
 	var remote: Dictionary = lobby["client"] if is_host else lobby["host"]
-	background.set_gods(
-		StoneLoader.get_god(str(local.get("god_id", ""))),
-		StoneLoader.get_god(str(remote.get("god_id", ""))))
+	var local_god_data := StoneLoader.get_god(str(local.get("god_id", "")))
+	var remote_god_id := str(remote.get("god_id", ""))
+	var remote_god_data := local_god_data if remote_god_id == "" \
+		else StoneLoader.get_god(remote_god_id)
+	background.set_gods(local_god_data, remote_god_data)
 	var status := str(lobby["status"])
 	lobby_title.text = "SALLE OUVERTE"
 	lobby_hint.text = "En attente d'un adversaire sur le même Wi-Fi…"

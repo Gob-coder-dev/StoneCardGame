@@ -15,6 +15,7 @@ const EMBER_NEON := Color("#f0784d")
 const RESULT_NEUTRAL := Color("#bcb2bd")
 const PVP_ARCH_BOTTOM := 1920.0
 const SKULL_SCALE := 2.15
+const SKULL_CENTER := Vector2(540.0, 1035.0)
 
 ## Écart entre les trois néons d'un même décor : la teinte tourne d'environ 40°
 ## de part et d'autre du dieu, la valeur monte ou descend nettement. Un simple
@@ -247,30 +248,22 @@ func _draw_board() -> void:
 
 
 func _draw_aftermath() -> void:
-	_draw_firework(Vector2(125.0, 280.0), 76.0, 8,
-		_winner_firework_color(0), 0.02, 0)
-	_draw_firework(Vector2(885.0, 235.0), 118.0, 12,
-		_winner_firework_color(1), 0.08, 1)
-	_draw_firework(Vector2(390.0, 410.0), 54.0, 7,
-		_winner_firework_color(2), 0.0, 2)
-	_draw_firework(Vector2(1010.0, 710.0), 84.0, 10,
-		_winner_firework_color(3), 0.04, 0)
-	_draw_firework(Vector2(105.0, 940.0), 104.0, 14,
-		_winner_firework_color(4), 0.02, 1)
-	_draw_firework(Vector2(920.0, 1250.0), 64.0, 8,
-		_winner_firework_color(0), 0.08, 2)
-	_draw_firework(Vector2(245.0, 1530.0), 116.0, 11,
-		_winner_firework_color(1), 0.0, 1)
-	_draw_firework(Vector2(850.0, 1730.0), 82.0, 9,
-		_winner_firework_color(3), 0.04, 0)
+	_draw_firework(Vector2(155.0, 300.0), 175.0, 18, 0.02, 0)
+	_draw_firework(Vector2(825.0, 285.0), 205.0, 21, 0.08, 1)
+	_draw_firework(Vector2(525.0, 650.0), 125.0, 14, 0.0, 2)
+	_draw_firework(Vector2(70.0, 740.0), 92.0, 12, 0.06, 0)
+	_draw_firework(Vector2(1010.0, 820.0), 98.0, 13, 0.03, 1)
+	_draw_firework(Vector2(170.0, 1030.0), 185.0, 19, 0.04, 1)
+	_draw_firework(Vector2(850.0, 1170.0), 170.0, 17, 0.08, 0)
+	_draw_firework(Vector2(540.0, 1570.0), 205.0, 22, 0.0, 2)
 
 
 func _draw_aftermath_defeat() -> void:
-	_draw_skull(Vector2(540.0, 960.0), neon_primary_color)
+	_draw_skull(SKULL_CENTER, neon_primary_color)
 
 
 func _draw_aftermath_draw() -> void:
-	_draw_arena_architecture(neon_primary_color)
+	_draw_arena_architecture(neon_primary_color, neon_secondary_color)
 	_draw_crossed_swords(Vector2(540.0, 1030.0),
 		neon_primary_color, neon_secondary_color)
 
@@ -289,16 +282,14 @@ func _firework_color(base: Color, index: int) -> Color:
 
 
 func _draw_firework(center: Vector2, radius: float, ray_count: int,
-	base_color: Color, phase: float, ring_style: int) -> void:
-	var curve_direction := -1.0 if ring_style % 2 == 0 else 1.0
+	phase: float, pattern: int) -> void:
 	for ray in range(ray_count):
 		var angle := phase + TAU * float(ray) / float(ray_count)
-		var length_factor: float = 1.0 if ray % 3 == 0 \
-			else 0.82 if ray % 3 == 1 else 0.68
+		var length_factor := _firework_length_factor(ray, angle, pattern)
 		var ray_length := radius * length_factor
-		var points := _firework_curve_points(center, angle, ray_length,
-			curve_direction, 12)
-		var color := _firework_color(base_color, ray + ring_style * 2)
+		var fall := ray_length * _firework_fall_factor(pattern)
+		var points := _firework_curve_points(center, angle, ray_length, fall, 12)
+		var color := _winner_firework_color(ray + pattern * 2)
 		var glow := color
 		glow.a = 0.14
 		draw_polyline(points, glow, 7.0, true)
@@ -307,19 +298,33 @@ func _draw_firework(center: Vector2, radius: float, ray_count: int,
 		draw_colored_polygon(ribbon, color)
 		var finish := points[points.size() - 1]
 		draw_circle(finish, maxf(2.0, radius * 0.018), color)
-	var core := _firework_color(base_color, ring_style * 2)
+	var core := _winner_firework_color(pattern * 2)
 	core.a = 0.9
 	draw_circle(center, maxf(3.0, radius * 0.035), core)
 
 
+func _firework_length_factor(ray: int, angle: float, pattern: int) -> float:
+	match pattern % 3:
+		0:
+			return 0.78 + 0.22 * absf(sin(float(ray) * 1.7))
+		1:
+			return 0.62 + 0.38 * absf(cos(angle * 2.0))
+		_:
+			return 0.68 if ray % 2 == 0 else 1.0
+
+
+func _firework_fall_factor(pattern: int) -> float:
+	var fall_factors: Array[float] = [0.20, 0.36, 0.27]
+	return fall_factors[posmod(pattern, fall_factors.size())]
+
+
 func _firework_curve_points(center: Vector2, angle: float, length: float,
-	curve_direction: float, segments: int) -> PackedVector2Array:
+	fall: float, segments: int) -> PackedVector2Array:
 	var points := PackedVector2Array()
 	for index in range(segments + 1):
 		var t := float(index) / float(segments)
-		var curved_angle := angle + curve_direction * 0.34 * t * t
-		points.append(center + Vector2(cos(curved_angle), sin(curved_angle))
-			* length * t)
+		var direction := Vector2(cos(angle), sin(angle))
+		points.append(center + direction * length * t + Vector2(0.0, fall * t * t))
 	return points
 
 
@@ -411,21 +416,21 @@ func _draw_profile() -> void:
 
 ## Le choix, la recherche et la salle partagent le même décor d'arène.
 func _draw_pvp() -> void:
-	_draw_arena_architecture(neon_primary_color,
+	_draw_arena_architecture(neon_primary_color, neon_secondary_color,
 		maxf(PVP_ARCH_BOTTOM, _artwork_bottom_for_size(size)))
 	_draw_crossed_swords(Vector2(540.0, 1030.0),
 		neon_primary_color, neon_secondary_color)
 
 
-func _draw_arena_architecture(accent: Color,
+func _draw_arena_architecture(outer_accent: Color, inner_accent: Color,
 	bottom: float = PVP_ARCH_BOTTOM) -> void:
 	var center := Vector2(540.0, 820.0)
 	_draw_arena_arch(center, 510.0, bottom, Color("#1a171d"))
 	_draw_arena_arch(center, 405.0, bottom, Color("#111014"))
-	_draw_arch_outline(center, 510.0, accent, 2.2, bottom)
-	_draw_arch_outline(center, 405.0, accent, 1.2, bottom)
-	_draw_arch_keystone(center, accent)
-	_draw_arena_floor(accent, bottom)
+	_draw_arch_outline(center, 510.0, outer_accent, 2.2, bottom)
+	_draw_arch_outline(center, 405.0, inner_accent, 1.2, bottom)
+	_draw_arch_keystone(center, outer_accent)
+	_draw_arena_floor(outer_accent, bottom)
 
 
 func _draw_crossed_swords(center: Vector2, first_color: Color,

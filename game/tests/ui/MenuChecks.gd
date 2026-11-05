@@ -73,9 +73,9 @@ func _test_screen_backgrounds() -> void:
 	_check(artwork_fits_without_crop,
 		"les fonds gardent leur proportion et tiennent entièrement dans plusieurs formats portrait")
 	var curve := background._firework_curve_points(
-		Vector2.ZERO, 0.0, 100.0, -1.0, 8)
+		Vector2.ZERO, 0.0, 100.0, 36.0, 8)
 	var adjacent_curve := background._firework_curve_points(
-		Vector2.ZERO, 0.4, 100.0, -1.0, 8)
+		Vector2.ZERO, 0.4, 100.0, 36.0, 8)
 	var firework_colors: Array[Color] = []
 	for ray in range(5):
 		firework_colors.append(background._firework_color(Color("#e75aa8"), ray))
@@ -92,13 +92,18 @@ func _test_screen_backgrounds() -> void:
 	var ribbon := background._firework_ribbon(curve, 3.2)
 	var skull_width := 460.0 * MenuBackground.SKULL_SCALE
 	var skull_height := 635.0 * MenuBackground.SKULL_SCALE
-	_check(curve[4].y < curve[2].y and rays_keep_their_order
+	_check(curve[4].y > curve[2].y and rays_keep_their_order
 		and mixed_firework_colors and ribbon[0].distance_to(ribbon[-1])
 		> ribbon[8].distance_to(ribbon[9]),
-		"un bouquet combine des traînées courbes, évasées et de plusieurs nuances")
+		"les traînées grossissent en retombant et restent évasées, ordonnées et multicolores")
+	_check(background._firework_length_factor(1, 0.4, 0)
+		!= background._firework_length_factor(1, 0.4, 1)
+		and background._firework_fall_factor(0) != background._firework_fall_factor(1),
+		"les bouquets utilisent plusieurs motifs et degrés de retombée")
 	_check(typeof(MenuBackground.SKULL_SCALE) == TYPE_FLOAT
-		and skull_width >= 1080.0 * 0.9 and skull_height >= 1920.0 * 0.68,
-		"le crâne de défaite garde ses proportions et remplit presque la largeur")
+		and skull_width >= 1080.0 * 0.9 and skull_height >= 1920.0 * 0.68
+		and MenuBackground.SKULL_CENTER.y > 960.0,
+		"le crâne de défaite garde ses proportions, remplit la largeur et descend sur l'écran")
 	_check(is_equal_approx(background._artwork_bottom_for_size(
 		Vector2(1080.0, 2160.0)), 2040.0)
 		and MenuBackground.PVP_ARCH_BOTTOM == 1920.0,
@@ -917,6 +922,28 @@ func _test_pvp_lobby_screens() -> void:
 	LanSession._on_connection_failed()
 	_check(LanSession.state == LanSession.State.DISCOVERING,
 		"un rappel ENet tardif ne ferme pas la recherche après annulation")
+	var waiting_lobby := LobbyCoordinator.new()
+	waiting_lobby._is_host = true
+	waiting_lobby._local["name"] = "Hôte"
+	waiting_lobby._local["god_id"] = "kharun"
+	waiting_lobby._local["deck_valid"] = true
+	page._lobby = waiting_lobby
+	page._fill_lobby()
+	var host_color := Color(str(StoneLoader.get_god("kharun")["color"]))
+	_check(page.background.neon_primary_color == host_color
+		and page.background.neon_secondary_color == host_color,
+		"le salon en attente garde toutes les parties de l'arche et des épées à la couleur de l'hôte")
+	waiting_lobby._remote["name"] = "Client"
+	waiting_lobby._remote["god_id"] = "veskar"
+	waiting_lobby._connected = true
+	waiting_lobby._status = LobbyCoordinator.STATUS_CONNECTED
+	page._fill_lobby()
+	_check(page.background.neon_primary_color == host_color
+		and page.background.neon_secondary_color
+			== Color(str(StoneLoader.get_god("veskar")["color"])),
+		"le salon adopte les deux couleurs une fois le dieu adverse reçu")
+	page._lobby = null
+	page._refresh_status()
 	page._attempted_address = "192.0.2.44"
 	page._attempted_host_name = "Hôte de test"
 	page._connection_attempt_pending = true
