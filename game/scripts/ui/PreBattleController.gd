@@ -8,6 +8,7 @@ extends Control
 
 const SessionLink := preload("res://scripts/network/LanSessionLink.gd")
 const CoordinatorModel := preload("res://scripts/network/LanMatchCoordinator.gd")
+const Routes := preload("res://scripts/ui/GameRoutes.gd")
 
 @onready var duel_label: Label = $VBoxCenter/DuelLabel
 @onready var npc_label: Label = $VBoxCenter/NPCLabel
@@ -33,6 +34,7 @@ var _link: LanSessionLink = null
 var _start_link: LanMatchCoordinator = null
 var _remote_ready := false
 var _leaving := false
+var _start_timeout: Timer = null
 
 
 func _ready() -> void:
@@ -47,6 +49,11 @@ func _ready() -> void:
 	start_button.disabled = true
 	if _is_pvp():
 		_open_start_link()
+		_start_timeout = Timer.new()
+		_start_timeout.name = "StartAgreementTimeout"
+		_start_timeout.one_shot = true
+		_start_timeout.timeout.connect(_on_start_timeout)
+		add_child(_start_timeout)
 	## Garder le cadre de la pièce rond, quelle que soit sa taille.
 	coin.resized.connect(_style_coin)
 	_style_coin.call_deferred()
@@ -220,10 +227,10 @@ func _go_back() -> void:
 		_close_start_link()
 		PvpMatchContext.clear()
 		LanSession.leave_with_notice("Partie annulée avant le premier coup.")
-		get_tree().change_scene_to_file("res://scenes/menus/PvpLobby.tscn")
+		Routes.go(get_tree(), Routes.PVP_LOBBY)
 		return
 	BattleContext.select_source(BattleContext.navigation_source_id())
-	get_tree().change_scene_to_file("res://scenes/menus/EncounterPath.tscn")
+	Routes.go(get_tree(), Routes.ENCOUNTER_PATH)
 
 
 func _on_start() -> void:
@@ -264,6 +271,8 @@ func _request_start() -> void:
 		return
 	start_button.disabled = true
 	status_label.text = "En attente de l'adversaire…"
+	if _start_timeout != null:
+		_start_timeout.start(LanProtocol.START_AGREEMENT_TIMEOUT_SECONDS)
 
 
 func _on_start_pending() -> void:
@@ -275,12 +284,24 @@ func _on_start_pending() -> void:
 
 
 func _on_match_ready(_config: Dictionary) -> void:
+	if _start_timeout != null:
+		_start_timeout.stop()
 	_open_board()
 
 
 func _on_start_aborted(message: String) -> void:
+	if _start_timeout != null:
+		_start_timeout.stop()
 	status_label.text = message
 	start_button.disabled = true
+
+
+func _on_start_timeout() -> void:
+	if _leaving or _start_link == null:
+		return
+	status_label.text = "L'adversaire n'a pas confirmé le lancement. Revenez au salon."
+	start_button.disabled = true
+	_start_link.abort(status_label.text)
 
 
 func set_status(message: String) -> void:
@@ -292,10 +313,12 @@ func _open_board() -> void:
 		return
 	_leaving = true
 	_close_start_link()
-	get_tree().change_scene_to_file("res://scenes/game/Board.tscn")
+	Routes.go(get_tree(), Routes.BOARD)
 
 
 func _close_start_link() -> void:
+	if _start_timeout != null:
+		_start_timeout.stop()
 	if _start_link != null:
 		_start_link.close()
 		_start_link = null

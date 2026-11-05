@@ -381,6 +381,10 @@ func _on_match_start(payload: Dictionary) -> void:
 	var own_entry := {}
 	for entry in payload.get("participants", []):
 		var participant: Dictionary = entry
+		if not DeckRules.is_deck_valid(participant.get("deck", []),
+				str(participant.get("god_id", ""))):
+			_fail(INVALID_DECK_MESSAGE)
+			return
 		if int(participant.get("peer_id", 0)) == own_peer:
 			own_entry = participant
 		if int(participant.get("side", 0)) == GameState.PLAYER_ONE:
@@ -390,9 +394,6 @@ func _on_match_start(payload: Dictionary) -> void:
 		return
 	if host_entry.is_empty() or int(host_entry.get("peer_id", 0)) == own_peer:
 		_fail("Configuration de partie invalide.")
-		return
-	if not DeckRules.is_deck_valid(own_entry.get("deck", []), str(own_entry.get("god_id", ""))):
-		_fail(INVALID_DECK_MESSAGE)
 		return
 	_match_id = str(payload.get("match_id", ""))
 	_started = true

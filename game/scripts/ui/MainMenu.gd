@@ -1,10 +1,12 @@
 ## Accueil principal : pseudo, identité du jeu et accès aux deux modes.
 extends Control
 
+const Routes := preload("res://scripts/ui/GameRoutes.gd")
+
 ## Destination de chaque mode, après validation du deck.
 const MODE_SCENES: Dictionary = {
-	"campaign": "res://scenes/menus/EncounterSelect.tscn",
-	"pvp": "res://scenes/menus/PvpLobby.tscn",
+	"campaign": Routes.ENCOUNTER_SELECT,
+	"pvp": Routes.PVP_LOBBY,
 }
 const DECK_WARNING: String = "VEUILLEZ COMPLÉTER VOTRE DECK"
 const DECK_WARNING_SECONDS: float = 2.5
@@ -114,7 +116,7 @@ func _go_to(path: String) -> void:
 	if scene_changer.is_valid():
 		scene_changer.call(path)
 		return
-	get_tree().change_scene_to_file(path)
+	Routes.go(get_tree(), path)
 
 
 func _on_art_warmup_progress(god_id: String, loaded: int, total: int) -> void:
@@ -139,4 +141,4 @@ func _notification(what: int) -> void:
 
 
 func _on_profile_pressed() -> void:
-	get_tree().change_scene_to_file("res://scenes/menus/Stats.tscn")
+	Routes.go(get_tree(), Routes.STATS)

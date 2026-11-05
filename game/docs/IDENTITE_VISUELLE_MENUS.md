@@ -167,9 +167,9 @@ existants. `MenuChecks` vérifie en plus le chargement des six portraits et le
 passage des gestes à travers le décor de l'accueil. Les essais utilisent un profil
 temporaire, restauré ensuite.
 
-Au dernier contrôle automatisé, 716 vérifications générales réussissent, sans
-échec et sans erreur Godot ; les 86 vérifications tactiles réussissent. Les
-suites PVP vérifient en plus le protocole, le salon et les commandes validées
+Les lanceurs automatisés doivent terminer sans échec ni erreur Godot ; leur
+nombre de vérifications n'est pas figé dans la documentation. Les suites PVP
+vérifient en plus le protocole, le salon et les commandes validées
 par l'hôte, avec un transport simulé (voir [PVP_LOCAL.md](PVP_LOCAL.md)). Une
 validation visuelle doit
 compléter ces suites après chaque changement de composition : chaque dieu, les

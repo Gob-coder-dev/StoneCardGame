@@ -7,9 +7,8 @@ extends Control
 const OpponentCatalogModel := preload("res://scripts/data/OpponentCatalog.gd")
 const EncounterPathModel := preload("res://scripts/domain/EncounterPath.gd")
 const PathTrackView := preload("res://scripts/ui/encounters/PathTrack.gd")
+const Routes := preload("res://scripts/ui/GameRoutes.gd")
 
-const SELECT_SCENE := "res://scenes/menus/EncounterSelect.tscn"
-const PREBATTLE_SCENE := "res://scenes/menus/PreBattle.tscn"
 
 @onready var background: MenuBackground = $Background
 @onready var back_button: Button = $Root/Header/BackButton
@@ -125,7 +124,7 @@ func _on_fight() -> void:
 	BattleContext.select_source(_source_id)
 	BattleContext.select_opponent(opponent)
 	BattleContext.forced_first_player = 0
-	get_tree().change_scene_to_file(PREBATTLE_SCENE)
+	Routes.go(get_tree(), Routes.PRE_BATTLE)
 
 
 func _center_selection() -> void:
@@ -135,11 +134,11 @@ func _center_selection() -> void:
 
 
 func _go_back() -> void:
-	get_tree().change_scene_to_file(SELECT_SCENE)
+	Routes.go(get_tree(), Routes.ENCOUNTER_SELECT)
 
 
 func _return_to_select() -> void:
-	get_tree().change_scene_to_file(SELECT_SCENE)
+	Routes.go(get_tree(), Routes.ENCOUNTER_SELECT)
 
 
 func _unhandled_input(event: InputEvent) -> void:

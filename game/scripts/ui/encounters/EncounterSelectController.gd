@@ -6,8 +6,7 @@ extends Control
 
 const GodCardTileView := preload("res://scripts/ui/encounters/GodCardTile.gd")
 const OpponentCatalogModel := preload("res://scripts/data/OpponentCatalog.gd")
-const PATH_SCENE := "res://scenes/menus/EncounterPath.tscn"
-const MENU_SCENE := "res://scenes/menus/MainMenu.tscn"
+const Routes := preload("res://scripts/ui/GameRoutes.gd")
 
 @onready var background: MenuBackground = $Background
 @onready var back_button: Button = $Root/Header/BackButton
@@ -39,11 +38,11 @@ func _open_path(source_id: String) -> void:
 	if source_id == "":
 		return
 	BattleContext.select_source(source_id)
-	get_tree().change_scene_to_file(PATH_SCENE)
+	Routes.go(get_tree(), Routes.ENCOUNTER_PATH)
 
 
 func _on_back() -> void:
-	get_tree().change_scene_to_file(MENU_SCENE)
+	Routes.go(get_tree(), Routes.MAIN_MENU)
 
 
 func _unhandled_input(event: InputEvent) -> void:

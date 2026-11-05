@@ -3,23 +3,22 @@
 ##   1. `ModeScreen`   — créer une partie ou en rejoindre une ;
 ##   2. `JoinScreen`   — salons trouvés sur le Wi-Fi et saisie d'adresse ;
 ##   3. `LobbyScreen`  — les deux joueurs, l'adresse à donner, puis PRÊT.
-## Ce contrôleur ne contient ni transport ni règle : il affiche l'état du
-## coordinateur de salon et lui transmet les actions du joueur.
+## Le cycle réseau appartient à PvpLobbyFlow ; ce contrôleur ne conserve que
+## la présentation, les gestes et la transition vers l'avant-combat.
 extends Control
 
-const LobbyCoordinator := preload("res://scripts/network/LanLobbyCoordinator.gd")
-const Discovery := preload("res://scripts/network/LanDiscovery.gd")
-const SessionLink := preload("res://scripts/network/LanSessionLink.gd")
 const TouchButtonScript := preload("res://scripts/ui/input/TouchButton.gd")
+## Constantes d'état et type exposé à la vue ; le cycle reste dans le flow.
+const LobbyCoordinator := preload("res://scripts/network/LanLobbyCoordinator.gd")
+const FlowModel := preload("res://scripts/ui/pvp/PvpLobbyFlow.gd")
+const AddressResolver := preload("res://scripts/network/LanAddressResolver.gd")
+const Routes := preload("res://scripts/ui/GameRoutes.gd")
 
-const MENU_SCENE: String = "res://scenes/menus/MainMenu.tscn"
-## Le pile ou face du salon s'affiche avant le plateau, comme en campagne.
-const PREBATTLE_SCENE: String = "res://scenes/menus/PreBattle.tscn"
 const DECK_WARNING: String = "VEUILLEZ COMPLÉTER VOTRE DECK"
 
-const MODE_NONE := ""
-const MODE_HOST := "hosting"
-const MODE_JOIN := "joining"
+const MODE_NONE := FlowModel.MODE_NONE
+const MODE_HOST := FlowModel.MODE_HOST
+const MODE_JOIN := FlowModel.MODE_JOIN
 
 @onready var back_button: Button = $Root/Header/BackButton
 @onready var mode_screen: VBoxContainer = $Root/Scroll/Content/ModeScreen
@@ -85,21 +84,44 @@ const MODE_JOIN := "joining"
 	$ConnectionOverlay/ConnectionCenter/ConnectionPanel/ConnectionContent/ConnectionActions/CloseButton
 @onready var background: MenuBackground = $Background
 
-var _mode := MODE_NONE
-var _discovery: LanDiscovery = null
-var _link: LanSessionLink = null
-var _lobby: LanLobbyCoordinator = null
-var _games_signature := ""
+var _flow: PvpLobbyFlow = FlowModel.new()
+## Compatibilité de lecture pour les vues et les tests ; l'état appartient au flow.
+var _mode: String:
+	get: return _flow.mode
+	set(value): _flow.mode = value
+var _discovery: LanDiscovery:
+	get: return _flow.discovery
+	set(value): _flow.discovery = value
+var _link: LanSessionLink:
+	get: return _flow.link
+	set(value): _flow.link = value
+var _lobby: LanLobbyCoordinator:
+	get: return _flow.lobby
+	set(value): _flow.lobby = value
 var _notice := ""
 var _leaving := false
-var _connection_attempt_pending := false
-var _attempted_address := ""
-var _attempted_host_name := ""
-var _connection_elapsed := 0.0
-var _displayed_connection_seconds := -1
+var _connection_attempt_pending: bool:
+	get: return _flow.connection_attempt_pending
+	set(value): _flow.connection_attempt_pending = value
+var _attempted_address: String:
+	get: return _flow.attempted_address
+	set(value): _flow.attempted_address = value
+var _attempted_host_name: String:
+	get: return _flow.attempted_host_name
+	set(value): _flow.attempted_host_name = value
+var _connection_elapsed: float:
+	get: return _flow.connection_elapsed
+	set(value): _flow.connection_elapsed = value
+var _displayed_connection_seconds: int:
+	get: return _flow.displayed_connection_seconds
+	set(value): _flow.displayed_connection_seconds = value
 
 
 func _ready() -> void:
+	_flow.changed.connect(_refresh_status)
+	_flow.games_changed.connect(_on_games_changed)
+	_flow.notice_requested.connect(_show_notice)
+	_flow.match_started.connect(_on_match_started)
 	back_button.pressed.connect(_go_back)
 	create_button.pressed.connect(_start_hosting)
 	join_button.pressed.connect(_start_search)
@@ -126,8 +148,13 @@ func _ready() -> void:
 
 
 func _exit_tree() -> void:
-	_stop_discovery()
-	_close_lobby()
+	# Aucun rafraîchissement de contrôles pendant leur destruction : `reset()`
+	# émet volontairement un dernier changement pour ses autres consommateurs.
+	_disconnect_flow()
+	if _leaving:
+		_flow.close()
+	else:
+		_flow.reset()
 	if LanSession.connected_to_host.is_connected(_on_connected_to_host):
 		LanSession.connected_to_host.disconnect(_on_connected_to_host)
 	if LanSession.state_changed.is_connected(_on_session_state):
@@ -136,24 +163,26 @@ func _exit_tree() -> void:
 		LanSession.notice.disconnect(_show_notice)
 
 
+func _disconnect_flow() -> void:
+	if _flow.changed.is_connected(_refresh_status):
+		_flow.changed.disconnect(_refresh_status)
+	if _flow.games_changed.is_connected(_on_games_changed):
+		_flow.games_changed.disconnect(_on_games_changed)
+	if _flow.notice_requested.is_connected(_show_notice):
+		_flow.notice_requested.disconnect(_show_notice)
+	if _flow.match_started.is_connected(_on_match_started):
+		_flow.match_started.disconnect(_on_match_started)
+
+
 ## La découverte doit tourner dans **tous** les modes : c'est `poll` qui émet
 ## le beacon de l'hôte. Seule la reconstruction de la liste appartient à
 ## l'écran de recherche.
 func _process(delta: float) -> void:
 	_update_connection_progress(delta)
-	if _discovery == null or not _discovery.is_active():
-		return
-	_discovery.poll(delta)
-	if _mode != MODE_JOIN or _lobby != null:
-		return
-	var games := _discovery.games()
-	var signature := ""
-	for game in games:
-		signature += "%s|%s|%s;" % [game.get("key", ""), game.get("name", ""),
-			str(game.get("compatible", false))]
-	if signature == _games_signature:
-		return
-	_games_signature = signature
+	_flow.poll(delta)
+
+
+func _on_games_changed(games: Array) -> void:
 	_rebuild_games(games)
 	_refresh_status()
 
@@ -165,66 +194,17 @@ func _start_hosting() -> void:
 	if not DeckRules.is_deck_valid(deck, PlayerData.player_god_id):
 		_show_notice(DECK_WARNING)
 		return
-	_stop_discovery()
-	_close_lobby()
-	LanSession.reset()
-	_mode = MODE_HOST
-	if not LanSession.host_game():
-		_mode = MODE_NONE
-		_show_notice(LanSession.last_notice)
-		_refresh_status()
-		return
-	_link = SessionLink.new()
-	_link.attach(LanSession)
-	_lobby = LobbyCoordinator.new()
-	_lobby.attach(_link, true)
-	_lobby.state_changed.connect(_on_lobby_state)
-	_lobby.match_started.connect(_on_match_started)
-	_lobby.failed.connect(_show_notice)
-	_lobby.set_local_profile(PlayerData.player_name, PlayerData.player_god_id, deck)
-	_start_broadcast()
-	_show_notice("")
-	_refresh_status()
+	_flow.start_hosting(PlayerData.player_name, PlayerData.player_god_id, deck)
 
 
 func _start_search() -> void:
-	if _mode == MODE_JOIN and _discovery != null and _discovery.is_active():
-		return
-	_stop_discovery()
-	_close_lobby()
-	LanSession.reset()
-	_mode = MODE_JOIN
-	_discovery = Discovery.new()
-	if not _discovery.start_listening():
-		_show_notice(_discovery.last_error)
-		_discovery = null
-		_refresh_status()
-		return
-	LanSession.enter_discovery()
-	_games_signature = ""
-	_rebuild_games([])
-	_show_notice("")
-	_refresh_status()
+	_flow.start_search()
 
 
 ## Relance l'écoute après une coupure Wi-Fi ou un socket mort : la liste est
 ## automatique, mais un socket ne se relève pas tout seul.
 func _restart_search(notice: String = "") -> void:
-	if _mode != MODE_JOIN or _lobby != null:
-		return
-	_stop_discovery()
-	_discovery = Discovery.new()
-	if not _discovery.start_listening():
-		var error := _discovery.last_error
-		_discovery = null
-		_show_notice("%s %s" % [notice, error] if notice != "" else error)
-		_refresh_status()
-		return
-	LanSession.enter_discovery()
-	_games_signature = ""
-	_rebuild_games([])
-	_show_notice(notice)
-	_refresh_status()
+	_flow.restart_search(notice)
 
 
 ## ─── Rejoindre ───────────────────────────────────────────────────────────────
@@ -245,12 +225,7 @@ func _on_address_submitted(_text: String) -> void:
 ## l'hôte, le port de jeu étant fixe. Une adresse collée telle quelle marche
 ## donc du premier coup.
 static func host_only(address: String) -> String:
-	var clean := address.strip_edges()
-	if clean.contains("://"):
-		clean = clean.split("://", true, 1)[1]
-	if clean.contains(":"):
-		clean = clean.split(":", true, 1)[0]
-	return clean.strip_edges()
+	return AddressResolver.host_only(address)
 
 
 func _join_address(address: String) -> void:
@@ -258,52 +233,22 @@ func _join_address(address: String) -> void:
 
 
 func _join_address_with_name(address: String, host_name: String = "") -> void:
-	var host := host_only(address)
-	if host == "":
-		_show_notice("Entrez l'adresse affichée sur la salle d'attente de l'hôte.")
-		return
-	_stop_discovery()
-	_close_lobby()
-	LanSession.reset()
-	_mode = MODE_JOIN
-	_attempted_address = address.strip_edges()
-	_attempted_host_name = host_name.strip_edges()
-	address_input.text = _attempted_address
-	_connection_attempt_pending = true
-	_connection_elapsed = 0.0
-	_displayed_connection_seconds = -1
-	_notice = ""
-	LanSession.last_notice = ""
-	if not LanSession.join_game(host):
-		_refresh_status()
-		return
-	_refresh_status()
+	if _flow.join_address(address, host_name):
+		address_input.text = _attempted_address
+		_notice = ""
 
 
 ## Le client crée sa passerelle seulement une fois connecté : son identifiant
 ## réseau n'existe qu'à ce moment-là.
 func _on_connected_to_host() -> void:
-	if _mode != MODE_JOIN or _leaving or _lobby != null:
+	if _leaving:
 		return
-	_connection_attempt_pending = false
-	_link = SessionLink.new()
-	_link.attach(LanSession)
-	_lobby = LobbyCoordinator.new()
-	_lobby.attach(_link, false)
-	_lobby.state_changed.connect(_on_lobby_state)
-	_lobby.match_started.connect(_on_match_started)
-	_lobby.failed.connect(_show_notice)
-	_lobby.set_local_profile(PlayerData.player_name, PlayerData.player_god_id,
+	_flow.connected_to_host(PlayerData.player_name, PlayerData.player_god_id,
 		PlayerData.get_active_deck())
-	_lobby.client_connected()
-	_refresh_status()
 
 
 func _press_ready() -> void:
-	if _lobby == null:
-		return
-	_lobby.press_ready()
-	_refresh_status()
+	_flow.press_ready()
 
 
 ## ─── Navigation ──────────────────────────────────────────────────────────────
@@ -319,7 +264,7 @@ func _go_back() -> void:
 	if _mode == MODE_NONE and _lobby == null:
 		_leaving = true
 		_reset_session()
-		get_tree().change_scene_to_file(MENU_SCENE)
+		Routes.go(get_tree(), Routes.MAIN_MENU)
 		return
 	_reset_session()
 	_refresh_status()
@@ -331,58 +276,31 @@ func _notification(what: int) -> void:
 
 
 func _on_session_state(session_state: int) -> void:
-	if session_state == LanSession.State.DISCONNECTED \
-			and _mode == MODE_JOIN and _lobby != null:
-		var message := LanSession.last_notice
-		if message == "":
-			message = "L'hôte a quitté le salon."
-		_close_lobby()
-		_connection_attempt_pending = false
-		LanSession.last_notice = ""
-		_restart_search(message)
-		return
-	_refresh_status()
+	_flow.handle_session_state(session_state)
 
 
 ## ─── Cycle réseau ────────────────────────────────────────────────────────────
 
 func _start_broadcast() -> void:
-	_discovery = Discovery.new()
-	var beacon := LanProtocol.make_beacon(PlayerData.player_name, LanProtocol.GAME_PORT, 1)
-	if not _discovery.start_broadcast(beacon):
-		var reason := _discovery.last_error
-		_discovery = null
-		_show_notice("%s Votre adversaire peut entrer votre adresse à la main." % reason)
+	# Conservé comme point d'extension pour les scènes anciennes ; le flow lance
+	# désormais la diffusion pendant `start_hosting()`.
+	return
 
 
 func _stop_discovery() -> void:
-	if _discovery != null:
-		_discovery.stop()
-		_discovery = null
-	_games_signature = ""
+	_flow.stop_discovery()
 
 
 func _close_lobby() -> void:
-	if _lobby != null:
-		_lobby.close()
-		_lobby = null
+	_flow.close_lobby()
 	if is_node_ready():
 		ready_button.disabled = true
 		ready_button.text = "PRÊT"
-	if _link != null:
-		_link.detach()
-		_link = null
 
 
 func _reset_session() -> void:
-	_stop_discovery()
-	_close_lobby()
-	LanSession.reset()
-	PvpMatchContext.clear()
-	_mode = MODE_NONE
+	_flow.reset()
 	_notice = ""
-	_games_signature = ""
-	_rebuild_games([])
 
 
 func _on_lobby_state(_state: Dictionary) -> void:
@@ -406,11 +324,11 @@ func _on_match_started(config: Dictionary) -> void:
 		_show_notice("Configuration de partie invalide.")
 		return
 	_leaving = true
-	_stop_discovery()
-	_close_lobby()
+	_flow.stop_discovery()
+	_flow.close_lobby()
 	PvpMatchContext.begin(config, side, LanSession.local_peer_id(), local_profile, remote_profile)
 	LanSession.enter_match()
-	get_tree().change_scene_to_file(PREBATTLE_SCENE)
+	Routes.go(get_tree(), Routes.PRE_BATTLE)
 
 
 static func _profile_of(participant: Dictionary) -> Dictionary:
@@ -429,11 +347,13 @@ func _refresh_status() -> void:
 		_fill_lobby()
 		_show_screen(lobby_screen)
 	elif _mode == MODE_JOIN:
+		_reset_ready_button()
 		background.room = MenuBackground.Room.PVP
 		background.set_god(StoneLoader.get_god(PlayerData.player_god_id))
 		_fill_join()
 		_show_screen(join_screen)
 	else:
+		_reset_ready_button()
 		background.room = MenuBackground.Room.PVP
 		background.set_god(StoneLoader.get_god(PlayerData.player_god_id))
 		_show_screen(mode_screen)
@@ -446,6 +366,11 @@ func _refresh_status() -> void:
 func _show_screen(screen: Control) -> void:
 	for candidate in [mode_screen, join_screen, lobby_screen]:
 		(candidate as Control).visible = candidate == screen
+
+
+func _reset_ready_button() -> void:
+	ready_button.disabled = true
+	ready_button.text = "PRÊT"
 
 
 func _fill_join() -> void:
@@ -506,13 +431,7 @@ func _dismiss_connection() -> void:
 	if not _connection_attempt_pending:
 		return
 	address_input.text = _attempted_address
-	_connection_attempt_pending = false
-	_connection_elapsed = 0.0
-	_stop_discovery()
-	LanSession.reset()
-	LanSession.last_notice = ""
-	_show_notice("")
-	_restart_search()
+	_flow.dismiss_connection()
 
 
 func _fill_lobby() -> void:
@@ -593,44 +512,15 @@ func _update_ready_button(lobby: Dictionary) -> void:
 ## proposer d'abord le Wi-Fi domestique, seul joignable par l'autre téléphone,
 ## avant les réseaux VPN ou opérateur (10.x) qui, eux, ne le sont pas.
 static func address_rank(address: String) -> int:
-	if address.begins_with("192.168."):
-		return 0
-	var parts := address.split(".")
-	if parts.size() == 4 and parts[0] == "172":
-		var second := int(parts[1])
-		if second >= 16 and second <= 31:
-			return 1
-	if address.begins_with("10."):
-		return 2
-	return 3
+	return AddressResolver.address_rank(address)
 
 
 static func rank_addresses(addresses: Array) -> Array:
-	var result: Array = []
-	for entry in addresses:
-		var address := str(entry)
-		if address.contains(":") or address.begins_with("127.") \
-				or address.begins_with("169.254."):
-			continue
-		result.append(address)
-	## Tri par insertion : le classement d'abord, puis l'ordre lexicographique
-	## pour rester déterministe. Aucune allocation de fermeture.
-	for index in range(1, result.size()):
-		var current: String = result[index]
-		var cursor := index - 1
-		while cursor >= 0 and _sorts_before(current, str(result[cursor])):
-			result[cursor + 1] = result[cursor]
-			cursor -= 1
-		result[cursor + 1] = current
-	return result
+	return AddressResolver.rank_addresses(addresses)
 
 
 static func _sorts_before(first: String, second: String) -> bool:
-	var rank_first := address_rank(first)
-	var rank_second := address_rank(second)
-	if rank_first != rank_second:
-		return rank_first < rank_second
-	return first < second
+	return AddressResolver._sorts_before(first, second)
 
 
 func _address_text() -> String:

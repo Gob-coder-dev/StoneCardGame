@@ -2,6 +2,8 @@
 ## vivent dans des composants séparés.
 extends Control
 
+const Routes := preload("res://scripts/ui/GameRoutes.gd")
+
 const SortMode = CollectionGridView.SortMode
 const Gesture := preload("res://scripts/ui/input/TapGesture.gd")
 
@@ -221,7 +223,7 @@ func _go_back() -> void:
 	if god_menu.visible or sort_menu.visible or level_menu.visible:
 		_close_inline_menus()
 		return
-	get_tree().change_scene_to_file("res://scenes/menus/MainMenu.tscn")
+	Routes.go(get_tree(), Routes.MAIN_MENU)
 
 
 func _setup_sort() -> void:

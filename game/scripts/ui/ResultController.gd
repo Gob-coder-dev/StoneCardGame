@@ -5,6 +5,7 @@ extends Control
 
 const OpponentCatalogModel := preload("res://scripts/data/OpponentCatalog.gd")
 const EncounterPathModel := preload("res://scripts/domain/EncounterPath.gd")
+const Routes := preload("res://scripts/ui/GameRoutes.gd")
 
 @onready var result_label: Label = $VBoxCenter/ResultLabel
 @onready var score_label: Label = $VBoxCenter/ScoreLabel
@@ -14,6 +15,8 @@ const EncounterPathModel := preload("res://scripts/domain/EncounterPath.gd")
 @onready var level_btn: Button = $VBoxCenter/LevelsButton
 @onready var gods_btn: Button = $VBoxCenter/GodsButton
 @onready var menu_btn: Button = $VBoxCenter/MainMenuButton
+@onready var save_status: Label = $VBoxCenter/SaveStatus
+@onready var retry_save_btn: Button = $VBoxCenter/RetrySaveButton
 
 
 func _ready() -> void:
@@ -22,6 +25,7 @@ func _ready() -> void:
 	level_btn.pressed.connect(_on_level_select)
 	gods_btn.pressed.connect(_on_god_select)
 	menu_btn.pressed.connect(_on_menu)
+	retry_save_btn.pressed.connect(_on_retry_save)
 
 	## Lire le résultat depuis BattleContext
 	match BattleContext.last_winner:
@@ -48,6 +52,7 @@ func _ready() -> void:
 		npc_name
 	]
 	_refresh_next_button()
+	_refresh_save_status()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -73,7 +78,31 @@ func _next_level() -> Dictionary:
 ## Le suivant n'apparaît qu'après une victoire et s'il reste un rond.
 func _refresh_next_button() -> void:
 	next_btn.visible = BattleContext.last_winner == GameState.PLAYER_HUMAN \
-		and not _next_level().is_empty()
+		and BattleContext.last_result_saved and not _next_level().is_empty()
+
+
+func _refresh_save_status() -> void:
+	var failed := not BattleContext.last_result_saved
+	save_status.visible = failed
+	retry_save_btn.visible = failed
+	if failed:
+		save_status.text = "La progression n'a pas pu être enregistrée (%s)." \
+			% error_string(BattleContext.last_save_error)
+
+
+func _on_retry_save() -> void:
+	retry_save_btn.disabled = true
+	var error := BattleContext.persist_result()
+	retry_save_btn.disabled = false
+	if error == OK:
+		save_status.text = "Progression enregistrée."
+		save_status.add_theme_color_override("font_color", UITheme.COL_SUCCESS)
+		retry_save_btn.visible = false
+		_refresh_next_button()
+		return
+	save_status.text = "Échec de l'enregistrement (%s). Réessayez ou vérifiez l'espace disponible." \
+		% error_string(error)
+	save_status.add_theme_color_override("font_color", UITheme.COL_ERROR)
 
 
 func _on_next_level() -> void:
@@ -89,26 +118,26 @@ func _on_next_level() -> void:
 	BattleContext.select_source(source)
 	BattleContext.select_opponent(opponent)
 	BattleContext.forced_first_player = 0
-	get_tree().change_scene_to_file("res://scenes/menus/PreBattle.tscn")
+	Routes.go(get_tree(), Routes.PRE_BATTLE)
 
 
 func _on_replay() -> void:
 	## Une revanche commence par un nouveau tirage au sort.
 	BattleContext.forced_first_player = 0
-	get_tree().change_scene_to_file("res://scenes/menus/PreBattle.tscn")
+	Routes.go(get_tree(), Routes.PRE_BATTLE)
 
 
 ## Rouvre le serpentin du dernier adversaire, pour choisir un autre de ses
 ## niveaux sans repasser par la grille des dieux.
 func _on_level_select() -> void:
 	BattleContext.select_source(BattleContext.navigation_source_id())
-	get_tree().change_scene_to_file("res://scenes/menus/EncounterPath.tscn")
+	Routes.go(get_tree(), Routes.ENCOUNTER_PATH)
 
 
 ## Retour à la grille des sept chemins, indépendamment de la source courante.
 func _on_god_select() -> void:
-	get_tree().change_scene_to_file("res://scenes/menus/EncounterSelect.tscn")
+	Routes.go(get_tree(), Routes.ENCOUNTER_SELECT)
 
 
 func _on_menu() -> void:
-	get_tree().change_scene_to_file("res://scenes/menus/MainMenu.tscn")
+	Routes.go(get_tree(), Routes.MAIN_MENU)

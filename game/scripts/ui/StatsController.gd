@@ -1,6 +1,8 @@
 ## Profil local et statistiques du joueur.
 extends Control
 
+const Routes := preload("res://scripts/ui/GameRoutes.gd")
+
 const OpponentCatalogModel := preload("res://scripts/data/OpponentCatalog.gd")
 const EncounterPathModel := preload("res://scripts/domain/EncounterPath.gd")
 
@@ -86,7 +88,7 @@ func _notification(what: int) -> void:
 
 
 func _close() -> void:
-	get_tree().change_scene_to_file("res://scenes/menus/MainMenu.tscn")
+	Routes.go(get_tree(), Routes.MAIN_MENU)
 
 
 func _build_global_stats() -> void:

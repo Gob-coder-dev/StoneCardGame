@@ -203,6 +203,18 @@ func _test_bad_config_on_client() -> void:
 	_check(pair["started_client"].is_empty(),
 		"un client ne peut pas se voir attribuer un autre camp")
 
+	var invalid_host_pair := _pair()
+	_connect(invalid_host_pair)
+	var invalid_host := config.duplicate(true)
+	(invalid_host["participants"] as Array)[0]["deck"] = _deck().slice(0, 5)
+	(invalid_host["participants"] as Array)[1]["peer_id"] = 2
+	invalid_host_pair["host_transport"].push(
+		LanProtocol.SERVER_ID, LanProtocol.KIND_MATCH_START, invalid_host)
+	_check(invalid_host_pair["started_client"].is_empty()
+		and not invalid_host_pair["errors_client"].is_empty()
+		and str(invalid_host_pair["errors_client"][0]).contains("Deck"),
+		"le client valide aussi le deck de l'hôte avant de quitter le salon")
+
 
 func _test_peer_left() -> void:
 	var pair := _pair()

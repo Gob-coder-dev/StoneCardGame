@@ -14,6 +14,7 @@ const CombatResolverModel := preload("res://scripts/engine/CombatResolver.gd")
 const CardDragController := preload("res://scripts/ui/CardDragController.gd")
 const CampaignDriver := preload("res://scripts/ui/match/CampaignMatchDriver.gd")
 const LanDriver := preload("res://scripts/ui/match/LanMatchDriver.gd")
+const Routes := preload("res://scripts/ui/GameRoutes.gd")
 
 @onready var turn_manager: TurnManager = $TurnManager
 @onready var board_view: BoardView = $Root/BoardArea/BoardView
@@ -79,11 +80,11 @@ func _on_start_failed() -> void:
 
 
 func _return_to_cards() -> void:
-	get_tree().change_scene_to_file("res://scenes/menus/CollectionScreen.tscn")
+	Routes.go(get_tree(), Routes.COLLECTION)
 
 
 func _return_to_pvp_lobby() -> void:
-	get_tree().change_scene_to_file("res://scenes/menus/PvpLobby.tscn")
+	Routes.go(get_tree(), Routes.PVP_LOBBY)
 
 
 func _connect_signals() -> void:
@@ -207,11 +208,10 @@ func _on_turn_ended(score_human: int, score_ai: int) -> void:
 func _on_game_over(winner: int, score_human: int, score_ai: int) -> void:
 	hud.set_game_over()
 	if _driver.records_campaign_stats:
-		BattleContext.record_result(winner, score_human, score_ai)
-		PlayerData.record_game(BattleContext.selected_npc_id, winner, score_human, score_ai,
-			_local_captures)
+		BattleContext.prepare_result(winner, score_human, score_ai, _local_captures)
+		BattleContext.persist_result()
 		await get_tree().create_timer(1.5).timeout
-		get_tree().change_scene_to_file("res://scenes/menus/Result.tscn")
+		Routes.go(get_tree(), Routes.CAMPAIGN_RESULT)
 		return
 	_driver.on_game_over(winner, score_human, score_ai)
 
@@ -239,7 +239,7 @@ func _on_match_finished(winner: int, score_one: int, score_two: int) -> void:
 	## Le verdict, le score et la revanche appartiennent à l'écran de résultat :
 	## la session réseau reste ouverte jusqu'à ce qu'il soit quitté.
 	_finished_pvp = true
-	get_tree().change_scene_to_file("res://scenes/menus/PvpResult.tscn")
+	Routes.go(get_tree(), Routes.PVP_RESULT)
 
 
 func _on_match_aborted(message: String) -> void:
@@ -248,7 +248,7 @@ func _on_match_aborted(message: String) -> void:
 	_leaving = true
 	PvpMatchContext.clear()
 	LanSession.leave_with_notice(message)
-	get_tree().change_scene_to_file("res://scenes/menus/PvpLobby.tscn")
+	Routes.go(get_tree(), Routes.PVP_LOBBY)
 
 
 func _exit_tree() -> void:

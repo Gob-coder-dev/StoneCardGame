@@ -2,6 +2,8 @@
 class_name BottomNav
 extends PanelContainer
 
+const Routes := preload("res://scripts/ui/GameRoutes.gd")
+
 enum Tab { CARDS, PLAY, RULES }
 
 @export var current_tab: Tab = Tab.PLAY
@@ -13,9 +15,9 @@ enum Tab { CARDS, PLAY, RULES }
 ]
 
 const SCENES: Array[String] = [
-	"res://scenes/menus/CollectionScreen.tscn",
-	"res://scenes/menus/MainMenu.tscn",
-	"res://scenes/menus/HowToPlay.tscn"
+	Routes.COLLECTION,
+	Routes.MAIN_MENU,
+	Routes.HOW_TO_PLAY,
 ]
 
 const ICONS: Array[Texture2D] = [preload("res://assets/ui/nav-decks.svg"),
@@ -70,4 +72,4 @@ func _apply_tab_style(button: Button, selected: bool) -> void:
 func _on_tab_pressed(index: int) -> void:
 	if index == current_tab:
 		return
-	get_tree().change_scene_to_file(SCENES[index])
+	Routes.go(get_tree(), SCENES[index])

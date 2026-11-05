@@ -15,6 +15,13 @@ var forced_first_player: int = 0
 var last_winner: int = 0
 var last_score_human: int = 0
 var last_score_ai: int = 0
+var last_captures_human: int = 0
+var last_result_npc_id: String = ""
+## Une victoire ne débloque la suite que lorsque le profil a réellement été
+## écrit. L'erreur reste disponible sur l'écran de résultat pour une nouvelle
+## tentative, sans compter deux fois la partie.
+var last_result_saved: bool = true
+var last_save_error: Error = OK
 
 
 ## Mémorise le chemin choisi avant même qu'un adversaire ne soit généré.
@@ -57,7 +64,34 @@ func current_opponent() -> Dictionary:
 	return StoneLoader.get_npc(selected_npc_id)
 
 
+## Enregistre un résultat déjà persistant (fixtures, import ou ancien appel).
+## Le plateau utilise `prepare_result()` puis `persist_result()`.
 func record_result(winner: int, human: int, ai: int) -> void:
 	last_winner = winner
 	last_score_human = human
 	last_score_ai = ai
+	last_captures_human = 0
+	last_result_npc_id = selected_npc_id
+	last_result_saved = true
+	last_save_error = OK
+
+
+func prepare_result(winner: int, human: int, ai: int, captures_human: int) -> void:
+	last_winner = winner
+	last_score_human = human
+	last_score_ai = ai
+	last_captures_human = captures_human
+	last_result_npc_id = selected_npc_id
+	last_result_saved = false
+	last_save_error = OK
+
+
+## Idempotent après succès. En cas d'échec, PlayerData restaure lui-même les
+## statistiques précédentes : rappeler cette méthode ne crée donc aucun doublon.
+func persist_result() -> Error:
+	if last_result_saved:
+		return OK
+	last_save_error = PlayerData.record_game(last_result_npc_id, last_winner,
+		last_score_human, last_score_ai, last_captures_human)
+	last_result_saved = last_save_error == OK
+	return last_save_error

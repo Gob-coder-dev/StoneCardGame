@@ -1,6 +1,8 @@
 ## Règles et légendes visuelles partageant les pictogrammes des cartes.
 extends Control
 
+const Routes := preload("res://scripts/ui/GameRoutes.gd")
+
 const Badge := preload("res://scripts/ui/PowerBadge.gd")
 const Effects := preload("res://scripts/domain/StoneEffects.gd")
 
@@ -69,7 +71,7 @@ func _notification(what: int) -> void:
 
 
 func _go_back() -> void:
-	get_tree().change_scene_to_file("res://scenes/menus/MainMenu.tscn")
+	Routes.go(get_tree(), Routes.MAIN_MENU)
 
 
 ## Valeurs lues dans les règles du code, pour que les textes ne s'en écartent pas.

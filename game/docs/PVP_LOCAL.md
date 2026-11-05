@@ -168,6 +168,9 @@ L'intention ne contient **pas** de séquence : seul l'hôte la numérote.
 
 Une commande acceptée dont la séquence ne suit pas exactement l'état local est
 traitée comme une désynchronisation : le client s'arrête au lieu de diverger.
+Une attente de confirmation de tour est bornée à 30 secondes. Le même délai
+s'applique aux accords COMMENCER et REVANCHE : un pair toujours connecté mais
+qui ne poursuit plus le protocole ne peut pas bloquer l'autre indéfiniment.
 
 ## Autorité de l'hôte
 
@@ -256,13 +259,10 @@ demandent ce travail.
 | `tests/pvp/LanMatchChecks.gd` | coups hôte et client, hors tour, coordonnées, carte absente, mauvais match, doublon, séquence sautée, confirmations, désynchronisation, déconnexions, résultat, revanche négociée, déterminisme, statistiques intactes |
 | `tests/support/FakeLanTransport.gd` | transport mémoire : aucun socket, aucun Wi-Fi |
 
-Les suites sont enregistrées dans `tests/run_god_system_checks.gd`. Dernières
-mesures réelles :
-
-```text
-GOD_SYSTEM_CHECKS: 716 passed, 0 failed, 0 Godot errors
-TACTILE : 86 vérifications, 0 échec(s), 0 erreur(s) Godot.
-```
+Les suites sont enregistrées dans `tests/run_god_system_checks.gd`. Leur nombre
+de vérifications n'est pas figé dans ce document : la sortie des lanceurs et
+leur code de retour font foi. Les deux commandes doivent terminer avec le code
+`0`, sans échec ni erreur Godot.
 
 ## Dépannage
 

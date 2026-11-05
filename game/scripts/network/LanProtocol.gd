@@ -37,6 +37,10 @@ const MAX_SCORE: int = 16
 const MAX_MESSAGE_CHARS: int = 4096
 const FINGERPRINT_LENGTH: int = 64
 const BEACON_MARKER: String = "samstone"
+## Délais applicatifs : ENet garantit la livraison, mais pas qu'un pair vivant
+## continue le protocole. Ces bornes empêchent une attente infinie.
+const START_AGREEMENT_TIMEOUT_SECONDS: float = 30.0
+const TURN_CONFIRM_TIMEOUT_SECONDS: float = 30.0
 
 ## Sentinelle de lecture entière : aucune valeur légitime ne l'utilise.
 const INVALID_INT: int = -2147483648

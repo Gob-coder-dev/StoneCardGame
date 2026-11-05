@@ -15,7 +15,7 @@ mais se lance également sur ordinateur avec Godot.
 
 | Moteur | Version du projet | Cible principale |
 | --- | --- | --- |
-| Godot 4.7 | 0.7.0 | Android, portrait 9:16 |
+| Godot 4.7 | 0.8.0 | Android, portrait 9:16 |
 
 ## Aperçu du jeu
 
@@ -243,16 +243,10 @@ godot --headless --fixed-fps 60 --path . res://tests/TouchInputChecks.tscn
 
 Cette suite injecte de vrais événements tactiles et vérifie notamment le
 défilement, les appuis, l'inertie, le multitouch, la fermeture des panneaux
-modaux et la pose de cartes. Au dernier contrôle, les suites terminent
-respectivement par :
-
-```text
-GOD_SYSTEM_CHECKS: 716 passed, 0 failed, 0 Godot errors
-TACTILE : 86 vérifications, 0 échec(s), 0 erreur(s) Godot.
-```
-
-Toutes les suites passent, y compris les migrations de cartes, les coûts
-Horizon et les animations Fortune.
+modaux et la pose de cartes. Le résumé imprimé par chaque lanceur est la source
+de vérité : le nombre de vérifications évolue avec les fonctionnalités et n'est
+volontairement pas figé ici. Une livraison est valide uniquement lorsque les
+deux commandes terminent avec le code `0`, sans échec ni erreur Godot.
 
 Les tests automatisés ne remplacent pas une vérification visuelle sur téléphone
 après export : les animations, le confort des gestes et la lisibilité doivent

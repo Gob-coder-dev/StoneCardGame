@@ -22,6 +22,7 @@ func run() -> void:
 	_test_confirmations()
 	_test_desynchronisation()
 	_test_disconnect()
+	_test_liveness_timeout()
 	_test_results()
 	_test_start_handshake()
 	_test_rematch()
@@ -388,6 +389,24 @@ func _test_disconnect() -> void:
 	other["host_transport"].peer_left.emit(2)
 	_check((other["host_aborted"] as Array).size() == 1,
 		"l'hôte est averti quand le client quitte")
+
+
+func _test_liveness_timeout() -> void:
+	var transport := Fake.new()
+	transport.local_id = LanProtocol.SERVER_ID
+	var coordinator := Coordinator.new()
+	coordinator.attach(transport, MATCH_ID, true, GameState.PLAYER_ONE, 2)
+	var driver: LanMatchDriver = Driver.new()
+	driver._coordinator = coordinator
+	coordinator.aborted.connect(driver._on_aborted)
+	var messages: Array = []
+	driver.aborted.connect(func(message: String): messages.append(message))
+	driver._on_confirmation_timeout()
+	_check(messages.size() == 1 and str(messages[0]).contains("confirme")
+		and LanProtocol.TURN_CONFIRM_TIMEOUT_SECONDS > 0.0
+		and LanProtocol.START_AGREEMENT_TIMEOUT_SECONDS > 0.0,
+		"un pair silencieux interrompt le match au lieu de bloquer le tour indéfiniment")
+	driver.shutdown()
 
 
 func _test_results() -> void:

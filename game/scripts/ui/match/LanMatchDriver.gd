@@ -14,6 +14,7 @@ var _coordinator: LanMatchCoordinator = null
 var _link: LanSessionLink = null
 var _last_sequence := 0
 var _leaving := false
+var _confirmation_timer: Timer = null
 
 
 func start() -> bool:
@@ -48,6 +49,11 @@ func start() -> bool:
 	_coordinator.aborted.connect(_on_aborted)
 	_coordinator.match_finished.connect(_on_match_finished)
 	_coordinator.ready_changed.connect(_on_ready_changed)
+	_confirmation_timer = Timer.new()
+	_confirmation_timer.name = "TurnConfirmationTimeout"
+	_confirmation_timer.one_shot = true
+	_confirmation_timer.timeout.connect(_on_confirmation_timeout)
+	add_child(_confirmation_timer)
 
 	LanSession.enter_match()
 	turn_manager.start_game(
@@ -112,6 +118,8 @@ func on_game_over(winner: int, score_one: int, score_two: int) -> void:
 
 
 func shutdown() -> void:
+	if _confirmation_timer != null:
+		_confirmation_timer.stop()
 	if _coordinator != null:
 		_coordinator.close()
 	if _link != null:
@@ -123,6 +131,8 @@ func shutdown() -> void:
 ## L'hôte confirme le tour après avoir comparé les deux états : c'est le seul
 ## moment où le joueur suivant peut toucher le plateau.
 func _on_ready_changed(_can_submit: bool) -> void:
+	if _can_submit and _confirmation_timer != null:
+		_confirmation_timer.stop()
 	interaction_changed.emit()
 
 func _on_command_accepted(command: Dictionary) -> void:
@@ -131,12 +141,20 @@ func _on_command_accepted(command: Dictionary) -> void:
 	var sequence := int(command.get("sequence", 0))
 	if sequence <= _last_sequence:
 		return
+	if _confirmation_timer != null:
+		_confirmation_timer.start(LanProtocol.TURN_CONFIRM_TIMEOUT_SECONDS)
 	if not turn_manager.play(int(command["player"]), int(command["row"]),
 			int(command["col"]), str(command["stone_id"])):
 		_leaving = true
 		aborted.emit("Désynchronisation : le moteur local a refusé un coup validé.")
 		return
 	_last_sequence = sequence
+
+
+func _on_confirmation_timeout() -> void:
+	if _leaving or _coordinator == null:
+		return
+	_coordinator.abort("L'adversaire ne confirme plus les tours. La partie est arrêtée.")
 
 
 func _on_desync(message: String) -> void:

@@ -9,9 +9,7 @@ extends Control
 
 const SessionLink := preload("res://scripts/network/LanSessionLink.gd")
 const CoordinatorModel := preload("res://scripts/network/LanMatchCoordinator.gd")
-
-const LOBBY_SCENE: String = "res://scenes/menus/PvpLobby.tscn"
-const PREBATTLE_SCENE: String = "res://scenes/menus/PreBattle.tscn"
+const Routes := preload("res://scripts/ui/GameRoutes.gd")
 
 @onready var result_label: Label = $VBoxCenter/ResultLabel
 @onready var detail_label: Label = $VBoxCenter/DetailLabel
@@ -25,6 +23,7 @@ var _link: LanSessionLink = null
 var _coordinator: LanMatchCoordinator = null
 var _leaving := false
 var _rematch_local := false
+var _start_timeout: Timer = null
 
 
 func _ready() -> void:
@@ -32,6 +31,11 @@ func _ready() -> void:
 	quit_button.pressed.connect(_quit)
 	_show_result()
 	_start_rematch_link()
+	_start_timeout = Timer.new()
+	_start_timeout.name = "RematchAgreementTimeout"
+	_start_timeout.one_shot = true
+	_start_timeout.timeout.connect(_on_rematch_timeout)
+	add_child(_start_timeout)
 
 
 ## Le score du joueur local reste toujours à gauche, comme sur le plateau, et
@@ -126,6 +130,8 @@ func _press_rematch() -> void:
 	_rematch_local = true
 	rematch_button.disabled = true
 	status_label.text = "En attente de l'adversaire…"
+	if _start_timeout != null:
+		_start_timeout.start(LanProtocol.START_AGREEMENT_TIMEOUT_SECONDS)
 
 
 ## L'adversaire a demandé la revanche : il suffit de la demander à son tour.
@@ -142,13 +148,15 @@ func _on_match_ready(config: Dictionary) -> void:
 	if _leaving:
 		return
 	_leaving = true
+	if _start_timeout != null:
+		_start_timeout.stop()
 	## Les profils sont lus avant `begin`, qui remet le contexte à zéro.
 	var local_profile := PvpMatchContext.local_profile()
 	var remote_profile := PvpMatchContext.remote_profile()
 	PvpMatchContext.begin(config, PvpMatchContext.local_side, LanSession.local_peer_id(),
 		local_profile, remote_profile)
 	_detach()
-	get_tree().change_scene_to_file(PREBATTLE_SCENE)
+	Routes.go(get_tree(), Routes.PRE_BATTLE)
 
 
 func _on_aborted(message: String) -> void:
@@ -156,6 +164,14 @@ func _on_aborted(message: String) -> void:
 		return
 	status_label.text = message
 	rematch_button.disabled = true
+	if _start_timeout != null:
+		_start_timeout.stop()
+
+
+func _on_rematch_timeout() -> void:
+	if _leaving or _coordinator == null:
+		return
+	_coordinator.abort("L'adversaire n'a pas confirmé la revanche.")
 
 
 ## ─── Sortie ─────────────────────────────────────────────────────────────────
@@ -167,7 +183,7 @@ func _quit() -> void:
 	_detach()
 	PvpMatchContext.clear()
 	LanSession.leave_with_notice("Partie PVP quittée. Créez ou rejoignez un salon.")
-	get_tree().change_scene_to_file(LOBBY_SCENE)
+	Routes.go(get_tree(), Routes.PVP_LOBBY)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -190,6 +206,8 @@ func _exit_tree() -> void:
 
 
 func _detach() -> void:
+	if _start_timeout != null:
+		_start_timeout.stop()
 	if _coordinator != null:
 		_coordinator.close()
 		_coordinator = null

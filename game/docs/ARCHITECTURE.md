@@ -34,12 +34,17 @@ la sienne.
 | `scripts/network/LanSession.gd` (autoload) | cycle ENet, états, signaux, RPC sur `/root/LanSession`, reset idempotent |
 | `scripts/network/LanLobbyCoordinator.gd` | poignée de main, camps, PRÊT, configuration autoritaire du match |
 | `scripts/network/LanMatchCoordinator.gd` | commandes, séquences, accusés, empreintes et désynchronisation |
+| `scripts/network/LanAddressResolver.gd` | normalisation et classement purs des adresses locales |
 | `scripts/data/PvpMatchContext.gd` (autoload) | données transitoires du match, sans écriture de profil |
-| `scripts/ui/pvp/PvpLobbyController.gd` | salon affiché ; ne contient ni transport ni règle |
+| `scripts/ui/pvp/PvpLobbyFlow.gd` | cycle découverte, session et coordinateur du salon, sans dépendre de la scène |
+| `scripts/ui/pvp/PvpLobbyController.gd` | présentation du salon, gestes et transition vers l'avant-combat |
 | `scripts/network/LanTransportLink.gd` | façade de transport, remplacée par `FakeLanTransport` dans les tests |
 
 Le détail du protocole, des ports, des permissions et des limites est dans
 [PVP_LOCAL.md](PVP_LOCAL.md).
+Les accords de lancement et de revanche ainsi que la confirmation d'un tour
+sont bornés à 30 secondes. Ces délais applicatifs complètent la livraison fiable
+d'ENet lorsqu'un pair reste connecté mais cesse de poursuivre le protocole.
 
 ## Données
 
@@ -58,7 +63,7 @@ Le détail du protocole, des ports, des permissions et des limites est dans
 | `DeckCatalogueMigration` | `requires_conversion`, `convert` | Remplace les anciennes cartes par des formes compatibles, distinctes et dans le budget |
 | `CardArtCache` | `activate_god`, `texture`, `progress_for_god` | Préchauffe les illustrations utiles hors du thread principal et borne les références conservées |
 | `PlayerSaveStorage` | `write`, `read` | Écriture sûre du profil sur le disque |
-| `BattleContext` | `select_opponent`, `current_opponent`, `navigation_source_id`, `record_result` | Adversaire sélectionné, premier joueur et dernier résultat |
+| `BattleContext` | `select_opponent`, `current_opponent`, `prepare_result`, `persist_result` | Adversaire sélectionné, premier joueur, résultat et état de sa persistance |
 | `StoneCostRules` | `cost` | Règle du coût d'une carte |
 | `StoneEffects` | — | Identifiants et valeurs des pouvoirs (corrosion, renfort et plafond d'Essaim) |
 | `StoneEvolutionRules` | `max_level`, `preview_level`, `is_valid_level` | Limites par rareté et saturation des seuls aperçus |
@@ -92,6 +97,10 @@ et son dernier numéro, sans filtrer le deck précédent. Un deck incomplet est
 valide pour la sauvegarde, mais pas pour le combat. `MainMenu` et
 `BoardController` lisent `get_active_deck()` ; le moteur reçoit uniquement la
 composition sélectionnée et ne connaît pas les emplacements sauvegardés.
+Le résultat d'une campagne suit la même garantie : `BattleContext` prépare les
+valeurs puis ne marque la progression comme enregistrée qu'après le succès de
+`PlayerData.record_game()`. En cas d'erreur disque, le résultat affiche la cause,
+propose un nouvel essai et n'ouvre pas prématurément le niveau suivant.
 
 `get_stone()` renvoie une copie modifiable. Les questions répétées pendant les
 simulations (`has_stone`, `has_effect`, `stone_cost`) lisent l'index du catalogue
@@ -369,6 +378,10 @@ autour du portrait. Voir
 
 ## Rencontres
 
+`GameRoutes` centralise les chemins des scènes de la boucle principale et
+diagnostique un changement impossible. Les contrôleurs conservent la décision
+de navigation propre à leur écran, mais ne recopient plus les chemins `res://`.
+
 `EncounterSelectController` affiche une case par dieu, plus Pr.Stone, puis ouvre
 le chemin de la source choisie. `EncounterPathController` présente les quinze
 niveaux de cette source — trois paliers de cartes et cinq difficultés — et
@@ -403,7 +416,8 @@ source d'un adversaire généré. Depuis le résultat, `Niveau suivant` prépare
 directement le rond suivant du même chemin, `Rejouer` relance le même duel,
 `Choisir un autre niveau` rouvre le serpentin, `Choisir un autre dieu` revient
 à la grille et `Accueil` au menu principal ; le bouton du suivant disparaît
-après une défaite ou au dernier rond. Le bot sans dieu conserve un `god_id` vide et est présenté explicitement
+après une défaite, au dernier rond ou tant que le résultat n'a pas été écrit sur
+le disque. Le bot sans dieu conserve un `god_id` vide et est présenté explicitement
 comme tel, sans ajouter de dieu jouable à `gods.json`. Le profil affiche un
 chemin par dieu et pour Pr.Stone avec le nombre de niveaux terminés sur quinze ;
 ce décompte suit la même règle linéaire que le serpentin, pas les anciennes

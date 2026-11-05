@@ -674,6 +674,17 @@ func _test_result_actions() -> void:
 	_check(page.next_btn.visible
 		and str(page._next_level().get("opponent_id", "")) == str(levels[1]["opponent_id"]),
 		"après une victoire, le résultat prépare le niveau suivant du même chemin")
+	BattleContext.last_result_saved = false
+	BattleContext.last_save_error = ERR_FILE_CANT_WRITE
+	page._refresh_next_button()
+	page._refresh_save_status()
+	_check(not page.next_btn.visible and page.save_status.visible
+		and page.retry_save_btn.visible and page.save_status.text.contains("enregistrée"),
+		"une sauvegarde échouée bloque le niveau suivant et propose un nouvel essai")
+	BattleContext.last_result_saved = true
+	BattleContext.last_save_error = OK
+	page._refresh_next_button()
+	page._refresh_save_status()
 	var winner_color := Color(str(StoneLoader.get_god(PlayerData.player_god_id)["color"]))
 	_check(page.background.room == MenuBackground.Room.AFTERMATH
 		and page.background.neon_primary_color == winner_color
