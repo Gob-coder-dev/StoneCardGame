@@ -126,6 +126,17 @@ func _request(path: String, prioritize: bool) -> void:
 	if cached != null:
 		_store(path, cached)
 		return
+	# Le renderer factice de `--headless` ne possède pas de stockage de
+	# textures thread-safe. Un chargement direct rend les tests déterministes ;
+	# les exports Android et desktop gardent la file asynchrone ci-dessous.
+	if DisplayServer.get_name() == "headless":
+		var loaded := ResourceLoader.load(path, "Texture2D") as Texture2D
+		if loaded != null:
+			_store(path, loaded)
+		else:
+			_failed[path] = true
+			_emit_warmup_progress()
+		return
 	if prioritize:
 		_queue.push_front(path)
 	else:
