@@ -15,6 +15,16 @@ const COIN_FLIP_DISCOUNT := 1.0
 ## Ramené de 1,5 à 1,25 après le tournoi d'équilibrage des dieux (Horizon à 41 %).
 const LONG_BLADE_COST := 1.25
 
+## Le système ne produit que des quarts de point. Les comparaisons de budget
+## passent par cet entier : deux coûts égaux restent exactement égaux, sans
+## jamais comparer deux flottants.
+const COST_SCALE: int = 4
+
+
+static func cost_quarters(stone: Dictionary) -> int:
+	return int(roundf(cost(stone) * float(COST_SCALE)))
+
+
 static func cost(stone: Dictionary) -> float:
 	if stone.is_empty():
 		return 0.0

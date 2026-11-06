@@ -26,6 +26,19 @@ static func deck_cost(stone_ids: Array) -> float:
 	return total
 
 
+## Total exact en quarts de point, pour les générateurs et les comparaisons
+## d'égalité. Aucun float n'entre dans cette somme.
+static func deck_quarters(stone_ids: Array) -> int:
+	var total := 0
+	for stone_id in stone_ids:
+		total += StoneLoader.stone_cost_quarters(str(stone_id))
+	return total
+
+
+static func budget_quarters() -> int:
+	return DECK_BUDGET * StoneCostRules.COST_SCALE
+
+
 ## Nettoie un deck chargé depuis une sauvegarde ancienne ou corrompue.
 ## L'ordre est conservé et le résultat peut rester incomplet.
 static func sanitize_deck(stone_ids: Array, god_id: String = "") -> Array:

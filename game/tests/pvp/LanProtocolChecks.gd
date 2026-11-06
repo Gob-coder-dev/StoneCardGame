@@ -10,6 +10,7 @@ func run() -> void:
 	_test_hello()
 	_test_lobby_state()
 	_test_match_start()
+	_test_series_messages()
 	_test_moves()
 	_test_turn_proofs()
 	_test_end_and_desync()
@@ -144,6 +145,139 @@ func _test_match_start() -> void:
 	empty_seed["seed"] = "graine"
 	_check(not LanProtocol.validate(LanProtocol.KIND_MATCH_START, empty_seed)["ok"],
 		"une graine non entière est refusée")
+
+
+func _test_series_messages() -> void:
+	var rules := {"mode": "draft", "series": "ft2", "power_tier": 3, "rules_revision": 4}
+	_check(LanProtocol.validate(LanProtocol.KIND_RULES_UPDATE, rules)["ok"],
+		"protocole : une mise à jour de règles complète est acceptée")
+	var bad_rules := rules.duplicate()
+	bad_rules["mode"] = "inconnu"
+	_check(not LanProtocol.validate(LanProtocol.KIND_RULES_UPDATE, bad_rules)["ok"],
+		"protocole : un mode de règles inconnu est refusé")
+	_check(LanProtocol.validate(LanProtocol.KIND_RULES_LOCK, {"rules_revision": 4})["ok"],
+		"protocole : le verrouillage porte la révision")
+	_check(LanProtocol.validate(LanProtocol.KIND_READY,
+		{"ready": true, "rules_revision": 4})["ok"],
+		"protocole : le PRÊT peut référencer la révision des règles")
+
+	var ids := {
+		"series_id": "series-1", "preparation_id": "prep-1",
+		"rules_revision": 4, "round_index": 1,
+	}
+	var prepare := ids.duplicate()
+	prepare.merge({"mode": "draft", "series": "ft2", "power_tier": 3,
+		"deadline_unix_ms": 123456})
+	_check(LanProtocol.validate(LanProtocol.KIND_PREPARE_START, prepare)["ok"],
+		"protocole : le début de préparation est validé")
+	var no_deadline := prepare.duplicate()
+	no_deadline.erase("deadline_unix_ms")
+	_check(not LanProtocol.validate(LanProtocol.KIND_PREPARE_START, no_deadline)["ok"],
+		"protocole : une préparation sans échéance est refusée")
+
+	var loadout := ids.duplicate()
+	loadout.merge({"god_id": "veskar", "deck": ProfileFixture.DECK.duplicate(),
+		"total_quarters": DeckRules.deck_quarters(ProfileFixture.DECK)})
+	_check(LanProtocol.validate(LanProtocol.KIND_LOADOUT_REVEAL, loadout)["ok"],
+		"protocole : un loadout local complet est accepté")
+	var too_expensive := loadout.duplicate()
+	too_expensive["total_quarters"] = DeckRules.DECK_BUDGET * StoneCostRules.COST_SCALE + 1
+	_check(not LanProtocol.validate(LanProtocol.KIND_LOADOUT_REVEAL, too_expensive)["ok"],
+		"protocole : un total de loadout hors budget est refusé")
+	var ready_loadout := ids.duplicate()
+	ready_loadout.merge({"side": GameState.PLAYER_ONE, "ready": true})
+	_check(LanProtocol.validate(LanProtocol.KIND_LOADOUT_READY, ready_loadout)["ok"],
+		"protocole : la confirmation de loadout est typée")
+	_check(LanProtocol.validate(LanProtocol.KIND_LOADOUT_CONFIRM, ids)["ok"],
+		"protocole : la confirmation ne porte que les identifiants")
+
+	var offers := ids.duplicate()
+	offers.merge({
+		"step_one": 0, "step_two": 0, "complete_one": false, "complete_two": false,
+		"viewer_side": GameState.PLAYER_ONE, "offers_step": 0,
+		"offers_one": [ProfileFixture.DECK[0], ProfileFixture.DECK[1]],
+		"offers_two": [ProfileFixture.DECK[2], ProfileFixture.DECK[3]],
+		"deadline_unix_ms": 123456,
+	})
+	_check(LanProtocol.validate(LanProtocol.KIND_DRAFT_OFFERS, offers)["ok"],
+		"protocole : quatre propositions projetées sont acceptées")
+	var three_offers := offers.duplicate(true)
+	three_offers["offers_one"] = [ProfileFixture.DECK[0], ProfileFixture.DECK[1], ProfileFixture.DECK[2]]
+	_check(not LanProtocol.validate(LanProtocol.KIND_DRAFT_OFFERS, three_offers)["ok"],
+		"protocole : trois propositions dans une paire sont refusées")
+	var wrong_projection := offers.duplicate(true)
+	wrong_projection["offers_step"] = 1
+	_check(not LanProtocol.validate(LanProtocol.KIND_DRAFT_OFFERS, wrong_projection)["ok"],
+		"protocole : une projection sur une autre étape que le destinataire est refusée")
+	var wrong_viewer := offers.duplicate(true)
+	wrong_viewer["viewer_side"] = 9
+	_check(not LanProtocol.validate(LanProtocol.KIND_DRAFT_OFFERS, wrong_viewer)["ok"],
+		"protocole : le destinataire des offres doit être un camp valide")
+	var choice := ids.duplicate()
+	choice.merge({"own_step": 0, "stone_id": ProfileFixture.DECK[0]})
+	_check(LanProtocol.validate(LanProtocol.KIND_DRAFT_CHOICE, choice)["ok"],
+		"protocole : un choix de draft valide est accepté")
+	var duplicate_choice := choice.duplicate()
+	duplicate_choice["extra"] = true
+	_check(not LanProtocol.validate(LanProtocol.KIND_DRAFT_CHOICE, duplicate_choice)["ok"],
+		"protocole : un champ inconnu dans le choix est refusé")
+	var progress := ids.duplicate()
+	progress.merge({"own_step": 1, "own_deck": [ProfileFixture.DECK[0]],
+		"own_complete": false})
+	_check(LanProtocol.validate(LanProtocol.KIND_DRAFT_PROGRESS, progress)["ok"],
+		"protocole : l'accusé privé de deck est validé")
+	var bad_progress := progress.duplicate(true)
+	bad_progress["own_deck"] = []
+	_check(not LanProtocol.validate(LanProtocol.KIND_DRAFT_PROGRESS, bad_progress)["ok"],
+		"protocole : un deck local incohérent avec l'étape est refusé")
+	_check(LanProtocol.VERSION == 5,
+		"le protocole de draft projeté par destinataire est en version 5")
+	_check(LanProtocol.validate(LanProtocol.KIND_PVP_PRESENCE,
+		{"presence": LanPvpPresence.LOBBY})["ok"],
+		"protocole : une présence de salon est valide")
+	_check(not LanProtocol.validate(LanProtocol.KIND_PVP_PRESENCE,
+		{"presence": "inconnue"})["ok"],
+		"protocole : une présence inconnue est refusée")
+
+	var result := ids.duplicate()
+	result.merge({
+		"winner": GameState.PLAYER_ONE, "score_one": 10, "score_two": 4,
+		"wins_one": 1, "wins_two": 0, "ties": 0, "finished": false,
+		"series_winner": GameState.PLAYER_NONE, "next_round_index": 2,
+	})
+	_check(LanProtocol.validate(LanProtocol.KIND_ROUND_RESULT, result)["ok"],
+		"protocole : un résultat de manche complet est accepté")
+	var bad_result := result.duplicate()
+	bad_result["winner"] = 9
+	_check(not LanProtocol.validate(LanProtocol.KIND_ROUND_RESULT, bad_result)["ok"],
+		"protocole : un vainqueur de manche inconnu est refusé")
+
+	var series := {
+		"series_id": "series-1", "mode": "draft", "series": "ft2",
+		"rules_revision": 4, "power_tier": 3, "wins_one": 1, "wins_two": 0,
+		"wins_needed": 2, "max_rounds": 3, "round_index": 2, "ties": 0,
+		"finished": false, "winner": GameState.PLAYER_NONE, "seed": 42,
+		"keeps_loadouts": false,
+	}
+	_check(LanProtocol.validate(LanProtocol.KIND_SERIES_STATE, series)["ok"],
+		"protocole : l'état de série est validé")
+	var bad_series := series.duplicate()
+	bad_series["wins_needed"] = 9
+	_check(not LanProtocol.validate(LanProtocol.KIND_SERIES_STATE, bad_series)["ok"],
+		"protocole : un objectif de série impossible est refusé")
+
+	var round_config := _config().duplicate(true)
+	round_config.merge({
+		"series_id": "series-1", "rules_revision": 4, "preparation_id": "prep-1",
+		"round_index": 1, "mode": "draft", "series": "ft2", "power_tier": 3,
+	})
+	_check(LanProtocol.validate(LanProtocol.KIND_ROUND_START, round_config)["ok"],
+		"protocole : un lancement de manche étendu est accepté")
+	var legacy_round := _config().duplicate(true)
+	_check(not LanProtocol.validate(LanProtocol.KIND_ROUND_START, legacy_round)["ok"],
+		"protocole : un lancement de manche sans identifiants de série est refusé")
+	_check(LanProtocol.validate(LanProtocol.KIND_MATCH_START, legacy_round)["ok"],
+		"protocole : l'ancien match_start reste accepté pour le mode classique")
 
 
 func _test_start_request() -> void:

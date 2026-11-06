@@ -25,6 +25,85 @@ téléphones. Le hasard du combat vient de `GameState.random_seed` et
 `random_state` : l'hôte du PVP impose la graine, la campagne continue de tirer
 la sienne.
 
+## Modes PVP, séries et paliers
+
+Le PVP local ne se limite plus au deck du profil. Le salon choisit quatre
+préparations et trois formats de série, appliqués par l'hôte :
+
+| Mode | Loadout de la manche |
+| --- | --- |
+| `Classique` | dieu et deck actifs de chaque profil |
+| `Aléatoire` | deux dieux et deux decks générés, au même total exact |
+| `Miroir` | un seul loadout généré, dupliqué en profondeur pour les deux camps |
+| `Sélection` | draft parallèle de 60 s : deux offres par camp, huit choix indépendants, deck local actualisé |
+
+`FT1`, `FT2` et `FT3` demandent respectivement 1, 2 ou 3 victoires. Une égalité
+ne marque aucun point et ouvre une nouvelle manche ; le nombre maximal de
+manches hors égalités reste 1, 3 ou 5. `GameModeRules` porte les modes et les
+paliers, `SeriesRules` les formats, et `PvpLobbyRules` les phases
+(`lobby_editing`, `rules_ready`, `preparing`, `loadout_reveal`,
+`loadout_ready`, `in_match`, `round_result`, `series_complete`), la révision
+monotone et l'invariant des deux PRÊT :
+modifier une option incrémente la révision et remet les deux joueurs à PAS PRÊT.
+
+`CardPowerTierRules` est la règle unique du palier pour Aléatoire, Miroir et
+Sélection. Le mode Classique l'ignore et valide directement le deck enregistré :
+`power_tier = form_level + rarity_offset` (commune 0, rare 1, épique 2,
+légendaire 3), avec un champ explicite `power_tier` prioritaire. Une limite N
+n'autorise que les cartes de palier effectif inférieur ou égal à N.
+`BotCardTierRules` reste un adaptateur des rencontres : ses planchers littéraux
+ne changent pas les decks de campagne.
+
+`LoadoutGenerator` construit les decks Aléatoire et Miroir avec des coûts en
+quarts de point et un solveur exact. En Aléatoire, il énumère d'abord les
+couples de dieux dont les totaux atteignables s'intersectent, choisit un total
+commun variable dans la moitié supérieure de cette intersection, puis résout
+les deux decks exactement à ce total. Le budget de 80 points reste une borne,
+pas une cible. En Miroir, le même choix de total précède la duplication.
+`DraftEngine` précalcule et vérifie un plan
+de huit paires par camp : les quatre cartes d'une position ont le même coût,
+les lignées restent uniques, les dieux et paliers sont compatibles et les deux
+decks finissent au même total. Chaque camp possède ses propres étapes et
+complétion (`step_one`/`step_two`, `complete_one`/`complete_two`) ; un joueur
+peut terminer avant l'autre. `SeriesState` et `SeriesEngine` sont partagés par
+le PVP et la campagne et ne touchent jamais `PlayerData` : ils ne conservent
+que le score, l'historique des manches et,
+pour Classique et Miroir, les loadouts figés.
+
+`GameModeRules` impose le palier minimal propre à chaque mode. Sélection commence
+au palier 2, car huit paires fixes garantissant huit lignées uniques exigent
+seize lignées par dieu, contre treize seulement dans le catalogue du palier 1.
+
+`LanSeriesCoordinator` relie ces règles au transport. L'hôte possède les
+graines, les offres, les choix validés, les loadouts et les scores ; le client
+n'envoie qu'un choix parmi ses offres et sa confirmation. La scène dédiée
+`PvpPreparation.tscn`, pilotée par `PvpPreparationController`, affiche en haut
+les deux offres adverses non interactives, au centre les deux offres locales et
+en bas le deck local `VOTRE DECK — X / 8`, actualisé après chaque choix accepté.
+Le deck final se présente en deux colonnes et quatre lignes et tient sans
+défilement sur les formats téléphone/tablette pris en charge. Le défilement
+reste seulement un garde-fou pour une fenêtre exceptionnellement petite.
+`PvpPreparationLayout` calcule les tailles de manière pure et
+`LoadoutCardGrid` réutilise ses cartes entre les actualisations.
+L'enchaînement des manches exige la demande des deux camps, puis deux nouvelles
+confirmations ; `PvpMatchContext` conserve le coordinateur de série et son lien
+réseau entre `PvpLobby`, `PvpPreparation`, `PreBattle`, `Board` et `PvpResult`.
+Il maintient deux espaces distincts : les snapshots immuables des profils du
+salon et les participants autoritaires de la manche. Le second peut recevoir un
+dieu ou un deck généré sans jamais écraser le premier.
+
+Le salon n'héberge aucune des préparations Aléatoire, Miroir et Sélection :
+après le double PRÊT, elles passent par `GameRoutes.PVP_PREPARATION`. Le
+Classique FT1 démarre directement. Le Classique FT2/FT3 envoie d'abord
+`prepare_start` puis `round_start` sans quitter le salon, pour que le client
+initialise les mêmes identifiants de série et de préparation avant la manche.
+Le résultat propose trois actions distinctes : REVANCHE ou PARTIE SUIVANTE /
+NOUVELLE SÉRIE selon le format, RETOUR AU SALON qui conserve le transport ENet
+et les profils sans reconstruire la session, et QUITTER qui ferme réellement le
+coordinateur et `LanSession`. RETOUR AU SALON est individuel : `LanPvpPresence`
+annonce `LOBBY` sans ordre de navigation ; l'autre appareil reste sur son écran
+et affiche `EN PARTIE` jusqu'à son propre retour.
+
 ## Réseau local
 
 | Fichier | Responsabilité |
@@ -32,12 +111,19 @@ la sienne.
 | `scripts/network/LanProtocol.gd` | version, types de messages, validation stricte et bornes ; aucun socket |
 | `scripts/network/LanDiscovery.gd` | beacon UDP, écoute, dédoublonnage et expiration ; aucune boucle bloquante |
 | `scripts/network/LanSession.gd` (autoload) | cycle ENet, états, signaux, RPC sur `/root/LanSession`, reset idempotent |
-| `scripts/network/LanLobbyCoordinator.gd` | poignée de main, camps, PRÊT, configuration autoritaire du match |
+| `scripts/network/LanLobbyCoordinator.gd` | poignée de main, camps, règles et révisions, PRÊT, configuration autoritaire du match |
+| `scripts/network/LanSeriesCoordinator.gd` | préparation de série, draft parallèle, loadouts, confirmations, score et manches |
+| `scripts/network/LanPvpPresence.gd` | présence persistante `LOBBY`/`PREPARATION`/`PRE_BATTLE`/`IN_MATCH`/`RESULT`, sans navigation distante |
 | `scripts/network/LanMatchCoordinator.gd` | commandes, séquences, accusés, empreintes et désynchronisation |
 | `scripts/network/LanAddressResolver.gd` | normalisation et classement purs des adresses locales |
-| `scripts/data/PvpMatchContext.gd` (autoload) | données transitoires du match, sans écriture de profil |
-| `scripts/ui/pvp/PvpLobbyFlow.gd` | cycle découverte, session et coordinateur du salon, sans dépendre de la scène |
-| `scripts/ui/pvp/PvpLobbyController.gd` | présentation du salon, gestes et transition vers l'avant-combat |
+| `scripts/application/pvp/PvpMatchContext.gd` | implémentation de l'état applicatif transitoire du match, sans écriture de profil ; l'AutoLoad historique `scripts/data/PvpMatchContext.gd` est une façade de migration sans logique |
+| `scripts/application/pvp/PvpLobbyFlow.gd` | cycle découverte, session et coordinateur du salon, sans dépendre de la scène |
+| `scripts/application/CampaignModeSession.gd` | préparation locale des modes, draft IA et séries de campagne |
+| `scripts/application/ModePreparationService.gd` | cas d'usage commun : loadouts Classique/Aléatoire/Miroir et création/résultat du draft |
+| `scripts/application/pvp/PvpLoadoutFactory.gd` | adaptation des loadouts génériques aux identifiants PVP |
+| `scripts/ui/pvp/PvpLobbyController.gd` | présentation du salon, règles hôte/client, gestes et transition vers la préparation ou l'avant-combat |
+| `scenes/menus/PvpPreparation.tscn` + `scripts/ui/pvp/PvpPreparationController.gd` | écran dédié de loadout et de draft ; orchestre le coordinateur sans porter ses règles |
+| `scripts/ui/pvp/LoadoutCardGrid.gd` | rendu réutilisable des cartes illustrées (deck local, offres locales, offres adverses) |
 | `scripts/network/LanTransportLink.gd` | façade de transport, remplacée par `FakeLanTransport` dans les tests |
 
 Le détail du protocole, des ports, des permissions et des limites est dans
@@ -55,7 +141,16 @@ d'ENet lorsqu'un pair reste connecté mais cesse de poursuivre le protocole.
 | `data/npcs.json` | — | Six adversaires historiques, leurs decks et profils d'IA |
 | `OpponentCatalog` | `build`, `build_neutral`, `deck_for`, `neutral_deck_for`, `levels_for`, `source_id_of`, `sources` | Génère les adversaires dieu ou neutre × palier × difficulté, leurs chemins ordonnés et les sept sources complètes |
 | `EncounterPath` | `states`, `current_index`, `next_level`, `completed_count` | États verrouillé, disponible et terminé d'un chemin, et successeur immédiat, sans interface ni sauvegarde |
-| `BotCardTierRules` | `effective_level` | Classe les cartes des bots selon le niveau de forme et le plancher de rareté, sans changer leur niveau de jeu |
+| `CardPowerTierRules` | `effective_tier`, `is_allowed`, `lineage_problems` | Règle unique du palier : formule rareté + niveau, exception explicite et validation des lignées |
+| `GameModeRules`, `SeriesRules` | normalisation, libellés, conservation | Modes/paliers et FT1/FT2/FT3 communs à la campagne et au PVP |
+| `PvpLobbyRules` | `apply_change`, `apply_ready`, `lock` | Phases, révision et verrouillage propres au salon PVP |
+| `MatchRules` | façade de compatibilité | API historique déléguée aux règles spécialisées |
+| `GameLoadout` | `create`, `copy`, `to_dict`, `from_dict` | Dieu, deck et total génériques, sans métadonnée de transport |
+| `Loadout` | `create`, `copy`, `to_dict`, `from_dict` | Enveloppe PVP ajoutant camp et identifiants de préparation |
+| `SeriesState`, `SeriesEngine` | `begin`, `record_round`, `remember_loadouts`, `public_state` | Score de série, égalités et conservation des loadouts dans les deux environnements |
+| `LoadoutGenerator` | `generate_random`, `generate_mirror`, `generate_uniform_pair` | Dieux et decks légaux au même total, solveur exact et plan de draft |
+| `DraftEngine` | `start`, `choose`, `advance`, `public_state` | Draft parallèle de 60 s, plan de huit paires vérifié, choix privés et complétion indépendante |
+| `BotCardTierRules` | `effective_level` | Adaptateur historique des bots : niveau de forme et plancher de rareté, sans changer leur niveau de jeu |
 | `StoneLoader` | `get_stone`, `has_stone`, `has_effect`, `stone_affinity`, `stone_rarity`, `get_neutral_lineages`, `get_god`, `get_npc` | Charge les catalogues, fournit des copies et des lectures sans copie |
 | `ContentValidator` | `find_problems` | Liste les incohérences des catalogues ; `StoneLoader` les signale au démarrage |
 | `PlayerData` | `get_active_deck`, `get_deck`, `get_selected_deck`, `set_player_deck`, `set_player_god`, `set_selected_deck`, `load_save`, `save` | Profil et trois decks persistants par dieu |
@@ -63,7 +158,7 @@ d'ENet lorsqu'un pair reste connecté mais cesse de poursuivre le protocole.
 | `DeckCatalogueMigration` | `requires_conversion`, `convert` | Remplace les anciennes cartes par des formes compatibles, distinctes et dans le budget |
 | `CardArtCache` | `activate_god`, `texture`, `progress_for_god` | Préchauffe les illustrations utiles hors du thread principal et borne les références conservées |
 | `PlayerSaveStorage` | `write`, `read` | Écriture sûre du profil sur le disque |
-| `BattleContext` | `select_opponent`, `current_opponent`, `prepare_result`, `persist_result` | Adversaire sélectionné, premier joueur, résultat et état de sa persistance |
+| `BattleContext` | `select_opponent`, `begin_mode`, `current_opponent`, `prepare_result`, `persist_result` | Rencontre, loadouts temporaires de campagne, premier joueur et résultat |
 | `StoneCostRules` | `cost` | Règle du coût d'une carte |
 | `StoneEffects` | — | Identifiants et valeurs des pouvoirs (corrosion, renfort et plafond d'Essaim) |
 | `StoneEvolutionRules` | `max_level`, `preview_level`, `is_valid_level` | Limites par rareté et saturation des seuls aperçus |
@@ -84,10 +179,15 @@ l'emplacement 1 du dieu équipé, ou du dieu déduit des cartes si nécessaire.
 Chaque emplacement est nettoyé dans sa propre famille ; les autres emplacements
 commencent vides. Un chargement seul ne réécrit pas le fichier.
 
-`PvpMatchContext` ne contient que des données de match (participants, camps,
-profils, decks, graine, cases bloquées, premier joueur, dernier résultat) : il
-ne touche jamais `PlayerData`, donc un match PVP ne modifie ni les statistiques
-de campagne ni `per_npc`.
+`PvpMatchContext` ne contient que des données transitoires (participants, camps,
+snapshots du salon, loadouts, graine, cases bloquées, premier joueur, dernier
+résultat). Dès qu'une manche est configurée, ses participants sont la source
+autoritaire du dieu et du deck affichés en combat. Les snapshots du salon sont
+conservés séparément pendant toute la connexion et sont les seules données
+autorisées à reconstruire le salon. Le retour détruit les loadouts générés ; une
+partie Classique suivante retrouve donc les profils d'origine. Le contexte ne
+touche jamais `PlayerData`, donc un match PVP ne modifie ni les statistiques de
+campagne ni `per_npc`.
 
 `PlayerData` possède les banques et renvoie des copies via ses lectures. Les
 modifications du deck, du dieu et du numéro sélectionné sont validées et
@@ -355,10 +455,12 @@ les cartes concernées de la collection, sans recréer de carte.
 Un changement de tri réordonne les wrappers existants. Un changement de dieu
 conserve les vingt-quatre wrappers neutres et recycle les douze autres.
 
-`UITheme.DECK_COLUMNS` fixe les colonnes de la main, du deck et du remplacement.
-La main calcule ses rangées sur le deck complet, puis garde sa hauteur pendant
-le combat. `CARD_HAND`, `CARD_DECK` et `CARD_REPLACEMENT` restent des tailles
-indépendantes ; les valeurs initiales des scènes reflètent la disposition actuelle.
+`BattleLayout` compose le plateau carré et la main depuis la largeur **et** la
+hauteur disponibles. Un canevas haut emploie trois colonnes de main ; un canevas
+plus court conserve quatre colonnes. `HandView` réserve toujours les rangées du
+deck complet, puis garde cette hauteur pendant le combat : jouer une carte ne
+déplace donc jamais le plateau. `CARD_HAND`, `CARD_DECK` et
+`CARD_REPLACEMENT` restent des tailles indépendantes pour les autres vues.
 
 `CardActionDrawer`, `StoneInfoSheet` et `ReplacementPanel` gèrent leurs panneaux.
 `TapGesture`, `TouchButton` et `TouchScrollContainer` conservent les gestes tactiles.
@@ -366,7 +468,9 @@ indépendantes ; les valeurs initiales des scènes reflètent la disposition act
 L'habillage du refuge est commun aux écrans : `UITheme` fournit la palette et
 les fabriques de styles, `RefugeTheme` construit le thème global depuis ces
 constantes. `MenuBackground` dessine les fonds sans recevoir d'entrée et
-remplace l'ancien `ParchmentBackground`. Les variations de boutons sont
+remplace l'ancien `ParchmentBackground`. Les motifs centrés utilisent le
+canevas de référence ; BOARD et PVP dessinent leurs rails plein cadre avec une
+échelle fondée sur la largeur et une hauteur visible dynamique. Les variations de boutons sont
 déclarées dans le thème, sans modifier leurs contrôleurs tactiles.
 `data/gods.json` fournit le champ `asset` des portraits livrés dans `assets/gods/` ;
 l'accueil, le sélecteur, l'avant-combat et le HUD les utilisent. `GodPortrait`
@@ -573,9 +677,9 @@ Les dieux sont équipés dans les deux camps, et des ouvertures dédiées garant
 que les comparaisons Déclin et Essaim déclenchent réellement leurs auras.
 `TurnSequenceChecks` vérifie aussi les fins retardées et l'annulation des présentations.
 
-Au dernier contrôle automatisé, `GodSystemChecks` compte 514 réussites,
-sans échec et sans erreur Godot ; `TouchInputChecks` réussit ses
-80 vérifications tactiles.
+`GodSystemChecks` et `TouchInputChecks` doivent terminer avec le code `0`,
+sans échec ni erreur Godot. Le nombre de vérifications n'est pas figé ici :
+la sortie des lanceurs fait foi.
 
 Les lanceurs chargent les suites à l'exécution et enregistrent `tests/support/TestLog.gd`
 auprès de Godot. Une suite qui ne compile pas, une erreur ou un avertissement

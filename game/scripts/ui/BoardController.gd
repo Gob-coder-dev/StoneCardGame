@@ -15,9 +15,13 @@ const CardDragController := preload("res://scripts/ui/CardDragController.gd")
 const CampaignDriver := preload("res://scripts/ui/match/CampaignMatchDriver.gd")
 const LanDriver := preload("res://scripts/ui/match/LanMatchDriver.gd")
 const Routes := preload("res://scripts/ui/GameRoutes.gd")
+const BattleLayoutModel := preload("res://scripts/ui/BattleLayout.gd")
 
+@onready var root: VBoxContainer = $Root
 @onready var turn_manager: TurnManager = $TurnManager
+@onready var board_area: Control = $Root/BoardArea
 @onready var board_view: BoardView = $Root/BoardArea/BoardView
+@onready var hand_label: Label = $Root/HandLabel
 @onready var hand_view: HandView = $Root/HandView
 @onready var hud: BattleHUD = $Root/HUD
 @onready var background: MenuBackground = $Background
@@ -34,8 +38,6 @@ var _finished_pvp := false
 
 func _ready() -> void:
 	_connect_signals()
-	## Construire le plateau une fois la taille connue (point 7).
-	board_view.build.call_deferred()
 	_driver = (LanDriver.new() if PvpMatchContext.is_active() else CampaignDriver.new()) as MatchDriver
 	add_child(_driver)
 	_driver.setup(turn_manager)
@@ -46,10 +48,38 @@ func _ready() -> void:
 		_on_start_failed()
 		return
 	_apply_match_identity()
-	## Le premier `turn_started` part dans `start()`, avant que le plateau ne
-	## soit construit : sans ce second passage, les cases bloquées et l'état des
-	## cases n'apparaîtraient qu'après le premier coup.
-	_refresh_after_build.call_deferred()
+	## Le layout doit être stabilisé avant la construction des cases. Sinon la
+	## zone extensible prend toute la hauteur d'un téléphone 20:9 et crée un vide
+	## entre le plateau carré et la main.
+	_initialize_view.call_deferred()
+	get_viewport().size_changed.connect(_on_viewport_size_changed)
+
+
+func _initialize_view() -> void:
+	_apply_responsive_layout()
+	board_view.build()
+	_refresh_after_build()
+
+
+func _on_viewport_size_changed() -> void:
+	_apply_responsive_layout.call_deferred()
+
+
+func _apply_responsive_layout() -> void:
+	if root.size.x <= 0.0 or root.size.y <= 0.0:
+		return
+	var fixed_height := hud.get_combined_minimum_size().y \
+		+ hand_label.get_combined_minimum_size().y
+	var layout := BattleLayoutModel.calculate(root.size, fixed_height,
+		float(root.get_theme_constant("separation")), float(UITheme.GAP_MEDIUM),
+		DeckRules.DECK_SIZE)
+	var board_side := float(layout["board_side"])
+	board_area.custom_minimum_size.y = board_side
+	board_area.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	hand_view.configure(int(layout["hand_columns"]), float(layout["hand_card_size"]))
+	# Le VBox applique les nouvelles tailles à la frame suivante. Le plateau ne
+	# recalcule alors que sa géométrie visuelle, jamais son état de jeu.
+	board_view.update_geometry.call_deferred()
 
 
 func _refresh_after_build() -> void:

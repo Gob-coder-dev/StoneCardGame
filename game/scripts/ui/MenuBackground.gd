@@ -120,8 +120,14 @@ func _draw() -> void:
 		return
 
 	_draw_base()
-	var scale := _artwork_scale_for_size(size)
-	draw_set_transform(_artwork_offset_for_size(size, scale), 0.0,
+	var full_bleed := room == Room.BOARD or room == Room.PVP
+	var scale := _full_bleed_scale_for_size(size) if full_bleed \
+		else _artwork_scale_for_size(size)
+	var offset := _full_bleed_offset_for_size(size, scale) if full_bleed \
+		else _artwork_offset_for_size(size, scale)
+	var visible_top := -offset.y / scale
+	var visible_bottom := (size.y - offset.y) / scale
+	draw_set_transform(offset, 0.0,
 		Vector2.ONE * scale)
 	match room:
 		Room.REFUGE:
@@ -137,7 +143,7 @@ func _draw() -> void:
 		Room.COIN_RITUAL:
 			_draw_coin_ritual()
 		Room.BOARD:
-			_draw_board()
+			_draw_board(visible_top, visible_bottom)
 		Room.AFTERMATH:
 			_draw_aftermath()
 		Room.AFTERMATH_DEFEAT:
@@ -147,7 +153,7 @@ func _draw() -> void:
 		Room.PROFILE:
 			_draw_profile()
 		Room.PVP:
-			_draw_pvp()
+			_draw_pvp(visible_bottom)
 	draw_set_transform(Vector2.ZERO)
 
 
@@ -173,6 +179,17 @@ func _artwork_scale_for_size(viewport_size: Vector2) -> float:
 func _artwork_offset_for_size(viewport_size: Vector2, scale: float) -> Vector2:
 	var artwork_size := Vector2(1080.0, 1920.0) * scale
 	return (viewport_size - artwork_size) * 0.5
+
+
+## Les salles encadrées par des rails latéraux doivent remplir la largeur.
+## Un ajustement "contain" laisse des bandes sur tablette ; l'ajustement par la
+## largeur conserve les proportions et ne recadre que le haut/bas du décor.
+func _full_bleed_scale_for_size(viewport_size: Vector2) -> float:
+	return viewport_size.x / 1080.0
+
+
+func _full_bleed_offset_for_size(viewport_size: Vector2, scale: float) -> Vector2:
+	return Vector2(0.0, (viewport_size.y - 1920.0 * scale) * 0.5)
 
 
 func _artwork_bottom_for_size(viewport_size: Vector2) -> float:
@@ -229,22 +246,26 @@ func _draw_coin_ritual() -> void:
 	_draw_neon_circle(center, 420.0, neon_tertiary_color, 3.4)
 
 
-func _draw_board() -> void:
+func _draw_board(visible_top: float = 0.0, visible_bottom: float = 1920.0) -> void:
 	var seam := Color(0.72, 0.62, 0.72, 0.075)
-	for y in [250.0, 520.0, 790.0, 1060.0, 1330.0, 1600.0]:
-		draw_line(Vector2(30.0, y), Vector2(1050.0, y), seam, 2.0)
+	var seam_y := floorf(visible_top / 270.0) * 270.0 + 250.0
+	while seam_y < visible_bottom:
+		draw_line(Vector2(30.0, seam_y), Vector2(1050.0, seam_y), seam, 2.0)
+		seam_y += 270.0
 	for x in [270.0, 540.0, 810.0]:
-		draw_line(Vector2(x, 0.0), Vector2(x, 1920.0), seam, 2.0)
-	_draw_neon_line(Vector2(18.0, 0.0), Vector2(18.0, 1920.0),
+		draw_line(Vector2(x, visible_top), Vector2(x, visible_bottom), seam, 2.0)
+	_draw_neon_line(Vector2(18.0, visible_top), Vector2(18.0, visible_bottom),
 		neon_primary_color, 1.5)
-	_draw_neon_line(Vector2(1062.0, 0.0), Vector2(1062.0, 1920.0),
+	_draw_neon_line(Vector2(1062.0, visible_top), Vector2(1062.0, visible_bottom),
 		neon_primary_color, 1.5)
 	_draw_corner_marks(neon_primary_color, 34.0, 104.0)
-	for y in [390.0, 780.0, 1170.0, 1560.0]:
-		_draw_neon_line(Vector2(18.0, y), Vector2(42.0, y - 22.0),
+	var marker_y := floorf(visible_top / 390.0) * 390.0 + 390.0
+	while marker_y < visible_bottom:
+		_draw_neon_line(Vector2(18.0, marker_y), Vector2(42.0, marker_y - 22.0),
 			neon_secondary_color, 1.0)
-		_draw_neon_line(Vector2(1062.0, y), Vector2(1038.0, y - 22.0),
+		_draw_neon_line(Vector2(1062.0, marker_y), Vector2(1038.0, marker_y - 22.0),
 			neon_secondary_color, 1.0)
+		marker_y += 390.0
 
 
 func _draw_aftermath() -> void:
@@ -415,9 +436,9 @@ func _draw_profile() -> void:
 
 
 ## Le choix, la recherche et la salle partagent le même décor d'arène.
-func _draw_pvp() -> void:
+func _draw_pvp(visible_bottom: float = PVP_ARCH_BOTTOM) -> void:
 	_draw_arena_architecture(neon_primary_color, neon_secondary_color,
-		maxf(PVP_ARCH_BOTTOM, _artwork_bottom_for_size(size)))
+		maxf(PVP_ARCH_BOTTOM, visible_bottom))
 	_draw_crossed_swords(Vector2(540.0, 1030.0),
 		neon_primary_color, neon_secondary_color)
 

@@ -4,6 +4,7 @@ extends RefCounted
 
 const Effects := preload("res://scripts/domain/StoneEffects.gd")
 const AIProfileModel := preload("res://scripts/ai/AIProfile.gd")
+const PowerTierRules := preload("res://scripts/domain/CardPowerTierRules.gd")
 
 ## Validation du format des nouvelles lignées avant leur indexation.
 static func lineage_problems(lineage: Dictionary) -> Array[String]:
@@ -38,6 +39,8 @@ static func lineage_problems(lineage: Dictionary) -> Array[String]:
 		if _check_evolution_shape(definition, problems):
 			# L'existence de la famille sera vérifiée avec les vrais dieux après chargement.
 			_check_stone(definition, {str(lineage.get("god_id", "neutral")): {}}, problems)
+	for problem in PowerTierRules.lineage_problems(lineage):
+		problems.append(problem)
 	return problems
 
 

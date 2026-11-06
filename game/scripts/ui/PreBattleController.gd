@@ -71,9 +71,10 @@ func _is_pvp() -> bool:
 func _setup_campaign() -> void:
 	var npc := BattleContext.current_opponent()
 	npc_label.text = npc.get("name", "???")
+	difficulty_label.visible = true
 	difficulty_label.text = _opponent_subtitle(npc)
-	var human_god := StoneLoader.get_god(PlayerData.player_god_id)
-	var npc_god := StoneLoader.get_god(str(npc.get("god_id", "")))
+	var human_god := StoneLoader.get_god(BattleContext.effective_player_god_id())
+	var npc_god := StoneLoader.get_god(BattleContext.effective_opponent_god_id())
 	var npc_is_godless := npc_god.is_empty()
 	background.set_gods(human_god, npc_god)
 	_setup_god_identity(player_god_portrait, player_god_name, player_god_family,
@@ -91,7 +92,8 @@ func _setup_pvp() -> void:
 	duel_label.text = "Duel local contre"
 	npc_label.text = PvpMatchContext.remote_name if PvpMatchContext.remote_name != "" \
 		else "Adversaire"
-	difficulty_label.text = "PVP LOCAL • un appareil chacun"
+	difficulty_label.text = ""
+	difficulty_label.visible = false
 	var local_god := StoneLoader.get_god(PvpMatchContext.local_god_id)
 	var remote_god := StoneLoader.get_god(PvpMatchContext.remote_god_id)
 	background.set_gods(local_god, remote_god)
@@ -313,6 +315,8 @@ func _open_board() -> void:
 		return
 	_leaving = true
 	_close_start_link()
+	if _is_pvp():
+		PvpMatchContext.set_presence(LanPvpPresence.IN_MATCH)
 	Routes.go(get_tree(), Routes.BOARD)
 
 

@@ -39,6 +39,20 @@ const CARD_HAND: int = 220
 const CARD_REPLACEMENT: int = 220  ## Indépendante de la taille des cartes en main.
 const CARD_DECK: int = 200
 const CARD_COLLECTION: int = 300
+## Plafonds des grilles PVP : elles remplissent la largeur du téléphone sans
+## devenir démesurées sur tablette. Les valeurs restent dans le canevas 1080.
+const PVP_NARROW_WIDTH: int = 760
+const PVP_LOCAL_CARD_MAX: int = 460
+const PVP_OPPONENT_CARD_MAX: int = 240
+const PVP_FINAL_CARD_MAX: int = 340
+const PVP_DRAFT_CARD_MAX: int = 240
+## Une tablette portrait est plus large mais moins haute relativement. Ses
+## plafonds de draft sont donc plus bas afin de garder les trois sections dans
+## le même écran au lieu d'agrandir aveuglément depuis la largeur.
+const PVP_TABLET_ASPECT: float = 0.58
+const PVP_TABLET_LOCAL_CARD_MAX: int = 340
+const PVP_TABLET_OPPONENT_CARD_MAX: int = 200
+const PVP_TABLET_DRAFT_CARD_MAX: int = 190
 const CARD_PREVIEW_EDGE_MARGIN: float = 0.06
 const CARD_PREVIEW_POWER_BADGE_SCALE: float = 2.0
 const CARD_DECK_EDGE_MARGIN: float = 0.04

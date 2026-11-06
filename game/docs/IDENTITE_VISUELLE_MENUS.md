@@ -64,10 +64,11 @@ Les six portraits sont fournis dans `assets/gods/`. Le champ `asset` de
   de sa famille, état du deck, puis deux modes de même largeur : CAMPAGNE en
   action principale et PVP dans la variation secondaire `PvpButton`. La ligne
   `ModeButtons` suit le flux du conteneur, sans position absolue ; PVP reste
-  visible sans concurrencer CAMPAGNE. Un deck incomplet affiche
-  « VEUILLEZ COMPLÉTER VOTRE DECK » en `COL_WARNING` pendant 2,5 s sans changer
-  d'écran, et un nouveau clic relance le même minuteur au lieu d'en empiler un
-  second. La hauteur du portrait
+  visible sans concurrencer CAMPAGNE. Un deck incomplet ouvre une modale
+  `DECK INCOMPLET` au-dessus d'un voile sombre qui bloque l'accueil. Le message
+  précise le nombre de cartes présentes et les actions `FERMER` et
+  `COMPLÉTER MON DECK` permettent respectivement de rester sur l'accueil ou
+  d'ouvrir la collection. La hauteur du portrait
   s'adapte à l'espace disponible pour conserver les commandes accessibles.
   Le titre et la famille utilisent 40 pixels, l'état du deck 44 pixels sur une
   ligne, dans le canevas de référence.
@@ -111,13 +112,29 @@ Les six portraits sont fournis dans `assets/gods/`. Le champ `asset` de
   croisées aux couleurs des deux dieux en cas d'égalité. Il propose le niveau
   suivant après une victoire, puis revanche, autre niveau, autre dieu et accueil ;
   le suivant disparaît après une défaite ou au dernier rond.
+- Préparation PVP : scène dédiée, même arche minérale que le salon. Le dieu
+  local est présenté avec son illustration et sa couleur, puis ses huit cartes
+  illustrées en deux colonnes et quatre lignes pour le deck final, avec points,
+  palier et format. En Sélection, les deux offres adverses restent compactes et
+  non interactives en haut ; les deux offres locales sont centrées et seules
+  interactives, avec un verrouillage visible après le choix. Le deck en
+  construction est illustré en bas avec `VOTRE DECK — X / 8` et s'actualise
+  après chaque choix accepté. Chaque joueur avance à son rythme ; le premier
+  deck terminé ouvre sa présentation et `PRÊT` sans attendre l'autre. Aucun
+  deck adverse complet ni choix adverse n'est révélé. La taille des trois
+  grilles est bornée par la hauteur restante, pas seulement par la largeur :
+  les huit picks et les huit cartes finales tiennent sans scroll sur les
+  canevas 1080 × 2400 et 1200 × 1920.
 - Fin de match PVP : mêmes illustrations de victoire, défaite et égalité que la
   campagne, accordées au dieu gagnant ou aux deux dieux en cas d'égalité.
-  Verdict local (VICTOIRE, DÉFAITE ou ÉGALITÉ), score « joueur local —
-  adversaire », puis Revanche et Quitter. Un seul camp ne peut pas relancer la
-  partie : la revanche attend que les deux téléphones la demandent. Même règle
-  avant le premier coup : après le pile ou face, `COMMENCER` attend l'accord des
-  deux appareils.
+  Verdict local (VICTOIRE, DÉFAITE ou ÉGALITÉ), puis trois actions distinctes :
+  REVANCHE / PARTIE SUIVANTE / NOUVELLE SÉRIE comme action principale, RETOUR
+  AU SALON qui ramène ce joueur seul en conservant la connexion, et QUITTER qui
+  ferme la session. L'autre appareil reste sur son écran et affiche `EN PARTIE`
+  dans le salon jusqu'à son propre retour. Un seul camp ne peut pas relancer la
+  partie : l'action principale attend que les deux téléphones la demandent.
+  Même règle avant le premier coup : après le pile ou face, `COMMENCER` attend
+  l'accord des deux appareils.
 - Navigation : trois onglets avec icônes SVG au-dessus des libellés. Les
   enfants décoratifs ignorent la souris et le tactile ; les boutons d'origine
   conservent les connexions et la gestion des glissements.
@@ -142,6 +159,11 @@ La couleur change au moment de l'impact d'une capture. Une case interdite devien
 presque noire, bordée de cramoisi, avec une grande croix ivoire ombrée et des
 entailles diagonales. `BlockedCellOverlay` dessine ces signes à l'échelle de la
 case : leur lisibilité ne dépend d'aucune police installée.
+
+Le combat réserve le plateau et la main dans un même budget vertical. Les
+téléphones hauts présentent les huit cartes en trois colonnes avec une dernière
+rangée centrée ; les tablettes conservent quatre colonnes. Le surplus du canevas
+ne peut donc plus devenir un espace vide entre le terrain et la main.
 
 Les aperçus utilisent `StoneCard.set_edge_margin_ratio` pour agrandir le cadre :
 4 % de marge dans le deck, 6 % dans la fiche. Dans le deck, `set_marker_scale`

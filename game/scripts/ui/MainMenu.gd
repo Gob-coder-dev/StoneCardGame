@@ -9,7 +9,6 @@ const MODE_SCENES: Dictionary = {
 	"pvp": Routes.PVP_LOBBY,
 }
 const DECK_WARNING: String = "VEUILLEZ COMPLÉTER VOTRE DECK"
-const DECK_WARNING_SECONDS: float = 2.5
 
 @onready var profile_button: Button = $Content/Header/ProfileButton
 @onready var mode_buttons: HBoxContainer = $Content/Hero/Identity/ModeButtons
@@ -27,22 +26,25 @@ const DECK_WARNING_SECONDS: float = 2.5
 @onready var art_warmup: VBoxContainer = $Content/Hero/Identity/ArtWarmup
 @onready var art_warmup_label: Label = $Content/Hero/Identity/ArtWarmup/Label
 @onready var art_warmup_bar: ProgressBar = $Content/Hero/Identity/ArtWarmup/Progress
+@onready var deck_warning_overlay: Control = $DeckWarningOverlay
+@onready var deck_warning_message: Label = \
+	$DeckWarningOverlay/Center/Panel/Content/Message
+@onready var complete_deck_button: Button = \
+	$DeckWarningOverlay/Center/Panel/Content/Actions/CompleteDeckButton
+@onready var close_warning_button: Button = \
+	$DeckWarningOverlay/Center/Panel/Content/Actions/CloseButton
 
 ## Navigation injectable : les tests vérifient la destination réelle sans
 ## changer de scène. Vide en jeu, la scène est alors ouverte normalement.
 var scene_changer: Callable = Callable()
-var _warning_timer: Timer = null
 
 
 func _ready() -> void:
 	profile_button.pressed.connect(_on_profile_pressed)
 	campaign_button.pressed.connect(_on_mode_pressed.bind("campaign"))
 	pvp_button.pressed.connect(_on_mode_pressed.bind("pvp"))
-	_warning_timer = Timer.new()
-	_warning_timer.name = "DeckWarningTimer"
-	_warning_timer.one_shot = true
-	_warning_timer.timeout.connect(_restore_deck_status)
-	add_child(_warning_timer)
+	complete_deck_button.pressed.connect(_open_collection)
+	close_warning_button.pressed.connect(_close_deck_warning)
 	CardArtCache.warmup_progress.connect(_on_art_warmup_progress)
 	CardArtCache.warmup_finished.connect(_on_art_warmup_finished)
 	portrait_area.offset_bottom = -UITheme.HOME_IDENTITY_HEIGHT
@@ -104,12 +106,28 @@ func _on_mode_pressed(mode: String) -> void:
 
 
 func _show_deck_warning() -> void:
-	# Redémarrer le même minuteur évite qu'une restauration ancienne remplace
-	# l'avertissement d'un clic plus récent.
-	if _warning_timer != null:
-		_warning_timer.start(DECK_WARNING_SECONDS)
-	deck_status.text = DECK_WARNING
-	deck_status.add_theme_color_override("font_color", UITheme.COL_WARNING)
+	var deck := PlayerData.get_active_deck()
+	deck_warning_message.text = "%s\n\nVotre deck contient %d carte%s sur %d. Complétez-le avant de lancer une campagne ou une partie PVP." % [
+		DECK_WARNING, deck.size(), "s" if deck.size() > 1 else "", DeckRules.DECK_SIZE
+	]
+	deck_warning_overlay.visible = true
+	complete_deck_button.grab_focus()
+
+
+func _close_deck_warning() -> void:
+	deck_warning_overlay.visible = false
+	campaign_button.grab_focus()
+
+
+func _open_collection() -> void:
+	deck_warning_overlay.visible = false
+	_go_to(Routes.COLLECTION)
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if deck_warning_overlay.visible and event.is_action_pressed("ui_cancel"):
+		_close_deck_warning()
+		get_viewport().set_input_as_handled()
 
 
 func _go_to(path: String) -> void:

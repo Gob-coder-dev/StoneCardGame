@@ -4,6 +4,7 @@ const OpponentCatalogModel := preload("res://scripts/data/OpponentCatalog.gd")
 const EncounterPathModel := preload("res://scripts/domain/EncounterPath.gd")
 const TouchButtonScript := preload("res://scripts/ui/input/TouchButton.gd")
 const LobbyCoordinator := preload("res://scripts/network/LanLobbyCoordinator.gd")
+const BattleLayoutModel := preload("res://scripts/ui/BattleLayout.gd")
 
 func run() -> void:
 	var fixture := ProfileFixture.new()
@@ -46,6 +47,8 @@ func _test_screen_backgrounds() -> void:
 		"res://scenes/menus/Result.tscn": MenuBackground.Room.AFTERMATH,
 		"res://scenes/menus/Stats.tscn": MenuBackground.Room.PROFILE,
 		"res://scenes/menus/PvpLobby.tscn": MenuBackground.Room.PVP,
+		"res://scenes/menus/PvpPreparation.tscn": MenuBackground.Room.PVP,
+		"res://scenes/menus/PvpResult.tscn": MenuBackground.Room.AFTERMATH,
 	}
 	var assigned_rooms := {}
 	for scene_path in scenes:
@@ -55,8 +58,10 @@ func _test_screen_backgrounds() -> void:
 		_check(background.room == scenes[scene_path],
 			"l'écran %s utilise son ambiance néon dédiée" % scene_path)
 		page.free()
-	_check(assigned_rooms.size() == scenes.size(),
-		"chaque écran dispose d'une déclinaison visuelle qui lui est propre")
+	# La préparation reprend volontairement l'arène du salon et le résultat PVP
+	# partage l'ambiance de la campagne : ce sont les mêmes familles visuelles.
+	_check(assigned_rooms.size() == 10,
+		"les écrans PVP conservent leurs ambiances dédiées sans multiplier les variantes")
 	var background := MenuBackground.new()
 	var formats := [Vector2(1080.0, 1920.0), Vector2(1200.0, 1920.0),
 		Vector2(1000.0, 1920.0), Vector2(1080.0, 2160.0)]
@@ -72,6 +77,18 @@ func _test_screen_backgrounds() -> void:
 			and offset.y + artwork_size.y <= viewport_size.y
 	_check(artwork_fits_without_crop,
 		"les fonds gardent leur proportion et tiennent entièrement dans plusieurs formats portrait")
+	var full_bleed_formats := [Vector2(1080.0, 2400.0), Vector2(1200.0, 1920.0)]
+	var rails_reach_edges := true
+	for viewport_size in full_bleed_formats:
+		var scale := background._full_bleed_scale_for_size(viewport_size)
+		var offset := background._full_bleed_offset_for_size(viewport_size, scale)
+		var left_rail := offset.x + 18.0 * scale
+		var right_rail := offset.x + 1062.0 * scale
+		rails_reach_edges = rails_reach_edges \
+			and left_rail <= viewport_size.x * 0.02 + 1.0 \
+			and right_rail >= viewport_size.x * 0.98 - 1.0
+	_check(rails_reach_edges,
+		"les rails des salles combat et PVP restent collés aux bords sur téléphone et tablette")
 	var curve := background._firework_curve_points(
 		Vector2.ZERO, 0.0, 100.0, 36.0, 8)
 	var adjacent_curve := background._firework_curve_points(
@@ -104,8 +121,11 @@ func _test_screen_backgrounds() -> void:
 		and skull_width >= 1080.0 * 0.9 and skull_height >= 1920.0 * 0.68
 		and MenuBackground.SKULL_CENTER.y > 960.0,
 		"le crâne de défaite garde ses proportions, remplit la largeur et descend sur l'écran")
-	_check(is_equal_approx(background._artwork_bottom_for_size(
-		Vector2(1080.0, 2160.0)), 2040.0)
+	var tall_size := Vector2(1080.0, 2400.0)
+	var tall_scale := background._full_bleed_scale_for_size(tall_size)
+	var tall_offset := background._full_bleed_offset_for_size(tall_size, tall_scale)
+	var tall_bottom := (tall_size.y - tall_offset.y) / tall_scale
+	_check(tall_bottom >= 2160.0
 		and MenuBackground.PVP_ARCH_BOTTOM == 1920.0,
 		"l'arche PVP atteint le bord bas, y compris sur un écran plus haut que le canevas")
 	background.free()
@@ -235,19 +255,23 @@ func _test_menu_modes() -> void:
 	PlayerData._decks_by_god[god_id][slot] = []
 	menu._refresh()
 	menu.campaign_button.pressed.emit()
-	_check(menu.deck_status.text == "VEUILLEZ COMPLÉTER VOTRE DECK"
-		and menu.deck_status.get_theme_color("font_color") == UITheme.COL_WARNING
-		and menu.deck_status.visible and visited.is_empty(),
-		"un deck incomplet affiche le message exact sans changer de scène")
+	_check(menu.deck_warning_overlay.visible
+		and menu.deck_warning_message.text.contains("VEUILLEZ COMPLÉTER VOTRE DECK")
+		and menu.deck_warning_message.text.contains("0 carte")
+		and visited.is_empty(),
+		"un deck incomplet ouvre une modale explicite sans changer de scène")
 	menu.campaign_button.pressed.emit()
 	menu.pvp_button.pressed.emit()
-	_check(visited.is_empty() and menu.deck_status.text == "VEUILLEZ COMPLÉTER VOTRE DECK"
-		and menu._warning_timer.time_left > 0.0
-		and menu._warning_timer.time_left <= menu.DECK_WARNING_SECONDS,
-		"plusieurs clics rapides relancent un seul avertissement complet")
+	_check(visited.is_empty() and menu.deck_warning_overlay.visible
+		and menu.complete_deck_button.visible and menu.close_warning_button.visible,
+		"plusieurs clics conservent une seule modale bloquante avec deux actions")
+	menu.complete_deck_button.pressed.emit()
+	_check(visited == ["res://scenes/menus/CollectionScreen.tscn"]
+		and not menu.deck_warning_overlay.visible,
+		"la modale conduit directement à la construction du deck")
+	visited.clear()
 	PlayerData._decks_by_god[god_id][slot] = original
 	menu._refresh()
-	menu._warning_timer.stop()
 	menu.pvp_button.pressed.emit()
 	_check(visited == ["res://scenes/menus/PvpLobby.tscn"],
 		"un deck valide ouvre le salon PVP")
@@ -749,6 +773,27 @@ func _test_hand_keeps_remaining_cards() -> void:
 	hand.refresh(["fx_target"])
 	_check(hand.get_child_count() == 1 and hand.get_child(0).get_child(0).get_stone_id() == "fx_target",
 		"une nouvelle main est reconstruite")
+	var phone := BattleLayoutModel.calculate(Vector2(984.0, 2280.0), 271.0,
+		40.0, float(UITheme.GAP_MEDIUM), DeckRules.DECK_SIZE)
+	var tablet := BattleLayoutModel.calculate(Vector2(1104.0, 1800.0), 271.0,
+		40.0, float(UITheme.GAP_MEDIUM), DeckRules.DECK_SIZE)
+	_check(int(phone["hand_columns"]) == 3
+		and int(tablet["hand_columns"]) == 4
+		and float(phone["hand_card_size"]) > float(tablet["hand_card_size"]),
+		"combat responsive : le téléphone utilise trois grandes colonnes et la tablette quatre")
+	_check(float(phone["board_side"]) >= 800.0 and float(tablet["board_side"]) >= 800.0,
+		"combat responsive : la main grandit sans sacrifier la lisibilité du plateau")
+	var phone_available := 2280.0 - 271.0 - 3.0 * 40.0
+	_check(phone_available - float(phone["board_side"]) - float(phone["hand_height"]) < 3.0,
+		"combat responsive : aucun surplus vertical n'est laissé entre le plateau et la main")
+	hand.size = Vector2(984.0, float(phone["hand_height"]))
+	hand.configure(3, float(phone["hand_card_size"]))
+	hand.refresh(["fx_plain", "fx_attack2", "fx_wall", "fx_ranged",
+		"fx_target", "fx_thief", "fx_swarm_a", "fx_swarm_b"])
+	await get_tree().process_frame
+	_check(hand.get_child_count() == 8
+		and hand.get_child(6).position.x > hand.get_child(0).position.x,
+		"combat responsive : les deux cartes de la dernière rangée sont centrées")
 	hand.queue_free()
 	await get_tree().process_frame
 
@@ -940,6 +985,41 @@ func _test_pvp_lobby_screens() -> void:
 	waiting_lobby._local["deck_valid"] = true
 	page._lobby = waiting_lobby
 	page._fill_lobby()
+	_check(page.mode_option.item_count == 4 and page.series_option.item_count == 3
+		and page.tier_option.item_count == 4,
+		"le salon expose les quatre modes, les trois formats de série et les quatre paliers")
+	_check(not page.tier_row.visible,
+		"le mode classique masque le palier de puissance qui ne s'applique pas")
+	var popup: PopupMenu = page.mode_option.get_popup()
+	var popup_panel := popup.get_theme_stylebox("panel") as StyleBoxFlat
+	var popup_hover := popup.get_theme_stylebox("hover") as StyleBoxFlat
+	_check(popup_panel != null and popup_hover != null
+		and popup_panel.border_color == UITheme.COL_NEON
+		and popup_hover.bg_color == UITheme.COL_SELECTED,
+		"les listes de règles et leur fenêtre utilisent le thème néon du jeu")
+	_check(not page.mode_option.disabled and not page.rules_hint.visible,
+		"l'hôte peut modifier les règles sans texte redondant sous les options")
+	page.mode_option.select(1)
+	page.mode_option.item_selected.emit(1)
+	_check(str(waiting_lobby.rules()["mode"]) == "random"
+		and int(waiting_lobby.state()["rules"]["revision"]) == 1,
+		"changer de mode applique la règle autoritaire et incrémente la révision")
+	_check(page.tier_row.visible and not page.tier_option.disabled,
+		"les modes générés affichent le palier de puissance")
+	page.mode_option.select(3)
+	page.mode_option.item_selected.emit(3)
+	_check(str(waiting_lobby.rules()["mode"]) == "draft"
+		and int(waiting_lobby.rules()["power_tier"]) >= 2
+		and page.tier_option.is_item_disabled(0)
+		and page.rules_hint.visible and page.rules_hint.text.contains("palier 2"),
+		"Sélection désactive le palier 1 impossible et en explique la raison")
+	waiting_lobby._is_host = false
+	page._fill_lobby()
+	_check(page.mode_option.disabled and page.series_option.disabled
+		and page.tier_option.disabled and page.rules_hint.text.contains("Seul l'hôte"),
+		"le client voit les règles sans pouvoir les modifier")
+	waiting_lobby._is_host = true
+	page._fill_lobby()
 	var host_color := Color(str(StoneLoader.get_god("kharun")["color"]))
 	_check(page.background.neon_primary_color == host_color
 		and page.background.neon_secondary_color == host_color,
@@ -1017,13 +1097,22 @@ func _test_pvp_result() -> void:
 		and page.background._winner_firework_color(0) != page.background._winner_firework_color(1)
 		and page.background._winner_firework_color(1) != page.background._winner_firework_color(2),
 		"la victoire PVP affiche les feux d'artifice du dieu vainqueur")
-	_check(page.rematch_button.visible and page.quit_button.visible
-		and page.rematch_button.text == "Revanche" and page.quit_button.text == "Quitter",
-		"l'écran de fin PVP propose une revanche et une sortie")
+	_check(page.primary_button.visible and page.return_button.visible
+		and page.quit_button.visible and page.primary_button.text == "REVANCHE"
+		and page.return_button.text == "RETOUR AU SALON"
+		and page.quit_button.text == "QUITTER",
+		"l'écran de fin PVP distingue la revanche, le retour au salon et la sortie")
+	_check(not page.score_label.text.contains("Série")
+		and not page.score_label.text.contains("1  —  0")
+		and not page.detail_label.text.contains("Série")
+		and not page.status_label.text.contains("Objectif")
+		and not page.result_label.text.contains("MANCHE"),
+		"FT1 reste une partie simple : aucun score ni vocabulaire de série")
 	page.queue_free()
 	await get_tree().process_frame
 
-	PvpMatchContext.begin(_pvp_config(GameState.PLAYER_ONE, []), GameState.PLAYER_TWO, 2,
+	PvpMatchContext.begin(_pvp_config(GameState.PLAYER_ONE, [], "kharun", "veskar"),
+		GameState.PLAYER_TWO, 2,
 		{"name": "Client", "god_id": "veskar", "deck": ProfileFixture.DECK.duplicate()},
 		{"name": "Hôte", "god_id": "kharun", "deck": ProfileFixture.DECK.duplicate()})
 	PvpMatchContext.record_result(GameState.PLAYER_ONE, 12, 6)
@@ -1042,7 +1131,8 @@ func _test_pvp_result() -> void:
 	defeat.queue_free()
 	await get_tree().process_frame
 
-	PvpMatchContext.begin(_pvp_config(GameState.PLAYER_ONE, []), GameState.PLAYER_ONE, 1,
+	PvpMatchContext.begin(_pvp_config(GameState.PLAYER_ONE, [], "veskar", "kharun"),
+		GameState.PLAYER_ONE, 1,
 		{"name": "Hôte", "god_id": "veskar", "deck": ProfileFixture.DECK.duplicate()},
 		{"name": "Client", "god_id": "kharun", "deck": ProfileFixture.DECK.duplicate()})
 	PvpMatchContext.record_result(GameState.PLAYER_NONE, 8, 8)
@@ -1056,11 +1146,38 @@ func _test_pvp_result() -> void:
 	draw.queue_free()
 	await get_tree().process_frame
 	PvpMatchContext.clear()
-	LanSession.reset()
+	var ft2_rules := MatchRules.default_config()
+	ft2_rules["series"] = MatchRules.SERIES_FT2
+	var ft2_flow := LanSeriesCoordinator.new()
+	ft2_flow._rules = ft2_rules.duplicate(true)
+	ft2_flow._series = SeriesEngine.begin("result-ft2", ft2_rules, 7)
+	ft2_flow._series.wins_one = 1
+	ft2_flow._series.round_index = 2
+	ft2_flow._phase = MatchRules.PHASE_ROUND_RESULT
+	ft2_flow._local_side = GameState.PLAYER_ONE
+	ft2_flow._is_host = false
+	ft2_flow._loadout_one = Loadout.create("veskar", ProfileFixture.DECK.duplicate(),
+		GameState.PLAYER_ONE, "result-ft2", "prep-1", 1, 0)
+	PvpMatchContext.begin(_pvp_config(GameState.PLAYER_ONE, []), GameState.PLAYER_ONE, 1,
+		{"name": "Hôte", "god_id": "veskar", "deck": ProfileFixture.DECK.duplicate()},
+		{"name": "Client", "god_id": "kharun", "deck": ProfileFixture.DECK.duplicate()})
+	PvpMatchContext.series_public = SeriesEngine.public_state(ft2_flow._series)
+	PvpMatchContext.series_flow = ft2_flow
+	PvpMatchContext.record_result(GameState.PLAYER_ONE, 10, 4)
+	var series_page: Control = (load("res://scenes/menus/PvpResult.tscn") as PackedScene).instantiate()
+	add_child(series_page)
+	await get_tree().process_frame
+	_check(series_page.primary_button.text == "PARTIE SUIVANTE"
+		and series_page.score_label.text.contains("Série")
+		and series_page.score_label.text.contains("1") and series_page.score_label.text.contains("0")
+		and series_page.return_button.visible and series_page.quit_button.visible
+		and series_page.find_child("PvpPreparationPanel", true, false) == null,
+		"FT2 non terminé montre le score de série, PARTIE SUIVANTE et aucune préparation")
 
 
 ## Configuration minimale d'un match PVP, identique à celle validée par l'hôte.
-func _pvp_config(starting_player: int, blocked_cells: Array) -> Dictionary:
+func _pvp_config(starting_player: int, blocked_cells: Array,
+		god_one: String = "veskar", god_two: String = "veskar") -> Dictionary:
 	return {
 		"match_id": "check-pvp",
 		"seed": 4242,
@@ -1068,9 +1185,9 @@ func _pvp_config(starting_player: int, blocked_cells: Array) -> Dictionary:
 		"starting_player": starting_player,
 		"participants": [
 			{"peer_id": 1, "side": GameState.PLAYER_ONE, "name": "Hôte",
-				"god_id": "veskar", "deck": ProfileFixture.DECK.duplicate()},
+				"god_id": god_one, "deck": ProfileFixture.DECK.duplicate()},
 			{"peer_id": 2, "side": GameState.PLAYER_TWO, "name": "Client",
-				"god_id": "veskar", "deck": ProfileFixture.DECK.duplicate()},
+				"god_id": god_two, "deck": ProfileFixture.DECK.duplicate()},
 		],
 	}
 

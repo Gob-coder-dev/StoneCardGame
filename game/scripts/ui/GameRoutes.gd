@@ -16,6 +16,7 @@ const PRE_BATTLE := "res://scenes/menus/PreBattle.tscn"
 const BOARD := "res://scenes/game/Board.tscn"
 const CAMPAIGN_RESULT := "res://scenes/menus/Result.tscn"
 const PVP_LOBBY := "res://scenes/menus/PvpLobby.tscn"
+const PVP_PREPARATION := "res://scenes/menus/PvpPreparation.tscn"
 const PVP_RESULT := "res://scenes/menus/PvpResult.tscn"
 
 

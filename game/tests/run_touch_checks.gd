@@ -6,6 +6,9 @@ extends Node
 const TestLog := preload("res://tests/support/TestLog.gd")
 const ProfileFixture := preload("res://tests/support/PlayerProfileFixture.gd")
 const OpponentCatalogModel := preload("res://scripts/data/OpponentCatalog.gd")
+const FakeTransport := preload("res://tests/support/FakeLanTransport.gd")
+const SeriesCoordinatorModel := preload("res://scripts/network/LanSeriesCoordinator.gd")
+const MatchRulesModel := preload("res://scripts/domain/MatchRules.gd")
 ## Secondes de jeu : avec --fixed-fps 60, la limite ne dépend pas de la machine.
 const TIME_LIMIT := 120.0
 
@@ -61,6 +64,7 @@ func _run() -> void:
 	await _check_button_inputs()
 	await _check_main_menu()
 	await _check_pvp_lobby()
+	await _check_pvp_draft_touch()
 	await _check_other_menus()
 	await _check_result_actions()
 	await _check_buffered_input()
@@ -346,6 +350,19 @@ func _check_button_inputs() -> void:
 
 func _check_main_menu() -> void:
 	var menu := await _open_scene("res://scenes/menus/MainMenu.tscn")
+	var god_id: String = PlayerData.player_god_id
+	var slot: int = PlayerData.get_selected_deck(god_id)
+	var original: Array = PlayerData.get_deck(god_id, slot)
+	PlayerData._decks_by_god[god_id][slot] = []
+	menu._refresh()
+	await _tap(_center(menu.campaign_button))
+	_check(menu.deck_warning_overlay.visible,
+		"accueil : un deck incomplet ouvre une modale bloquante au toucher")
+	await _tap(_center(menu.close_warning_button))
+	_check(not menu.deck_warning_overlay.visible,
+		"accueil : FERMER referme la modale au toucher")
+	PlayerData._decks_by_god[god_id][slot] = original
+	menu._refresh()
 	for path in ["Content/Header/ProfileButton", "Content/Hero/Identity/ModeButtons/CampaignButton",
 			"Content/Hero/Identity/ModeButtons/PvpButton"]:
 		var button: Button = menu.get_node(path)
@@ -396,6 +413,50 @@ func _check_pvp_lobby() -> void:
 		and LanSession.state == LanSession.State.DISCOVERING,
 		"salon : le bouton tactile annule la connexion et reprend la recherche")
 	await _remove(page)
+
+
+## Le draft Sélection doit répondre à un vrai toucher natif, pas seulement à
+## l'émission directe du signal de carte par un test.
+func _check_pvp_draft_touch() -> void:
+	var host_transport := FakeTransport.new()
+	host_transport.local_id = 1
+	var client_transport := FakeTransport.new()
+	client_transport.local_id = 2
+	host_transport.remote = client_transport
+	client_transport.remote = host_transport
+	var host_profile := {"name": "Hote", "god_id": "veskar", "deck": []}
+	var client_profile := {"name": "Client", "god_id": "nerava", "deck": []}
+	var rules := MatchRulesModel.default_config()
+	rules["mode"] = MatchRulesModel.MODE_DRAFT
+	rules["series"] = MatchRulesModel.SERIES_FT1
+	rules["power_tier"] = 4
+	rules["locked"] = true
+	var host := SeriesCoordinatorModel.new()
+	var client := SeriesCoordinatorModel.new()
+	host.attach(host_transport, true, GameState.PLAYER_ONE, 2, host_profile, client_profile,
+		rules, 987654)
+	client.attach(client_transport, false, GameState.PLAYER_TWO, 0, client_profile,
+		host_profile, rules)
+	host.host_start_series()
+	PvpMatchContext.close_presence()
+	PvpMatchContext.clear()
+	PvpMatchContext.begin_preparation(host, null, GameState.PLAYER_ONE, 1, 2,
+		host_profile, client_profile, rules, host.public_state())
+	var page: Control = await _open_scene("res://scenes/menus/PvpPreparation.tscn")
+	var cards: Array = page.local_grid._cards
+	_check(cards.size() == 2 and page.draft_deck_grid.get_child_count() == 0,
+		"draft tactile : deux offres locales et un deck vide sont affichés")
+	if cards.size() == 2:
+		await _tap(_center(cards[0] as StoneCard))
+	_check(page.draft_deck_grid.get_child_count() == 1
+		and page.draft_status.text.contains("Choix enregistré"),
+		"draft tactile : un toucher sélectionne une seule offre et actualise le deck")
+	await _remove(page)
+	PvpMatchContext.close_presence()
+	PvpMatchContext.clear()
+	host.close()
+	client.close()
+	LanSession.reset()
 
 
 func _check_other_menus() -> void:

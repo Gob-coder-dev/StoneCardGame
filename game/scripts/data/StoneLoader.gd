@@ -210,6 +210,17 @@ func stone_cost(stone_id: String) -> float:
 	return StoneCostRules.cost(_stones.get(stone_id, {}))
 
 
+## Coût exact en quarts de point : unité de comparaison des générateurs.
+func stone_cost_quarters(stone_id: String) -> int:
+	return StoneCostRules.cost_quarters(_stones.get(stone_id, {}))
+
+
+## Palier de puissance effectif d'une forme. Une éventuelle exception
+## `power_tier` du catalogue remplace la formule rareté + niveau.
+func stone_power_tier(stone_id: String) -> int:
+	return CardPowerTierRules.effective_tier(_stones.get(stone_id, {}))
+
+
 func build_hand(stone_ids: Array) -> Array:
 	var hand: Array = []
 	for sid in stone_ids:

@@ -236,6 +236,77 @@ text = "En attente d'un adversaire…"
 horizontal_alignment = 1
 autowrap_mode = 2
 
+[node name="RulesPanel" type="PanelContainer" parent="Root/Scroll/Content/LobbyScreen"]
+layout_mode = 2
+theme_type_variation = &"DeckPanel"
+
+[node name="RulesBox" type="VBoxContainer" parent="Root/Scroll/Content/LobbyScreen/RulesPanel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="RulesTitle" type="Label" parent="Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.678, 0.49, 1)
+theme_override_font_sizes/font_size = 30
+text = "RÈGLES DE LA SÉRIE"
+horizontal_alignment = 1
+
+[node name="ModeRow" type="HBoxContainer" parent="Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="ModeLabel" type="Label" parent="Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox/ModeRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 28
+text = "Mode"
+vertical_alignment = 1
+
+[node name="ModeOption" type="OptionButton" parent="Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox/ModeRow"]
+custom_minimum_size = Vector2(340, 80)
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+
+[node name="SeriesRow" type="HBoxContainer" parent="Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="SeriesLabel" type="Label" parent="Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox/SeriesRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 28
+text = "Série"
+vertical_alignment = 1
+
+[node name="SeriesOption" type="OptionButton" parent="Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox/SeriesRow"]
+custom_minimum_size = Vector2(340, 80)
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+
+[node name="TierRow" type="HBoxContainer" parent="Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="TierLabel" type="Label" parent="Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox/TierRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 28
+text = "Palier de puissance"
+vertical_alignment = 1
+
+[node name="TierOption" type="OptionButton" parent="Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox/TierRow"]
+custom_minimum_size = Vector2(340, 80)
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+
+[node name="RulesHint" type="Label" parent="Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.737, 0.698, 0.741, 1)
+theme_override_font_sizes/font_size = 24
+text = "Seul l'hôte peut modifier ces options."
+horizontal_alignment = 1
+autowrap_mode = 2
+
 [node name="AddressPanel" type="PanelContainer" parent="Root/Scroll/Content/LobbyScreen"]
 layout_mode = 2
 theme_type_variation = &"DeckPanel"

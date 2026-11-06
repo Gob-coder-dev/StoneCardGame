@@ -37,8 +37,50 @@ rencontres contre l'IA, et **PVP**, qui ouvre un salon local. Deux téléphones
 Android sur le même Wi-Fi peuvent créer et rejoindre une partie sans serveur
 Internet, sans compte et sans service externe. Les deux modes partagent le même
 plateau, le même moteur et les mêmes vues ; seul le driver du match change. Un
-deck incomplet laisse le joueur sur l'accueil et affiche
-« VEUILLEZ COMPLÉTER VOTRE DECK » pendant 2,5 s, sans navigation.
+deck incomplet laisse le joueur sur l'accueil et ouvre une fenêtre modale
+« DECK INCOMPLET ». Elle bloque les actions en arrière-plan, indique le nombre
+de cartes manquantes et propose soit de fermer l'avertissement, soit d'ouvrir
+directement la collection pour compléter le deck.
+
+Le salon PVP propose quatre préparations — **Classique** (dieu et deck du
+profil), **Aléatoire** (dieux et decks générés à chaque manche), **Miroir** (un
+loadout dupliqué pour les deux camps) et **Sélection** (draft parallèle de 60 s
+avec deux offres par camp, huit choix indépendants et un deck local actualisé)
+— et trois formats de série : **FT1**, **FT2** (premier à 2 victoires) et
+**FT3** (premier à 3). Une égalité ne marque aucun point et rejoue une manche.
+L'hôte choisit le mode, la série et le palier de puissance ; toute modification
+remet les deux joueurs à PAS PRÊT, et les règles se verrouillent après le double
+PRÊT. Les cartes sont limitées par `power_tier = niveau de forme + décalage de
+rareté`, avec une exception explicite possible dans le catalogue.
+
+Le Classique FT1 démarre immédiatement après le double PRÊT. Le Classique
+FT2/FT3 initialise la série puis lance la manche depuis le salon, avec les
+mêmes identifiants sur les deux appareils. Aléatoire, Miroir et Sélection
+ouvrent l'écran dédié **Préparation PVP** : le loadout local y est présenté avec
+le dieu et ses huit cartes illustrées. En Sélection, deux offres adverses
+compactes restent visibles en haut, deux offres locales sont centrées et le
+deck local `VOTRE DECK — X / 8` se met à jour après chaque choix ; aucun choix
+ni deck adverse n'est exposé. L'écran de résultat propose ensuite une action
+principale adaptée au format (REVANCHE, PARTIE SUIVANTE ou NOUVELLE SÉRIE),
+**RETOUR AU SALON** qui ramène chaque joueur individuellement en conservant la
+connexion ENet (l'autre voit `EN PARTIE`), et **QUITTER** qui ferme la session
+et revient au choix Créer/Rejoindre.
+
+Les profils du salon et les loadouts de manche sont stockés séparément. Les
+dieux et decks générés restent temporaires : ils peuvent survivre aux manches
+qui doivent les conserver dans une même série, mais sont détruits au retour au
+salon. Une partie Classique suivante reprend toujours le dieu et le deck
+enregistrés de chaque joueur, sans modifier `PlayerData`.
+
+La préparation des modes n'est plus liée au réseau. `GameModeRules`,
+`SeriesRules`, `GameLoadout`, `LoadoutGenerator`, `DraftEngine` et
+`ModePreparationService` forment le socle commun ; `CampaignModeSession`
+orchestre localement le même Classique, Aléatoire, Miroir ou Sélection contre
+l'IA, y compris FT1/FT2/FT3. `BattleContext.begin_mode()` constitue le point
+d'entrée de la campagne et les drivers de combat lisent ses loadouts
+temporaires. L'écran public de choix des règles de campagne reste volontairement
+à ajouter plus tard : son ajout ne demandera ni duplication des règles ni
+dépendance à ENet.
 
 ## Dieux et familles
 
@@ -141,8 +183,11 @@ Le projet sépare volontairement les règles, la présentation et les données :
 data/                    Catalogue des cartes, dieux et adversaires
 scripts/
   data/                  Chargement du catalogue, profil et migration des sauvegardes
-  domain/                Deck, coûts, évolution, paliers de bots, côtés et pouvoirs
+  domain/                Règles pures : modes, séries, decks, coûts et pouvoirs
+  application/           Orchestration des parcours sans dépendre des scènes
+    pvp/                 Contexte, salon et adaptation des loadouts réseau
   engine/                GameState, tours, résolution des combats et effets
+  network/               Transport et protocole ; projections PVP dans network/pvp
   ai/                    Évaluation des coups, ripostes et recherche de fin de partie
   ui/                    Menus, cartes, plateau, HUD et composants tactiles
     collection/          Sélection de dieu/deck, collection et panneaux de cartes
@@ -220,9 +265,12 @@ nouveaux decks.
 
 Le projet utilise un canevas de référence de 1080 × 1920 avec étirement
 `canvas_items` et l'aspect `expand` : les écrans plus hauts que le 9:16
-reçoivent de l'espace supplémentaire au lieu de bandes noires. Les dessins des
-fonds gardent une échelle uniforme et se centrent dans cet espace ; le fond
-charbon couvre le reste de l'écran sans ovaliser ni rogner les motifs.
+reçoivent de l'espace supplémentaire au lieu de bandes noires. Les motifs
+centrés gardent une échelle uniforme ; les salles BOARD et PVP ancrent en plus
+leurs rails et arches à la largeur réelle pour rester plein cadre sur tablette.
+Les compositions de combat et de préparation utilisent largeur et hauteur
+disponibles : le Redmi de référence expose environ 1080 × 2400 au layout,
+contre 1200 × 1920 pour la tablette.
 
 ## Tests
 
@@ -235,7 +283,8 @@ godot --headless --fixed-fps 60 --path . res://tests/GodSystemChecks.tscn
 
 Cette suite couvre le catalogue, les sauvegardes, les règles de combat, les six
 familles, l'IA, les animations, les menus, les régressions de rendu et le PVP
-local (protocole, salon et commandes validées par l'hôte).
+local (protocole, salon, modes et séries, génération des loadouts, draft,
+confirmations et commandes validées par l'hôte).
 
 ```sh
 godot --headless --fixed-fps 60 --path . res://tests/TouchInputChecks.tscn

@@ -257,7 +257,11 @@ func _test_context_mapping() -> void:
 		"starting_player": GameState.PLAYER_TWO,
 		"participants": participants,
 	}
-	context.begin(config, GameState.PLAYER_TWO, 2, participants[1], participants[0])
+	# Les profils représentent volontairement l'ancien dieu du salon. La manche
+	# générée doit imposer les participants reçus dans sa configuration.
+	context.begin(config, GameState.PLAYER_TWO, 2,
+		{"name": "Ancien client", "god_id": "nerava", "deck": []},
+		{"name": "Ancien hôte", "god_id": "nerava", "deck": []})
 	_check(context.is_active() and context.side_of_peer(1) == GameState.PLAYER_ONE
 		and context.side_of_peer(2) == GameState.PLAYER_TWO,
 		"le contexte associe chaque peer_id à son camp")
@@ -266,7 +270,15 @@ func _test_context_mapping() -> void:
 		"le contexte connaît le camp local et le camp distant")
 	_check(context.local_name == "Client" and context.remote_name == "Hote"
 		and context.seed == 99 and context.starting_player == GameState.PLAYER_TWO,
-		"le contexte conserve profils, graine et premier joueur")
+		"le contexte prend les identités autoritaires de la manche, la graine et le premier joueur")
+	_check(context.local_god_id == "veskar" and context.remote_god_id == "veskar"
+		and context.local_deck == _deck() and context.remote_deck == _deck(),
+		"un dieu et un deck générés remplacent les anciens profils du salon")
+	_check(context.lobby_local_profile()["god_id"] == "nerava"
+		and context.lobby_remote_profile()["god_id"] == "nerava"
+		and context.lobby_local_profile()["deck"].is_empty()
+		and context.lobby_remote_profile()["deck"].is_empty(),
+		"les profils du salon restent séparés des loadouts autoritaires de la manche")
 	_check(context.deck_of_side(GameState.PLAYER_ONE) == _deck(),
 		"le contexte expose le deck de chaque camp au moteur")
 	context.clear()

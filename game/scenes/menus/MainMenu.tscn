@@ -180,3 +180,79 @@ script = ExtResource("4_touch_button")
 
 [node name="BottomNav" parent="." unique_id=2090898695 instance=ExtResource("3_nav")]
 grow_horizontal = 2
+
+[node name="DeckWarningOverlay" type="Control" parent="."]
+visible = false
+z_index = 100
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+
+[node name="Backdrop" type="ColorRect" parent="DeckWarningOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0.02, 0.015, 0.025, 0.86)
+
+[node name="Center" type="CenterContainer" parent="DeckWarningOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 48.0
+offset_right = -48.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+
+[node name="Panel" type="PanelContainer" parent="DeckWarningOverlay/Center"]
+custom_minimum_size = Vector2(760, 0)
+layout_mode = 2
+theme_type_variation = &"DeckPanel"
+
+[node name="Content" type="VBoxContainer" parent="DeckWarningOverlay/Center/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 28
+
+[node name="Title" type="Label" parent="DeckWarningOverlay/Center/Panel/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.678, 0.49, 1)
+theme_override_font_sizes/font_size = 48
+text = "DECK INCOMPLET"
+horizontal_alignment = 1
+
+[node name="Message" type="Label" parent="DeckWarningOverlay/Center/Panel/Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "VEUILLEZ COMPLÉTER VOTRE DECK"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="Actions" type="HBoxContainer" parent="DeckWarningOverlay/Center/Panel/Content"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="CloseButton" type="Button" parent="DeckWarningOverlay/Center/Panel/Content/Actions"]
+custom_minimum_size = Vector2(0, 112)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 32
+text = "FERMER"
+script = ExtResource("4_touch_button")
+
+[node name="CompleteDeckButton" type="Button" parent="DeckWarningOverlay/Center/Panel/Content/Actions"]
+custom_minimum_size = Vector2(0, 112)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"PrimaryButton"
+theme_override_font_sizes/font_size = 32
+text = "COMPLÉTER MON DECK"
+script = ExtResource("4_touch_button")

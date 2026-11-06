@@ -2,9 +2,9 @@
 ## Vue du plateau : construit les cases, affiche les pierres, anime les captures.
 ## Ne contient AUCUNE logique de jeu — on lui donne un GameState, il affiche.
 ##
-## Point 7 (bug de zoom) réglé définitivement : le plateau est dimensionné et
-## positionné UNE SEULE FOIS (build), puis plus jamais recalculé. Aucune écoute
-## du signal "resized". Poser une carte ne change donc jamais la taille.
+## La géométrie est recalculée uniquement lorsque l'espace d'affichage change.
+## Les mises à jour de partie ne touchent jamais à la taille du plateau : poser
+## une carte ne peut donc plus provoquer de zoom ou de déplacement.
 class_name BoardView
 extends Control
 
@@ -33,9 +33,9 @@ var _cell_styles: Dictionary = {}
 var local_owner: int = GameState.PLAYER_HUMAN
 
 
-## Construit le plateau une fois, à une taille carrée fixe calculée sur la
-## largeur disponible (constante en portrait). Idempotent : ne refait rien si
-## déjà construit.
+## Construit les seize cases une seule fois. Leur géométrie peut ensuite être
+## recalculée uniquement lors d'un vrai changement de viewport ; un changement
+## d'état du match ne redimensionne jamais le plateau.
 func build() -> void:
 	if _built:
 		return
@@ -46,17 +46,9 @@ func build() -> void:
 	_slots.clear()
 	_cards.clear()
 
-	var board_side: float = size.x
-	if size.y > 0.0 and board_side > size.y:
-		board_side = size.y
-	var cell_size: float = (board_side - GAP * float(GameState.BOARD_SIZE - 1)) / float(GameState.BOARD_SIZE)
-	var origin := Vector2((size.x - board_side) * 0.5, 0.0)
-
 	for row in range(GameState.BOARD_SIZE):
 		for col in range(GameState.BOARD_SIZE):
 			var slot := _make_slot(row, col)
-			slot.position = origin + Vector2(col * (cell_size + GAP), row * (cell_size + GAP))
-			slot.size = Vector2(cell_size, cell_size)
 			add_child(slot)
 			_slots.append(slot)
 			_cards.append(null)
@@ -69,6 +61,32 @@ func build() -> void:
 	animations.name = "Animations"
 	add_child(animations)
 	animations.setup(self)
+	update_geometry()
+
+
+func update_geometry() -> void:
+	if not _built or _slots.size() != GameState.total_cells():
+		return
+	var board_side := minf(size.x, size.y) if size.y > 0.0 else size.x
+	if board_side <= 0.0:
+		return
+	var cell_size := (board_side - GAP * float(GameState.BOARD_SIZE - 1)) \
+		/ float(GameState.BOARD_SIZE)
+	var origin := Vector2((size.x - board_side) * 0.5, (size.y - board_side) * 0.5)
+	for row in range(GameState.BOARD_SIZE):
+		for col in range(GameState.BOARD_SIZE):
+			var index := GameState.cell_index(row, col)
+			var slot: Panel = _slots[index]
+			slot.position = origin + Vector2(
+				col * (cell_size + GAP), row * (cell_size + GAP))
+			slot.size = Vector2.ONE * cell_size
+			var card: StoneCard = _cards[index]
+			if card != null:
+				card.position = Vector2.ZERO
+				card.size = slot.size
+	if _swarm_link_layer != null:
+		_swarm_link_layer.size = size
+	queue_redraw()
 
 
 func _make_slot(row: int, col: int) -> Panel:

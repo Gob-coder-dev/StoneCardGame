@@ -84,7 +84,10 @@ func texture(path: String) -> Texture2D:
 		_store(path, cached)
 		return cached
 	_request(path, true)
-	return null
+	# En headless, `_request` charge directement et émet `texture_ready` avant
+	# de revenir. Renvoyer la texture stockée évite que l'appelant l'écrase
+	# avec un `null` alors que le signal synchrone l'a déjà fournie.
+	return _textures.get(path) as Texture2D
 
 
 func preload_stones(stone_ids: Array) -> void:

@@ -43,7 +43,7 @@ script = ExtResource("6_hud")
 
 [node name="BoardArea" type="Control" parent="Root"]
 layout_mode = 2
-size_flags_vertical = 3
+size_flags_vertical = 4
 
 [node name="BoardView" type="Control" parent="Root/BoardArea"]
 layout_mode = 1
@@ -59,9 +59,8 @@ theme_override_font_sizes/font_size = 34
 text = "Ta main"
 horizontal_alignment = 1
 
-[node name="HandView" type="GridContainer" parent="Root"]
+[node name="HandView" type="Container" parent="Root"]
 layout_mode = 2
 custom_minimum_size = Vector2(0, 468)
 size_flags_vertical = 0
-columns = 4
 script = ExtResource("5_handview")

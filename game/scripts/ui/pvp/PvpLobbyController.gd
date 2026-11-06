@@ -10,9 +10,11 @@ extends Control
 const TouchButtonScript := preload("res://scripts/ui/input/TouchButton.gd")
 ## Constantes d'état et type exposé à la vue ; le cycle reste dans le flow.
 const LobbyCoordinator := preload("res://scripts/network/LanLobbyCoordinator.gd")
-const FlowModel := preload("res://scripts/ui/pvp/PvpLobbyFlow.gd")
+const FlowModel := preload("res://scripts/application/pvp/PvpLobbyFlow.gd")
 const AddressResolver := preload("res://scripts/network/LanAddressResolver.gd")
+const RulesModel := preload("res://scripts/domain/MatchRules.gd")
 const Routes := preload("res://scripts/ui/GameRoutes.gd")
+const Presenter := preload("res://scripts/ui/pvp/PvpLobbyPresenter.gd")
 
 const DECK_WARNING: String = "VEUILLEZ COMPLÉTER VOTRE DECK"
 
@@ -45,6 +47,18 @@ const MODE_JOIN := FlowModel.MODE_JOIN
 @onready var lobby_screen: VBoxContainer = $Root/Scroll/Content/LobbyScreen
 @onready var lobby_title: Label = $Root/Scroll/Content/LobbyScreen/LobbyTitle
 @onready var lobby_hint: Label = $Root/Scroll/Content/LobbyScreen/LobbyHint
+@onready var rules_panel: PanelContainer = \
+	$Root/Scroll/Content/LobbyScreen/RulesPanel
+@onready var mode_option: OptionButton = \
+	$Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox/ModeRow/ModeOption
+@onready var series_option: OptionButton = \
+	$Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox/SeriesRow/SeriesOption
+@onready var tier_option: OptionButton = \
+	$Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox/TierRow/TierOption
+@onready var tier_row: HBoxContainer = \
+	$Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox/TierRow
+@onready var rules_hint: Label = \
+	$Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox/RulesHint
 @onready var address_panel: PanelContainer = \
 	$Root/Scroll/Content/LobbyScreen/AddressPanel
 @onready var address_button: Button = \
@@ -84,6 +98,8 @@ const MODE_JOIN := FlowModel.MODE_JOIN
 	$ConnectionOverlay/ConnectionCenter/ConnectionPanel/ConnectionContent/ConnectionActions/CloseButton
 @onready var background: MenuBackground = $Background
 
+## Point d'injection réservé aux tests : le jeu réel utilise toujours GameRoutes.
+var scene_changer: Callable = Callable()
 var _flow: PvpLobbyFlow = FlowModel.new()
 ## Compatibilité de lecture pour les vues et les tests ; l'état appartient au flow.
 var _mode: String:
@@ -100,6 +116,7 @@ var _lobby: LanLobbyCoordinator:
 	set(value): _flow.lobby = value
 var _notice := ""
 var _leaving := false
+var _resumed := false
 var _connection_attempt_pending: bool:
 	get: return _flow.connection_attempt_pending
 	set(value): _flow.connection_attempt_pending = value
@@ -122,6 +139,7 @@ func _ready() -> void:
 	_flow.games_changed.connect(_on_games_changed)
 	_flow.notice_requested.connect(_show_notice)
 	_flow.match_started.connect(_on_match_started)
+	_flow.series_ready.connect(_on_series_ready)
 	back_button.pressed.connect(_go_back)
 	create_button.pressed.connect(_start_hosting)
 	join_button.pressed.connect(_start_search)
@@ -133,13 +151,24 @@ func _ready() -> void:
 	retry_connection_button.pressed.connect(_retry_connection)
 	close_connection_button.pressed.connect(_dismiss_connection)
 	address_input.text_submitted.connect(_on_address_submitted)
+	_build_rule_options()
 	LanSession.connected_to_host.connect(_on_connected_to_host)
 	LanSession.state_changed.connect(_on_session_state)
 	LanSession.notice.connect(_show_notice)
-	# Le salon repart toujours d'un état réseau propre, puis explique pourquoi
-	# le joueur y revient (fin de match, déconnexion, désynchronisation).
-	PvpMatchContext.clear()
-	LanSession.reset()
+	# Un retour connecté reprend le lien et les deux profils existants. Toute
+	# autre entrée repart d'un état réseau propre et explique pourquoi le joueur
+	# revient (fin de match, déconnexion, désynchronisation).
+	var resume := PvpMatchContext.take_lobby_resume()
+	if not resume.is_empty() and _flow.resume_session(resume):
+		_resumed = true
+		PvpMatchContext.clear()
+		PvpMatchContext.stage = PvpMatchContext.Stage.LOBBY_RETURN
+		LanSession.enter_lobby()
+		_notice = "Retour au salon : la connexion et vos profils sont conservés."
+	else:
+		PvpMatchContext.close_presence()
+		PvpMatchContext.clear()
+		LanSession.reset()
 	var notice := LanSession.last_notice
 	LanSession.last_notice = ""
 	_refresh_status()
@@ -172,6 +201,8 @@ func _disconnect_flow() -> void:
 		_flow.notice_requested.disconnect(_show_notice)
 	if _flow.match_started.is_connected(_on_match_started):
 		_flow.match_started.disconnect(_on_match_started)
+	if _flow.series_ready.is_connected(_on_series_ready):
+		_flow.series_ready.disconnect(_on_series_ready)
 
 
 ## La découverte doit tourner dans **tous** les modes : c'est `poll` qui émet
@@ -264,7 +295,7 @@ func _go_back() -> void:
 	if _mode == MODE_NONE and _lobby == null:
 		_leaving = true
 		_reset_session()
-		Routes.go(get_tree(), Routes.MAIN_MENU)
+		_go_route(Routes.MAIN_MENU)
 		return
 	_reset_session()
 	_refresh_status()
@@ -277,14 +308,6 @@ func _notification(what: int) -> void:
 
 func _on_session_state(session_state: int) -> void:
 	_flow.handle_session_state(session_state)
-
-
-## ─── Cycle réseau ────────────────────────────────────────────────────────────
-
-func _start_broadcast() -> void:
-	# Conservé comme point d'extension pour les scènes anciennes ; le flow lance
-	# désormais la diffusion pendant `start_hosting()`.
-	return
 
 
 func _stop_discovery() -> void:
@@ -323,12 +346,66 @@ func _on_match_started(config: Dictionary) -> void:
 	if local_profile.is_empty() or remote_profile.is_empty():
 		_show_notice("Configuration de partie invalide.")
 		return
+	var series_flow := _lobby.series_coordinator()
+	var kept_link: LanSessionLink = null
+	var rules := _lobby.rules()
+	if series_flow != null:
+		PvpMatchContext.set_series(series_flow.public_state())
+		kept_link = _flow.release_for_series()
+	else:
+		_flow.close_lobby()
 	_leaving = true
 	_flow.stop_discovery()
-	_flow.close_lobby()
-	PvpMatchContext.begin(config, side, LanSession.local_peer_id(), local_profile, remote_profile)
+	PvpMatchContext.set_presence(LanPvpPresence.PRE_BATTLE)
+	PvpMatchContext.begin(config, side, LanSession.local_peer_id(),
+		local_profile, remote_profile, series_flow != null, rules)
+	if series_flow != null:
+		PvpMatchContext.set_series(series_flow.public_state())
+		PvpMatchContext.keep_series(series_flow, kept_link)
 	LanSession.enter_match()
-	Routes.go(get_tree(), Routes.PRE_BATTLE)
+	_go_route(Routes.PRE_BATTLE)
+
+
+## ─── Préparation de série ───────────────────────────────────────────────────
+
+## Le salon se démonte sans fermer la connexion : le lien et le coordinateur de
+## série sont confiés au contexte, puis la scène de préparation prend le relais.
+func _on_series_ready(_rules: Dictionary) -> void:
+	if _leaving or _lobby == null or _lobby.series_coordinator() == null:
+		return
+	var series_flow := _lobby.series_coordinator()
+	# Classique FT2/FT3 ne passe pas par une préparation vide : son client doit
+	# toutefois recevoir `prepare_start` avant `round_start`. Le salon reste donc
+	# affiché jusqu'à ce que le coordinateur émette `match_started` sur la
+	# configuration de manche, via son branchement `round_ready`.
+	if str(series_flow.rules().get("mode", "")) == RulesModel.MODE_CLASSIC:
+		return
+	var side := int(_lobby.state()["local_side"])
+	var local_profile := series_flow.local_profile()
+	var remote_profile := series_flow.remote_profile()
+	var flow_rules := series_flow.rules()
+	var local_peer := LanSession.local_peer_id()
+	var remote_peer := LanProtocol.SERVER_ID if side == GameState.PLAYER_TWO else _first_peer()
+	var kept_link := _flow.release_for_series()
+	PvpMatchContext.set_presence(LanPvpPresence.PREPARATION)
+	PvpMatchContext.begin_preparation(series_flow, kept_link, side, local_peer, remote_peer,
+		local_profile, remote_profile, flow_rules, series_flow.public_state())
+	_leaving = true
+	_flow.stop_discovery()
+	LanSession.enter_match()
+	_go_route(Routes.PVP_PREPARATION)
+
+
+func _go_route(path: String) -> void:
+	if scene_changer.is_valid():
+		scene_changer.call(path)
+		return
+	Routes.go(get_tree(), path)
+
+
+func _first_peer() -> int:
+	var peers := LanSession.peer_ids()
+	return int(peers[0]) if not peers.is_empty() else 0
 
 
 static func _profile_of(participant: Dictionary) -> Dictionary:
@@ -444,24 +521,90 @@ func _fill_lobby() -> void:
 	var remote_god_data := local_god_data if remote_god_id == "" \
 		else StoneLoader.get_god(remote_god_id)
 	background.set_gods(local_god_data, remote_god_data)
-	var status := str(lobby["status"])
-	lobby_title.text = "SALLE OUVERTE"
-	lobby_hint.text = "En attente d'un adversaire sur le même Wi-Fi…"
-	if status == LobbyCoordinator.STATUS_CONNECTED:
-		lobby_title.text = "ADVERSAIRE CONNECTÉ"
-		lobby_hint.text = "Vérifiez votre dieu, puis touchez PRÊT."
-	elif status == LobbyCoordinator.STATUS_BOTH_READY:
-		lobby_title.text = "LES DEUX JOUEURS SONT PRÊTS"
-		lobby_hint.text = "La partie démarre…"
-	elif status == LobbyCoordinator.STATUS_ERROR:
-		lobby_title.text = "ERREUR"
-		lobby_hint.text = str(lobby["error"])
+	var remote_in_game := bool(lobby.get("remote_in_game", false))
+	var header := Presenter.header(lobby)
+	lobby_title.text = str(header["title"])
+	lobby_hint.text = str(header["hint"])
 	address_panel.visible = is_host
 	address_button.text = _address_text()
+	_sync_rules(lobby)
 	_fill_player(local_role, local_name, local_god, local_status, "VOUS", local)
 	_fill_player(remote_role, remote_name, remote_god, remote_status, "ADVERSAIRE",
-		remote, "En attente d'un adversaire…")
+		remote, "En attente d'un adversaire…", remote_in_game)
 	_update_ready_button(lobby)
+	if _resumed:
+		_resumed = false
+		lobby_title.text = "SALON REPRIS"
+		lobby_hint.text = "La connexion est conservée. Les règles sont de nouveau modifiables."
+
+
+## ─── Règles de la série ─────────────────────────────────────────────────────
+
+## Les listes viennent du domaine : aucun libellé n'est recopié dans la scène.
+func _build_rule_options() -> void:
+	for mode in RulesModel.MODES:
+		mode_option.add_item(RulesModel.mode_label(mode))
+		mode_option.set_item_metadata(mode_option.item_count - 1, mode)
+	for series in RulesModel.SERIES_FORMATS:
+		series_option.add_item(RulesModel.series_label(series))
+		series_option.set_item_metadata(series_option.item_count - 1, series)
+	for tier in range(RulesModel.MIN_POWER_TIER, RulesModel.MAX_POWER_TIER + 1):
+		tier_option.add_item("Palier %d" % tier)
+		tier_option.set_item_metadata(tier_option.item_count - 1, tier)
+	mode_option.item_selected.connect(_on_mode_selected)
+	series_option.item_selected.connect(_on_series_selected)
+	tier_option.item_selected.connect(_on_tier_selected)
+
+
+## Seul l'hôte peut modifier ; le verrouillage intervient après le double PRÊT.
+## Le client voit les mêmes valeurs, sans pouvoir les changer.
+func _sync_rules(lobby: Dictionary) -> void:
+	var view := Presenter.rules(lobby)
+	var rules: Dictionary = view["config"]
+	var editable := bool(view["editable"])
+	_select_rule(mode_option, str(rules.get("mode", RulesModel.MODE_CLASSIC)))
+	_select_rule(series_option, str(rules.get("series", RulesModel.SERIES_FT1)))
+	_select_rule(tier_option, int(rules.get("power_tier", RulesModel.DEFAULT_POWER_TIER)))
+	var uses_power_tier := bool(view["uses_power_tier"])
+	var minimum_tier := int(view["minimum_tier"])
+	for index in range(tier_option.item_count):
+		tier_option.set_item_disabled(index,
+			int(tier_option.get_item_metadata(index)) < minimum_tier)
+	tier_row.visible = uses_power_tier
+	mode_option.disabled = not editable
+	series_option.disabled = not editable
+	tier_option.disabled = not editable or not uses_power_tier
+	rules_panel.visible = not rules.is_empty()
+	rules_hint.text = str(view["hint"])
+	rules_hint.visible = rules_hint.text != ""
+
+
+func _select_rule(option: OptionButton, value: Variant) -> void:
+	for index in range(option.item_count):
+		if option.get_item_metadata(index) == value or str(option.get_item_metadata(index)) == str(value):
+			option.select(index)
+			return
+
+
+func _apply_rule(key: String, value: Variant) -> void:
+	if _lobby == null:
+		return
+	var result := _lobby.set_rule(key, value)
+	if not bool(result.get("ok", false)):
+		_show_notice(str(result.get("reason", "Option indisponible.")))
+	_fill_lobby()
+
+
+func _on_mode_selected(index: int) -> void:
+	_apply_rule("mode", mode_option.get_item_metadata(index))
+
+
+func _on_series_selected(index: int) -> void:
+	_apply_rule("series", series_option.get_item_metadata(index))
+
+
+func _on_tier_selected(index: int) -> void:
+	_apply_rule("power_tier", tier_option.get_item_metadata(index))
 
 
 ## Une carte joueur ne montre que ce qui se lit : nom, dieu dans sa couleur et
@@ -469,7 +612,7 @@ func _fill_lobby() -> void:
 ## ici, et son état n'intéresse pas l'adversaire.
 func _fill_player(role_label: Label, name_label: Label, god_label: Label,
 		status_label: Label, role: String, profile: Dictionary,
-		waiting_text: String = "") -> void:
+		waiting_text: String = "", remote_in_game: bool = false) -> void:
 	role_label.text = role
 	var player_name := str(profile.get("name", ""))
 	var present := player_name != "" and player_name != LobbyCoordinator.UNKNOWN_NAME
@@ -487,6 +630,10 @@ func _fill_player(role_label: Label, name_label: Label, god_label: Label,
 	status_label.visible = present
 	if not present:
 		return
+	if remote_in_game:
+		status_label.text = "EN PARTIE"
+		status_label.add_theme_color_override("font_color", UITheme.COL_WARNING)
+		return
 	var ready := bool(profile.get("ready", false))
 	status_label.text = "PRÊT" if ready else "PAS PRÊT"
 	status_label.add_theme_color_override("font_color",
@@ -496,7 +643,9 @@ func _fill_player(role_label: Label, name_label: Label, god_label: Label,
 func _update_ready_button(lobby: Dictionary) -> void:
 	var ready_local := _lobby.is_ready_local()
 	var both_ready := bool(lobby["both_ready"])
-	ready_button.disabled = not bool(lobby["can_ready"]) or ready_local or both_ready
+	var remote_in_game := bool(lobby.get("remote_in_game", false))
+	ready_button.disabled = not bool(lobby["can_ready"]) or ready_local or both_ready \
+		or remote_in_game
 	if both_ready:
 		ready_button.text = "DÉMARRAGE…"
 	elif ready_local:

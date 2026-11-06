@@ -57,6 +57,7 @@ func _init() -> void:
 	set_color("font_placeholder_color", "LineEdit", UITheme.COL_TEXT_DIM)
 	set_color("caret_color", "LineEdit", UITheme.COL_ACCENT_LIGHT)
 	set_color("selection_color", "LineEdit", UITheme.COL_SELECTED.lightened(0.2))
+	_dropdowns()
 	for type in ["VScrollBar", "HScrollBar"]:
 		set_stylebox("scroll", type, _scroll_style(UITheme.COL_BG))
 		set_stylebox("grabber", type, _scroll_style(UITheme.COL_BORDER))
@@ -89,3 +90,47 @@ func _buttons(type: String, primary: bool) -> void:
 	var focus := UITheme.panel_style(Color.TRANSPARENT, UITheme.COL_NEON_PINK, 3, 14)
 	focus.shadow_size = 0
 	set_stylebox("focus", type, focus)
+
+
+## Les OptionButton ouvrent un PopupMenu dans une fenêtre séparée : les deux
+## types doivent être stylés explicitement, sinon le menu natif de Godot fuit
+## au milieu de l'identité visuelle du jeu.
+func _dropdowns() -> void:
+	_buttons("OptionButton", false)
+	set_font_size("font_size", "OptionButton", UITheme.FONT_SMALL)
+	set_color("font_color", "OptionButton", UITheme.COL_TEXT)
+	set_color("font_hover_color", "OptionButton", UITheme.COL_ACCENT_LIGHT)
+	set_color("font_pressed_color", "OptionButton", UITheme.COL_ACCENT_LIGHT)
+	set_color("font_disabled_color", "OptionButton", UITheme.COL_TEXT_DIM.darkened(0.25))
+	set_color("modulate_arrow", "OptionButton", UITheme.COL_ACCENT_LIGHT)
+	set_constant("arrow_margin", "OptionButton", UITheme.GAP_SMALL)
+
+	var popup_panel := UITheme.panel_style(
+		UITheme.COL_BG.lightened(0.025), UITheme.COL_NEON, 3, 14)
+	popup_panel.content_margin_left = 8
+	popup_panel.content_margin_right = 8
+	popup_panel.content_margin_top = 8
+	popup_panel.content_margin_bottom = 8
+	set_stylebox("panel", "PopupMenu", popup_panel)
+	var popup_hover := StyleBoxFlat.new()
+	popup_hover.bg_color = UITheme.COL_SELECTED
+	popup_hover.border_color = UITheme.COL_ACCENT_LIGHT
+	popup_hover.set_border_width_all(2)
+	popup_hover.set_corner_radius_all(10)
+	popup_hover.content_margin_top = 10
+	popup_hover.content_margin_bottom = 10
+	set_stylebox("hover", "PopupMenu", popup_hover)
+	var separator := StyleBoxLine.new()
+	separator.color = UITheme.COL_BORDER
+	separator.thickness = 2
+	separator.grow_begin = -UITheme.GAP_SMALL
+	separator.grow_end = -UITheme.GAP_SMALL
+	set_stylebox("separator", "PopupMenu", separator)
+	set_color("font_color", "PopupMenu", UITheme.COL_TEXT)
+	set_color("font_hover_color", "PopupMenu", UITheme.COL_ACCENT_LIGHT)
+	set_color("font_disabled_color", "PopupMenu", UITheme.COL_TEXT_DIM.darkened(0.25))
+	set_color("font_separator_color", "PopupMenu", UITheme.COL_TEXT_DIM)
+	set_font_size("font_size", "PopupMenu", UITheme.FONT_SMALL)
+	set_constant("v_separation", "PopupMenu", 10)
+	set_constant("item_start_padding", "PopupMenu", UITheme.GAP_MEDIUM)
+	set_constant("item_end_padding", "PopupMenu", UITheme.GAP_MEDIUM)
