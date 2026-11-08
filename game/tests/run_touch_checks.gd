@@ -9,6 +9,11 @@ const OpponentCatalogModel := preload("res://scripts/data/OpponentCatalog.gd")
 const FakeTransport := preload("res://tests/support/FakeLanTransport.gd")
 const SeriesCoordinatorModel := preload("res://scripts/network/LanSeriesCoordinator.gd")
 const MatchRulesModel := preload("res://scripts/domain/MatchRules.gd")
+const CampaignContentLoaderModel := preload("res://scripts/data/campaign/CampaignContentLoader.gd")
+const CampaignGraphModel := preload("res://scripts/domain/campaign/CampaignGraph.gd")
+const CampaignProgressModel := preload("res://scripts/domain/campaign/CampaignProgress.gd")
+const CampaignStoreModel := preload("res://scripts/data/campaign/CampaignProgressStore.gd")
+const CampaignServiceModel := preload("res://scripts/application/campaign/CampaignService.gd")
 ## Secondes de jeu : avec --fixed-fps 60, la limite ne dépend pas de la machine.
 const TIME_LIMIT := 120.0
 
@@ -66,6 +71,7 @@ func _run() -> void:
 	await _check_pvp_lobby()
 	await _check_pvp_draft_touch()
 	await _check_other_menus()
+	await _check_campaign_map()
 	await _check_result_actions()
 	await _check_buffered_input()
 	await _check_battle_touch()
@@ -808,6 +814,55 @@ func _settle() -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
 	await get_tree().process_frame
+
+
+func _check_campaign_map() -> void:
+	var path := "user://campaign_touch_checks.json"
+	for suffix in ["", ".tmp", ".unreadable"]:
+		if FileAccess.file_exists(path + suffix):
+			DirAccess.remove_absolute(path + suffix)
+	var content := CampaignContentLoaderModel.read()
+	if not bool(content.get("ok", false)):
+		_check(false, "campagne tactile : le contenu est valide")
+		return
+	var graph: CampaignGraph = CampaignGraphModel.build(content["definition"])
+	var progress := CampaignProgressModel.new()
+	progress.mark_completed("tuto_01")
+	var service := CampaignServiceModel.new(graph, progress, CampaignStoreModel.new(path), [])
+	CampaignContext.set_service_for_tests(service)
+	CampaignContext.focus_node_id = "tuto_02"
+	var page: Control = await _open_scene("res://scenes/campaign/CampaignMap.tscn")
+	await _settle()
+	var map: CampaignMapView = page.get_node("Root/Scroll/MapView")
+	var scroll: ScrollContainer = page.get_node("Root/Scroll")
+	var dialog: CampaignLevelDialog = page.get_node("LevelDialog")
+	scroll.scroll_vertical = 0
+	await _settle()
+	var locked: Control = map.node_control("tuto_03")
+	await _tap(_center(locked))
+	_check(not dialog.visible, "campagne tactile : un nœud verrouillé n'ouvre pas sa fiche")
+	var available: Control = map.node_control("tuto_02")
+	await _tap(_center(available))
+	_check(dialog.visible and not dialog.launch_button.disabled,
+		"campagne tactile : toucher un nœud accessible ouvre sa fiche")
+	await _tap(_center(dialog.close_button))
+	_check(not dialog.visible, "campagne tactile : la croix referme la fiche")
+	var completed: Control = map.node_control("tuto_01")
+	await _tap(_center(completed))
+	_check(dialog.visible and dialog.launch_button.text == "REJOUER",
+		"campagne tactile : un niveau terminé reste rejouable")
+	await _tap(_center(dialog.close_button))
+	scroll.scroll_vertical = 0
+	await _settle()
+	var before := scroll.scroll_vertical
+	await _swipe(_center(available), Vector2(0, -260))
+	_check(scroll.scroll_vertical > before + 30 and not dialog.visible,
+		"campagne tactile : glisser depuis un nœud fait défiler sans l'activer")
+	await _remove(page)
+	CampaignContext.reset_for_tests()
+	for suffix in ["", ".tmp", ".unreadable"]:
+		if FileAccess.file_exists(path + suffix):
+			DirAccess.remove_absolute(path + suffix)
 
 
 func _check(condition: bool, label: String) -> void:

@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/campaign/CampaignNodeView.gd" id="1_node"]
+
+[node name="CampaignNode" type="Button"]
+custom_minimum_size = Vector2(150, 150)
+focus_mode = 0
+script = ExtResource("1_node")

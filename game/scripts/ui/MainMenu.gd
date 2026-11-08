@@ -5,7 +5,7 @@ const Routes := preload("res://scripts/ui/GameRoutes.gd")
 
 ## Destination de chaque mode, après validation du deck.
 const MODE_SCENES: Dictionary = {
-	"campaign": Routes.ENCOUNTER_SELECT,
+	"campaign": Routes.CAMPAIGN_MAP,
 	"pvp": Routes.PVP_LOBBY,
 }
 const DECK_WARNING: String = "VEUILLEZ COMPLÉTER VOTRE DECK"

@@ -38,6 +38,9 @@ func configure(config: Dictionary, player_profile: Dictionary,
 		"mode": mode_config["mode"],
 		"power_tier": mode_config["power_tier"],
 		"series": SeriesRules.normalized(str(config.get("series", SeriesRules.SERIES_FT1))),
+		"generator_god_id": str(config.get("generator_god_id", "")),
+		"generator_min_god_cards": int(config.get("generator_min_god_cards", 0)),
+		"mirror_fixed_deck": (config.get("mirror_fixed_deck", []) as Array).duplicate(),
 		"revision": 0,
 	}
 	_profile_one = _profile_snapshot(player_profile)
@@ -75,7 +78,7 @@ func prepare_round() -> Dictionary:
 		_emit_state()
 		return {"ok": true, "requires_draft": true, "reused": false}
 	var prepared := _service.prepare_immediate(mode, round_seed,
-		int(_rules["power_tier"]), _profile_one, _profile_two)
+		int(_rules["power_tier"]), _profile_one, _profile_two, _rules)
 	if not bool(prepared.get("ok", false)):
 		return _failure(str(prepared.get("reason", "Préparation impossible.")))
 	_install_loadouts(prepared["loadout_one"], prepared["loadout_two"])

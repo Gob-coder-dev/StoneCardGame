@@ -92,8 +92,8 @@ func _setup_pvp() -> void:
 	duel_label.text = "Duel local contre"
 	npc_label.text = PvpMatchContext.remote_name if PvpMatchContext.remote_name != "" \
 		else "Adversaire"
-	difficulty_label.text = ""
-	difficulty_label.visible = false
+	difficulty_label.text = "PVP"
+	difficulty_label.visible = true
 	var local_god := StoneLoader.get_god(PvpMatchContext.local_god_id)
 	var remote_god := StoneLoader.get_god(PvpMatchContext.remote_god_id)
 	background.set_gods(local_god, remote_god)
@@ -230,6 +230,10 @@ func _go_back() -> void:
 		PvpMatchContext.clear()
 		LanSession.leave_with_notice("Partie annulée avant le premier coup.")
 		Routes.go(get_tree(), Routes.PVP_LOBBY)
+		return
+	if BattleContext.has_campaign_node():
+		BattleContext.clear_campaign_node()
+		Routes.go(get_tree(), Routes.CAMPAIGN_MAP)
 		return
 	BattleContext.select_source(BattleContext.navigation_source_id())
 	Routes.go(get_tree(), Routes.ENCOUNTER_PATH)

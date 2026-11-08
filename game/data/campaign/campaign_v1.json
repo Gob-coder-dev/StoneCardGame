@@ -1,0 +1,899 @@
+{
+  "id": "samstone_campaign",
+  "title": "La Carte de SamStone",
+  "campaign_version": 1,
+  "map": {
+    "width": 1080,
+    "height": 2400
+  },
+  "start_node_id": "tuto_01",
+  "final_node_id": "final_01",
+  "nodes": [
+    {
+      "id": "tuto_01",
+      "name": "Le Seuil",
+      "chapter": "Seuil",
+      "region": "Le refuge",
+      "type": "tutorial",
+      "position": {
+        "x": 540,
+        "y": 160
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "tutoriel_seuil",
+      "accent": "#a6c79a",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "",
+        "fixed_deck": [
+          "ecorche_angle_n1",
+          "le_drape_du_seuil_n1",
+          "mordeur_des_combles_n1",
+          "le_sac_a_murmures_n1",
+          "gueule_de_travers_n1",
+          "avortons_des_caves_n1",
+          "rampant_des_fosses_n1",
+          "ogre_droitier_n1"
+        ],
+        "max_power_tier": 1,
+        "ai_profile": {
+          "precision": 0.0,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 1101
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "tuto_02",
+      "name": "La Leçon",
+      "chapter": "Seuil",
+      "region": "Le refuge",
+      "type": "tutorial",
+      "position": {
+        "x": 540,
+        "y": 330
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "tutoriel_lecture",
+      "accent": "#a6c79a",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "",
+        "fixed_deck": [
+          "ecorche_angle_n1",
+          "le_drape_du_seuil_n1",
+          "mordeur_des_combles_n1",
+          "le_sac_a_murmures_n1",
+          "gueule_de_travers_n1",
+          "avortons_des_caves_n1",
+          "rampant_des_fosses_n1",
+          "ogre_droitier_n1"
+        ],
+        "max_power_tier": 1,
+        "ai_profile": {
+          "precision": 0.0,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 1102
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "tuto_03",
+      "name": "Le Premier Pas",
+      "chapter": "Seuil",
+      "region": "Le refuge",
+      "type": "tutorial",
+      "position": {
+        "x": 540,
+        "y": 500
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "tutoriel_premier_pas",
+      "accent": "#a6c79a",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "",
+        "fixed_deck": [
+          "avortons_des_caves_n2",
+          "mache_mur_n2",
+          "dos_fendu_n1",
+          "ogre_a_deux_bouches_n1",
+          "rampant_des_fosses_n1",
+          "gueule_de_travers_n2",
+          "fouisseur_aveugle_n1",
+          "le_sac_a_murmures_n2"
+        ],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 0.0,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 1103
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "veskar_01",
+      "name": "La Table du Croupier",
+      "chapter": "Carrefour",
+      "region": "Les Aléators",
+      "type": "normal",
+      "position": {
+        "x": 180,
+        "y": 700
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "accent": "#e75aa8",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "veskar",
+        "fixed_deck": [
+          "gueule_de_travers_n2",
+          "tricorne_errant_n1",
+          "griffe_a_jetons_n1",
+          "le_nud_hurlant_n1",
+          "devoreur_de_lanternes_n1",
+          "croupier_manchot_n1",
+          "avortons_des_caves_n2",
+          "le_sac_a_murmures_n2"
+        ],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 0.25,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 2101
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "nerava_01",
+      "name": "Les Fièvres Basses",
+      "chapter": "Carrefour",
+      "region": "Les Flétris",
+      "type": "normal",
+      "position": {
+        "x": 540,
+        "y": 700
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "accent": "#9b6bc7",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "generated",
+        "fixed_god_id": "nerava",
+        "fixed_deck": [],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 0.25,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 2102
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "kharun_01",
+      "name": "La Muraille Fendue",
+      "chapter": "Carrefour",
+      "region": "Les Remparts",
+      "type": "normal",
+      "position": {
+        "x": 900,
+        "y": 700
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "accent": "#72c7d8",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "kharun",
+        "fixed_deck": [
+          "ecorche_angle_n2",
+          "eclat_cuirasse_n2",
+          "le_sac_a_murmures_n1",
+          "le_nud_hurlant_n1",
+          "osselet_blinde_n2",
+          "colosse_rivete_n1",
+          "heaume_errant_n2",
+          "avortons_des_caves_n2"
+        ],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 0.25,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 2103
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "mini_optional_01",
+      "name": "Le Collectionneur",
+      "chapter": "Racines",
+      "region": "Les Assimilateurs",
+      "type": "mini_boss",
+      "position": {
+        "x": 120,
+        "y": 900
+      },
+      "dead_end": true,
+      "mini_boss_kind": "optional",
+      "tutorial_id": "",
+      "accent": "#ef8b45",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "enigma",
+        "fixed_deck": [
+          "devoreur_de_lanternes_n2",
+          "avortons_des_caves_n1",
+          "preleveur_de_plaques_n1",
+          "le_sac_a_murmures_n2",
+          "laffame_du_puits_n1",
+          "gueule_de_travers_n3",
+          "la_broyeuse_dempreintes_n1",
+          "le_demonteur_n1"
+        ],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.75,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 2201
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "veskar_02",
+      "name": "Le Coup Double",
+      "chapter": "Racines",
+      "region": "Les Aléators",
+      "type": "normal",
+      "position": {
+        "x": 320,
+        "y": 900
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "accent": "#e75aa8",
+      "encounter": {
+        "game_mode": "random",
+        "opponent_god_policy": "generated",
+        "opponent_deck_policy": "generated",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.5,
+          "anticipation": false
+        },
+        "series_format": "ft2",
+        "seed_policy": "fixed_per_node",
+        "seed": 2202
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "ilyr_01",
+      "name": "La Ligne de Veille",
+      "chapter": "Racines",
+      "region": "Les Veilleurs",
+      "type": "normal",
+      "position": {
+        "x": 540,
+        "y": 900
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "accent": "#5fa8ff",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "generated",
+        "fixed_god_id": "ilyr",
+        "fixed_deck": [],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 0.25,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 2203
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "mirror_01",
+      "name": "Le Miroir de Verre",
+      "chapter": "Racines",
+      "region": "Le reflet",
+      "type": "normal",
+      "position": {
+        "x": 900,
+        "y": 900
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "accent": "#f0449c",
+      "encounter": {
+        "game_mode": "mirror",
+        "opponent_god_policy": "mirrored",
+        "opponent_deck_policy": "mirrored",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.5,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 2204
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "kharun_02",
+      "name": "Le Rempart Mobile",
+      "chapter": "Racines",
+      "region": "Les Remparts",
+      "type": "normal",
+      "position": {
+        "x": 900,
+        "y": 1080
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "accent": "#72c7d8",
+      "encounter": {
+        "game_mode": "random",
+        "opponent_god_policy": "generated",
+        "opponent_deck_policy": "generated",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.5,
+          "anticipation": false
+        },
+        "series_format": "ft2",
+        "seed_policy": "fixed_per_node",
+        "seed": 2205
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "sylkha_01",
+      "name": "La Meute Naissante",
+      "chapter": "Racines",
+      "region": "L’Essaim",
+      "type": "normal",
+      "position": {
+        "x": 540,
+        "y": 1260
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "accent": "#7fc95b",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "sylkha",
+        "fixed_deck": [
+          "nud_vivant_n1",
+          "fouisseur_aveugle_n1",
+          "dos_fendu_n1",
+          "gueule_de_travers_n3",
+          "mille_gueules_n1",
+          "bourgeon_mordant_n3",
+          "avortons_des_caves_n3",
+          "devoreur_de_lanternes_n2"
+        ],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.5,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 2206
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "veilleur_impasse",
+      "name": "Le Veilleur Immobile",
+      "chapter": "Racines",
+      "region": "Les Veilleurs",
+      "type": "normal",
+      "position": {
+        "x": 900,
+        "y": 1260
+      },
+      "dead_end": true,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "accent": "#5fa8ff",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "ilyr",
+        "fixed_deck": [
+          "lil_empale_n1",
+          "fauche_fond_n2",
+          "le_nud_hurlant_n1",
+          "avortons_des_caves_n3",
+          "echassier_des_brumes_n2",
+          "perce_voute_n2",
+          "devoreur_de_lanternes_n2",
+          "le_sac_a_murmures_n3"
+        ],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.5,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 2207
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "convergence_01",
+      "name": "La Convergence",
+      "chapter": "Convergence",
+      "region": "Le passage",
+      "type": "normal",
+      "position": {
+        "x": 540,
+        "y": 1440
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "accent": "#9b6bc7",
+      "encounter": {
+        "game_mode": "draft",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "draft",
+        "fixed_god_id": "nerava",
+        "fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.5,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 2301
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "boss_required_gate",
+      "name": "La Porte des Assimilateurs",
+      "chapter": "Convergence",
+      "region": "Les Assimilateurs",
+      "type": "mini_boss",
+      "position": {
+        "x": 540,
+        "y": 1620
+      },
+      "dead_end": false,
+      "mini_boss_kind": "mandatory",
+      "tutorial_id": "",
+      "accent": "#ef8b45",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "enigma",
+        "fixed_deck": [
+          "mordeur_des_combles_n4",
+          "le_collecteur_zero_n1",
+          "ogre_droitier_n3",
+          "mache_mur_n2",
+          "porte_greffes_n3",
+          "le_sac_a_murmures_n4",
+          "avortons_des_caves_n4",
+          "devoreur_de_lanternes_n3"
+        ],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.75,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 2302
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "choice_01",
+      "name": "Le Choix du Miroir",
+      "chapter": "Cime",
+      "region": "Le reflet",
+      "type": "normal",
+      "position": {
+        "x": 540,
+        "y": 1800
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "accent": "#f0449c",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "profile",
+        "opponent_deck_policy": "mirrored",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.5,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 2401
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "ilyr_02",
+      "name": "L’Œil du Guetteur",
+      "chapter": "Cime",
+      "region": "Les Veilleurs",
+      "type": "normal",
+      "position": {
+        "x": 320,
+        "y": 1980
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "accent": "#5fa8ff",
+      "encounter": {
+        "game_mode": "mirror",
+        "opponent_god_policy": "mirrored",
+        "opponent_deck_policy": "mirrored",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.75,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 2402
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "sylkha_02",
+      "name": "La Cathédrale-Mante",
+      "chapter": "Cime",
+      "region": "L’Essaim",
+      "type": "normal",
+      "position": {
+        "x": 760,
+        "y": 1980
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "accent": "#7fc95b",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "sylkha",
+        "fixed_deck": [
+          "le_tisseur_de_meutes_n2",
+          "mordeur_des_combles_n2",
+          "le_roi_des_oubliettes_n1",
+          "mache_mur_n3",
+          "le_replie_n2",
+          "devoreur_de_lanternes_n2",
+          "avortons_des_caves_n4",
+          "le_sac_a_murmures_n4"
+        ],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.75,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 2403
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "mini_optional_02",
+      "name": "La Machine aux Mille Dépouilles",
+      "chapter": "Cime",
+      "region": "Les Assimilateurs",
+      "type": "mini_boss",
+      "position": {
+        "x": 1000,
+        "y": 1900
+      },
+      "dead_end": true,
+      "mini_boss_kind": "optional",
+      "tutorial_id": "",
+      "accent": "#ef8b45",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "enigma",
+        "fixed_deck": [
+          "devoreur_de_lanternes_n2",
+          "avortons_des_caves_n1",
+          "preleveur_de_plaques_n1",
+          "le_sac_a_murmures_n2",
+          "laffame_du_puits_n1",
+          "gueule_de_travers_n3",
+          "la_broyeuse_dempreintes_n1",
+          "le_demonteur_n1"
+        ],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.75,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "per_attempt",
+        "seed": 2404
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "final_01",
+      "name": "Le Visage de Pierre",
+      "chapter": "Cime",
+      "region": "L’objectif",
+      "type": "boss",
+      "position": {
+        "x": 540,
+        "y": 2200
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "accent": "#df929c",
+      "encounter": {
+        "game_mode": "mirror",
+        "opponent_god_policy": "mirrored",
+        "opponent_deck_policy": "mirrored",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 1.0,
+          "anticipation": true
+        },
+        "series_format": "ft3",
+        "seed_policy": "fixed_per_node",
+        "seed": 2405
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e_tuto_1_2",
+      "from": "tuto_01",
+      "to": "tuto_02"
+    },
+    {
+      "id": "e_tuto_2_3",
+      "from": "tuto_02",
+      "to": "tuto_03"
+    },
+    {
+      "id": "e_tuto_3_veskar",
+      "from": "tuto_03",
+      "to": "veskar_01"
+    },
+    {
+      "id": "e_tuto_3_nerava",
+      "from": "tuto_03",
+      "to": "nerava_01"
+    },
+    {
+      "id": "e_tuto_3_kharun",
+      "from": "tuto_03",
+      "to": "kharun_01"
+    },
+    {
+      "id": "e_veskar_optional",
+      "from": "veskar_01",
+      "to": "mini_optional_01"
+    },
+    {
+      "id": "e_veskar_02",
+      "from": "veskar_01",
+      "to": "veskar_02"
+    },
+    {
+      "id": "e_veskar_ilyr",
+      "from": "veskar_01",
+      "to": "ilyr_01"
+    },
+    {
+      "id": "e_veskar_mirror",
+      "from": "veskar_02",
+      "to": "mirror_01"
+    },
+    {
+      "id": "e_ilyr_sylkha",
+      "from": "ilyr_01",
+      "to": "sylkha_01"
+    },
+    {
+      "id": "e_mirror_sylkha",
+      "from": "mirror_01",
+      "to": "sylkha_01"
+    },
+    {
+      "id": "e_nerava_convergence",
+      "from": "nerava_01",
+      "to": "convergence_01"
+    },
+    {
+      "id": "e_kharun_02",
+      "from": "kharun_01",
+      "to": "kharun_02"
+    },
+    {
+      "id": "e_kharun_impasse",
+      "from": "kharun_02",
+      "to": "veilleur_impasse"
+    },
+    {
+      "id": "e_kharun_convergence",
+      "from": "kharun_02",
+      "to": "convergence_01",
+      "controls": [
+        {
+          "x": 900,
+          "y": 1265
+        },
+        {
+          "x": 720,
+          "y": 1390
+        }
+      ]
+    },
+    {
+      "id": "e_sylkha_convergence",
+      "from": "sylkha_01",
+      "to": "convergence_01"
+    },
+    {
+      "id": "e_convergence_gate",
+      "from": "convergence_01",
+      "to": "boss_required_gate"
+    },
+    {
+      "id": "e_gate_choice",
+      "from": "boss_required_gate",
+      "to": "choice_01"
+    },
+    {
+      "id": "e_choice_ilyr",
+      "from": "choice_01",
+      "to": "ilyr_02"
+    },
+    {
+      "id": "e_choice_sylkha",
+      "from": "choice_01",
+      "to": "sylkha_02"
+    },
+    {
+      "id": "e_choice_optional",
+      "from": "choice_01",
+      "to": "mini_optional_02"
+    },
+    {
+      "id": "e_ilyr_final",
+      "from": "ilyr_02",
+      "to": "final_01"
+    },
+    {
+      "id": "e_sylkha_final",
+      "from": "sylkha_02",
+      "to": "final_01"
+    }
+  ]
+}

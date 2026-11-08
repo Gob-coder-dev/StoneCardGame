@@ -277,8 +277,8 @@ func _test_menu_modes() -> void:
 		"un deck valide ouvre le salon PVP")
 	visited.clear()
 	menu.campaign_button.pressed.emit()
-	_check(visited == ["res://scenes/menus/EncounterSelect.tscn"],
-		"un deck valide ouvre aussi la sélection de campagne")
+	_check(visited == ["res://scenes/campaign/CampaignMap.tscn"],
+		"un deck valide ouvre la carte de campagne unifiée")
 	menu.queue_free()
 	await get_tree().process_frame
 

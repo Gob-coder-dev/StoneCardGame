@@ -239,6 +239,10 @@ func _on_game_over(winner: int, score_human: int, score_ai: int) -> void:
 	hud.set_game_over()
 	if _driver.records_campaign_stats:
 		BattleContext.prepare_result(winner, score_human, score_ai, _local_captures)
+		# La série doit connaître la manche avant l'enregistrement : un FT2 n'est
+		# gagné qu'après la dernière manche, pas après le premier match.
+		if BattleContext.has_mode_session():
+			BattleContext.record_mode_round(winner, score_human, score_ai)
 		BattleContext.persist_result()
 		await get_tree().create_timer(1.5).timeout
 		Routes.go(get_tree(), Routes.CAMPAIGN_RESULT)

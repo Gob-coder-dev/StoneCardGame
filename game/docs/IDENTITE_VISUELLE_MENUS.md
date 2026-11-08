@@ -31,7 +31,7 @@ de saisie et les barres de défilement.
 
 `MenuBackground.gd` dessine un fond de pierre sombre avec quelques formes
 néon simples : halo ouvragé à l'accueil, filets roses sur toute la hauteur du
-bestiaire, angles fins dans les règles, arche des rencontres et rails du chemin
+bestiaire, angles fins dans les règles, arche des rencontres et rails de la carte
 des niveaux. Le rituel de
 pièce reçoit des cercles néon concentriques autour de la monnaie pour en faire le
 point focal. Les accents néon suivent la couleur du dieu affiché : le dieu
@@ -82,19 +82,21 @@ Les six portraits sont fournis dans `assets/gods/`. Le champ `asset` de
   remplit la largeur disponible ; son conteneur réserve la même hauteur pour
   qu'elle reste carrée et ne recouvre pas les textes. Son logo de pouvoir est
   agrandi pour cette vue et le même pictogramme précède le texte d'explication.
-- Rencontres : une grille de cases de dieux (portrait, nom, famille, cadre et
-  motif de famille), puis un chemin serpentin de quinze ronds par adversaire.
-  Chaque palier de cartes forme un chapitre et chaque difficulté un rond ;
-  terminé, ouvert et verrouillé se distinguent par la couleur et par la forme
-  (coche, numéro, cadenas). Les ronds terminés et le rond ouvert sont
-  sélectionnables pour rejouer un niveau ; un rond verrouillé reste inactif.
-  Le pied de page fixe rappelle le dieu, le niveau choisi et la progression,
-  avec le bouton Affronter toujours accessible.
+- Carte de campagne : un graphe vertical sur fond de refuge, avec un espace
+  logique de 1080 unités et des ronds de 150 unités réduits ensemble sur
+  téléphone. Les courbes passent derrière les nœuds ; terminé, accessible,
+  verrouillé, tutoriel, mini-boss et boss se distinguent par la couleur et par
+  la forme (coche, anneau, cadenas, livre, losange, couronne). Un nœud accessible
+  ou terminé ouvre une fiche ; un nœud verrouillé reste inactif ; un glissement
+  défile sans activer. La fiche présente adversaire, mode, palier, IA, deck,
+  format et action de lancement. Le compteur `X / N niveaux terminés` et le
+  message sur les branches restent visibles autour du défilement.
 - Règles : texte ivoire et titres ambrés, logos des pouvoirs aux couleurs
   de leur famille ; valeurs toujours lues dans les règles du jeu. Une marge
   finale permet de défiler après la dernière ligne.
-- Profil : pseudo modifiable, statistiques générales et progression des sept
-  chemins (niveaux terminés sur quinze), sans avatar.
+- Profil : pseudo modifiable, statistiques générales et décompte historique des
+  sept anciens chemins (niveaux terminés sur quinze), sans avatar. La progression
+  de la campagne unifiée est affichée sur sa carte, par identifiant de nœud.
 - Salon PVP : les trois étapes partagent la même arche de pierre et les deux
   épées croisées en néon ; les deux courbes de l'arche reprennent chacune la
   couleur d'un dieu, et les montants rejoignent le bord bas même si le format
@@ -109,9 +111,11 @@ Les six portraits sont fournis dans `assets/gods/`. Le champ `asset` de
   d'artifice amples aux motifs variés, avec des traînées effilées qui retombent
   vers le bas et mêlent les nuances du dieu vainqueur ; grand crâne néon non
   déformé, légèrement abaissé, de cette couleur en cas de défaite ; épées
-  croisées aux couleurs des deux dieux en cas d'égalité. Il propose le niveau
-  suivant après une victoire, puis revanche, autre niveau, autre dieu et accueil ;
-  le suivant disparaît après une défaite ou au dernier rond.
+  croisées aux couleurs des deux dieux en cas d'égalité. En campagne unifiée, il
+  propose la manche suivante d'une série, le retour à la carte, la revanche ou
+  l'accueil ; une défaite ou une égalité ne valide jamais le nœud. Sur les
+  anciens parcours, il conserve le niveau suivant, la revanche, l'autre niveau,
+  l'autre dieu et l'accueil.
 - Préparation PVP : scène dédiée, même arche minérale que le salon. Le dieu
   local est présenté avec son illustration et sa couleur, puis ses huit cartes
   illustrées en deux colonnes et quatre lignes pour le deck final, avec points,

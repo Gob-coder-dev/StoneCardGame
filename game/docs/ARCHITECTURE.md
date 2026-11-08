@@ -2,6 +2,8 @@
 
 Le moteur calcule les résultats. La présentation les montre, puis annonce sa fin.
 Une IA appelle le même moteur sur une copie pour essayer un coup instantanément.
+La campagne principale est un graphe de données ; son format, ses règles de
+déblocage et sa migration sont détaillés dans [CAMPAIGN.md](CAMPAIGN.md).
 
 ## Deux modes de match
 
@@ -73,6 +75,8 @@ pour Classique et Miroir, les loadouts figés.
 `GameModeRules` impose le palier minimal propre à chaque mode. Sélection commence
 au palier 2, car huit paires fixes garantissant huit lignées uniques exigent
 seize lignées par dieu, contre treize seulement dans le catalogue du palier 1.
+La campagne place ses propres nœuds Sélection au palier 3 minimum, afin que le
+plan de draft reste constructible pour les six dieux.
 
 `LanSeriesCoordinator` relie ces règles au transport. L'hôte possède les
 graines, les offres, les choix validés, les loadouts et les scores ; le client
@@ -139,8 +143,16 @@ d'ENet lorsqu'un pair reste connecté mais cesse de poursuivre le protocole.
 | `data/stones.json` | — | Définition complète de chaque carte, pouvoirs compris |
 | `data/gods.json` | — | Dieux, familles, couleurs et descriptions |
 | `data/npcs.json` | — | Six adversaires historiques, leurs decks et profils d'IA |
-| `OpponentCatalog` | `build`, `build_neutral`, `deck_for`, `neutral_deck_for`, `levels_for`, `source_id_of`, `sources` | Génère les adversaires dieu ou neutre × palier × difficulté, leurs chemins ordonnés et les sept sources complètes |
-| `EncounterPath` | `states`, `current_index`, `next_level`, `completed_count` | États verrouillé, disponible et terminé d'un chemin, et successeur immédiat, sans interface ni sauvegarde |
+| `data/campaign/campaign_v2.json` | `CampaignContentLoader` | Définition consolidée du graphe : 120 nœuds, rencontres, positions et arêtes |
+| `CampaignGraph`, `CampaignNode`, `CampaignEdge` | `build`, `node`, `predecessors`, `successors`, `reachable_from`, `has_cycle` | Définition immuable, indexation et requêtes du graphe ; aucune sauvegarde ni interface |
+| `CampaignUnlockRules`, `CampaignProgress` | `states`, `state_for`, `mark_completed`, `record_attempt` | Règle ANY, états et progression sérialisable par identifiant de nœud |
+| `CampaignValidator` | `problems` | Validation exhaustive du contenu, des modes, des decks et des mini-boss |
+| `CampaignAudit` | `build` | Métriques de livraison : dieux, modes, paliers, séries, topologie, précisions et diversité des decks |
+| `CampaignService`, `CampaignContext` | `states`, `begin_attempt`, `complete_node`, `enter_node` | Façade applicative et contexte transitoire de lancement |
+| `CampaignEncounterFactory`, `CampaignCompletionService` | `build`, `summary`, `apply_victory` | Nœud → adversaire/mode partagé, puis victoire idempotente |
+| `CampaignProgressStore`, `CampaignSaveMigration` | `load_progress`, `save`, `migrate` | Fichier dédié et conversion prudente des anciennes victoires |
+| `OpponentCatalog` | `build`, `build_neutral`, `deck_for`, `neutral_deck_for`, `levels_for`, `source_id_of`, `sources` | Historique : génère les adversaires dieu ou neutre × palier × difficulté et les sept sources |
+| `EncounterPath` | `states`, `current_index`, `next_level`, `completed_count` | Historique : états d'un ancien chemin linéaire, sans interface ni sauvegarde |
 | `CardPowerTierRules` | `effective_tier`, `is_allowed`, `lineage_problems` | Règle unique du palier : formule rareté + niveau, exception explicite et validation des lignées |
 | `GameModeRules`, `SeriesRules` | normalisation, libellés, conservation | Modes/paliers et FT1/FT2/FT3 communs à la campagne et au PVP |
 | `PvpLobbyRules` | `apply_change`, `apply_ready`, `lock` | Phases, révision et verrouillage propres au salon PVP |
@@ -158,7 +170,7 @@ d'ENet lorsqu'un pair reste connecté mais cesse de poursuivre le protocole.
 | `DeckCatalogueMigration` | `requires_conversion`, `convert` | Remplace les anciennes cartes par des formes compatibles, distinctes et dans le budget |
 | `CardArtCache` | `activate_god`, `texture`, `progress_for_god` | Préchauffe les illustrations utiles hors du thread principal et borne les références conservées |
 | `PlayerSaveStorage` | `write`, `read` | Écriture sûre du profil sur le disque |
-| `BattleContext` | `select_opponent`, `begin_mode`, `current_opponent`, `prepare_result`, `persist_result` | Rencontre, loadouts temporaires de campagne, premier joueur et résultat |
+| `BattleContext` | `enter_campaign_node`, `select_opponent`, `begin_mode`, `prepare_result`, `persist_result` | Rencontre, loadouts temporaires de campagne, nœud actif, premier joueur et résultat |
 | `StoneCostRules` | `cost` | Règle du coût d'une carte |
 | `StoneEffects` | — | Identifiants et valeurs des pouvoirs (corrosion, renfort et plafond d'Essaim) |
 | `StoneEvolutionRules` | `max_level`, `preview_level`, `is_valid_level` | Limites par rareté et saturation des seuls aperçus |
@@ -178,6 +190,16 @@ migre les profils sans version et la version 1 : l'ancien `player_deck` devient
 l'emplacement 1 du dieu équipé, ou du dieu déduit des cartes si nécessaire.
 Chaque emplacement est nettoyé dans sa propre famille ; les autres emplacements
 commencent vides. Un chargement seul ne réécrit pas le fichier.
+
+`user://campaign_progress.json` est indépendant du profil. Il contient
+`campaign_version`, `completed_node_ids`, `attempts_by_node`,
+`last_selected_node_id`, `tutorial_states` et la trace `legacy`, mais jamais les
+arêtes, decks générés ou loadouts de manche. `CampaignProgressStore` écrit par
+le même remplacement atomique que le profil. `CampaignSaveMigration` ne convertit
+une ancienne victoire `per_npc` que si un seul nœud Classique fixe la revendique ;
+les cas ambigus restent dans `legacy.archived_stats`. La migration est idempotente
+grâce à `legacy_version`, et un échec d'écriture ne publie pas la progression en
+mémoire.
 
 `PvpMatchContext` ne contient que des données transitoires (participants, camps,
 snapshots du salon, loadouts, graine, cases bloquées, premier joueur, dernier
@@ -480,11 +502,48 @@ proportions et applique le cadre de famille. L'accueil conserve son grand
 autour du portrait. Voir
 [l'identité visuelle des menus](IDENTITE_VISUELLE_MENUS.md).
 
-## Rencontres
+## Campagne unifiée
+
+Le bouton **CAMPAGNE** du menu principal ouvre `scenes/campaign/CampaignMap.tscn`.
+Le joueur y voit un graphe vertical : trois tutoriels Pr.Stone, puis des branches
+non exclusives mélangeant les six dieux, les quatre modes, les paliers et les
+profils d'IA. Une fiche de niveau affiche la synthèse calculée par
+`CampaignEncounterFactory` ; le lancement passe par `CampaignContext.enter_node()`,
+la préparation locale si le mode l'exige, puis `PreBattle` et `Board`.
+
+`CampaignGraph` est la seule autorité sur les liens. `CampaignUnlockRules`
+calcule les états à partir des nœuds terminés et applique **ANY** : un nœud à
+plusieurs prédécesseurs s'ouvre dès que l'un d'eux est terminé. Aucune branche
+n'est sélectionnée, aucune arête n'est sauvegardée. `CampaignProgress` ne retient
+que les identifiants terminés, les tentatives, le dernier nœud consulté et les
+états de tutoriel. `CampaignValidator` refuse les cycles, les nœuds inaccessibles,
+les impasses non déclarées, les mini-boss facultatifs avec sortie, les mini-boss
+obligatoires contournables et les combinaisons mode/politique impossibles.
+
+`CampaignEncounterFactory` produit un adversaire et une configuration de mode
+compatibles avec `BattleContext` et `CampaignModeSession`, en réutilisant
+`GameModeRules`, `CardPowerTierRules`, `LoadoutGenerator` et les règles de deck.
+Un deck généré, un dieu temporaire et un loadout de manche ne sont jamais écrits
+dans `PlayerData`. `CampaignCompletionService` n'applique une victoire qu'une
+fois, après la sauvegarde ; `BattleContext.persist_result()` sépare les
+statistiques du profil de la complétion du nœud pour rendre un nouvel essai sûr.
+
+La carte utilise un espace logique de largeur `UITheme.CAMPAIGN_MAP_WIDTH`
+(1080), une hauteur issue des données, et un facteur d'échelle unique pour le
+fond, les courbes et les nœuds. Les arêtes sont dessinées derrière les ronds et
+peuvent porter deux points de contrôle. Un appui ouvre un niveau accessible ou
+terminé ; un glissement fait défiler sans activer ; un niveau verrouillé reste
+inactif. Après un résultat, la carte se recentre sur le nœud concerné.
 
 `GameRoutes` centralise les chemins des scènes de la boucle principale et
 diagnostique un changement impossible. Les contrôleurs conservent la décision
 de navigation propre à leur écran, mais ne recopient plus les chemins `res://`.
+
+## Anciens parcours par dieu
+
+Les écrans et fabriques ci-dessous restent dans le dépôt pour les tests, la
+compatibilité des scènes et l'historique du profil. Ils ne sont plus atteints
+depuis le bouton Campagne.
 
 `EncounterSelectController` affiche une case par dieu, plus Pr.Stone, puis ouvre
 le chemin de la source choisie. `EncounterPathController` présente les quinze
@@ -522,10 +581,13 @@ directement le rond suivant du même chemin, `Rejouer` relance le même duel,
 à la grille et `Accueil` au menu principal ; le bouton du suivant disparaît
 après une défaite, au dernier rond ou tant que le résultat n'a pas été écrit sur
 le disque. Le bot sans dieu conserve un `god_id` vide et est présenté explicitement
-comme tel, sans ajouter de dieu jouable à `gods.json`. Le profil affiche un
-chemin par dieu et pour Pr.Stone avec le nombre de niveaux terminés sur quinze ;
-ce décompte suit la même règle linéaire que le serpentin, pas les anciennes
-victoires agrégées par palier.
+comme tel, sans ajouter de dieu jouable à `gods.json`. Le profil conserve un
+décompte par dieu et pour Pr.Stone avec le nombre de niveaux terminés sur quinze ;
+ce compteur est un historique de compatibilité et ne représente pas la
+progression de la campagne unifiée, qui est enregistrée par identifiant de nœud.
+Ces actions de résultat ne s'appliquent qu'aux anciens parcours : un résultat de
+campagne propose de rejouer, de passer à la manche suivante d'une série ou de
+revenir à la carte.
 
 ## Poser une carte en combat
 
@@ -561,6 +623,10 @@ les cinq difficultés affrontent les mêmes cartes. L'identifiant
 | Moyen | 0,5 | non | 0,8 s |
 | Difficile | 0,75 | non | 0,9 s |
 | Très difficile | 1 | oui | 1,2 s |
+
+Cette table décrit les cinq profils historiques d'`OpponentCatalog`. La campagne
+unifiée utilise en plus des profils à précision continue, avec 37 valeurs
+distinctes réparties entre 0 et 1 selon la profondeur et le rôle du nœud.
 
 Avec la probabilité `precision`, l'IA joue le meilleur coup évalué, au hasard
 entre les ex aequo. Sinon elle commet une erreur crédible : un coup tiré au sort

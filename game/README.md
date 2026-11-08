@@ -32,8 +32,8 @@ Une pierre se pose par toucher successif (carte, puis case) ou par glisser-dépo
 Les gestes tactiles sont prévus pour laisser défiler les écrans lorsqu'ils ne
 deviennent pas un appui volontaire.
 
-L'accueil propose deux modes de largeur égale : **CAMPAGNE**, qui ouvre les
-rencontres contre l'IA, et **PVP**, qui ouvre un salon local. Deux téléphones
+L'accueil propose deux modes de largeur égale : **CAMPAGNE**, qui ouvre la
+carte unifiée de 120 niveaux contre l'IA, et **PVP**, qui ouvre un salon local. Deux téléphones
 Android sur le même Wi-Fi peuvent créer et rejoindre une partie sans serveur
 Internet, sans compte et sans service externe. Les deux modes partagent le même
 plateau, le même moteur et les mêmes vues ; seul le driver du match change. Un
@@ -78,9 +78,9 @@ La préparation des modes n'est plus liée au réseau. `GameModeRules`,
 orchestre localement le même Classique, Aléatoire, Miroir ou Sélection contre
 l'IA, y compris FT1/FT2/FT3. `BattleContext.begin_mode()` constitue le point
 d'entrée de la campagne et les drivers de combat lisent ses loadouts
-temporaires. L'écran public de choix des règles de campagne reste volontairement
-à ajouter plus tard : son ajout ne demandera ni duplication des règles ni
-dépendance à ENet.
+temporaires. Les règles d'une rencontre ne sont plus choisies dans un écran
+public séparé : chaque nœud de la carte porte son mode, son dieu, son deck, son
+palier, son IA et son format. Voir [la campagne unifiée](docs/CAMPAIGN.md).
 
 ## Dieux et familles
 
@@ -141,16 +141,17 @@ page Cartes comporte :
 - la collection, le tri, le remplacement d'une carte et les fiches détaillées ;
 - le choix du niveau à équiper, sans bouton de sauvegarde séparé.
 
-Les Rencontres se lisent en deux temps : une grille de grandes cases illustrées
-(portrait, nom, famille et motif du dieu), puis un chemin serpentin de quinze
-niveaux par adversaire. Chaque palier de cartes forme un chapitre et chaque
-difficulté un rond ; un rond s'ouvre quand le précédent a été gagné. La
-progression est déduite des victoires déjà enregistrées, sans nouveau champ de
-sauvegarde. Le profil reprend la même règle : statistiques générales, puis un
-chemin par dieu et pour Pr.Stone avec le nombre de niveaux terminés sur quinze.
-Après une victoire, le résultat propose le niveau suivant du même chemin, une
-revanche, un autre niveau, un autre dieu ou l'accueil ; après une défaite ou au
-dernier rond, la sortie « Niveau suivant » disparaît.
+La campagne se lit sur une **carte verticale unifiée** : trois tutoriels Pr.Stone
+ouvrent la progression, puis les six dieux, plusieurs decks, les quatre modes,
+les paliers et profils d'IA se mélangent sur des branches non exclusives. Un
+nœud accessible reste jouable, un regroupement s'ouvre dès qu'un seul de ses
+prédécesseurs est terminé, et les mini-boss facultatifs occupent des impasses.
+Toucher un nœud ouvre sa fiche (adversaire, mode, palier, IA, deck, format) ;
+le lancement mène à la préparation si le mode l'exige, puis au pile ou face et
+au combat. Le résultat revient sur la carte, centrée sur le dernier nœud, et ne
+valide le nœud qu'après la sauvegarde. Le profil conserve ses compteurs
+historiques par dieu pour la compatibilité ; la progression de la campagne est
+comptée par la carte. Voir [la documentation de campagne](docs/CAMPAIGN.md).
 
 L'interface adopte un thème d'arène machiavélique : fonds charbon, accents de
 métal incandescent et halos néon violets ou carmin. Les formes restent discrètes
@@ -185,15 +186,18 @@ scripts/
   data/                  Chargement du catalogue, profil et migration des sauvegardes
   domain/                Règles pures : modes, séries, decks, coûts et pouvoirs
   application/           Orchestration des parcours sans dépendre des scènes
+    campaign/             Façade, contexte, rencontres et migration de campagne
     pvp/                 Contexte, salon et adaptation des loadouts réseau
   engine/                GameState, tours, résolution des combats et effets
   network/               Transport et protocole ; projections PVP dans network/pvp
   ai/                    Évaluation des coups, ripostes et recherche de fin de partie
   ui/                    Menus, cartes, plateau, HUD et composants tactiles
+    campaign/            Carte de campagne, fiche de niveau et préparation locale
     collection/          Sélection de dieu/deck, collection et panneaux de cartes
     combat/              Présentations, géométrie et animations de combat
-    encounters/          Grille des dieux et chemin des niveaux
+    encounters/          Anciens parcours par dieu, conservés pour compatibilité
 scenes/                  Scènes Godot des menus, du combat et des composants
+  campaign/              Carte, nœud, fiche et préparation de campagne
 assets/                  Illustrations, portraits, icônes et thème
 tests/                   Suites de règles, IA, interface et interactions tactiles
 ```
@@ -209,20 +213,32 @@ Le flux principal est le suivant :
 L'IA utilise le même moteur sur des copies de l'état : elle ne lit ni la main
 réelle du joueur ni le prochain tirage aléatoire.
 
-Les Rencontres proposent les six dieux et Pr.Stone, un adversaire sans dieu qui
-utilise exclusivement des cartes neutres. Chacun se joue sur trois paliers de
-cartes et cinq difficultés, présentés comme un chemin de quinze niveaux : un
-niveau s'ouvre quand le précédent est gagné. Une victoire antérieure hors
-séquence reste enregistrée mais ne valide le rond qu'une fois les précédents
-gagnés. Pour les bots, les paliers tiennent compte de la
-rareté sans modifier le niveau réel des formes : les épiques commencent au
-palier 3 et les légendaires au palier 4. Le deck ne dépend que de l'adversaire et
-du palier ; la difficulté règle la précision de l'IA (0, 0,25, 0,5, 0,75 ou 1)
-et, au niveau le plus élevé, l'anticipation.
+La campagne principale est un graphe orienté acyclique décrit par
+`data/campaign/campaign_v2.json` : 120 nœuds, 148 arêtes et 12 sections
+visuelles. Chaque nœud porte son adversaire, son mode, ses politiques de dieu et
+de deck, son palier maximal, son profil d'IA et son format de série. Les
+positions ne servent qu'au rendu ; elles ne débloquent aucune branche. Terminer
+un nœud ouvre toutes ses sorties, un regroupement utilise la règle ANY, et une
+impasse doit être déclarée. Les mini-boss facultatifs sont sans sortie ; un
+mini-boss obligatoire ne peut pas être contourné. `CampaignValidator` et
+`CampaignAudit` contrôlent ces invariants et les métriques de contenu avant
+l'ouverture de la carte.
 
-Pour le détail des responsabilités, des signaux et des fichiers, voir
-[l'architecture complète](docs/ARCHITECTURE.md). Pour la palette et les choix de
-mise en page, voir [l'identité visuelle des menus](docs/IDENTITE_VISUELLE_MENUS.md).
+Les six dieux et Pr.Stone, un adversaire sans dieu qui utilise exclusivement des
+cartes neutres, restent la source de contenu. Les anciens parcours par dieu et
+leurs quinze niveaux restent dans le projet pour les tests, les statistiques
+historiques et la compatibilité, mais le bouton **CAMPAGNE** ouvre désormais la
+carte unifiée. Les paliers tiennent compte de la rareté sans modifier le niveau
+réel des formes : les épiques commencent au palier 3 et les légendaires au
+palier 4. Le deck ne dépend que du nœud et du palier ; l'IA règle séparément sa
+précision continue de 0 à 100 % (37 valeurs distinctes dans la campagne, dont
+100 non multiples de 25) et son anticipation.
+
+Pour le détail de la campagne, du format JSON et de la migration, voir
+[CAMPAIGN.md](docs/CAMPAIGN.md). Pour le détail des responsabilités, des signaux
+et des fichiers, voir [l'architecture complète](docs/ARCHITECTURE.md). Pour la
+palette et les choix de mise en page, voir
+[l'identité visuelle des menus](docs/IDENTITE_VISUELLE_MENUS.md).
 Le PVP local (rôles, ports, protocole, autorité de l'hôte, limites et dépannage)
 est décrit dans [PVP_LOCAL.md](docs/PVP_LOCAL.md).
 L’univers, les familles et les dieux sont décrits dans la
@@ -238,13 +254,30 @@ Les données de contenu sont validées au démarrage :
 - `data/gods.json` : dieux, familles, couleurs, descriptions et portraits ;
 - `data/npcs.json` : six adversaires historiques, conservés pour les tests et
   les anciennes références ;
-- `OpponentCatalog` : génère les 105 rencontres (six dieux et un bot neutre,
-  trois paliers de cartes et cinq difficultés) sans dupliquer leurs decks.
+- `data/campaign/campaign_v2.json` : graphe de la campagne unifiée, 120 nœuds,
+  148 arêtes et 12 sections, chargé et validé par `CampaignContentLoader`,
+  `CampaignValidator` et `CampaignAudit` ;
+- `OpponentCatalog` : génère les 105 rencontres historiques (six dieux et un bot
+  neutre, trois paliers de cartes et cinq difficultés) ; la campagne unifiée
+  n'en réutilise que les noms neutres et les identifiants de migration.
+
+La bibliothèque `tools/campaign_deck_library.json` est une source de
+construction hors exécution : elle fournit les 69 decks fixes uniques validés
+dans la campagne.
 
 Le profil local est enregistré dans `user://savegame.json`. Le format actuel est
 la version 4 : il conserve le pseudo, les statistiques, les trois decks de chacun
 des six dieux et le deck sélectionné pour chaque dieu. Les écritures passent par
 un fichier temporaire pour éviter un profil partiellement écrit.
+
+La progression de la campagne est séparée dans
+`user://campaign_progress.json` : version de campagne, nœuds terminés, tentatives,
+dernier nœud consulté, états de tutoriel et archive de migration. Elle ne
+contient jamais les arêtes, les decks générés ni une route choisie. Les deux
+fichiers utilisent le même remplacement atomique. Les anciennes victoires par
+dieu ne sont converties que lorsqu'elles désignent un seul nœud sans ambiguïté ;
+les autres sont archivées et les statistiques du profil restent intactes. Voir
+[CAMPAIGN.md](docs/CAMPAIGN.md).
 
 Les anciennes sauvegardes sont migrées automatiquement. Avant la première écriture
 d'un ancien profil converti, la version d'origine est conservée dans
@@ -282,8 +315,9 @@ godot --headless --fixed-fps 60 --path . res://tests/GodSystemChecks.tscn
 ```
 
 Cette suite couvre le catalogue, les sauvegardes, les règles de combat, les six
-familles, l'IA, les animations, les menus, les régressions de rendu et le PVP
-local (protocole, salon, modes et séries, génération des loadouts, draft,
+familles, l'IA, les animations, les menus, les régressions de rendu, la campagne
+unifiée (graphe, validateur, progression, migration, rencontres et résultat) et
+le PVP local (protocole, salon, modes et séries, génération des loadouts, draft,
 confirmations et commandes validées par l'hôte).
 
 ```sh
@@ -292,7 +326,8 @@ godot --headless --fixed-fps 60 --path . res://tests/TouchInputChecks.tscn
 
 Cette suite injecte de vrais événements tactiles et vérifie notamment le
 défilement, les appuis, l'inertie, le multitouch, la fermeture des panneaux
-modaux et la pose de cartes. Le résumé imprimé par chaque lanceur est la source
+modaux, la pose de cartes et la carte de campagne (nœud verrouillé, fiche,
+rejeu et glissement sans activation). Le résumé imprimé par chaque lanceur est la source
 de vérité : le nombre de vérifications évolue avec les fonctionnalités et n'est
 volontairement pas figé ici. Une livraison est valide uniquement lorsque les
 deux commandes terminent avec le code `0`, sans échec ni erreur Godot.

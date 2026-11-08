@@ -1,0 +1,92 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/campaign/CampaignMapController.gd" id="1_map"]
+[ext_resource type="Script" path="res://scripts/ui/MenuBackground.gd" id="2_background"]
+[ext_resource type="Script" path="res://scripts/ui/input/TouchButton.gd" id="3_touch"]
+[ext_resource type="Script" path="res://scripts/ui/input/TouchScrollContainer.gd" id="4_scroll"]
+[ext_resource type="Script" path="res://scripts/ui/campaign/CampaignMapView.gd" id="5_view"]
+[ext_resource type="PackedScene" path="res://scenes/campaign/CampaignLevelDialog.tscn" id="6_dialog"]
+
+[node name="CampaignMap" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_map")
+
+[node name="Background" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2_background")
+room = 8
+
+[node name="Root" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 44.0
+offset_top = 44.0
+offset_right = -44.0
+offset_bottom = -30.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+
+[node name="Header" type="HBoxContainer" parent="Root"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="BackButton" type="Button" parent="Root/Header"]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 2
+theme_override_font_sizes/font_size = 44
+text = "←"
+script = ExtResource("3_touch")
+
+[node name="TitleLabel" type="Label" parent="Root/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 40
+text = "CARTE DE CAMPAGNE"
+autowrap_mode = 2
+
+[node name="ProgressLabel" type="Label" parent="Root/Header"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_colors/font_color = Color(0.737, 0.698, 0.741, 1)
+theme_override_font_sizes/font_size = 22
+text = "0 / 0 niveaux terminés"
+horizontal_alignment = 2
+
+[node name="Scroll" type="ScrollContainer" parent="Root"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+script = ExtResource("4_scroll")
+
+[node name="MapView" type="Control" parent="Root/Scroll"]
+custom_minimum_size = Vector2(0, 600)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+script = ExtResource("5_view")
+
+[node name="StatusLabel" type="Label" parent="Root"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.737, 0.698, 0.741, 1)
+theme_override_font_sizes/font_size = 22
+text = "Toutes les branches terminées restent accessibles."
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="LevelDialog" parent="." instance=ExtResource("6_dialog")]
+visible = false

@@ -87,6 +87,20 @@ const PATH_TOP_PAD: int = 214
 const PATH_BOTTOM_PAD: int = 130
 const PATH_CHAPTER_LABEL_HEIGHT: int = 56
 
+## ─── Carte de campagne unifiée ─────────────────────────────────────────────
+## Positions logiques sur une largeur de référence de 1080 ; la hauteur est
+## fournie par les données. La carte entière partage un seul facteur d'échelle.
+const CAMPAIGN_MAP_WIDTH: float = 1080.0
+const CAMPAIGN_NODE_SIZE: int = 150
+const CAMPAIGN_NODE_MIN_DISTANCE: float = 120.0
+const CAMPAIGN_BOTTOM_PAD: float = 180.0
+const CAMPAIGN_TOP_PAD: float = 120.0
+const COL_CAMPAIGN_EDGE := Color("#8c7c94")
+const COL_CAMPAIGN_EDGE_LIT := Color("#ffad7d")
+const COL_CAMPAIGN_TUTORIAL := Color("#a6c79a")
+const COL_CAMPAIGN_MINIBOSS := Color("#e6bc78")
+const COL_CAMPAIGN_BOSS := Color("#df929c")
+
 ## Chemin : le tracé verrouillé reste discret et chaque état garde une forme
 ## propre (cadenas, numéro, coche) en plus de sa couleur.
 const COL_PATH_TRACE := Color("#6b5f6d")

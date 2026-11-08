@@ -1,0 +1,125 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/campaign/CampaignPreparationController.gd" id="1_prep"]
+[ext_resource type="Script" path="res://scripts/ui/MenuBackground.gd" id="2_background"]
+[ext_resource type="Script" path="res://scripts/ui/input/TouchButton.gd" id="3_touch"]
+[ext_resource type="Script" path="res://scripts/ui/input/TouchScrollContainer.gd" id="4_scroll"]
+[ext_resource type="Script" path="res://scripts/ui/pvp/LoadoutCardGrid.gd" id="5_grid"]
+
+[node name="CampaignPreparation" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_prep")
+
+[node name="Background" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2_background")
+room = 9
+
+[node name="Root" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 44.0
+offset_top = 44.0
+offset_right = -44.0
+offset_bottom = -30.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="Header" type="HBoxContainer" parent="Root"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="BackButton" type="Button" parent="Root/Header"]
+custom_minimum_size = Vector2(112, 92)
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "CARTE"
+script = ExtResource("3_touch")
+
+[node name="TitleLabel" type="Label" parent="Root/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_override_colors/font_color = Color(1, 0.678, 0.49, 1)
+theme_override_font_sizes/font_size = 38
+text = "PRÉPARATION"
+autowrap_mode = 2
+
+[node name="TimerLabel" type="Label" parent="Root/Header"]
+visible = false
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_colors/font_color = Color(0.945, 0.804, 0.49, 1)
+theme_override_font_sizes/font_size = 28
+text = ""
+
+[node name="Scroll" type="ScrollContainer" parent="Root"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+script = ExtResource("4_scroll")
+
+[node name="Content" type="VBoxContainer" parent="Root/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 14
+
+[node name="StatusLabel" type="Label" parent="Root/Scroll/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.737, 0.698, 0.741, 1)
+theme_override_font_sizes/font_size = 24
+text = "Loadouts temporaires."
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="OffersGrid" type="GridContainer" parent="Root/Scroll/Content"]
+visible = false
+layout_mode = 2
+columns = 2
+script = ExtResource("5_grid")
+
+[node name="DeckTitle" type="Label" parent="Root/Scroll/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.737, 0.698, 0.741, 1)
+theme_override_font_sizes/font_size = 26
+text = "VOTRE LOADOUT"
+horizontal_alignment = 1
+
+[node name="DeckGrid" type="GridContainer" parent="Root/Scroll/Content"]
+layout_mode = 2
+columns = 4
+script = ExtResource("5_grid")
+
+[node name="OpponentTitle" type="Label" parent="Root/Scroll/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.737, 0.698, 0.741, 1)
+theme_override_font_sizes/font_size = 26
+text = "LOADOUT ADVERSE"
+horizontal_alignment = 1
+
+[node name="OpponentGrid" type="GridContainer" parent="Root/Scroll/Content"]
+layout_mode = 2
+columns = 4
+script = ExtResource("5_grid")
+
+[node name="ConfirmButton" type="Button" parent="Root"]
+custom_minimum_size = Vector2(0, 116)
+layout_mode = 2
+theme_type_variation = &"PrimaryButton"
+theme_override_font_sizes/font_size = 42
+text = "⚔  AFFRONTER"
+script = ExtResource("3_touch")

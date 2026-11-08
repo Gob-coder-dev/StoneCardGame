@@ -5,8 +5,10 @@ Wi-Fi (ou sur un point d'accès créé par l'un des deux téléphones). Un appar
 est l'hôte autoritaire, l'autre est le client. Aucun compte, aucun service
 Internet et aucun relais externe ne sont nécessaires.
 
-La campagne est inchangée : elle utilise le même `Board.tscn`, les mêmes vues,
-le même `CombatResolver`, le même `TurnManager` et la même IA.
+Le moteur de combat de campagne reste partagé : elle utilise le même
+`Board.tscn`, les mêmes vues, le même `CombatResolver`, le même `TurnManager` et
+la même IA. Seule sa navigation passe désormais par la carte unifiée ; le PVP
+n'utilise aucun de ses services de progression, ni ENet depuis la campagne.
 
 ## Hôte et client
 

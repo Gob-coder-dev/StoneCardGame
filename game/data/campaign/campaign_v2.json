@@ -1,0 +1,5835 @@
+{
+  "id": "samstone_campaign",
+  "title": "La Carte de SamStone",
+  "campaign_version": 2,
+  "map": {
+    "width": 1080,
+    "height": 16920
+  },
+  "start_node_id": "tuto_01",
+  "final_node_id": "final_01",
+  "nodes": [
+    {
+      "id": "tuto_01",
+      "name": "Le Seuil",
+      "chapter": "Seuil",
+      "region": "Le refuge",
+      "type": "tutorial",
+      "position": {
+        "x": 540,
+        "y": 160
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "tutoriel_seuil",
+      "theme_god_id": "",
+      "accent": "#a6c79a",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "",
+        "fixed_deck": [
+          "le_drape_du_seuil_n1",
+          "avortons_des_caves_n1",
+          "mordeur_des_combles_n1",
+          "ogre_droitier_n1",
+          "rampant_des_fosses_n1",
+          "gueule_de_travers_n1",
+          "ecorche_angle_n1",
+          "le_sac_a_murmures_n1"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 1,
+        "ai_profile": {
+          "precision": 0.0,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 5000
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "tuto_02",
+      "name": "La Leçon",
+      "chapter": "Seuil",
+      "region": "Le refuge",
+      "type": "tutorial",
+      "position": {
+        "x": 540,
+        "y": 400
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "tutoriel_lecture",
+      "theme_god_id": "",
+      "accent": "#a6c79a",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "",
+        "fixed_deck": [
+          "gueule_de_travers_n1",
+          "le_drape_du_seuil_n1",
+          "mache_mur_n1",
+          "le_sac_a_murmures_n1",
+          "mordeur_des_combles_n1",
+          "ogre_droitier_n1",
+          "rampant_des_fosses_n1",
+          "avortons_des_caves_n1"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 1,
+        "ai_profile": {
+          "precision": 0.0,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 5037
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "tuto_03",
+      "name": "Le Premier Pas",
+      "chapter": "Seuil",
+      "region": "Le refuge",
+      "type": "tutorial",
+      "position": {
+        "x": 540,
+        "y": 640
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "tutoriel_premier_pas",
+      "theme_god_id": "",
+      "accent": "#a6c79a",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "",
+        "fixed_deck": [
+          "le_nud_hurlant_n1",
+          "ecorche_angle_n1",
+          "charognard_courbe_n1",
+          "tricorne_errant_n1",
+          "devoreur_de_lanternes_n1",
+          "rampant_des_fosses_n1",
+          "le_sac_a_murmures_n2",
+          "dos_fendu_n1"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 0.0,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 5074
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "veskar_01",
+      "name": "La Table du Croupier",
+      "chapter": "Carrefour",
+      "region": "Les Aléators",
+      "type": "normal",
+      "position": {
+        "x": 160,
+        "y": 980
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "veskar",
+        "fixed_deck": [
+          "fouisseur_aveugle_n1",
+          "griffe_a_jetons_n1",
+          "jumeau_de_cuivre_n1",
+          "le_drape_du_seuil_n2",
+          "devoreur_de_lanternes_n1",
+          "sou_ricanant_n1",
+          "roulette_vorace_n1",
+          "devoracle_n2"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 0.25,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 5111
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "nerava_01",
+      "name": "Les Fièvres Basses",
+      "chapter": "Carrefour",
+      "region": "Les Flétris",
+      "type": "normal",
+      "position": {
+        "x": 540,
+        "y": 980
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "nerava",
+      "accent": "#9b6bc7",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "generated",
+        "fixed_god_id": "nerava",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 0.25,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 5148
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "kharun_01",
+      "name": "La Muraille Fendue",
+      "chapter": "Carrefour",
+      "region": "Les Remparts",
+      "type": "normal",
+      "position": {
+        "x": 920,
+        "y": 980
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "kharun",
+      "accent": "#72c7d8",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "kharun",
+        "fixed_deck": [
+          "portail_dos_n1",
+          "tricorne_errant_n1",
+          "ecorche_angle_n2",
+          "heaume_errant_n1",
+          "ogre_a_deux_bouches_n1",
+          "mache_mur_n2",
+          "avortons_des_caves_n2",
+          "osselet_blinde_n2"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 0.25,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 5185
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "mini_optional_01",
+      "name": "La Cloche des Fièvres",
+      "chapter": "Carrefour",
+      "region": "Les Assimilateurs",
+      "type": "mini_boss",
+      "position": {
+        "x": 90,
+        "y": 1220
+      },
+      "dead_end": true,
+      "mini_boss_kind": "optional",
+      "tutorial_id": "",
+      "theme_god_id": "nerava",
+      "accent": "#9b6bc7",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "nerava",
+        "fixed_deck": [
+          "porte_fievre_n2",
+          "crache_cendre_n2",
+          "clochelet_malade_n2",
+          "machoire_moisie_n2",
+          "veuve_des_spores_n1",
+          "sonneur_pestifere_n1",
+          "griffe_septique_n1",
+          "ronge_chair_n1"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 0.35,
+          "anticipation": false
+        },
+        "series_format": "ft2",
+        "seed_policy": "fixed_per_node",
+        "seed": 5222
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "veskar_02",
+      "name": "Le Coup Double",
+      "chapter": "Carrefour",
+      "region": "Les Aléators",
+      "type": "normal",
+      "position": {
+        "x": 390,
+        "y": 1220
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "kharun",
+      "accent": "#72c7d8",
+      "encounter": {
+        "game_mode": "random",
+        "opponent_god_policy": "generated",
+        "opponent_deck_policy": "generated",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.5,
+          "anticipation": false
+        },
+        "series_format": "ft2",
+        "seed_policy": "fixed_per_node",
+        "seed": 5259
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "ilyr_01",
+      "name": "La Ligne de Veille",
+      "chapter": "Carrefour",
+      "region": "Les Veilleurs",
+      "type": "normal",
+      "position": {
+        "x": 680,
+        "y": 1220
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "ilyr",
+      "accent": "#5fa8ff",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "generated",
+        "fixed_god_id": "ilyr",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 0.25,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 5296
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "mirror_01",
+      "name": "Le Miroir de Verre",
+      "chapter": "Carrefour",
+      "region": "Le reflet",
+      "type": "normal",
+      "position": {
+        "x": 640,
+        "y": 1460
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "ilyr",
+      "accent": "#5fa8ff",
+      "encounter": {
+        "game_mode": "mirror",
+        "opponent_god_policy": "mirrored",
+        "opponent_deck_policy": "mirrored",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.5,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 5333
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "kharun_02",
+      "name": "Le Rempart Mobile",
+      "chapter": "Carrefour",
+      "region": "Les Remparts",
+      "type": "normal",
+      "position": {
+        "x": 940,
+        "y": 1220
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "sylkha",
+      "accent": "#7fc95b",
+      "encounter": {
+        "game_mode": "random",
+        "opponent_god_policy": "generated",
+        "opponent_deck_policy": "generated",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.5,
+          "anticipation": false
+        },
+        "series_format": "ft2",
+        "seed_policy": "fixed_per_node",
+        "seed": 5370
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "sylkha_01",
+      "name": "La Meute Naissante",
+      "chapter": "Carrefour",
+      "region": "L’Essaim",
+      "type": "normal",
+      "position": {
+        "x": 280,
+        "y": 1460
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "sylkha",
+      "accent": "#7fc95b",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "sylkha",
+        "fixed_deck": [
+          "le_replie_n1",
+          "ronce_rampante_n1",
+          "rampant_des_fosses_n2",
+          "larve_dancrage_n3",
+          "ogre_a_deux_bouches_n2",
+          "mordeur_des_combles_n3",
+          "la_nourrice_nouee_n1",
+          "fourmilion_des_nerfs_n2"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.5,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 5407
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "veilleur_impasse",
+      "name": "Le Veilleur Immobile",
+      "chapter": "Carrefour",
+      "region": "Les Veilleurs",
+      "type": "normal",
+      "position": {
+        "x": 940,
+        "y": 1460
+      },
+      "dead_end": true,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "ilyr",
+      "accent": "#5fa8ff",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "ilyr",
+        "fixed_deck": [
+          "le_sac_a_murmures_n1",
+          "echassier_des_brumes_n2",
+          "devoreur_de_lanternes_n1",
+          "laffame_du_puits_n1",
+          "le_porte_visages_n1",
+          "ogre_a_deux_bouches_n2",
+          "bouche_arbalete_n3",
+          "lil_empale_n1"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.5,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 5444
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "convergence_01",
+      "name": "La Convergence",
+      "chapter": "Carrefour",
+      "region": "Le passage",
+      "type": "normal",
+      "position": {
+        "x": 540,
+        "y": 1700
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "nerava",
+      "accent": "#9b6bc7",
+      "encounter": {
+        "game_mode": "draft",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "draft",
+        "fixed_god_id": "nerava",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.5,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 5481
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "boss_required_gate",
+      "name": "La Porte des Assimilateurs",
+      "chapter": "Carrefour",
+      "region": "Les Assimilateurs",
+      "type": "mini_boss",
+      "position": {
+        "x": 540,
+        "y": 1940
+      },
+      "dead_end": false,
+      "mini_boss_kind": "mandatory",
+      "tutorial_id": "",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "enigma",
+        "fixed_deck": [
+          "charognard_courbe_n1",
+          "la_broyeuse_dempreintes_n1",
+          "mordeur_des_combles_n3",
+          "mille_gueules_n1",
+          "le_sac_a_murmures_n3",
+          "fouisseur_aveugle_n2",
+          "porte_greffes_n2",
+          "depeceur_rampant_n3"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.75,
+          "anticipation": false
+        },
+        "series_format": "ft2",
+        "seed_policy": "fixed_per_node",
+        "seed": 5518
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r03_entry",
+      "name": "Le Gué des Promesses",
+      "chapter": "Le Marais des Serments",
+      "region": "Les Vœux Noyés",
+      "type": "normal",
+      "position": {
+        "x": 540,
+        "y": 2280
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "veskar",
+        "fixed_deck": [
+          "griffe_a_jetons_n2",
+          "rampant_des_fosses_n1",
+          "croupier_manchot_n1",
+          "charognard_courbe_n1",
+          "de_boiteux_n1",
+          "dos_fendu_n1",
+          "ogre_a_deux_bouches_n1",
+          "fouisseur_aveugle_n1"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 0.04,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 5555
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r03_a",
+      "name": "La Passe des Noyés",
+      "chapter": "Le Marais des Serments",
+      "region": "Les Vœux Noyés",
+      "type": "normal",
+      "position": {
+        "x": 300,
+        "y": 2520
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "kharun",
+      "accent": "#72c7d8",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "kharun",
+        "fixed_deck": [
+          "carapace_vide_n1",
+          "le_nud_hurlant_n1",
+          "rampant_des_fosses_n2",
+          "osselet_blinde_n2",
+          "chevalier_sans_visage_n1",
+          "portail_dos_n1",
+          "eclat_cuirasse_n2",
+          "mordeur_des_combles_n1"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 0.15,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 5592
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r03_b",
+      "name": "Les Roseaux Témoins",
+      "chapter": "Le Marais des Serments",
+      "region": "Les Vœux Noyés",
+      "type": "normal",
+      "position": {
+        "x": 780,
+        "y": 2520
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
+      "encounter": {
+        "game_mode": "random",
+        "opponent_god_policy": "generated",
+        "opponent_deck_policy": "generated",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 0.15,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 5629
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r03_a1",
+      "name": "La Barque Sans Rame",
+      "chapter": "Le Marais des Serments",
+      "region": "Les Vœux Noyés",
+      "type": "normal",
+      "position": {
+        "x": 180,
+        "y": 2760
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "veskar",
+        "fixed_deck": [
+          "ogre_a_deux_bouches_n1",
+          "ecorche_angle_n1",
+          "roulette_vorace_n1",
+          "le_sac_a_murmures_n2",
+          "de_boiteux_n2",
+          "croupier_manchot_n1",
+          "avortons_des_caves_n2",
+          "devoreur_de_lanternes_n1"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 0.28,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 5666
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r03_a2",
+      "name": "Le Serment de Vase",
+      "chapter": "Le Marais des Serments",
+      "region": "Les Vœux Noyés",
+      "type": "normal",
+      "position": {
+        "x": 420,
+        "y": 2760
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "ilyr",
+      "accent": "#5fa8ff",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "ilyr",
+        "fixed_deck": [
+          "ogre_droitier_n1",
+          "pique_en_haut_n2",
+          "dos_fendu_n1",
+          "longuepine_n2",
+          "charognard_courbe_n1",
+          "avortons_des_caves_n2",
+          "fauche_fond_n2",
+          "bouche_arbalete_n2"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 0.28,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 5703
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r03_b1",
+      "name": "L'Île aux Dettes",
+      "chapter": "Le Marais des Serments",
+      "region": "Les Vœux Noyés",
+      "type": "normal",
+      "position": {
+        "x": 780,
+        "y": 2760
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "enigma",
+        "fixed_deck": [
+          "ogre_a_deux_bouches_n1",
+          "le_nud_hurlant_n1",
+          "depeceur_rampant_n1",
+          "gueule_de_travers_n1",
+          "avortons_des_caves_n2",
+          "scie_boiteuse_n1",
+          "porte_greffes_n1",
+          "le_sac_a_murmures_n2"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 0.28,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 5740
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r03_m",
+      "name": "Le Bras de Tourbe",
+      "chapter": "Le Marais des Serments",
+      "region": "Les Vœux Noyés",
+      "type": "normal",
+      "position": {
+        "x": 540,
+        "y": 3000
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
+      "encounter": {
+        "game_mode": "draft",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "draft",
+        "fixed_god_id": "veskar",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.28,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 5777
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r03_c",
+      "name": "La Cloche Engloutie",
+      "chapter": "Le Marais des Serments",
+      "region": "Les Vœux Noyés",
+      "type": "normal",
+      "position": {
+        "x": 400,
+        "y": 3240
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "nerava",
+      "accent": "#9b6bc7",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "nerava",
+        "fixed_deck": [
+          "rampant_des_fosses_n1",
+          "fouisseur_aveugle_n1",
+          "devoreur_de_lanternes_n1",
+          "avortons_des_caves_n2",
+          "ronge_chair_n1",
+          "sonneur_pestifere_n1",
+          "porte_fievre_n2",
+          "le_sac_a_murmures_n2"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 0.28,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 5814
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r03_exit",
+      "name": "Le Passage des Larmes",
+      "chapter": "Le Marais des Serments",
+      "region": "Les Vœux Noyés",
+      "type": "normal",
+      "position": {
+        "x": 540,
+        "y": 3480
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "kharun",
+      "accent": "#72c7d8",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "kharun",
+        "fixed_deck": [
+          "rampant_des_fosses_n2",
+          "gueule_de_travers_n2",
+          "tricorne_errant_n1",
+          "carapace_vide_n1",
+          "osselet_blinde_n2",
+          "la_veuve_suspendue_n1",
+          "le_sac_a_murmures_n2",
+          "heaume_errant_n1"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 0.11,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 5851
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r03_mini",
+      "name": "Le Jeu des Six Faces",
+      "chapter": "Le Marais des Serments",
+      "region": "Les Vœux Noyés",
+      "type": "mini_boss",
+      "position": {
+        "x": 760,
+        "y": 3240
+      },
+      "dead_end": true,
+      "mini_boss_kind": "optional",
+      "tutorial_id": "",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
+      "encounter": {
+        "game_mode": "random",
+        "opponent_god_policy": "generated",
+        "opponent_deck_policy": "generated",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "generator_god_id": "veskar",
+        "generator_min_god_cards": 8,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.55,
+          "anticipation": false
+        },
+        "series_format": "ft2",
+        "seed_policy": "fixed_per_node",
+        "seed": 5888
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r04_entry",
+      "name": "Les Soufflets Basses",
+      "chapter": "Les Forges Basses",
+      "region": "Les Souffles",
+      "type": "normal",
+      "position": {
+        "x": 540,
+        "y": 3820
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "ilyr",
+      "accent": "#5fa8ff",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "ilyr",
+        "fixed_deck": [
+          "fouisseur_aveugle_n1",
+          "le_replie_n1",
+          "perce_voute_n1",
+          "charognard_courbe_n2",
+          "echassier_des_brumes_n2",
+          "le_nud_hurlant_n2",
+          "avortons_des_caves_n3",
+          "veilleur_bifurque_n2"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.54,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 5925
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r04_a",
+      "name": "La Coulée Rouge",
+      "chapter": "Les Forges Basses",
+      "region": "Les Souffles",
+      "type": "normal",
+      "position": {
+        "x": 240,
+        "y": 4060
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "sylkha",
+      "accent": "#7fc95b",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "sylkha",
+        "fixed_deck": [
+          "fourmilion_des_nerfs_n1",
+          "le_drape_du_seuil_n2",
+          "ogre_a_deux_bouches_n1",
+          "larve_dancrage_n2",
+          "nud_vivant_n2",
+          "mante_des_racines_n1",
+          "ogre_droitier_n2",
+          "avortons_des_caves_n2"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 0.43,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 5962
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r04_b",
+      "name": "Le Marteau Veuf",
+      "chapter": "Les Forges Basses",
+      "region": "Les Souffles",
+      "type": "normal",
+      "position": {
+        "x": 600,
+        "y": 4060
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "enigma",
+        "fixed_deck": [
+          "ogre_droitier_n1",
+          "charognard_courbe_n1",
+          "la_veuve_suspendue_n1",
+          "chirurgien_dacier_n1",
+          "avortons_des_caves_n2",
+          "porte_greffes_n1",
+          "preleveur_de_plaques_n1",
+          "le_sac_a_murmures_n2"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 0.43,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 5999
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r04_mini",
+      "name": "Le Premier Essaim",
+      "chapter": "Les Forges Basses",
+      "region": "Les Souffles",
+      "type": "mini_boss",
+      "position": {
+        "x": 900,
+        "y": 4060
+      },
+      "dead_end": true,
+      "mini_boss_kind": "optional",
+      "tutorial_id": "",
+      "theme_god_id": "sylkha",
+      "accent": "#7fc95b",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "sylkha",
+        "fixed_deck": [
+          "nud_vivant_n2",
+          "larve_dancrage_n1",
+          "tisse_griffe_n2",
+          "bourgeon_mordant_n2",
+          "mante_des_racines_n1",
+          "porte_nid_n1",
+          "fourmilion_des_nerfs_n1",
+          "ronce_rampante_n1"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 1.0,
+          "anticipation": true
+        },
+        "series_format": "ft2",
+        "seed_policy": "fixed_per_node",
+        "seed": 6036
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r04_a1",
+      "name": "L'Enclume des Vœux",
+      "chapter": "Les Forges Basses",
+      "region": "Les Souffles",
+      "type": "normal",
+      "position": {
+        "x": 200,
+        "y": 4300
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
+      "encounter": {
+        "game_mode": "draft",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "draft",
+        "fixed_god_id": "veskar",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.81,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 6073
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r04_a2",
+      "name": "Le Canal de Métal",
+      "chapter": "Les Forges Basses",
+      "region": "Les Souffles",
+      "type": "normal",
+      "position": {
+        "x": 400,
+        "y": 4300
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "nerava",
+      "accent": "#9b6bc7",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "nerava",
+        "fixed_deck": [
+          "le_nud_hurlant_n1",
+          "mordeur_des_combles_n1",
+          "clochelet_malade_n1",
+          "ogre_a_deux_bouches_n1",
+          "machoire_moisie_n2",
+          "crache_cendre_n2",
+          "tricorne_errant_n1",
+          "le_sac_a_murmures_n2"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 0.98,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 6110
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r04_b1",
+      "name": "La Forge aux Os",
+      "chapter": "Les Forges Basses",
+      "region": "Les Souffles",
+      "type": "normal",
+      "position": {
+        "x": 600,
+        "y": 4300
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "kharun",
+      "accent": "#72c7d8",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "kharun",
+        "fixed_deck": [
+          "eclat_cuirasse_n2",
+          "le_nud_hurlant_n1",
+          "ecorche_angle_n1",
+          "le_sac_a_murmures_n1",
+          "avortons_des_caves_n2",
+          "golem_de_faience_n1",
+          "colosse_rivete_n1",
+          "la_veuve_suspendue_n1"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 0.98,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 6147
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r04_d",
+      "name": "Les Étincelles Froides",
+      "chapter": "Les Forges Basses",
+      "region": "Les Souffles",
+      "type": "normal",
+      "position": {
+        "x": 480,
+        "y": 4540
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "ilyr",
+      "accent": "#5fa8ff",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "ilyr",
+        "fixed_deck": [
+          "rampant_des_fosses_n1",
+          "mordeur_des_combles_n2",
+          "dard_de_traverse_n1",
+          "le_sac_a_murmures_n2",
+          "fauche_fond_n2",
+          "ogre_a_deux_bouches_n1",
+          "pique_en_haut_n1",
+          "bouche_arbalete_n1"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 0.07,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 6184
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r04_m",
+      "name": "Le Souffle du Four",
+      "chapter": "Les Forges Basses",
+      "region": "Les Souffles",
+      "type": "normal",
+      "position": {
+        "x": 540,
+        "y": 4780
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "sylkha",
+      "accent": "#7fc95b",
+      "encounter": {
+        "game_mode": "draft",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "draft",
+        "fixed_god_id": "sylkha",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.19,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 6221
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r04_gate",
+      "name": "La Porte des Fontes",
+      "chapter": "Les Forges Basses",
+      "region": "Les Souffles",
+      "type": "mini_boss",
+      "position": {
+        "x": 540,
+        "y": 5020
+      },
+      "dead_end": false,
+      "mini_boss_kind": "mandatory",
+      "tutorial_id": "",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "enigma",
+        "fixed_deck": [
+          "chirurgien_dacier_n1",
+          "ecorche_angle_n3",
+          "la_broyeuse_dempreintes_n1",
+          "ogre_a_deux_bouches_n1",
+          "collecteur_de_dents_n2",
+          "recycleur_thoracique_n1",
+          "mache_mur_n3",
+          "devoreur_de_lanternes_n2"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.48,
+          "anticipation": false
+        },
+        "series_format": "ft2",
+        "seed_policy": "fixed_per_node",
+        "seed": 6258
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r05_entry",
+      "name": "Le Seuil des Archives",
+      "chapter": "La Bibliothèque des Os",
+      "region": "Les Archives",
+      "type": "normal",
+      "position": {
+        "x": 540,
+        "y": 5360
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "veskar",
+        "fixed_deck": [
+          "tricorne_errant_n1",
+          "valet_a_lenvers_n1",
+          "ecorche_angle_n2",
+          "charognard_courbe_n1",
+          "gueule_de_travers_n1",
+          "avortons_des_caves_n2",
+          "roulette_vorace_n1",
+          "devoracle_n2"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 0.68,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 6295
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r05_a",
+      "name": "Les Rayons Muets",
+      "chapter": "La Bibliothèque des Os",
+      "region": "Les Archives",
+      "type": "normal",
+      "position": {
+        "x": 320,
+        "y": 5600
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "nerava",
+      "accent": "#9b6bc7",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "nerava",
+        "fixed_deck": [
+          "veuve_des_spores_n1",
+          "la_veuve_suspendue_n1",
+          "ogre_droitier_n1",
+          "le_sac_a_murmures_n2",
+          "avortons_des_caves_n2",
+          "devoreur_de_lanternes_n1",
+          "crache_cendre_n2",
+          "porte_fievre_n2"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 0.63,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 6332
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r05_b",
+      "name": "La Salle des Dettes",
+      "chapter": "La Bibliothèque des Os",
+      "region": "Les Archives",
+      "type": "normal",
+      "position": {
+        "x": 760,
+        "y": 5600
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "kharun",
+      "accent": "#72c7d8",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "kharun",
+        "fixed_deck": [
+          "dos_fendu_n1",
+          "golem_de_faience_n1",
+          "portail_dos_n1",
+          "charognard_courbe_n1",
+          "colosse_rivete_n1",
+          "devoreur_de_lanternes_n1",
+          "avortons_des_caves_n2",
+          "le_sac_a_murmures_n2"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 0.63,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 6369
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r05_a1",
+      "name": "L'Index de Fer",
+      "chapter": "La Bibliothèque des Os",
+      "region": "Les Archives",
+      "type": "normal",
+      "position": {
+        "x": 200,
+        "y": 5840
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "ilyr",
+      "accent": "#5fa8ff",
+      "encounter": {
+        "game_mode": "draft",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "draft",
+        "fixed_god_id": "ilyr",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.84,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 6406
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r05_b1",
+      "name": "Les Marges Vivantes",
+      "chapter": "La Bibliothèque des Os",
+      "region": "Les Archives",
+      "type": "normal",
+      "position": {
+        "x": 760,
+        "y": 5840
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "sylkha",
+      "accent": "#7fc95b",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "sylkha",
+        "fixed_deck": [
+          "tisse_griffe_n2",
+          "fouisseur_aveugle_n1",
+          "dos_fendu_n1",
+          "la_veuve_suspendue_n1",
+          "mante_des_racines_n1",
+          "ogre_a_deux_bouches_n1",
+          "le_drape_du_seuil_n2",
+          "ronce_rampante_n1"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 0.84,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 6443
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r05_a2",
+      "name": "Le Catalogue des Oubliés",
+      "chapter": "La Bibliothèque des Os",
+      "region": "Les Archives",
+      "type": "normal",
+      "position": {
+        "x": 300,
+        "y": 6080
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "enigma",
+        "fixed_deck": [
+          "gueule_de_travers_n1",
+          "chirurgien_dacier_n1",
+          "tricorne_errant_n1",
+          "charognard_courbe_n1",
+          "preleveur_de_plaques_n1",
+          "fouisseur_aveugle_n1",
+          "ogre_a_deux_bouches_n1",
+          "recycleur_thoracique_n1"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 0.13,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 6480
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r05_b2",
+      "name": "La Reliure de Peau",
+      "chapter": "La Bibliothèque des Os",
+      "region": "Les Archives",
+      "type": "normal",
+      "position": {
+        "x": 760,
+        "y": 6080
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
+      "encounter": {
+        "game_mode": "draft",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "draft",
+        "fixed_god_id": "veskar",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.13,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 6517
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r05_m",
+      "name": "Le Silence des Livres",
+      "chapter": "La Bibliothèque des Os",
+      "region": "Les Archives",
+      "type": "normal",
+      "position": {
+        "x": 540,
+        "y": 6320
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "nerava",
+      "accent": "#9b6bc7",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "nerava",
+        "fixed_deck": [
+          "mache_mur_n3",
+          "le_precheur_des_fievres_n1",
+          "avortons_des_caves_n3",
+          "sonneur_pestifere_n1",
+          "laffame_du_puits_n1",
+          "veuve_des_spores_n2",
+          "charognard_courbe_n2",
+          "le_drape_du_seuil_n2"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.34,
+          "anticipation": false
+        },
+        "series_format": "ft2",
+        "seed_policy": "fixed_per_node",
+        "seed": 6554
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r05_exit",
+      "name": "La Sortie des Copistes",
+      "chapter": "La Bibliothèque des Os",
+      "region": "Les Archives",
+      "type": "normal",
+      "position": {
+        "x": 540,
+        "y": 6560
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "nerava",
+      "accent": "#9b6bc7",
+      "encounter": {
+        "game_mode": "random",
+        "opponent_god_policy": "generated",
+        "opponent_deck_policy": "generated",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 0.91,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 6591
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r05_mini",
+      "name": "L'Encre Dévoreuse",
+      "chapter": "La Bibliothèque des Os",
+      "region": "Les Archives",
+      "type": "mini_boss",
+      "position": {
+        "x": 100,
+        "y": 6080
+      },
+      "dead_end": true,
+      "mini_boss_kind": "optional",
+      "tutorial_id": "",
+      "theme_god_id": "kharun",
+      "accent": "#72c7d8",
+      "encounter": {
+        "game_mode": "draft",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "draft",
+        "fixed_god_id": "kharun",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.34,
+          "anticipation": false
+        },
+        "series_format": "ft2",
+        "seed_policy": "fixed_per_node",
+        "seed": 6628
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r06_entry",
+      "name": "Le Marché aux Noms",
+      "chapter": "Le Marché Nocturne",
+      "region": "Les Échanges",
+      "type": "normal",
+      "position": {
+        "x": 540,
+        "y": 6900
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "ilyr",
+      "accent": "#5fa8ff",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "ilyr",
+        "fixed_deck": [
+          "le_sac_a_murmures_n1",
+          "dard_de_traverse_n1",
+          "veilleur_bifurque_n1",
+          "ecorche_angle_n2",
+          "longuepine_n2",
+          "perce_voute_n1",
+          "bouche_arbalete_n2",
+          "avortons_des_caves_n2"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 0.11,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 6665
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r06_a",
+      "name": "Les Lanternes Sourdes",
+      "chapter": "Le Marché Nocturne",
+      "region": "Les Échanges",
+      "type": "normal",
+      "position": {
+        "x": 120,
+        "y": 7140
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "kharun",
+      "accent": "#72c7d8",
+      "encounter": {
+        "game_mode": "mirror",
+        "opponent_god_policy": "mirrored",
+        "opponent_deck_policy": "mirrored",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.07,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 6702
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r06_b",
+      "name": "La Bourse Vide",
+      "chapter": "Le Marché Nocturne",
+      "region": "Les Échanges",
+      "type": "normal",
+      "position": {
+        "x": 360,
+        "y": 7140
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "ilyr",
+      "accent": "#5fa8ff",
+      "encounter": {
+        "game_mode": "random",
+        "opponent_god_policy": "generated",
+        "opponent_deck_policy": "generated",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.07,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 6739
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r06_c",
+      "name": "Le Comptoir des Dettes",
+      "chapter": "Le Marché Nocturne",
+      "region": "Les Échanges",
+      "type": "normal",
+      "position": {
+        "x": 600,
+        "y": 7140
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "sylkha",
+      "accent": "#7fc95b",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "sylkha",
+        "fixed_deck": [
+          "charognard_courbe_n2",
+          "devoreur_de_lanternes_n1",
+          "ogre_droitier_n1",
+          "nud_vivant_n3",
+          "rampant_des_fosses_n1",
+          "le_tisseur_de_meutes_n1",
+          "tisse_griffe_n3",
+          "avortons_des_caves_n3"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.07,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 6776
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r06_mini",
+      "name": "Le Colporteur de Peaux",
+      "chapter": "Le Marché Nocturne",
+      "region": "Les Échanges",
+      "type": "mini_boss",
+      "position": {
+        "x": 860,
+        "y": 7140
+      },
+      "dead_end": true,
+      "mini_boss_kind": "optional",
+      "tutorial_id": "",
+      "theme_god_id": "sylkha",
+      "accent": "#7fc95b",
+      "encounter": {
+        "game_mode": "random",
+        "opponent_god_policy": "generated",
+        "opponent_deck_policy": "generated",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.19,
+          "anticipation": false
+        },
+        "series_format": "ft2",
+        "seed_policy": "fixed_per_node",
+        "seed": 6813
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r06_a1",
+      "name": "La Rue des Serments",
+      "chapter": "Le Marché Nocturne",
+      "region": "Les Échanges",
+      "type": "normal",
+      "position": {
+        "x": 200,
+        "y": 7380
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "enigma",
+        "fixed_deck": [
+          "chirurgien_dacier_n2",
+          "fouisseur_aveugle_n2",
+          "la_broyeuse_dempreintes_n1",
+          "depeceur_rampant_n3",
+          "le_demonteur_n1",
+          "ogre_a_deux_bouches_n2",
+          "mille_gueules_n1",
+          "avortons_des_caves_n2"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.32,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 6850
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r06_b1",
+      "name": "Les Cageots d'Os",
+      "chapter": "Le Marché Nocturne",
+      "region": "Les Échanges",
+      "type": "normal",
+      "position": {
+        "x": 540,
+        "y": 7380
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "veskar",
+        "fixed_deck": [
+          "roulette_vorace_n2",
+          "ogre_droitier_n2",
+          "de_boiteux_n2",
+          "la_machine_a_malchance_n1",
+          "le_porte_visages_n1",
+          "laffame_du_puits_n1",
+          "mordeur_des_combles_n2",
+          "griffe_a_jetons_n3"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.32,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 6887
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r06_c1",
+      "name": "La Monnaie Fendue",
+      "chapter": "Le Marché Nocturne",
+      "region": "Les Échanges",
+      "type": "normal",
+      "position": {
+        "x": 860,
+        "y": 7380
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "nerava",
+      "accent": "#9b6bc7",
+      "encounter": {
+        "game_mode": "draft",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "draft",
+        "fixed_god_id": "nerava",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.32,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 6924
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r06_m",
+      "name": "Le Grand Change",
+      "chapter": "Le Marché Nocturne",
+      "region": "Les Échanges",
+      "type": "normal",
+      "position": {
+        "x": 540,
+        "y": 7620
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "kharun",
+      "accent": "#72c7d8",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "kharun",
+        "fixed_deck": [
+          "heaume_errant_n2",
+          "carapace_vide_n1",
+          "eclat_cuirasse_n2",
+          "le_drape_du_seuil_n1",
+          "portail_dos_n1",
+          "charognard_courbe_n1",
+          "tricorne_errant_n1",
+          "avortons_des_caves_n2"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 0.41,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 6961
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r06_exit",
+      "name": "La Ruelle des Adieux",
+      "chapter": "Le Marché Nocturne",
+      "region": "Les Échanges",
+      "type": "normal",
+      "position": {
+        "x": 540,
+        "y": 7860
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "ilyr",
+      "accent": "#5fa8ff",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "ilyr",
+        "fixed_deck": [
+          "ecorche_angle_n1",
+          "devoreur_de_lanternes_n2",
+          "longuepine_n3",
+          "dos_fendu_n2",
+          "le_replie_n1",
+          "dard_de_traverse_n1",
+          "mille_gueules_n1",
+          "fauche_fond_n3"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.74,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 6998
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r07_entry",
+      "name": "Les Serres de Verre",
+      "chapter": "Les Serres de Verre",
+      "region": "Les Greffes",
+      "type": "normal",
+      "position": {
+        "x": 540,
+        "y": 8200
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "sylkha",
+      "accent": "#7fc95b",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "sylkha",
+        "fixed_deck": [
+          "bourgeon_mordant_n2",
+          "le_sac_a_murmures_n2",
+          "la_nourrice_nouee_n1",
+          "larve_dancrage_n1",
+          "mache_mur_n2",
+          "ecorche_angle_n2",
+          "fouisseur_aveugle_n2",
+          "avortons_des_caves_n3"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.93,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 7035
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r07_a",
+      "name": "La Voûte Tiède",
+      "chapter": "Les Serres de Verre",
+      "region": "Les Greffes",
+      "type": "normal",
+      "position": {
+        "x": 300,
+        "y": 8440
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "enigma",
+        "fixed_deck": [
+          "scie_boiteuse_n1",
+          "depeceur_rampant_n2",
+          "rampant_des_fosses_n2",
+          "dos_fendu_n1",
+          "le_drape_du_seuil_n2",
+          "le_sac_a_murmures_n2",
+          "fouisseur_aveugle_n1",
+          "recycleur_thoracique_n1"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 0.89,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 7072
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r07_b",
+      "name": "Les Racines en Cloche",
+      "chapter": "Les Serres de Verre",
+      "region": "Les Greffes",
+      "type": "normal",
+      "position": {
+        "x": 780,
+        "y": 8440
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
+      "encounter": {
+        "game_mode": "random",
+        "opponent_god_policy": "generated",
+        "opponent_deck_policy": "generated",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 0.89,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 7109
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r07_m1",
+      "name": "Le Croisement des Sèves",
+      "chapter": "Les Serres de Verre",
+      "region": "Les Greffes",
+      "type": "normal",
+      "position": {
+        "x": 540,
+        "y": 8680
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "veskar",
+        "fixed_deck": [
+          "le_nud_hurlant_n1",
+          "la_machine_a_malchance_n1",
+          "ogre_a_deux_bouches_n1",
+          "jumeau_de_cuivre_n1",
+          "le_replie_n1",
+          "sou_ricanant_n3",
+          "le_drape_du_seuil_n3",
+          "avortons_des_caves_n3"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.13,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 7146
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r07_c",
+      "name": "Les Fruits Témoins",
+      "chapter": "Les Serres de Verre",
+      "region": "Les Greffes",
+      "type": "normal",
+      "position": {
+        "x": 300,
+        "y": 8920
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
+      "encounter": {
+        "game_mode": "mirror",
+        "opponent_god_policy": "mirrored",
+        "opponent_deck_policy": "mirrored",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.34,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 7183
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r07_d",
+      "name": "La Saignée Verte",
+      "chapter": "Les Serres de Verre",
+      "region": "Les Greffes",
+      "type": "normal",
+      "position": {
+        "x": 780,
+        "y": 8920
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "nerava",
+      "accent": "#9b6bc7",
+      "encounter": {
+        "game_mode": "draft",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "draft",
+        "fixed_god_id": "nerava",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.54,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 7220
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r07_m2",
+      "name": "Le Nœud de Verre",
+      "chapter": "Les Serres de Verre",
+      "region": "Les Greffes",
+      "type": "normal",
+      "position": {
+        "x": 540,
+        "y": 9160
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "kharun",
+      "accent": "#72c7d8",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "kharun",
+        "fixed_deck": [
+          "mache_mur_n1",
+          "tricorne_errant_n1",
+          "osselet_blinde_n2",
+          "carapace_vide_n2",
+          "eclat_cuirasse_n2",
+          "devoreur_de_lanternes_n1",
+          "le_sac_a_murmures_n2",
+          "avortons_des_caves_n2"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 0.91,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 7257
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r07_e",
+      "name": "Les Greffes Lumineuses",
+      "chapter": "Les Serres de Verre",
+      "region": "Les Greffes",
+      "type": "normal",
+      "position": {
+        "x": 300,
+        "y": 9400
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "ilyr",
+      "accent": "#5fa8ff",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "ilyr",
+        "fixed_deck": [
+          "le_sac_a_murmures_n2",
+          "mache_mur_n1",
+          "dard_de_traverse_n1",
+          "fouisseur_aveugle_n2",
+          "pique_en_haut_n3",
+          "laffame_du_puits_n1",
+          "dos_fendu_n1",
+          "longuepine_n3"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.04,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 7294
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r07_f",
+      "name": "La Floraison Muette",
+      "chapter": "Les Serres de Verre",
+      "region": "Les Greffes",
+      "type": "normal",
+      "position": {
+        "x": 780,
+        "y": 9400
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "sylkha",
+      "accent": "#7fc95b",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "sylkha",
+        "fixed_deck": [
+          "le_porte_visages_n1",
+          "nud_vivant_n3",
+          "mante_des_racines_n2",
+          "fourmilion_des_nerfs_n2",
+          "tisse_griffe_n3",
+          "le_sac_a_murmures_n3",
+          "devoreur_de_lanternes_n2",
+          "avortons_des_caves_n3"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.04,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 7331
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r07_gate",
+      "name": "La Cloche de Sève",
+      "chapter": "Les Serres de Verre",
+      "region": "Les Greffes",
+      "type": "mini_boss",
+      "position": {
+        "x": 540,
+        "y": 9640
+      },
+      "dead_end": false,
+      "mini_boss_kind": "mandatory",
+      "tutorial_id": "",
+      "theme_god_id": "nerava",
+      "accent": "#9b6bc7",
+      "encounter": {
+        "game_mode": "mirror",
+        "opponent_god_policy": "mirrored",
+        "opponent_deck_policy": "mirrored",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.3,
+          "anticipation": false
+        },
+        "series_format": "ft2",
+        "seed_policy": "fixed_per_node",
+        "seed": 7368
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r08_entry",
+      "name": "Les Remparts Muets",
+      "chapter": "Les Remparts Muets",
+      "region": "Les Assiégés",
+      "type": "normal",
+      "position": {
+        "x": 540,
+        "y": 9980
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "enigma",
+        "fixed_deck": [
+          "le_sac_a_murmures_n2",
+          "chirurgien_dacier_n1",
+          "gueule_de_travers_n2",
+          "dos_fendu_n1",
+          "mache_mur_n2",
+          "recycleur_thoracique_n1",
+          "preleveur_de_plaques_n1",
+          "avortons_des_caves_n2"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 0.46,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 7405
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r08_a",
+      "name": "La Brèche Nord",
+      "chapter": "Les Remparts Muets",
+      "region": "Les Assiégés",
+      "type": "normal",
+      "position": {
+        "x": 160,
+        "y": 10220
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "kharun",
+      "accent": "#72c7d8",
+      "encounter": {
+        "game_mode": "random",
+        "opponent_god_policy": "generated",
+        "opponent_deck_policy": "generated",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.41,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 7442
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r08_b",
+      "name": "Le Chemin de Ronde",
+      "chapter": "Les Remparts Muets",
+      "region": "Les Assiégés",
+      "type": "normal",
+      "position": {
+        "x": 540,
+        "y": 10220
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "veskar",
+        "fixed_deck": [
+          "croupier_manchot_n2",
+          "valet_a_lenvers_n1",
+          "fouisseur_aveugle_n1",
+          "le_nud_hurlant_n1",
+          "roulette_vorace_n1",
+          "mordeur_des_combles_n3",
+          "jumeau_de_cuivre_n1",
+          "avortons_des_caves_n3"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.41,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 7479
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r08_c",
+      "name": "La Tour sans Guetteur",
+      "chapter": "Les Remparts Muets",
+      "region": "Les Assiégés",
+      "type": "normal",
+      "position": {
+        "x": 900,
+        "y": 10220
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "nerava",
+      "accent": "#9b6bc7",
+      "encounter": {
+        "game_mode": "draft",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "draft",
+        "fixed_god_id": "nerava",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.41,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 7516
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r08_a1",
+      "name": "Les Meurtrières",
+      "chapter": "Les Remparts Muets",
+      "region": "Les Assiégés",
+      "type": "normal",
+      "position": {
+        "x": 160,
+        "y": 10460
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "kharun",
+      "accent": "#72c7d8",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "kharun",
+        "fixed_deck": [
+          "fouisseur_aveugle_n2",
+          "le_porte_visages_n1",
+          "le_nud_hurlant_n1",
+          "golem_de_faience_n1",
+          "colosse_rivete_n2",
+          "le_reliquaire_ambulant_n1",
+          "devoreur_de_lanternes_n2",
+          "osselet_blinde_n2"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.63,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 7553
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r08_b1",
+      "name": "Le Pont-levis Grippé",
+      "chapter": "Les Remparts Muets",
+      "region": "Les Assiégés",
+      "type": "normal",
+      "position": {
+        "x": 540,
+        "y": 10460
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "ilyr",
+      "accent": "#5fa8ff",
+      "encounter": {
+        "game_mode": "mirror",
+        "opponent_god_policy": "mirrored",
+        "opponent_deck_policy": "mirrored",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.74,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 7590
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r08_c1",
+      "name": "Les Pierres Tombées",
+      "chapter": "Les Remparts Muets",
+      "region": "Les Assiégés",
+      "type": "normal",
+      "position": {
+        "x": 900,
+        "y": 10460
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "ilyr",
+      "accent": "#5fa8ff",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "ilyr",
+        "fixed_deck": [
+          "le_drape_du_seuil_n2",
+          "mache_mur_n2",
+          "fouisseur_aveugle_n2",
+          "longuepine_n2",
+          "le_porte_visages_n1",
+          "pique_en_haut_n2",
+          "bouche_arbalete_n2",
+          "avortons_des_caves_n2"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.74,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 7627
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r08_m1",
+      "name": "La Cour des Assiégés",
+      "chapter": "Les Remparts Muets",
+      "region": "Les Assiégés",
+      "type": "normal",
+      "position": {
+        "x": 400,
+        "y": 10700
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "sylkha",
+      "accent": "#7fc95b",
+      "encounter": {
+        "game_mode": "random",
+        "opponent_god_policy": "generated",
+        "opponent_deck_policy": "generated",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.89,
+          "anticipation": false
+        },
+        "series_format": "ft2",
+        "seed_policy": "fixed_per_node",
+        "seed": 7664
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r08_m2",
+      "name": "Le Beffroi Fendu",
+      "chapter": "Les Remparts Muets",
+      "region": "Les Assiégés",
+      "type": "normal",
+      "position": {
+        "x": 680,
+        "y": 10700
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "sylkha",
+      "accent": "#7fc95b",
+      "encounter": {
+        "game_mode": "draft",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "draft",
+        "fixed_god_id": "sylkha",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.89,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 7701
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r08_exit",
+      "name": "La Poterne des Vents",
+      "chapter": "Les Remparts Muets",
+      "region": "Les Assiégés",
+      "type": "normal",
+      "position": {
+        "x": 540,
+        "y": 10940
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "enigma",
+        "fixed_deck": [
+          "pince_carcasse_n2",
+          "le_drape_du_seuil_n2",
+          "la_broyeuse_dempreintes_n1",
+          "ogre_droitier_n1",
+          "ogre_a_deux_bouches_n1",
+          "preleveur_de_plaques_n1",
+          "avortons_des_caves_n3",
+          "devoreur_de_lanternes_n2"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.21,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 7738
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r09_entry",
+      "name": "Le Puits des Échos",
+      "chapter": "Le Puits des Échos",
+      "region": "Les Profondeurs",
+      "type": "normal",
+      "position": {
+        "x": 540,
+        "y": 11280
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "veskar",
+        "fixed_deck": [
+          "la_dame_aux_deux_visages_n1",
+          "la_veuve_suspendue_n2",
+          "griffe_a_jetons_n2",
+          "la_machine_a_malchance_n1",
+          "croupier_manchot_n2",
+          "le_sac_a_murmures_n3",
+          "le_drape_du_seuil_n2",
+          "devoracle_n1"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.61,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 7775
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r09_a",
+      "name": "La Margelle Usée",
+      "chapter": "Le Puits des Échos",
+      "region": "Les Profondeurs",
+      "type": "normal",
+      "position": {
+        "x": 300,
+        "y": 11520
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
+      "encounter": {
+        "game_mode": "random",
+        "opponent_god_policy": "generated",
+        "opponent_deck_policy": "generated",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.54,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 7812
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r09_b",
+      "name": "Les Seaux Vides",
+      "chapter": "Le Puits des Échos",
+      "region": "Les Profondeurs",
+      "type": "normal",
+      "position": {
+        "x": 780,
+        "y": 11520
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "nerava",
+      "accent": "#9b6bc7",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "nerava",
+        "fixed_deck": [
+          "mille_gueules_n1",
+          "rampant_des_fosses_n4",
+          "ogre_droitier_n4",
+          "le_porte_cercueil_n1",
+          "le_voyeur_n1",
+          "ronge_chair_n2",
+          "crache_cendre_n2",
+          "le_roi_des_oubliettes_n1"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.54,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 7849
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r09_c",
+      "name": "Le Fil des Voix",
+      "chapter": "Le Puits des Échos",
+      "region": "Les Profondeurs",
+      "type": "normal",
+      "position": {
+        "x": 540,
+        "y": 11520
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "kharun",
+      "accent": "#72c7d8",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "kharun",
+        "fixed_deck": [
+          "dos_fendu_n1",
+          "gueule_de_travers_n3",
+          "colosse_rivete_n2",
+          "le_roi_des_oubliettes_n1",
+          "ogre_a_deux_bouches_n3",
+          "chevalier_sans_visage_n1",
+          "mille_gueules_n2",
+          "osselet_blinde_n1"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.54,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 7886
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r09_mini1",
+      "name": "La Garde en Reflet",
+      "chapter": "Le Puits des Échos",
+      "region": "Les Profondeurs",
+      "type": "mini_boss",
+      "position": {
+        "x": 120,
+        "y": 11760
+      },
+      "dead_end": true,
+      "mini_boss_kind": "optional",
+      "tutorial_id": "",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
+      "encounter": {
+        "game_mode": "mirror",
+        "opponent_god_policy": "mirrored",
+        "opponent_deck_policy": "mirrored",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "generator_god_id": "ilyr",
+        "generator_min_god_cards": 7,
+        "mirror_fixed_deck": [
+          "longuepine_n4",
+          "pique_en_haut_n4",
+          "fauche_fond_n4",
+          "bouche_arbalete_n4",
+          "veilleur_bifurque_n1",
+          "perce_voute_n1",
+          "dard_de_traverse_n2",
+          "avortons_des_caves_n1"
+        ],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.8,
+          "anticipation": false
+        },
+        "series_format": "ft2",
+        "seed_policy": "fixed_per_node",
+        "seed": 7923
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r09_mini2",
+      "name": "Le Chœur Noyé",
+      "chapter": "Le Puits des Échos",
+      "region": "Les Profondeurs",
+      "type": "mini_boss",
+      "position": {
+        "x": 960,
+        "y": 11760
+      },
+      "dead_end": true,
+      "mini_boss_kind": "optional",
+      "tutorial_id": "",
+      "theme_god_id": "ilyr",
+      "accent": "#5fa8ff",
+      "encounter": {
+        "game_mode": "draft",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "draft",
+        "fixed_god_id": "ilyr",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.15,
+          "anticipation": false
+        },
+        "series_format": "ft2",
+        "seed_policy": "fixed_per_node",
+        "seed": 7960
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r09_a1",
+      "name": "La Descente Basse",
+      "chapter": "Le Puits des Échos",
+      "region": "Les Profondeurs",
+      "type": "normal",
+      "position": {
+        "x": 300,
+        "y": 11760
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "sylkha",
+      "accent": "#7fc95b",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "sylkha",
+        "fixed_deck": [
+          "porte_nid_n2",
+          "bourgeon_mordant_n3",
+          "mille_gueules_n1",
+          "larve_dancrage_n3",
+          "gueule_de_travers_n2",
+          "le_drape_du_seuil_n1",
+          "le_tisseur_de_meutes_n1",
+          "mante_des_racines_n1"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.04,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 7997
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r09_b1",
+      "name": "Les Parois Humides",
+      "chapter": "Le Puits des Échos",
+      "region": "Les Profondeurs",
+      "type": "normal",
+      "position": {
+        "x": 780,
+        "y": 11760
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
+      "encounter": {
+        "game_mode": "draft",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "draft",
+        "fixed_god_id": "enigma",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.04,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 8034
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r09_m",
+      "name": "Le Fond Sans Nom",
+      "chapter": "Le Puits des Échos",
+      "region": "Les Profondeurs",
+      "type": "normal",
+      "position": {
+        "x": 540,
+        "y": 12000
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "nerava",
+      "accent": "#9b6bc7",
+      "encounter": {
+        "game_mode": "random",
+        "opponent_god_policy": "generated",
+        "opponent_deck_policy": "generated",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.11,
+          "anticipation": false
+        },
+        "series_format": "ft2",
+        "seed_policy": "fixed_per_node",
+        "seed": 8071
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r09_exit",
+      "name": "La Remontée des Oubliés",
+      "chapter": "Le Puits des Échos",
+      "region": "Les Profondeurs",
+      "type": "normal",
+      "position": {
+        "x": 540,
+        "y": 12240
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "veskar",
+        "fixed_deck": [
+          "la_gueule_sous_le_lit_n1",
+          "mille_gueules_n2",
+          "gueule_de_travers_n2",
+          "valet_a_lenvers_n2",
+          "griffe_a_jetons_n1",
+          "le_dernier_pari_n1",
+          "le_sac_a_murmures_n1",
+          "sou_ricanant_n3"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.86,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 8108
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r10_entry",
+      "name": "La Cour des Masques",
+      "chapter": "La Cour des Masques",
+      "region": "Les Visages",
+      "type": "normal",
+      "position": {
+        "x": 540,
+        "y": 12580
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "nerava",
+      "accent": "#9b6bc7",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "nerava",
+        "fixed_deck": [
+          "veuve_des_spores_n2",
+          "griffe_septique_n1",
+          "crache_cendre_n1",
+          "le_porte_visages_n1",
+          "le_precheur_des_fievres_n1",
+          "tricorne_errant_n1",
+          "ogre_a_deux_bouches_n2",
+          "avortons_des_caves_n3"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.93,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 8145
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r10_a",
+      "name": "Le Banquet des Visages",
+      "chapter": "La Cour des Masques",
+      "region": "Les Visages",
+      "type": "normal",
+      "position": {
+        "x": 240,
+        "y": 12820
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "kharun",
+      "accent": "#72c7d8",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "kharun",
+        "fixed_deck": [
+          "avortons_des_caves_n1",
+          "gueule_de_travers_n3",
+          "colosse_rivete_n1",
+          "mille_gueules_n1",
+          "rampant_des_fosses_n3",
+          "le_bastion_fendu_n1",
+          "devoreur_de_lanternes_n2",
+          "golem_de_faience_n2"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.91,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 8182
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r10_b",
+      "name": "La Galerie des Miroirs",
+      "chapter": "La Cour des Masques",
+      "region": "Les Visages",
+      "type": "normal",
+      "position": {
+        "x": 540,
+        "y": 12820
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "ilyr",
+      "accent": "#5fa8ff",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "ilyr",
+        "fixed_deck": [
+          "perce_voute_n1",
+          "mache_mur_n3",
+          "lil_empale_n1",
+          "le_sac_a_murmures_n3",
+          "fauche_fond_n3",
+          "devoreur_de_lanternes_n2",
+          "echassier_des_brumes_n2",
+          "avortons_des_caves_n3"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.91,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 8219
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r10_c",
+      "name": "Le Trône Vide",
+      "chapter": "La Cour des Masques",
+      "region": "Les Visages",
+      "type": "normal",
+      "position": {
+        "x": 840,
+        "y": 12820
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "kharun",
+      "accent": "#72c7d8",
+      "encounter": {
+        "game_mode": "mirror",
+        "opponent_god_policy": "mirrored",
+        "opponent_deck_policy": "mirrored",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.91,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 8256
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r10_a1",
+      "name": "Les Masques Fendus",
+      "chapter": "La Cour des Masques",
+      "region": "Les Visages",
+      "type": "normal",
+      "position": {
+        "x": 240,
+        "y": 13060
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "sylkha",
+      "accent": "#7fc95b",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "sylkha",
+        "fixed_deck": [
+          "rampant_des_fosses_n4",
+          "la_gueule_sous_le_lit_n1",
+          "le_nud_hurlant_n1",
+          "bourgeon_mordant_n4",
+          "tisse_griffe_n4",
+          "le_roi_des_oubliettes_n1",
+          "larve_dancrage_n1",
+          "ogre_droitier_n1"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.96,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 8293
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r10_b1",
+      "name": "La Danse des Doubles",
+      "chapter": "La Cour des Masques",
+      "region": "Les Visages",
+      "type": "normal",
+      "position": {
+        "x": 540,
+        "y": 13060
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "ilyr",
+      "accent": "#5fa8ff",
+      "encounter": {
+        "game_mode": "mirror",
+        "opponent_god_policy": "mirrored",
+        "opponent_deck_policy": "mirrored",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.77,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 8330
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r10_m",
+      "name": "Le Grand Dévoilement",
+      "chapter": "La Cour des Masques",
+      "region": "Les Visages",
+      "type": "normal",
+      "position": {
+        "x": 540,
+        "y": 13300
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "enigma",
+        "fixed_deck": [
+          "mordeur_des_combles_n1",
+          "le_sac_a_murmures_n3",
+          "avortons_des_caves_n3",
+          "collecteur_de_dents_n2",
+          "le_demonteur_n1",
+          "scie_boiteuse_n3",
+          "fouisseur_aveugle_n2",
+          "devoreur_de_lanternes_n2"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.86,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 8367
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r10_d",
+      "name": "La Loge du Roi",
+      "chapter": "La Cour des Masques",
+      "region": "Les Visages",
+      "type": "normal",
+      "position": {
+        "x": 760,
+        "y": 13060
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
+      "encounter": {
+        "game_mode": "draft",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "draft",
+        "fixed_god_id": "veskar",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.89,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 8404
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r10_gate",
+      "name": "Le Sceau du Visage",
+      "chapter": "La Cour des Masques",
+      "region": "Les Visages",
+      "type": "mini_boss",
+      "position": {
+        "x": 540,
+        "y": 13540
+      },
+      "dead_end": false,
+      "mini_boss_kind": "mandatory",
+      "tutorial_id": "",
+      "theme_god_id": "sylkha",
+      "accent": "#7fc95b",
+      "encounter": {
+        "game_mode": "random",
+        "opponent_god_policy": "generated",
+        "opponent_deck_policy": "generated",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.96,
+          "anticipation": true
+        },
+        "series_format": "ft2",
+        "seed_policy": "fixed_per_node",
+        "seed": 8441
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r10_mini",
+      "name": "Le Mime Absolu",
+      "chapter": "La Cour des Masques",
+      "region": "Les Visages",
+      "type": "mini_boss",
+      "position": {
+        "x": 960,
+        "y": 13060
+      },
+      "dead_end": true,
+      "mini_boss_kind": "optional",
+      "tutorial_id": "",
+      "theme_god_id": "nerava",
+      "accent": "#9b6bc7",
+      "encounter": {
+        "game_mode": "draft",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "draft",
+        "fixed_god_id": "nerava",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.74,
+          "anticipation": false
+        },
+        "series_format": "ft2",
+        "seed_policy": "fixed_per_node",
+        "seed": 8478
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r11_entry",
+      "name": "Les Jardins de Cendre",
+      "chapter": "Les Jardins de Cendre",
+      "region": "Les Cendres",
+      "type": "normal",
+      "position": {
+        "x": 540,
+        "y": 13880
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "kharun",
+      "accent": "#72c7d8",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "kharun",
+        "fixed_deck": [
+          "colosse_rivete_n2",
+          "le_roi_des_oubliettes_n1",
+          "fouisseur_aveugle_n3",
+          "carapace_vide_n2",
+          "ogre_a_deux_bouches_n1",
+          "le_gardien_des_decombres_n1",
+          "le_sac_a_murmures_n1",
+          "mordeur_des_combles_n1"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.77,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 8515
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r11_a",
+      "name": "Les Allées Grises",
+      "chapter": "Les Jardins de Cendre",
+      "region": "Les Cendres",
+      "type": "normal",
+      "position": {
+        "x": 300,
+        "y": 14120
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
+      "encounter": {
+        "game_mode": "random",
+        "opponent_god_policy": "generated",
+        "opponent_deck_policy": "generated",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.88,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 8552
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r11_b",
+      "name": "Le Bassin Fumé",
+      "chapter": "Les Jardins de Cendre",
+      "region": "Les Cendres",
+      "type": "normal",
+      "position": {
+        "x": 780,
+        "y": 14120
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
+      "encounter": {
+        "game_mode": "random",
+        "opponent_god_policy": "generated",
+        "opponent_deck_policy": "generated",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.88,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 8589
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r11_a1",
+      "name": "Les Fleurs de Suie",
+      "chapter": "Les Jardins de Cendre",
+      "region": "Les Cendres",
+      "type": "normal",
+      "position": {
+        "x": 160,
+        "y": 14360
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "ilyr",
+      "accent": "#5fa8ff",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "ilyr",
+        "fixed_deck": [
+          "le_sac_a_murmures_n2",
+          "veilleur_bifurque_n2",
+          "fouisseur_aveugle_n1",
+          "rampant_des_fosses_n3",
+          "gueule_de_travers_n3",
+          "dard_de_traverse_n2",
+          "avortons_des_caves_n2",
+          "echassier_des_brumes_n1"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.84,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 8626
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r11_a2",
+      "name": "Le Verger Calciné",
+      "chapter": "Les Jardins de Cendre",
+      "region": "Les Cendres",
+      "type": "normal",
+      "position": {
+        "x": 440,
+        "y": 14360
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "sylkha",
+      "accent": "#7fc95b",
+      "encounter": {
+        "game_mode": "draft",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "draft",
+        "fixed_god_id": "sylkha",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.84,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 8663
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r11_b1",
+      "name": "Les Rameaux Noirs",
+      "chapter": "Les Jardins de Cendre",
+      "region": "Les Cendres",
+      "type": "normal",
+      "position": {
+        "x": 640,
+        "y": 14360
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "enigma",
+        "fixed_deck": [
+          "gueule_de_travers_n1",
+          "le_demonteur_n1",
+          "pince_carcasse_n3",
+          "chirurgien_dacier_n1",
+          "laffame_du_puits_n1",
+          "rampant_des_fosses_n1",
+          "avortons_des_caves_n3",
+          "le_sac_a_murmures_n3"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.86,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 8700
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r11_b2",
+      "name": "La Source Amère",
+      "chapter": "Les Jardins de Cendre",
+      "region": "Les Cendres",
+      "type": "normal",
+      "position": {
+        "x": 920,
+        "y": 14360
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "nerava",
+      "accent": "#9b6bc7",
+      "encounter": {
+        "game_mode": "random",
+        "opponent_god_policy": "generated",
+        "opponent_deck_policy": "generated",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.86,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 8737
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r11_m",
+      "name": "Le Cœur du Jardin",
+      "chapter": "Les Jardins de Cendre",
+      "region": "Les Cendres",
+      "type": "normal",
+      "position": {
+        "x": 540,
+        "y": 14600
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "veskar",
+        "fixed_deck": [
+          "le_drape_du_seuil_n4",
+          "le_dernier_pari_n1",
+          "le_voyeur_n1",
+          "sou_ricanant_n4",
+          "charognard_courbe_n2",
+          "croupier_manchot_n2",
+          "rampant_des_fosses_n1",
+          "avortons_des_caves_n4"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.94,
+          "anticipation": true
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 8774
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r11_mini",
+      "name": "Le Rempart de Carapace",
+      "chapter": "Les Jardins de Cendre",
+      "region": "Les Cendres",
+      "type": "mini_boss",
+      "position": {
+        "x": 900,
+        "y": 14840
+      },
+      "dead_end": true,
+      "mini_boss_kind": "optional",
+      "tutorial_id": "",
+      "theme_god_id": "kharun",
+      "accent": "#72c7d8",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "kharun",
+        "fixed_deck": [
+          "carapace_vide_n4",
+          "le_sarcophage_debout_n1",
+          "le_reliquaire_ambulant_n2",
+          "golem_de_faience_n3",
+          "eclat_cuirasse_n4",
+          "colosse_rivete_n3",
+          "portail_dos_n3",
+          "le_gardien_des_decombres_n1"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.85,
+          "anticipation": false
+        },
+        "series_format": "ft2",
+        "seed_policy": "fixed_per_node",
+        "seed": 8811
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r11_exit",
+      "name": "La Porte Calcinée",
+      "chapter": "Les Jardins de Cendre",
+      "region": "Les Cendres",
+      "type": "normal",
+      "position": {
+        "x": 540,
+        "y": 14840
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "nerava",
+      "accent": "#9b6bc7",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "nerava",
+        "fixed_deck": [
+          "griffe_septique_n3",
+          "veuve_des_spores_n1",
+          "dos_fendu_n2",
+          "fouisseur_aveugle_n3",
+          "le_porte_cercueil_n2",
+          "le_voyeur_n1",
+          "le_nud_hurlant_n3",
+          "le_dernier_souffle_n1"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.84,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 8848
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r12_entry",
+      "name": "Le Dernier Seuil",
+      "chapter": "Cime",
+      "region": "L'Objectif",
+      "type": "normal",
+      "position": {
+        "x": 540,
+        "y": 15180
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "kharun",
+      "accent": "#72c7d8",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "kharun",
+        "fixed_deck": [
+          "ecorche_angle_n4",
+          "heaume_errant_n4",
+          "osselet_blinde_n4",
+          "le_drape_du_seuil_n2",
+          "eclat_cuirasse_n4",
+          "rampant_des_fosses_n4",
+          "golem_de_faience_n2",
+          "devoreur_de_lanternes_n3"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.86,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 8885
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r12_a",
+      "name": "La Montée de Pierre",
+      "chapter": "Cime",
+      "region": "L'Objectif",
+      "type": "normal",
+      "position": {
+        "x": 160,
+        "y": 15420
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "ilyr",
+      "accent": "#5fa8ff",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "ilyr",
+        "fixed_deck": [
+          "lil_empale_n2",
+          "le_drape_du_seuil_n1",
+          "le_porte_visages_n1",
+          "la_gueule_sous_le_lit_n1",
+          "le_voyeur_n1",
+          "la_croisee_des_regards_n1",
+          "tricorne_errant_n3",
+          "perce_voute_n2"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.84,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 8922
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r12_b",
+      "name": "Les Escaliers Fendus",
+      "chapter": "Cime",
+      "region": "L'Objectif",
+      "type": "normal",
+      "position": {
+        "x": 540,
+        "y": 15420
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "kharun",
+      "accent": "#72c7d8",
+      "encounter": {
+        "game_mode": "random",
+        "opponent_god_policy": "generated",
+        "opponent_deck_policy": "generated",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.84,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 8959
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r12_c",
+      "name": "Le Vent des Cimes",
+      "chapter": "Cime",
+      "region": "L'Objectif",
+      "type": "normal",
+      "position": {
+        "x": 900,
+        "y": 15420
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "sylkha",
+      "accent": "#7fc95b",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "sylkha",
+        "fixed_deck": [
+          "le_roi_des_oubliettes_n1",
+          "le_sac_a_murmures_n2",
+          "la_gueule_sous_le_lit_n1",
+          "fourmilion_des_nerfs_n2",
+          "fouisseur_aveugle_n3",
+          "nud_vivant_n4",
+          "bourgeon_mordant_n1",
+          "gueule_de_travers_n3"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.84,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 8996
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r12_a1",
+      "name": "La Voûte des Serments",
+      "chapter": "Cime",
+      "region": "L'Objectif",
+      "type": "normal",
+      "position": {
+        "x": 120,
+        "y": 15660
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "ilyr",
+      "accent": "#5fa8ff",
+      "encounter": {
+        "game_mode": "random",
+        "opponent_god_policy": "generated",
+        "opponent_deck_policy": "generated",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.91,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 9033
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r12_a2",
+      "name": "Les Statues Borgnes",
+      "chapter": "Cime",
+      "region": "L'Objectif",
+      "type": "normal",
+      "position": {
+        "x": 360,
+        "y": 15660
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
+      "encounter": {
+        "game_mode": "draft",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "draft",
+        "fixed_god_id": "enigma",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.94,
+          "anticipation": true
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 9070
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r12_b1",
+      "name": "Le Chemin des Rois",
+      "chapter": "Cime",
+      "region": "L'Objectif",
+      "type": "normal",
+      "position": {
+        "x": 540,
+        "y": 15660
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "sylkha",
+      "accent": "#7fc95b",
+      "encounter": {
+        "game_mode": "mirror",
+        "opponent_god_policy": "mirrored",
+        "opponent_deck_policy": "mirrored",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.94,
+          "anticipation": true
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 9107
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r12_b2",
+      "name": "La Salle des Échos",
+      "chapter": "Cime",
+      "region": "L'Objectif",
+      "type": "normal",
+      "position": {
+        "x": 720,
+        "y": 15660
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
+      "encounter": {
+        "game_mode": "draft",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "draft",
+        "fixed_god_id": "veskar",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.94,
+          "anticipation": true
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 9144
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r12_c1",
+      "name": "La Terrasse du Silence",
+      "chapter": "Cime",
+      "region": "L'Objectif",
+      "type": "normal",
+      "position": {
+        "x": 960,
+        "y": 15660
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
+      "encounter": {
+        "game_mode": "mirror",
+        "opponent_god_policy": "mirrored",
+        "opponent_deck_policy": "mirrored",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.94,
+          "anticipation": true
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 9181
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r12_m",
+      "name": "Le Cercle des Visages",
+      "chapter": "Cime",
+      "region": "L'Objectif",
+      "type": "normal",
+      "position": {
+        "x": 540,
+        "y": 15900
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "nerava",
+      "accent": "#9b6bc7",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "nerava",
+        "fixed_deck": [
+          "le_precheur_des_fievres_n1",
+          "le_drape_du_seuil_n3",
+          "porte_fievre_n3",
+          "gueule_de_travers_n4",
+          "le_porte_visages_n2",
+          "griffe_septique_n1",
+          "le_nud_hurlant_n3",
+          "la_cathedrale_malade_n1"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.84,
+          "anticipation": false
+        },
+        "series_format": "ft2",
+        "seed_policy": "fixed_per_node",
+        "seed": 9218
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "choice_01",
+      "name": "Le Choix du Miroir",
+      "chapter": "Cime",
+      "region": "Le reflet",
+      "type": "normal",
+      "position": {
+        "x": 540,
+        "y": 16140
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "profile",
+        "opponent_deck_policy": "mirrored",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.5,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 9255
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "ilyr_02",
+      "name": "L’Œil du Guetteur",
+      "chapter": "Cime",
+      "region": "Les Veilleurs",
+      "type": "normal",
+      "position": {
+        "x": 240,
+        "y": 16380
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "nerava",
+      "accent": "#9b6bc7",
+      "encounter": {
+        "game_mode": "mirror",
+        "opponent_god_policy": "mirrored",
+        "opponent_deck_policy": "mirrored",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.75,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 9292
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "sylkha_02",
+      "name": "La Cathédrale-Mante",
+      "chapter": "Cime",
+      "region": "L’Essaim",
+      "type": "normal",
+      "position": {
+        "x": 720,
+        "y": 16380
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "sylkha",
+      "accent": "#7fc95b",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "sylkha",
+        "fixed_deck": [
+          "la_nourrice_nouee_n2",
+          "mante_des_racines_n1",
+          "le_cur_de_la_colonie_n1",
+          "la_veuve_suspendue_n1",
+          "la_gueule_sous_le_lit_n1",
+          "tisse_griffe_n3",
+          "porte_nid_n3",
+          "rampant_des_fosses_n1"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.75,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 9329
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "mini_optional_02",
+      "name": "Les Faces du Collectionneur",
+      "chapter": "Cime",
+      "region": "Les Assimilateurs",
+      "type": "mini_boss",
+      "position": {
+        "x": 960,
+        "y": 16380
+      },
+      "dead_end": true,
+      "mini_boss_kind": "optional",
+      "tutorial_id": "",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "enigma",
+        "fixed_deck": [
+          "collecteur_de_dents_n3",
+          "scie_boiteuse_n3",
+          "mordeur_des_combles_n4",
+          "gueule_de_travers_n4",
+          "chirurgien_dacier_n2",
+          "rampant_des_fosses_n4",
+          "preleveur_de_plaques_n3",
+          "pince_carcasse_n3"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.9,
+          "anticipation": false
+        },
+        "series_format": "ft2",
+        "seed_policy": "per_attempt",
+        "seed": 9366
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "final_01",
+      "name": "Le Visage de Pierre",
+      "chapter": "Cime",
+      "region": "L’objectif",
+      "type": "boss",
+      "position": {
+        "x": 540,
+        "y": 16620
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
+      "encounter": {
+        "game_mode": "mirror",
+        "opponent_god_policy": "mirrored",
+        "opponent_deck_policy": "mirrored",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 1.0,
+          "anticipation": true
+        },
+        "series_format": "ft3",
+        "seed_policy": "fixed_per_node",
+        "seed": 9403
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e_tuto_01_tuto_02",
+      "from": "tuto_01",
+      "to": "tuto_02"
+    },
+    {
+      "id": "e_tuto_02_tuto_03",
+      "from": "tuto_02",
+      "to": "tuto_03"
+    },
+    {
+      "id": "e_tuto_03_veskar_01",
+      "from": "tuto_03",
+      "to": "veskar_01"
+    },
+    {
+      "id": "e_tuto_03_nerava_01",
+      "from": "tuto_03",
+      "to": "nerava_01"
+    },
+    {
+      "id": "e_tuto_03_kharun_01",
+      "from": "tuto_03",
+      "to": "kharun_01"
+    },
+    {
+      "id": "e_veskar_01_mini_optional_01",
+      "from": "veskar_01",
+      "to": "mini_optional_01"
+    },
+    {
+      "id": "e_veskar_01_veskar_02",
+      "from": "veskar_01",
+      "to": "veskar_02"
+    },
+    {
+      "id": "e_veskar_01_ilyr_01",
+      "from": "veskar_01",
+      "to": "ilyr_01"
+    },
+    {
+      "id": "e_veskar_02_mirror_01",
+      "from": "veskar_02",
+      "to": "mirror_01"
+    },
+    {
+      "id": "e_ilyr_01_sylkha_01",
+      "from": "ilyr_01",
+      "to": "sylkha_01"
+    },
+    {
+      "id": "e_mirror_01_sylkha_01",
+      "from": "mirror_01",
+      "to": "sylkha_01"
+    },
+    {
+      "id": "e_nerava_01_convergence_01",
+      "from": "nerava_01",
+      "to": "convergence_01"
+    },
+    {
+      "id": "e_kharun_01_kharun_02",
+      "from": "kharun_01",
+      "to": "kharun_02"
+    },
+    {
+      "id": "e_kharun_02_veilleur_impasse",
+      "from": "kharun_02",
+      "to": "veilleur_impasse"
+    },
+    {
+      "id": "e_kharun_02_convergence_01",
+      "from": "kharun_02",
+      "to": "convergence_01",
+      "controls": [
+        {
+          "x": 560,
+          "y": 1180
+        },
+        {
+          "x": 240,
+          "y": 1380
+        }
+      ]
+    },
+    {
+      "id": "e_sylkha_01_convergence_01",
+      "from": "sylkha_01",
+      "to": "convergence_01"
+    },
+    {
+      "id": "e_convergence_01_boss_required_gate",
+      "from": "convergence_01",
+      "to": "boss_required_gate"
+    },
+    {
+      "id": "e_r03_entry_r03_a",
+      "from": "r03_entry",
+      "to": "r03_a"
+    },
+    {
+      "id": "e_r03_entry_r03_b",
+      "from": "r03_entry",
+      "to": "r03_b"
+    },
+    {
+      "id": "e_r03_a_r03_a1",
+      "from": "r03_a",
+      "to": "r03_a1"
+    },
+    {
+      "id": "e_r03_a_r03_a2",
+      "from": "r03_a",
+      "to": "r03_a2"
+    },
+    {
+      "id": "e_r03_b_r03_b1",
+      "from": "r03_b",
+      "to": "r03_b1"
+    },
+    {
+      "id": "e_r03_a1_r03_m",
+      "from": "r03_a1",
+      "to": "r03_m"
+    },
+    {
+      "id": "e_r03_a2_r03_m",
+      "from": "r03_a2",
+      "to": "r03_m"
+    },
+    {
+      "id": "e_r03_b1_r03_m",
+      "from": "r03_b1",
+      "to": "r03_m"
+    },
+    {
+      "id": "e_r03_m_r03_c",
+      "from": "r03_m",
+      "to": "r03_c"
+    },
+    {
+      "id": "e_r03_m_r03_mini",
+      "from": "r03_m",
+      "to": "r03_mini"
+    },
+    {
+      "id": "e_r03_c_r03_exit",
+      "from": "r03_c",
+      "to": "r03_exit"
+    },
+    {
+      "id": "e_boss_required_gate_r03_entry",
+      "from": "boss_required_gate",
+      "to": "r03_entry"
+    },
+    {
+      "id": "e_r04_entry_r04_a",
+      "from": "r04_entry",
+      "to": "r04_a"
+    },
+    {
+      "id": "e_r04_entry_r04_b",
+      "from": "r04_entry",
+      "to": "r04_b"
+    },
+    {
+      "id": "e_r04_entry_r04_mini",
+      "from": "r04_entry",
+      "to": "r04_mini"
+    },
+    {
+      "id": "e_r04_a_r04_a1",
+      "from": "r04_a",
+      "to": "r04_a1"
+    },
+    {
+      "id": "e_r04_a_r04_a2",
+      "from": "r04_a",
+      "to": "r04_a2"
+    },
+    {
+      "id": "e_r04_b_r04_b1",
+      "from": "r04_b",
+      "to": "r04_b1"
+    },
+    {
+      "id": "e_r04_a1_r04_m",
+      "from": "r04_a1",
+      "to": "r04_m"
+    },
+    {
+      "id": "e_r04_b1_r04_m",
+      "from": "r04_b1",
+      "to": "r04_m"
+    },
+    {
+      "id": "e_r04_a2_r04_d",
+      "from": "r04_a2",
+      "to": "r04_d"
+    },
+    {
+      "id": "e_r04_d_r04_m",
+      "from": "r04_d",
+      "to": "r04_m"
+    },
+    {
+      "id": "e_r04_m_r04_gate",
+      "from": "r04_m",
+      "to": "r04_gate"
+    },
+    {
+      "id": "e_r03_exit_r04_entry",
+      "from": "r03_exit",
+      "to": "r04_entry"
+    },
+    {
+      "id": "e_r05_entry_r05_a",
+      "from": "r05_entry",
+      "to": "r05_a"
+    },
+    {
+      "id": "e_r05_entry_r05_b",
+      "from": "r05_entry",
+      "to": "r05_b"
+    },
+    {
+      "id": "e_r05_a_r05_a1",
+      "from": "r05_a",
+      "to": "r05_a1"
+    },
+    {
+      "id": "e_r05_b_r05_b1",
+      "from": "r05_b",
+      "to": "r05_b1"
+    },
+    {
+      "id": "e_r05_a1_r05_a2",
+      "from": "r05_a1",
+      "to": "r05_a2"
+    },
+    {
+      "id": "e_r05_a1_r05_mini",
+      "from": "r05_a1",
+      "to": "r05_mini"
+    },
+    {
+      "id": "e_r05_b1_r05_b2",
+      "from": "r05_b1",
+      "to": "r05_b2"
+    },
+    {
+      "id": "e_r05_a2_r05_m",
+      "from": "r05_a2",
+      "to": "r05_m"
+    },
+    {
+      "id": "e_r05_b2_r05_m",
+      "from": "r05_b2",
+      "to": "r05_m"
+    },
+    {
+      "id": "e_r05_m_r05_exit",
+      "from": "r05_m",
+      "to": "r05_exit"
+    },
+    {
+      "id": "e_r04_gate_r05_entry",
+      "from": "r04_gate",
+      "to": "r05_entry"
+    },
+    {
+      "id": "e_r06_entry_r06_a",
+      "from": "r06_entry",
+      "to": "r06_a"
+    },
+    {
+      "id": "e_r06_entry_r06_b",
+      "from": "r06_entry",
+      "to": "r06_b"
+    },
+    {
+      "id": "e_r06_entry_r06_c",
+      "from": "r06_entry",
+      "to": "r06_c"
+    },
+    {
+      "id": "e_r06_entry_r06_mini",
+      "from": "r06_entry",
+      "to": "r06_mini"
+    },
+    {
+      "id": "e_r06_a_r06_a1",
+      "from": "r06_a",
+      "to": "r06_a1"
+    },
+    {
+      "id": "e_r06_b_r06_b1",
+      "from": "r06_b",
+      "to": "r06_b1"
+    },
+    {
+      "id": "e_r06_c_r06_c1",
+      "from": "r06_c",
+      "to": "r06_c1"
+    },
+    {
+      "id": "e_r06_a1_r06_m",
+      "from": "r06_a1",
+      "to": "r06_m"
+    },
+    {
+      "id": "e_r06_b1_r06_m",
+      "from": "r06_b1",
+      "to": "r06_m"
+    },
+    {
+      "id": "e_r06_c1_r06_m",
+      "from": "r06_c1",
+      "to": "r06_m"
+    },
+    {
+      "id": "e_r06_m_r06_exit",
+      "from": "r06_m",
+      "to": "r06_exit"
+    },
+    {
+      "id": "e_r05_exit_r06_entry",
+      "from": "r05_exit",
+      "to": "r06_entry"
+    },
+    {
+      "id": "e_r07_entry_r07_a",
+      "from": "r07_entry",
+      "to": "r07_a"
+    },
+    {
+      "id": "e_r07_entry_r07_b",
+      "from": "r07_entry",
+      "to": "r07_b"
+    },
+    {
+      "id": "e_r07_a_r07_m1",
+      "from": "r07_a",
+      "to": "r07_m1"
+    },
+    {
+      "id": "e_r07_b_r07_m1",
+      "from": "r07_b",
+      "to": "r07_m1"
+    },
+    {
+      "id": "e_r07_m1_r07_c",
+      "from": "r07_m1",
+      "to": "r07_c"
+    },
+    {
+      "id": "e_r07_m1_r07_d",
+      "from": "r07_m1",
+      "to": "r07_d"
+    },
+    {
+      "id": "e_r07_c_r07_m2",
+      "from": "r07_c",
+      "to": "r07_m2"
+    },
+    {
+      "id": "e_r07_d_r07_m2",
+      "from": "r07_d",
+      "to": "r07_m2"
+    },
+    {
+      "id": "e_r07_m2_r07_e",
+      "from": "r07_m2",
+      "to": "r07_e"
+    },
+    {
+      "id": "e_r07_m2_r07_f",
+      "from": "r07_m2",
+      "to": "r07_f"
+    },
+    {
+      "id": "e_r07_e_r07_gate",
+      "from": "r07_e",
+      "to": "r07_gate"
+    },
+    {
+      "id": "e_r07_f_r07_gate",
+      "from": "r07_f",
+      "to": "r07_gate"
+    },
+    {
+      "id": "e_r06_exit_r07_entry",
+      "from": "r06_exit",
+      "to": "r07_entry"
+    },
+    {
+      "id": "e_r08_entry_r08_a",
+      "from": "r08_entry",
+      "to": "r08_a"
+    },
+    {
+      "id": "e_r08_entry_r08_b",
+      "from": "r08_entry",
+      "to": "r08_b"
+    },
+    {
+      "id": "e_r08_entry_r08_c",
+      "from": "r08_entry",
+      "to": "r08_c"
+    },
+    {
+      "id": "e_r08_a_r08_a1",
+      "from": "r08_a",
+      "to": "r08_a1"
+    },
+    {
+      "id": "e_r08_b_r08_b1",
+      "from": "r08_b",
+      "to": "r08_b1"
+    },
+    {
+      "id": "e_r08_c_r08_c1",
+      "from": "r08_c",
+      "to": "r08_c1"
+    },
+    {
+      "id": "e_r08_a1_r08_m1",
+      "from": "r08_a1",
+      "to": "r08_m1"
+    },
+    {
+      "id": "e_r08_a1_r08_m2",
+      "from": "r08_a1",
+      "to": "r08_m2"
+    },
+    {
+      "id": "e_r08_b1_r08_m1",
+      "from": "r08_b1",
+      "to": "r08_m1"
+    },
+    {
+      "id": "e_r08_c1_r08_m2",
+      "from": "r08_c1",
+      "to": "r08_m2"
+    },
+    {
+      "id": "e_r08_m1_r08_exit",
+      "from": "r08_m1",
+      "to": "r08_exit"
+    },
+    {
+      "id": "e_r08_m2_r08_exit",
+      "from": "r08_m2",
+      "to": "r08_exit"
+    },
+    {
+      "id": "e_r07_gate_r08_entry",
+      "from": "r07_gate",
+      "to": "r08_entry"
+    },
+    {
+      "id": "e_r09_entry_r09_a",
+      "from": "r09_entry",
+      "to": "r09_a"
+    },
+    {
+      "id": "e_r09_entry_r09_b",
+      "from": "r09_entry",
+      "to": "r09_b"
+    },
+    {
+      "id": "e_r09_entry_r09_c",
+      "from": "r09_entry",
+      "to": "r09_c"
+    },
+    {
+      "id": "e_r09_a_r09_mini1",
+      "from": "r09_a",
+      "to": "r09_mini1"
+    },
+    {
+      "id": "e_r09_a_r09_a1",
+      "from": "r09_a",
+      "to": "r09_a1"
+    },
+    {
+      "id": "e_r09_b_r09_mini2",
+      "from": "r09_b",
+      "to": "r09_mini2"
+    },
+    {
+      "id": "e_r09_b_r09_b1",
+      "from": "r09_b",
+      "to": "r09_b1"
+    },
+    {
+      "id": "e_r09_a1_r09_m",
+      "from": "r09_a1",
+      "to": "r09_m"
+    },
+    {
+      "id": "e_r09_b1_r09_m",
+      "from": "r09_b1",
+      "to": "r09_m"
+    },
+    {
+      "id": "e_r09_c_r09_m",
+      "from": "r09_c",
+      "to": "r09_m"
+    },
+    {
+      "id": "e_r09_m_r09_exit",
+      "from": "r09_m",
+      "to": "r09_exit"
+    },
+    {
+      "id": "e_r08_exit_r09_entry",
+      "from": "r08_exit",
+      "to": "r09_entry"
+    },
+    {
+      "id": "e_r10_entry_r10_a",
+      "from": "r10_entry",
+      "to": "r10_a"
+    },
+    {
+      "id": "e_r10_entry_r10_b",
+      "from": "r10_entry",
+      "to": "r10_b"
+    },
+    {
+      "id": "e_r10_entry_r10_c",
+      "from": "r10_entry",
+      "to": "r10_c"
+    },
+    {
+      "id": "e_r10_entry_r10_d",
+      "from": "r10_entry",
+      "to": "r10_d"
+    },
+    {
+      "id": "e_r10_a_r10_a1",
+      "from": "r10_a",
+      "to": "r10_a1"
+    },
+    {
+      "id": "e_r10_b_r10_b1",
+      "from": "r10_b",
+      "to": "r10_b1"
+    },
+    {
+      "id": "e_r10_c_r10_d",
+      "from": "r10_c",
+      "to": "r10_d"
+    },
+    {
+      "id": "e_r10_c_r10_mini",
+      "from": "r10_c",
+      "to": "r10_mini"
+    },
+    {
+      "id": "e_r10_a1_r10_m",
+      "from": "r10_a1",
+      "to": "r10_m"
+    },
+    {
+      "id": "e_r10_b1_r10_m",
+      "from": "r10_b1",
+      "to": "r10_m"
+    },
+    {
+      "id": "e_r10_d_r10_m",
+      "from": "r10_d",
+      "to": "r10_m"
+    },
+    {
+      "id": "e_r10_m_r10_gate",
+      "from": "r10_m",
+      "to": "r10_gate"
+    },
+    {
+      "id": "e_r09_exit_r10_entry",
+      "from": "r09_exit",
+      "to": "r10_entry"
+    },
+    {
+      "id": "e_r11_entry_r11_a",
+      "from": "r11_entry",
+      "to": "r11_a"
+    },
+    {
+      "id": "e_r11_entry_r11_b",
+      "from": "r11_entry",
+      "to": "r11_b"
+    },
+    {
+      "id": "e_r11_a_r11_a1",
+      "from": "r11_a",
+      "to": "r11_a1"
+    },
+    {
+      "id": "e_r11_a_r11_a2",
+      "from": "r11_a",
+      "to": "r11_a2"
+    },
+    {
+      "id": "e_r11_b_r11_b1",
+      "from": "r11_b",
+      "to": "r11_b1"
+    },
+    {
+      "id": "e_r11_b_r11_b2",
+      "from": "r11_b",
+      "to": "r11_b2"
+    },
+    {
+      "id": "e_r11_a1_r11_m",
+      "from": "r11_a1",
+      "to": "r11_m"
+    },
+    {
+      "id": "e_r11_a2_r11_m",
+      "from": "r11_a2",
+      "to": "r11_m"
+    },
+    {
+      "id": "e_r11_b1_r11_m",
+      "from": "r11_b1",
+      "to": "r11_m"
+    },
+    {
+      "id": "e_r11_b2_r11_m",
+      "from": "r11_b2",
+      "to": "r11_m"
+    },
+    {
+      "id": "e_r11_m_r11_mini",
+      "from": "r11_m",
+      "to": "r11_mini"
+    },
+    {
+      "id": "e_r11_m_r11_exit",
+      "from": "r11_m",
+      "to": "r11_exit"
+    },
+    {
+      "id": "e_r10_gate_r11_entry",
+      "from": "r10_gate",
+      "to": "r11_entry"
+    },
+    {
+      "id": "e_r12_entry_r12_a",
+      "from": "r12_entry",
+      "to": "r12_a"
+    },
+    {
+      "id": "e_r12_entry_r12_b",
+      "from": "r12_entry",
+      "to": "r12_b"
+    },
+    {
+      "id": "e_r12_entry_r12_c",
+      "from": "r12_entry",
+      "to": "r12_c"
+    },
+    {
+      "id": "e_r12_a_r12_a1",
+      "from": "r12_a",
+      "to": "r12_a1"
+    },
+    {
+      "id": "e_r12_a_r12_a2",
+      "from": "r12_a",
+      "to": "r12_a2"
+    },
+    {
+      "id": "e_r12_b_r12_b1",
+      "from": "r12_b",
+      "to": "r12_b1"
+    },
+    {
+      "id": "e_r12_b_r12_b2",
+      "from": "r12_b",
+      "to": "r12_b2"
+    },
+    {
+      "id": "e_r12_c_r12_c1",
+      "from": "r12_c",
+      "to": "r12_c1"
+    },
+    {
+      "id": "e_r12_a1_r12_m",
+      "from": "r12_a1",
+      "to": "r12_m"
+    },
+    {
+      "id": "e_r12_a2_r12_m",
+      "from": "r12_a2",
+      "to": "r12_m"
+    },
+    {
+      "id": "e_r12_b1_r12_m",
+      "from": "r12_b1",
+      "to": "r12_m"
+    },
+    {
+      "id": "e_r12_b2_r12_m",
+      "from": "r12_b2",
+      "to": "r12_m"
+    },
+    {
+      "id": "e_r12_c1_r12_m",
+      "from": "r12_c1",
+      "to": "r12_m"
+    },
+    {
+      "id": "e_r11_exit_r12_entry",
+      "from": "r11_exit",
+      "to": "r12_entry"
+    },
+    {
+      "id": "e_r12_m_choice_01",
+      "from": "r12_m",
+      "to": "choice_01"
+    },
+    {
+      "id": "e_choice_01_ilyr_02",
+      "from": "choice_01",
+      "to": "ilyr_02"
+    },
+    {
+      "id": "e_choice_01_sylkha_02",
+      "from": "choice_01",
+      "to": "sylkha_02"
+    },
+    {
+      "id": "e_choice_01_mini_optional_02",
+      "from": "choice_01",
+      "to": "mini_optional_02"
+    },
+    {
+      "id": "e_ilyr_02_final_01",
+      "from": "ilyr_02",
+      "to": "final_01"
+    },
+    {
+      "id": "e_sylkha_02_final_01",
+      "from": "sylkha_02",
+      "to": "final_01"
+    }
+  ]
+}

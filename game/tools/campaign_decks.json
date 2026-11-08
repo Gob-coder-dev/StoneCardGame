@@ -1,0 +1,92 @@
+{
+  "enigma_n3": [
+    "devoreur_de_lanternes_n2",
+    "avortons_des_caves_n1",
+    "preleveur_de_plaques_n1",
+    "le_sac_a_murmures_n2",
+    "laffame_du_puits_n1",
+    "gueule_de_travers_n3",
+    "la_broyeuse_dempreintes_n1",
+    "le_demonteur_n1"
+  ],
+  "enigma_n4": [
+    "mordeur_des_combles_n4",
+    "le_collecteur_zero_n1",
+    "ogre_droitier_n3",
+    "mache_mur_n2",
+    "porte_greffes_n3",
+    "le_sac_a_murmures_n4",
+    "avortons_des_caves_n4",
+    "devoreur_de_lanternes_n3"
+  ],
+  "ilyr_n3": [
+    "lil_empale_n1",
+    "fauche_fond_n2",
+    "le_nud_hurlant_n1",
+    "avortons_des_caves_n3",
+    "echassier_des_brumes_n2",
+    "perce_voute_n2",
+    "devoreur_de_lanternes_n2",
+    "le_sac_a_murmures_n3"
+  ],
+  "kharun_n2": [
+    "ecorche_angle_n2",
+    "eclat_cuirasse_n2",
+    "le_sac_a_murmures_n1",
+    "le_nud_hurlant_n1",
+    "osselet_blinde_n2",
+    "colosse_rivete_n1",
+    "heaume_errant_n2",
+    "avortons_des_caves_n2"
+  ],
+  "neutral_n1": [
+    "ecorche_angle_n1",
+    "le_drape_du_seuil_n1",
+    "mordeur_des_combles_n1",
+    "le_sac_a_murmures_n1",
+    "gueule_de_travers_n1",
+    "avortons_des_caves_n1",
+    "rampant_des_fosses_n1",
+    "ogre_droitier_n1"
+  ],
+  "neutral_n2": [
+    "avortons_des_caves_n2",
+    "mache_mur_n2",
+    "dos_fendu_n1",
+    "ogre_a_deux_bouches_n1",
+    "rampant_des_fosses_n1",
+    "gueule_de_travers_n2",
+    "fouisseur_aveugle_n1",
+    "le_sac_a_murmures_n2"
+  ],
+  "sylkha_n3": [
+    "nud_vivant_n1",
+    "fouisseur_aveugle_n1",
+    "dos_fendu_n1",
+    "gueule_de_travers_n3",
+    "mille_gueules_n1",
+    "bourgeon_mordant_n3",
+    "avortons_des_caves_n3",
+    "devoreur_de_lanternes_n2"
+  ],
+  "sylkha_n4": [
+    "le_tisseur_de_meutes_n2",
+    "mordeur_des_combles_n2",
+    "le_roi_des_oubliettes_n1",
+    "mache_mur_n3",
+    "le_replie_n2",
+    "devoreur_de_lanternes_n2",
+    "avortons_des_caves_n4",
+    "le_sac_a_murmures_n4"
+  ],
+  "veskar_n2": [
+    "gueule_de_travers_n2",
+    "tricorne_errant_n1",
+    "griffe_a_jetons_n1",
+    "le_nud_hurlant_n1",
+    "devoreur_de_lanternes_n1",
+    "croupier_manchot_n1",
+    "avortons_des_caves_n2",
+    "le_sac_a_murmures_n2"
+  ]
+}

@@ -236,6 +236,30 @@ func generate_random(seed: int, god_ids: Array, max_tier: int) -> Dictionary:
 	return _fail("Aucun couple de decks légaux n'atteint un total commun.")
 
 
+## Deck déterministe pour un dieu imposé, sans changer de dieu. Utilisé par la
+## campagne quand un niveau fixe le dieu adverse mais génère son deck.
+func generate_for_god(seed: int, god_id: String, max_tier: int) -> Dictionary:
+	if not _valid_gods([god_id], max_tier).has(god_id):
+		return _fail("Ce dieu ne permet pas un deck complet avec cette limite.")
+	var rng := _rng(seed)
+	var totals := reachable_totals(god_id, max_tier)
+	for target_value in _randomized_rich_targets(totals, rng):
+		var target := int(target_value)
+		var deck := _build_exact(god_id, target, max_tier, rng)
+		if deck.is_empty():
+			continue
+		return {
+			"ok": true,
+			"reason": "",
+			"god_id": god_id,
+			"deck": deck,
+			"total_quarters": target,
+			"total_points": float(target) / float(StoneCostRules.COST_SCALE),
+			"seed": seed,
+		}
+	return _fail("Aucun deck légal pour ce dieu.")
+
+
 ## Un seul loadout légal, dupliqué en profondeur par l'appelant. Le premier
 ## joueur n'est jamais déduit de ce loadout : il reste un tirage séparé.
 func generate_mirror(seed: int, god_ids: Array, max_tier: int) -> Dictionary:

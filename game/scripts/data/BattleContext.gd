@@ -2,6 +2,7 @@
 extends Node
 
 const OpponentCatalogModel := preload("res://scripts/data/OpponentCatalog.gd")
+const CompletionModel := preload("res://scripts/application/campaign/CampaignCompletionService.gd")
 
 var selected_npc_id: String = ""
 ## Source du chemin de rencontres ouvert (id de dieu ou Pr.Stone). Elle permet
@@ -27,11 +28,55 @@ var last_save_error: Error = OK
 var campaign_mode_session: CampaignModeSession = null
 var player_loadout: GameLoadout = null
 var opponent_loadout: GameLoadout = null
+## Nœud de campagne actif et service propriétaire de la progression. Ces deux
+## champs restent transitoires : le fichier de campagne est la seule vérité.
+var campaign_node_id: String = ""
+var campaign_service: CampaignService = null
+## Le profil et la campagne sont deux écritures indépendantes. Ce drapeau évite
+## de compter deux fois les statistiques si la seconde échoue puis est réessayée.
+var _result_stats_saved: bool = false
 
 
 ## Mémorise le chemin choisi avant même qu'un adversaire ne soit généré.
 func select_source(source_id: String) -> void:
 	selected_source_id = source_id
+
+
+## Installe le nœud de campagne avant la préparation d'une rencontre. Le
+## service est conservé pour appliquer la victoire depuis l'écran de résultat.
+func enter_campaign_node(node_id: String, service: CampaignService) -> void:
+	clear_mode_session()
+	campaign_node_id = node_id
+	campaign_service = service
+	_result_stats_saved = false
+
+
+func clear_campaign_node() -> void:
+	campaign_node_id = ""
+	campaign_service = null
+	clear_mode_session()
+
+
+func has_campaign_node() -> bool:
+	return campaign_node_id != ""
+
+
+## Une série de plusieurs manches n'est gagnée que lorsque son dernier round
+## est gagné. Un FT1 sans session se termine avec le match lui-même.
+func campaign_victory_confirmed() -> bool:
+	if last_winner != GameState.PLAYER_HUMAN:
+		return false
+	if campaign_mode_session == null:
+		return true
+	var state := campaign_mode_session.series()
+	return state != null and state.finished and state.winner == GameState.PLAYER_HUMAN
+
+
+func campaign_series_pending() -> bool:
+	if campaign_mode_session == null:
+		return false
+	var state := campaign_mode_session.series()
+	return state != null and not state.finished
 
 
 ## Mémorise la rencontre et son identifiant de statistiques en une seule fois.
@@ -189,6 +234,7 @@ func record_result(winner: int, human: int, ai: int) -> void:
 	last_captures_human = 0
 	last_result_npc_id = selected_npc_id
 	last_result_saved = true
+	_result_stats_saved = true
 	last_save_error = OK
 
 
@@ -199,15 +245,32 @@ func prepare_result(winner: int, human: int, ai: int, captures_human: int) -> vo
 	last_captures_human = captures_human
 	last_result_npc_id = selected_npc_id
 	last_result_saved = false
+	_result_stats_saved = false
 	last_save_error = OK
 
 
-## Idempotent après succès. En cas d'échec, PlayerData restaure lui-même les
-## statistiques précédentes : rappeler cette méthode ne crée donc aucun doublon.
+## Enregistrement en deux temps : statistiques du profil, puis complétion du
+## nœud de campagne. Chaque étape n'est faite qu'une fois, même après un échec
+## de la suivante ; un nouvel essai ne compte donc jamais deux parties.
 func persist_result() -> Error:
 	if last_result_saved:
 		return OK
-	last_save_error = PlayerData.record_game(last_result_npc_id, last_winner,
-		last_score_human, last_score_ai, last_captures_human)
-	last_result_saved = last_save_error == OK
-	return last_save_error
+	if not _result_stats_saved:
+		last_save_error = PlayerData.record_game(last_result_npc_id, last_winner,
+			last_score_human, last_score_ai, last_captures_human)
+		if last_save_error != OK:
+			return last_save_error
+		_result_stats_saved = true
+	if last_winner == GameState.PLAYER_HUMAN and campaign_node_id != "" \
+			and campaign_victory_confirmed():
+		if campaign_service == null:
+			last_save_error = ERR_UNCONFIGURED
+			return last_save_error
+		var completion := CompletionModel.apply_victory(campaign_service, campaign_node_id)
+		var error := int(completion.get("error", OK))
+		if error != OK:
+			last_save_error = error
+			return last_save_error
+	last_result_saved = true
+	last_save_error = OK
+	return OK

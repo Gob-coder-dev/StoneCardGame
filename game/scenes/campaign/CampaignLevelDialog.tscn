@@ -1,0 +1,151 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/campaign/CampaignLevelDialog.gd" id="1_dialog"]
+[ext_resource type="Script" path="res://scripts/ui/input/TouchButton.gd" id="2_touch"]
+
+[node name="CampaignLevelDialog" type="Control"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_dialog")
+
+[node name="Backdrop" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+focus_mode = 0
+flat = true
+text = ""
+
+[node name="Panel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -470.0
+offset_top = -430.0
+offset_right = 470.0
+offset_bottom = 430.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Margin" type="MarginContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 36
+theme_override_constants/margin_top = 28
+theme_override_constants/margin_right = 36
+theme_override_constants/margin_bottom = 30
+
+[node name="Content" type="VBoxContainer" parent="Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Header" type="HBoxContainer" parent="Panel/Margin/Content"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="HeaderLabel" type="Label" parent="Panel/Margin/Content/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.737, 0.698, 0.741, 1)
+theme_override_font_sizes/font_size = 24
+text = "FICHE DU NIVEAU"
+
+[node name="CloseButton" type="Button" parent="Panel/Margin/Content/Header"]
+custom_minimum_size = Vector2(82, 82)
+layout_mode = 2
+theme_override_font_sizes/font_size = 38
+text = "✕"
+script = ExtResource("2_touch")
+
+[node name="NameLabel" type="Label" parent="Panel/Margin/Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 48
+text = "NIVEAU"
+autowrap_mode = 2
+
+[node name="TypeLabel" type="Label" parent="Panel/Margin/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.933, 0.78, 0.471, 1)
+theme_override_font_sizes/font_size = 30
+text = "Rencontre"
+
+[node name="ChapterLabel" type="Label" parent="Panel/Margin/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.737, 0.698, 0.741, 1)
+theme_override_font_sizes/font_size = 24
+text = "CHAPITRE"
+
+[node name="Details" type="VBoxContainer" parent="Panel/Margin/Content"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="OpponentLabel" type="Label" parent="Panel/Margin/Content/Details"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "Adversaire"
+autowrap_mode = 2
+
+[node name="ModeLabel" type="Label" parent="Panel/Margin/Content/Details"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "Mode"
+autowrap_mode = 2
+
+[node name="TierLabel" type="Label" parent="Panel/Margin/Content/Details"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "Palier"
+autowrap_mode = 2
+
+[node name="AiLabel" type="Label" parent="Panel/Margin/Content/Details"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "IA"
+autowrap_mode = 2
+
+[node name="DeckLabel" type="Label" parent="Panel/Margin/Content/Details"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "Deck"
+autowrap_mode = 2
+
+[node name="SeriesLabel" type="Label" parent="Panel/Margin/Content/Details"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.737, 0.698, 0.741, 1)
+theme_override_font_sizes/font_size = 26
+text = "Format"
+autowrap_mode = 2
+
+[node name="TutorialLabel" type="Label" parent="Panel/Margin/Content"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.651, 0.78, 0.604, 1)
+theme_override_font_sizes/font_size = 24
+text = "Tutoriel prévu"
+autowrap_mode = 2
+
+[node name="ErrorLabel" type="Label" parent="Panel/Margin/Content"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.875, 0.573, 0.612, 1)
+theme_override_font_sizes/font_size = 25
+text = ""
+autowrap_mode = 2
+
+[node name="LaunchButton" type="Button" parent="Panel/Margin/Content"]
+custom_minimum_size = Vector2(0, 112)
+layout_mode = 2
+theme_type_variation = &"PrimaryButton"
+theme_override_font_sizes/font_size = 40
+text = "AFFRONTER"
+script = ExtResource("2_touch")
