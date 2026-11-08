@@ -13,10 +13,12 @@ const ProgressModel := preload("res://scripts/domain/campaign/CampaignProgress.g
 static func migrate(graph: CampaignGraph, legacy_stats: Dictionary,
 		progress: CampaignProgress) -> Dictionary:
 	if graph == null or progress == null:
-		return {"changed": false, "converted": [], "archived": {}, "progress": progress}
+		return {"changed": false, "converted": [], "archived": {},
+			"path_nodes_completed": [], "progress": progress}
 	var version := graph.campaign_version
 	if version <= 0 or progress.migration_version() >= version:
-		return {"changed": false, "converted": [], "archived": {}, "progress": progress}
+		return {"changed": false, "converted": [], "archived": {},
+			"path_nodes_completed": [], "progress": progress}
 
 	var claims := {}
 	for node in graph.nodes():
@@ -54,6 +56,11 @@ static func migrate(graph: CampaignGraph, legacy_stats: Dictionary,
 		if entry is Dictionary and int(entry.get("wins", 0)) > 0:
 			archived[str(legacy_id)] = (entry as Dictionary).duplicate(true)
 
+	# Une ancienne sauvegarde peut avoir terminé un mini-boss facultatif avant
+	# que ses niveaux d'approche existent. Ils font partie de la même branche :
+	# les marquer évite de rejouer une impasse déjà vaincue.
+	var path_nodes_completed := _complete_optional_paths(graph, progress)
+
 	progress.campaign_version = version
 	progress.migration["legacy_version"] = version
 	progress.migration["archived_stats"] = archived
@@ -61,5 +68,19 @@ static func migrate(graph: CampaignGraph, legacy_stats: Dictionary,
 		"changed": true,
 		"converted": converted,
 		"archived": archived,
+		"path_nodes_completed": path_nodes_completed,
 		"progress": progress,
 	}
+
+
+static func _complete_optional_paths(graph: CampaignGraph,
+		progress: CampaignProgress) -> Array[String]:
+	var completed_paths: Array[String] = []
+	for boss in graph.nodes():
+		if not boss.is_optional_mini_boss() or not progress.is_completed(boss.id):
+			continue
+		var prefix: String = str(boss.id) + "_path_"
+		for node in graph.nodes():
+			if node.id.begins_with(prefix) and progress.mark_completed(node.id):
+				completed_paths.append(node.id)
+	return completed_paths

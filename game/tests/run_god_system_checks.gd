@@ -33,6 +33,7 @@ const SUITES: Array[String] = [
 	"res://tests/domain/CampaignEncounterChecks.gd",
 	"res://tests/domain/CampaignFlowChecks.gd",
 	"res://tests/ui/CampaignMapChecks.gd",
+	"res://tests/ui/CampaignMapStreamingChecks.gd",
 	"res://tests/pvp/LanProtocolChecks.gd",
 	"res://tests/pvp/LanLobbyChecks.gd",
 	"res://tests/pvp/LanMatchChecks.gd",

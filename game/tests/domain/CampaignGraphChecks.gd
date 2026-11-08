@@ -138,8 +138,8 @@ func _test_shipped_content_graph() -> void:
 	if not bool(content.get("ok", false)):
 		return
 	var graph: CampaignGraph = GraphModel.build(content["definition"])
-	_check(graph.node_count() == 120 and graph.edge_count() >= 145,
-		"contenu : la campagne fournit exactement 120 nœuds et un graphe dense")
+	_check(graph.node_count() == 154 and graph.edge_count() == 182,
+		"contenu : la campagne fournit exactement 154 nœuds et 182 arêtes")
 	_check(not graph.has_cycle(), "contenu : le graphe livré est acyclique")
 	_check(graph.successors("tuto_03").size() == 3,
 		"contenu : les tutoriels ouvrent au moins trois branches")

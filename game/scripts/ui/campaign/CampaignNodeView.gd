@@ -16,13 +16,16 @@ var node_type: String = NodeModel.TYPE_NORMAL
 var _accent := UITheme.COL_NEON_PINK
 var _pulse := 0.0
 var _pulse_tween: Tween = null
+var _style_key: String = ""
 
 
 func _ready() -> void:
 	text = ""
 	clip_text = true
-	resized.connect(_refresh)
-	_refresh()
+	set_process(false)
+	resized.connect(_on_resized)
+	# Le parent appelle configure() juste après l'ajout : inutile de construire
+	# des styles verrouillés pour les remplacer dans la même frame.
 
 
 func configure(node: CampaignNode, node_state: int, accent: Color,
@@ -50,6 +53,10 @@ func _process(_delta: float) -> void:
 	queue_redraw()
 
 
+func _on_resized() -> void:
+	_refresh()
+
+
 func _set_pulse(enabled: bool) -> void:
 	if enabled:
 		set_process(true)
@@ -69,8 +76,15 @@ func _set_pulse(enabled: bool) -> void:
 
 
 func _refresh() -> void:
+	if node_id == "":
+		return
 	var diameter := maxf(minf(size.x, size.y), float(UITheme.CAMPAIGN_NODE_SIZE) * 0.4)
 	var radius := int(diameter * 0.5)
+	var key := "%d|%d|%s|%s|%s" % [state, radius, node_type,
+		_accent.to_html(), str(chosen)]
+	if key == _style_key:
+		return
+	_style_key = key
 	var fill := UITheme.COL_NODE_LOCKED_BG
 	var border := UITheme.COL_NODE_LOCKED_BORDER
 	var border_width := 3

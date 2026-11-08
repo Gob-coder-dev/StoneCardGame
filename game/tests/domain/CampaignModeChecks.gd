@@ -93,6 +93,21 @@ func _test_constrained_modes() -> void:
 	_check(random_one.total_quarters == random_two.total_quarters,
 		"campagne : les decks purs contraints gardent le même total")
 
+	var generated_mirror := SessionModel.new()
+	var generated_mirror_ready := generated_mirror.configure(_config(
+		GameModeRules.MODE_MIRROR, SeriesRules.SERIES_FT2, 4, {
+			"generator_god_id": "ilyr",
+			"generator_min_god_cards": 7,
+		}), _profile(), _profile(), 450)
+	var generated_mirror_one := generated_mirror.loadout_one()
+	var generated_mirror_two := generated_mirror.loadout_two()
+	_check(bool(generated_mirror_ready.get("ok", false))
+		and generated_mirror_one != null and generated_mirror_two != null
+		and generated_mirror_one.god_id == "ilyr"
+		and generated_mirror_one.deck == generated_mirror_two.deck
+		and _affinity_count(generated_mirror_one.deck, "ilyr") >= 7,
+		"campagne : un Miroir généré respecte réellement son minimum de sept cartes Ilyr")
+
 	var ilyr_deck := [
 		"longuepine_n4", "pique_en_haut_n4", "fauche_fond_n4",
 		"bouche_arbalete_n4", "veilleur_bifurque_n1", "perce_voute_n1",
@@ -111,6 +126,14 @@ func _test_constrained_modes() -> void:
 		and mirror_one.god_id == "ilyr" and mirror_two.god_id == "ilyr"
 		and mirror_one.deck == ilyr_deck and mirror_two.deck == ilyr_deck,
 		"campagne : un Miroir contraint peut imposer un deck Ilyr exact")
+
+	var invalid := SessionModel.new().configure(_config(GameModeRules.MODE_MIRROR,
+		SeriesRules.SERIES_FT1, 4, {
+			"generator_god_id": "ilyr",
+			"generator_min_god_cards": DeckRules.DECK_SIZE + 1,
+		}), _profile(), _profile(), 501)
+	_check(not bool(invalid.get("ok", true)),
+		"campagne : une contrainte d'affinité hors bornes est refusée, jamais corrigée silencieusement")
 
 
 func _affinity_count(deck: Array, god_id: String) -> int:

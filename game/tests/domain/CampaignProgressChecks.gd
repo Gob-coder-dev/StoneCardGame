@@ -47,6 +47,8 @@ func _test_round_trip() -> void:
 	progress.record_attempt("tuto_02")
 	progress.set_last_selected("tuto_02")
 	progress.set_tutorial_state("tutoriel_seuil", "done")
+	progress.set_map_navigation({"version": 1, "anchor_node_id": "tuto_02",
+		"offset_y": -120.5, "scroll_vertical": 880.0})
 	progress.campaign_version = 1
 	var store := StoreModel.new(PATH)
 	_check(store.save(progress) == OK, "progression : la sauvegarde dédiée réussit")
@@ -54,8 +56,9 @@ func _test_round_trip() -> void:
 	_check(loaded.completed == progress.completed
 		and loaded.attempts_for("tuto_02") == 2
 		and loaded.last_selected == "tuto_02"
-		and loaded.tutorial_state("tutoriel_seuil") == "done",
-		"progression : le rechargement restitue nœuds, tentatives, dernier nœud et tutoriels")
+		and loaded.tutorial_state("tutoriel_seuil") == "done"
+		and str(loaded.map_navigation.get("anchor_node_id", "")) == "tuto_02",
+		"progression : le rechargement restitue nœuds, tentatives, dernier nœud, tutoriels et position")
 	_check(loaded.to_dict() == progress.to_dict(),
 		"progression : la sérialisation est stable et complète")
 	var copy := progress.duplicate_progress()
@@ -128,15 +131,18 @@ func _test_twenty_node_save_upgrade() -> void:
 	progress.campaign_version = 1
 	var migrated := MigrationModel.migrate(graph, {}, progress)
 	_check(bool(migrated.get("changed", false))
-		and progress.campaign_version == 2
-		and progress.completed_count() == 20,
-		"migration : une sauvegarde à 20 niveaux conserve ses vingt victoires en version 2")
+		and progress.campaign_version == 3
+		and progress.completed_count() == 27
+		and progress.is_completed("mini_optional_01_path_2")
+		and progress.is_completed("mini_optional_02_path_5")
+		and (migrated.get("path_nodes_completed", []) as Array).size() == 7,
+		"migration : une sauvegarde à 20 niveaux conserve ses victoires et complète les approches")
 	var states := UnlockRules.states(graph, progress.completed)
 	_check(int(states.get("r03_entry", UnlockRules.State.LOCKED)) == UnlockRules.State.AVAILABLE,
-		"migration : la suite de 120 niveaux s'ouvre derrière un carrefour déjà terminé")
+		"migration : la suite de 154 niveaux s'ouvre derrière un carrefour déjà terminé")
 	var second := MigrationModel.migrate(graph, {}, progress)
-	_check(not bool(second.get("changed", false)) and progress.completed_count() == 20,
-		"migration : la conversion 20 → 120 est idempotente")
+	_check(not bool(second.get("changed", false)) and progress.completed_count() == 27,
+		"migration : la conversion 20 → 154 est idempotente")
 
 	var partial := ProgressModel.new()
 	partial.mark_completed("tuto_01")

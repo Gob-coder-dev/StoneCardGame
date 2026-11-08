@@ -12,6 +12,9 @@ var completed: Dictionary = {}
 var attempts: Dictionary = {}
 var last_selected: String = ""
 var tutorial_states: Dictionary = {}
+## Position de navigation de la carte uniquement. Ce champ ne participe jamais
+## aux règles de déblocage et reste absent des anciennes sauvegardes.
+var map_navigation: Dictionary = {}
 ## Trace de migration : version convertie et statistiques non convertibles
 ## conservées telles quelles. Le profil d'origine n'est jamais modifié.
 var migration: Dictionary = {}
@@ -34,6 +37,17 @@ static func from_dict(source: Dictionary) -> CampaignProgress:
 	var raw_tutorials: Variant = source.get("tutorial_states", {})
 	if raw_tutorials is Dictionary:
 		progress.tutorial_states = (raw_tutorials as Dictionary).duplicate(true)
+	var raw_navigation: Variant = source.get("map_navigation", {})
+	if raw_navigation is Dictionary and not (raw_navigation as Dictionary).is_empty():
+		# JSON relit les nombres en float : normaliser les champs de navigation
+		# garde une sérialisation stable entre mémoire et disque.
+		var navigation: Dictionary = (raw_navigation as Dictionary).duplicate(true)
+		navigation["version"] = maxi(1, int(navigation.get("version", 1)))
+		navigation["anchor_node_id"] = str(navigation.get("anchor_node_id", ""))
+		navigation["offset_y"] = float(navigation.get("offset_y", 0.0))
+		navigation["scroll_vertical"] = maxf(0.0,
+			float(navigation.get("scroll_vertical", 0.0)))
+		progress.map_navigation = navigation
 	var raw_migration: Variant = source.get("legacy", {})
 	if raw_migration is Dictionary:
 		progress.migration = (raw_migration as Dictionary).duplicate(true)
@@ -50,6 +64,7 @@ func to_dict() -> Dictionary:
 		"attempts_by_node": attempts.duplicate(true),
 		"last_selected_node_id": last_selected,
 		"tutorial_states": tutorial_states.duplicate(true),
+		"map_navigation": map_navigation.duplicate(true),
 		"legacy": migration.duplicate(true),
 	}
 
@@ -113,6 +128,10 @@ func set_tutorial_state(tutorial_id: String, state: String) -> void:
 	if tutorial_id == "":
 		return
 	tutorial_states[tutorial_id] = state
+
+
+func set_map_navigation(value: Dictionary) -> void:
+	map_navigation = value.duplicate(true)
 
 
 func migration_version() -> int:

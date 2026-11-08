@@ -124,8 +124,8 @@ func begin_mode(config: Dictionary, seed: int = 0) -> Dictionary:
 	if opponent.is_empty():
 		return {"ok": false, "reason": "Adversaire de campagne absent."}
 	var actual_seed := seed if seed != 0 else int(Time.get_unix_time_from_system() * 1000.0)
-	campaign_mode_session = CampaignModeSession.new()
-	var result := campaign_mode_session.configure(config, {
+	var prepared_session := CampaignModeSession.new()
+	var result := prepared_session.configure(config, {
 		"name": PlayerData.player_name,
 		"god_id": PlayerData.player_god_id,
 		"deck": PlayerData.get_active_deck(),
@@ -134,8 +134,18 @@ func begin_mode(config: Dictionary, seed: int = 0) -> Dictionary:
 		"god_id": str(opponent.get("god_id", "")),
 		"deck": (opponent.get("deck", []) as Array).duplicate(true),
 	}, actual_seed)
-	_sync_mode_loadouts()
+	if bool(result.get("ok", false)):
+		install_mode_session(prepared_session)
 	return result
+
+
+## Publie une session déjà préparée. CampaignContext utilise cette opération
+## après l'écriture de la tentative afin qu'un échec de génération ou de disque
+## ne laisse jamais un demi-contexte de combat visible.
+func install_mode_session(session: CampaignModeSession) -> void:
+	clear_mode_session()
+	campaign_mode_session = session
+	_sync_mode_loadouts()
 
 
 func choose_draft_card(stone_id: String) -> bool:

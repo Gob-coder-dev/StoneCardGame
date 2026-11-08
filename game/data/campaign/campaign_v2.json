@@ -1,10 +1,10 @@
 {
   "id": "samstone_campaign",
   "title": "La Carte de SamStone",
-  "campaign_version": 2,
+  "campaign_version": 3,
   "map": {
     "width": 1080,
-    "height": 16920
+    "height": 17880
   },
   "start_node_id": "tuto_01",
   "final_node_id": "final_01",
@@ -283,8 +283,8 @@
       "region": "Les Assimilateurs",
       "type": "mini_boss",
       "position": {
-        "x": 90,
-        "y": 1220
+        "x": 90.0,
+        "y": 1700.0
       },
       "dead_end": true,
       "mini_boss_kind": "optional",
@@ -311,7 +311,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 2,
         "ai_profile": {
-          "precision": 0.35,
+          "precision": 0.8,
           "anticipation": false
         },
         "series_format": "ft2",
@@ -335,8 +335,8 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "kharun",
-      "accent": "#72c7d8",
+      "theme_god_id": "ilyr",
+      "accent": "#5fa8ff",
       "encounter": {
         "game_mode": "random",
         "opponent_god_policy": "generated",
@@ -409,8 +409,8 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "ilyr",
-      "accent": "#5fa8ff",
+      "theme_god_id": "sylkha",
+      "accent": "#7fc95b",
       "encounter": {
         "game_mode": "mirror",
         "opponent_god_policy": "mirrored",
@@ -446,8 +446,8 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "sylkha",
-      "accent": "#7fc95b",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
       "encounter": {
         "game_mode": "random",
         "opponent_god_policy": "generated",
@@ -704,22 +704,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "kharun",
-      "accent": "#72c7d8",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "kharun",
+        "fixed_god_id": "veskar",
         "fixed_deck": [
-          "carapace_vide_n1",
-          "le_nud_hurlant_n1",
-          "rampant_des_fosses_n2",
-          "osselet_blinde_n2",
-          "chevalier_sans_visage_n1",
-          "portail_dos_n1",
-          "eclat_cuirasse_n2",
-          "mordeur_des_combles_n1"
+          "tricorne_errant_n1",
+          "valet_a_lenvers_n1",
+          "ecorche_angle_n2",
+          "charognard_courbe_n1",
+          "gueule_de_travers_n1",
+          "avortons_des_caves_n2",
+          "roulette_vorace_n1",
+          "devoracle_n2"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -750,8 +750,8 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "enigma",
-      "accent": "#ef8b45",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
       "encounter": {
         "game_mode": "random",
         "opponent_god_policy": "generated",
@@ -833,22 +833,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "ilyr",
-      "accent": "#5fa8ff",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "ilyr",
+        "fixed_god_id": "enigma",
         "fixed_deck": [
-          "ogre_droitier_n1",
-          "pique_en_haut_n2",
-          "dos_fendu_n1",
-          "longuepine_n2",
-          "charognard_courbe_n1",
+          "ogre_a_deux_bouches_n1",
+          "le_nud_hurlant_n1",
+          "depeceur_rampant_n1",
+          "gueule_de_travers_n1",
           "avortons_des_caves_n2",
-          "fauche_fond_n2",
-          "bouche_arbalete_n2"
+          "scie_boiteuse_n1",
+          "porte_greffes_n1",
+          "le_sac_a_murmures_n2"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -879,22 +879,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "enigma",
-      "accent": "#ef8b45",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "enigma",
+        "fixed_god_id": "veskar",
         "fixed_deck": [
-          "ogre_a_deux_bouches_n1",
-          "le_nud_hurlant_n1",
-          "depeceur_rampant_n1",
-          "gueule_de_travers_n1",
-          "avortons_des_caves_n2",
-          "scie_boiteuse_n1",
-          "porte_greffes_n1",
-          "le_sac_a_murmures_n2"
+          "ogre_droitier_n2",
+          "valet_a_lenvers_n1",
+          "devoracle_n1",
+          "griffe_a_jetons_n1",
+          "croupier_manchot_n1",
+          "le_sac_a_murmures_n2",
+          "fouisseur_aveugle_n1",
+          "avortons_des_caves_n2"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -925,13 +925,13 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "veskar",
-      "accent": "#e75aa8",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
       "encounter": {
         "game_mode": "draft",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "draft",
-        "fixed_god_id": "veskar",
+        "fixed_god_id": "enigma",
         "fixed_deck": [],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -962,22 +962,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "nerava",
-      "accent": "#9b6bc7",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "nerava",
+        "fixed_god_id": "veskar",
         "fixed_deck": [
           "rampant_des_fosses_n1",
-          "fouisseur_aveugle_n1",
-          "devoreur_de_lanternes_n1",
+          "de_boiteux_n2",
           "avortons_des_caves_n2",
-          "ronge_chair_n1",
-          "sonneur_pestifere_n1",
-          "porte_fievre_n2",
-          "le_sac_a_murmures_n2"
+          "charognard_courbe_n1",
+          "jumeau_de_cuivre_n1",
+          "valet_a_lenvers_n1",
+          "le_drape_du_seuil_n1",
+          "devoracle_n2"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -1008,22 +1008,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "kharun",
-      "accent": "#72c7d8",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "kharun",
+        "fixed_god_id": "enigma",
         "fixed_deck": [
-          "rampant_des_fosses_n2",
-          "gueule_de_travers_n2",
-          "tricorne_errant_n1",
-          "carapace_vide_n1",
-          "osselet_blinde_n2",
+          "ogre_droitier_n2",
+          "le_drape_du_seuil_n2",
+          "recycleur_thoracique_n1",
           "la_veuve_suspendue_n1",
-          "le_sac_a_murmures_n2",
-          "heaume_errant_n1"
+          "ogre_a_deux_bouches_n1",
+          "chirurgien_dacier_n1",
+          "preleveur_de_plaques_n1",
+          "le_sac_a_murmures_n2"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -1048,8 +1048,8 @@
       "region": "Les Vœux Noyés",
       "type": "mini_boss",
       "position": {
-        "x": 760,
-        "y": 3240
+        "x": 760.0,
+        "y": 3720.0
       },
       "dead_end": true,
       "mini_boss_kind": "optional",
@@ -1067,7 +1067,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 3,
         "ai_profile": {
-          "precision": 0.55,
+          "precision": 0.8,
           "anticipation": false
         },
         "series_format": "ft2",
@@ -1091,22 +1091,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "ilyr",
-      "accent": "#5fa8ff",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "ilyr",
+        "fixed_god_id": "veskar",
         "fixed_deck": [
-          "fouisseur_aveugle_n1",
-          "le_replie_n1",
-          "perce_voute_n1",
-          "charognard_courbe_n2",
-          "echassier_des_brumes_n2",
-          "le_nud_hurlant_n2",
-          "avortons_des_caves_n3",
-          "veilleur_bifurque_n2"
+          "roulette_vorace_n2",
+          "ogre_droitier_n2",
+          "de_boiteux_n2",
+          "la_machine_a_malchance_n1",
+          "le_porte_visages_n1",
+          "laffame_du_puits_n1",
+          "mordeur_des_combles_n2",
+          "griffe_a_jetons_n3"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -1137,22 +1137,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "sylkha",
-      "accent": "#7fc95b",
+      "theme_god_id": "nerava",
+      "accent": "#9b6bc7",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "sylkha",
+        "fixed_god_id": "nerava",
         "fixed_deck": [
-          "fourmilion_des_nerfs_n1",
-          "le_drape_du_seuil_n2",
-          "ogre_a_deux_bouches_n1",
-          "larve_dancrage_n2",
-          "nud_vivant_n2",
-          "mante_des_racines_n1",
-          "ogre_droitier_n2",
-          "avortons_des_caves_n2"
+          "rampant_des_fosses_n1",
+          "fouisseur_aveugle_n1",
+          "devoreur_de_lanternes_n1",
+          "avortons_des_caves_n2",
+          "ronge_chair_n1",
+          "sonneur_pestifere_n1",
+          "porte_fievre_n2",
+          "le_sac_a_murmures_n2"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -1183,22 +1183,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "enigma",
-      "accent": "#ef8b45",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "enigma",
+        "fixed_god_id": "veskar",
         "fixed_deck": [
-          "ogre_droitier_n1",
-          "charognard_courbe_n1",
-          "la_veuve_suspendue_n1",
-          "chirurgien_dacier_n1",
-          "avortons_des_caves_n2",
-          "porte_greffes_n1",
-          "preleveur_de_plaques_n1",
-          "le_sac_a_murmures_n2"
+          "devoreur_de_lanternes_n1",
+          "roulette_vorace_n1",
+          "fouisseur_aveugle_n1",
+          "rampant_des_fosses_n1",
+          "valet_a_lenvers_n1",
+          "sou_ricanant_n1",
+          "ogre_a_deux_bouches_n1",
+          "le_sac_a_murmures_n1"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -1223,8 +1223,8 @@
       "region": "Les Souffles",
       "type": "mini_boss",
       "position": {
-        "x": 900,
-        "y": 4060
+        "x": 900.0,
+        "y": 4780.0
       },
       "dead_end": true,
       "mini_boss_kind": "optional",
@@ -1251,8 +1251,8 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 2,
         "ai_profile": {
-          "precision": 1.0,
-          "anticipation": true
+          "precision": 0.85,
+          "anticipation": false
         },
         "series_format": "ft2",
         "seed_policy": "fixed_per_node",
@@ -1275,13 +1275,13 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "veskar",
-      "accent": "#e75aa8",
+      "theme_god_id": "kharun",
+      "accent": "#72c7d8",
       "encounter": {
         "game_mode": "draft",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "draft",
-        "fixed_god_id": "veskar",
+        "fixed_god_id": "kharun",
         "fixed_deck": [],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -1312,22 +1312,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "nerava",
-      "accent": "#9b6bc7",
+      "theme_god_id": "sylkha",
+      "accent": "#7fc95b",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "nerava",
+        "fixed_god_id": "sylkha",
         "fixed_deck": [
-          "le_nud_hurlant_n1",
-          "mordeur_des_combles_n1",
-          "clochelet_malade_n1",
+          "tisse_griffe_n2",
+          "fouisseur_aveugle_n1",
+          "dos_fendu_n1",
+          "la_veuve_suspendue_n1",
+          "mante_des_racines_n1",
           "ogre_a_deux_bouches_n1",
-          "machoire_moisie_n2",
-          "crache_cendre_n2",
-          "tricorne_errant_n1",
-          "le_sac_a_murmures_n2"
+          "le_drape_du_seuil_n2",
+          "ronce_rampante_n1"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -1358,22 +1358,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "kharun",
-      "accent": "#72c7d8",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "kharun",
+        "fixed_god_id": "enigma",
         "fixed_deck": [
-          "eclat_cuirasse_n2",
-          "le_nud_hurlant_n1",
-          "ecorche_angle_n1",
-          "le_sac_a_murmures_n1",
-          "avortons_des_caves_n2",
-          "golem_de_faience_n1",
-          "colosse_rivete_n1",
-          "la_veuve_suspendue_n1"
+          "scie_boiteuse_n1",
+          "depeceur_rampant_n2",
+          "rampant_des_fosses_n2",
+          "dos_fendu_n1",
+          "le_drape_du_seuil_n2",
+          "le_sac_a_murmures_n2",
+          "fouisseur_aveugle_n1",
+          "recycleur_thoracique_n1"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -1404,22 +1404,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "ilyr",
-      "accent": "#5fa8ff",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "ilyr",
+        "fixed_god_id": "veskar",
         "fixed_deck": [
-          "rampant_des_fosses_n1",
-          "mordeur_des_combles_n2",
-          "dard_de_traverse_n1",
-          "le_sac_a_murmures_n2",
-          "fauche_fond_n2",
-          "ogre_a_deux_bouches_n1",
-          "pique_en_haut_n1",
-          "bouche_arbalete_n1"
+          "ogre_droitier_n1",
+          "jumeau_de_cuivre_n1",
+          "gueule_de_travers_n2",
+          "sou_ricanant_n1",
+          "de_boiteux_n2",
+          "croupier_manchot_n1",
+          "avortons_des_caves_n2",
+          "devoreur_de_lanternes_n1"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -1450,13 +1450,13 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "sylkha",
-      "accent": "#7fc95b",
+      "theme_god_id": "nerava",
+      "accent": "#9b6bc7",
       "encounter": {
         "game_mode": "draft",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "draft",
-        "fixed_god_id": "sylkha",
+        "fixed_god_id": "nerava",
         "fixed_deck": [],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -1487,22 +1487,22 @@
       "dead_end": false,
       "mini_boss_kind": "mandatory",
       "tutorial_id": "",
-      "theme_god_id": "enigma",
-      "accent": "#ef8b45",
+      "theme_god_id": "kharun",
+      "accent": "#72c7d8",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "enigma",
+        "fixed_god_id": "kharun",
         "fixed_deck": [
-          "chirurgien_dacier_n1",
-          "ecorche_angle_n3",
-          "la_broyeuse_dempreintes_n1",
-          "ogre_a_deux_bouches_n1",
-          "collecteur_de_dents_n2",
-          "recycleur_thoracique_n1",
-          "mache_mur_n3",
-          "devoreur_de_lanternes_n2"
+          "devoreur_de_lanternes_n1",
+          "eclat_cuirasse_n2",
+          "le_reliquaire_ambulant_n1",
+          "colosse_rivete_n1",
+          "mille_gueules_n1",
+          "chevalier_sans_visage_n2",
+          "golem_de_faience_n1",
+          "le_sac_a_murmures_n3"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -1533,22 +1533,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "veskar",
-      "accent": "#e75aa8",
+      "theme_god_id": "sylkha",
+      "accent": "#7fc95b",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "veskar",
+        "fixed_god_id": "sylkha",
         "fixed_deck": [
-          "tricorne_errant_n1",
-          "valet_a_lenvers_n1",
-          "ecorche_angle_n2",
-          "charognard_courbe_n1",
-          "gueule_de_travers_n1",
-          "avortons_des_caves_n2",
-          "roulette_vorace_n1",
-          "devoracle_n2"
+          "mache_mur_n2",
+          "bourgeon_mordant_n1",
+          "le_nud_hurlant_n1",
+          "le_sac_a_murmures_n1",
+          "porte_nid_n1",
+          "devoreur_de_lanternes_n1",
+          "mante_des_racines_n1",
+          "avortons_des_caves_n2"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -1579,22 +1579,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "nerava",
-      "accent": "#9b6bc7",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "nerava",
+        "fixed_god_id": "enigma",
         "fixed_deck": [
-          "veuve_des_spores_n1",
-          "la_veuve_suspendue_n1",
-          "ogre_droitier_n1",
+          "dos_fendu_n1",
+          "charognard_courbe_n1",
+          "collecteur_de_dents_n1",
+          "ogre_a_deux_bouches_n1",
           "le_sac_a_murmures_n2",
-          "avortons_des_caves_n2",
-          "devoreur_de_lanternes_n1",
-          "crache_cendre_n2",
-          "porte_fievre_n2"
+          "recycleur_thoracique_n1",
+          "porte_greffes_n1",
+          "avortons_des_caves_n2"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -1625,22 +1625,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "kharun",
-      "accent": "#72c7d8",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "kharun",
+        "fixed_god_id": "veskar",
         "fixed_deck": [
-          "dos_fendu_n1",
-          "golem_de_faience_n1",
-          "portail_dos_n1",
-          "charognard_courbe_n1",
-          "colosse_rivete_n1",
           "devoreur_de_lanternes_n1",
-          "avortons_des_caves_n2",
-          "le_sac_a_murmures_n2"
+          "mordeur_des_combles_n2",
+          "sou_ricanant_n2",
+          "charognard_courbe_n1",
+          "fouisseur_aveugle_n1",
+          "devoracle_n2",
+          "griffe_a_jetons_n1",
+          "mache_mur_n2"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -1671,13 +1671,13 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "ilyr",
-      "accent": "#5fa8ff",
+      "theme_god_id": "nerava",
+      "accent": "#9b6bc7",
       "encounter": {
         "game_mode": "draft",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "draft",
-        "fixed_god_id": "ilyr",
+        "fixed_god_id": "nerava",
         "fixed_deck": [],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -1708,22 +1708,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "sylkha",
-      "accent": "#7fc95b",
+      "theme_god_id": "kharun",
+      "accent": "#72c7d8",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "sylkha",
+        "fixed_god_id": "kharun",
         "fixed_deck": [
-          "tisse_griffe_n2",
-          "fouisseur_aveugle_n1",
-          "dos_fendu_n1",
-          "la_veuve_suspendue_n1",
-          "mante_des_racines_n1",
-          "ogre_a_deux_bouches_n1",
-          "le_drape_du_seuil_n2",
-          "ronce_rampante_n1"
+          "carapace_vide_n1",
+          "le_nud_hurlant_n1",
+          "rampant_des_fosses_n2",
+          "osselet_blinde_n2",
+          "chevalier_sans_visage_n1",
+          "portail_dos_n1",
+          "eclat_cuirasse_n2",
+          "mordeur_des_combles_n1"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -1754,22 +1754,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "enigma",
-      "accent": "#ef8b45",
+      "theme_god_id": "ilyr",
+      "accent": "#5fa8ff",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "enigma",
+        "fixed_god_id": "ilyr",
         "fixed_deck": [
-          "gueule_de_travers_n1",
-          "chirurgien_dacier_n1",
-          "tricorne_errant_n1",
-          "charognard_courbe_n1",
-          "preleveur_de_plaques_n1",
+          "mordeur_des_combles_n2",
           "fouisseur_aveugle_n1",
-          "ogre_a_deux_bouches_n1",
-          "recycleur_thoracique_n1"
+          "veilleur_bifurque_n1",
+          "la_veuve_suspendue_n1",
+          "avortons_des_caves_n2",
+          "longuepine_n2",
+          "fauche_fond_n2",
+          "bouche_arbalete_n2"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -1800,13 +1800,13 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "veskar",
-      "accent": "#e75aa8",
+      "theme_god_id": "sylkha",
+      "accent": "#7fc95b",
       "encounter": {
         "game_mode": "draft",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "draft",
-        "fixed_god_id": "veskar",
+        "fixed_god_id": "sylkha",
         "fixed_deck": [],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -1837,22 +1837,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "nerava",
-      "accent": "#9b6bc7",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "nerava",
+        "fixed_god_id": "enigma",
         "fixed_deck": [
+          "chirurgien_dacier_n1",
+          "ecorche_angle_n3",
+          "la_broyeuse_dempreintes_n1",
+          "ogre_a_deux_bouches_n1",
+          "collecteur_de_dents_n2",
+          "recycleur_thoracique_n1",
           "mache_mur_n3",
-          "le_precheur_des_fievres_n1",
-          "avortons_des_caves_n3",
-          "sonneur_pestifere_n1",
-          "laffame_du_puits_n1",
-          "veuve_des_spores_n2",
-          "charognard_courbe_n2",
-          "le_drape_du_seuil_n2"
+          "devoreur_de_lanternes_n2"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -1914,8 +1914,8 @@
       "region": "Les Archives",
       "type": "mini_boss",
       "position": {
-        "x": 100,
-        "y": 6080
+        "x": 100.0,
+        "y": 6800.0
       },
       "dead_end": true,
       "mini_boss_kind": "optional",
@@ -1933,7 +1933,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 3,
         "ai_profile": {
-          "precision": 0.34,
+          "precision": 0.88,
           "anticipation": false
         },
         "series_format": "ft2",
@@ -1957,22 +1957,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "ilyr",
-      "accent": "#5fa8ff",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "ilyr",
+        "fixed_god_id": "veskar",
         "fixed_deck": [
-          "le_sac_a_murmures_n1",
-          "dard_de_traverse_n1",
-          "veilleur_bifurque_n1",
-          "ecorche_angle_n2",
-          "longuepine_n2",
-          "perce_voute_n1",
-          "bouche_arbalete_n2",
-          "avortons_des_caves_n2"
+          "charognard_courbe_n1",
+          "dos_fendu_n1",
+          "jumeau_de_cuivre_n1",
+          "fouisseur_aveugle_n1",
+          "ogre_a_deux_bouches_n1",
+          "valet_a_lenvers_n1",
+          "roulette_vorace_n1",
+          "de_boiteux_n2"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -2077,21 +2077,21 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "sylkha",
-      "accent": "#7fc95b",
+      "theme_god_id": "nerava",
+      "accent": "#9b6bc7",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "sylkha",
+        "fixed_god_id": "nerava",
         "fixed_deck": [
-          "charognard_courbe_n2",
-          "devoreur_de_lanternes_n1",
-          "ogre_droitier_n1",
-          "nud_vivant_n3",
-          "rampant_des_fosses_n1",
-          "le_tisseur_de_meutes_n1",
-          "tisse_griffe_n3",
+          "veuve_des_spores_n2",
+          "griffe_septique_n1",
+          "crache_cendre_n1",
+          "le_porte_visages_n1",
+          "le_precheur_des_fievres_n1",
+          "tricorne_errant_n1",
+          "ogre_a_deux_bouches_n2",
           "avortons_des_caves_n3"
         ],
         "generator_god_id": "",
@@ -2117,8 +2117,8 @@
       "region": "Les Échanges",
       "type": "mini_boss",
       "position": {
-        "x": 860,
-        "y": 7140
+        "x": 900.0,
+        "y": 7980.0
       },
       "dead_end": true,
       "mini_boss_kind": "optional",
@@ -2131,12 +2131,12 @@
         "opponent_deck_policy": "generated",
         "fixed_god_id": "",
         "fixed_deck": [],
-        "generator_god_id": "",
-        "generator_min_god_cards": 0,
+        "generator_god_id": "sylkha",
+        "generator_min_god_cards": 8,
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.19,
+          "precision": 0.9,
           "anticipation": false
         },
         "series_format": "ft2",
@@ -2160,22 +2160,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "enigma",
-      "accent": "#ef8b45",
+      "theme_god_id": "kharun",
+      "accent": "#72c7d8",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "enigma",
+        "fixed_god_id": "kharun",
         "fixed_deck": [
-          "chirurgien_dacier_n2",
-          "fouisseur_aveugle_n2",
-          "la_broyeuse_dempreintes_n1",
-          "depeceur_rampant_n3",
-          "le_demonteur_n1",
-          "ogre_a_deux_bouches_n2",
-          "mille_gueules_n1",
-          "avortons_des_caves_n2"
+          "carapace_vide_n2",
+          "osselet_blinde_n1",
+          "le_replie_n1",
+          "dos_fendu_n2",
+          "devoreur_de_lanternes_n2",
+          "golem_de_faience_n2",
+          "le_sac_a_murmures_n3",
+          "avortons_des_caves_n3"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -2206,22 +2206,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "veskar",
-      "accent": "#e75aa8",
+      "theme_god_id": "ilyr",
+      "accent": "#5fa8ff",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "veskar",
+        "fixed_god_id": "ilyr",
         "fixed_deck": [
-          "roulette_vorace_n2",
-          "ogre_droitier_n2",
-          "de_boiteux_n2",
-          "la_machine_a_malchance_n1",
-          "le_porte_visages_n1",
+          "le_sac_a_murmures_n2",
+          "mache_mur_n1",
+          "dard_de_traverse_n1",
+          "fouisseur_aveugle_n2",
+          "pique_en_haut_n3",
           "laffame_du_puits_n1",
-          "mordeur_des_combles_n2",
-          "griffe_a_jetons_n3"
+          "dos_fendu_n1",
+          "longuepine_n3"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -2252,13 +2252,13 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "nerava",
-      "accent": "#9b6bc7",
+      "theme_god_id": "sylkha",
+      "accent": "#7fc95b",
       "encounter": {
         "game_mode": "draft",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "draft",
-        "fixed_god_id": "nerava",
+        "fixed_god_id": "sylkha",
         "fixed_deck": [],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -2289,22 +2289,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "kharun",
-      "accent": "#72c7d8",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "kharun",
+        "fixed_god_id": "enigma",
         "fixed_deck": [
-          "heaume_errant_n2",
-          "carapace_vide_n1",
-          "eclat_cuirasse_n2",
-          "le_drape_du_seuil_n1",
-          "portail_dos_n1",
-          "charognard_courbe_n1",
+          "gueule_de_travers_n1",
+          "chirurgien_dacier_n1",
           "tricorne_errant_n1",
-          "avortons_des_caves_n2"
+          "charognard_courbe_n1",
+          "preleveur_de_plaques_n1",
+          "fouisseur_aveugle_n1",
+          "ogre_a_deux_bouches_n1",
+          "recycleur_thoracique_n1"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -2335,22 +2335,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "ilyr",
-      "accent": "#5fa8ff",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "ilyr",
+        "fixed_god_id": "veskar",
         "fixed_deck": [
-          "ecorche_angle_n1",
-          "devoreur_de_lanternes_n2",
-          "longuepine_n3",
-          "dos_fendu_n2",
+          "le_nud_hurlant_n1",
+          "la_machine_a_malchance_n1",
+          "ogre_a_deux_bouches_n1",
+          "jumeau_de_cuivre_n1",
           "le_replie_n1",
-          "dard_de_traverse_n1",
-          "mille_gueules_n1",
-          "fauche_fond_n3"
+          "sou_ricanant_n3",
+          "le_drape_du_seuil_n3",
+          "avortons_des_caves_n3"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -2381,22 +2381,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "sylkha",
-      "accent": "#7fc95b",
+      "theme_god_id": "nerava",
+      "accent": "#9b6bc7",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "sylkha",
+        "fixed_god_id": "nerava",
         "fixed_deck": [
-          "bourgeon_mordant_n2",
-          "le_sac_a_murmures_n2",
-          "la_nourrice_nouee_n1",
-          "larve_dancrage_n1",
-          "mache_mur_n2",
-          "ecorche_angle_n2",
-          "fouisseur_aveugle_n2",
-          "avortons_des_caves_n3"
+          "gueule_de_travers_n1",
+          "avortons_des_caves_n3",
+          "le_precheur_des_fievres_n1",
+          "crache_cendre_n3",
+          "charognard_courbe_n2",
+          "sonneur_pestifere_n1",
+          "le_replie_n1",
+          "devoreur_de_lanternes_n2"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -2427,22 +2427,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "enigma",
-      "accent": "#ef8b45",
+      "theme_god_id": "kharun",
+      "accent": "#72c7d8",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "enigma",
+        "fixed_god_id": "kharun",
         "fixed_deck": [
-          "scie_boiteuse_n1",
-          "depeceur_rampant_n2",
           "rampant_des_fosses_n2",
-          "dos_fendu_n1",
-          "le_drape_du_seuil_n2",
+          "gueule_de_travers_n2",
+          "tricorne_errant_n1",
+          "carapace_vide_n1",
+          "osselet_blinde_n2",
+          "la_veuve_suspendue_n1",
           "le_sac_a_murmures_n2",
-          "fouisseur_aveugle_n1",
-          "recycleur_thoracique_n1"
+          "heaume_errant_n1"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -2473,8 +2473,8 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "enigma",
-      "accent": "#ef8b45",
+      "theme_god_id": "sylkha",
+      "accent": "#7fc95b",
       "encounter": {
         "game_mode": "random",
         "opponent_god_policy": "generated",
@@ -2510,22 +2510,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "veskar",
-      "accent": "#e75aa8",
+      "theme_god_id": "ilyr",
+      "accent": "#5fa8ff",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "veskar",
+        "fixed_god_id": "ilyr",
         "fixed_deck": [
-          "le_nud_hurlant_n1",
-          "la_machine_a_malchance_n1",
-          "ogre_a_deux_bouches_n1",
-          "jumeau_de_cuivre_n1",
+          "fouisseur_aveugle_n1",
           "le_replie_n1",
-          "sou_ricanant_n3",
-          "le_drape_du_seuil_n3",
-          "avortons_des_caves_n3"
+          "perce_voute_n1",
+          "charognard_courbe_n2",
+          "echassier_des_brumes_n2",
+          "le_nud_hurlant_n2",
+          "avortons_des_caves_n3",
+          "veilleur_bifurque_n2"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -2556,8 +2556,8 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "veskar",
-      "accent": "#e75aa8",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
       "encounter": {
         "game_mode": "mirror",
         "opponent_god_policy": "mirrored",
@@ -2593,13 +2593,13 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "nerava",
-      "accent": "#9b6bc7",
+      "theme_god_id": "sylkha",
+      "accent": "#7fc95b",
       "encounter": {
         "game_mode": "draft",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "draft",
-        "fixed_god_id": "nerava",
+        "fixed_god_id": "sylkha",
         "fixed_deck": [],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -2630,22 +2630,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "kharun",
-      "accent": "#72c7d8",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "kharun",
+        "fixed_god_id": "enigma",
         "fixed_deck": [
-          "mache_mur_n1",
-          "tricorne_errant_n1",
-          "osselet_blinde_n2",
-          "carapace_vide_n2",
-          "eclat_cuirasse_n2",
-          "devoreur_de_lanternes_n1",
+          "preleveur_de_plaques_n1",
+          "scie_boiteuse_n2",
+          "pince_carcasse_n2",
+          "porte_greffes_n1",
+          "ecorche_angle_n2",
+          "avortons_des_caves_n2",
           "le_sac_a_murmures_n2",
-          "avortons_des_caves_n2"
+          "devoreur_de_lanternes_n1"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -2676,22 +2676,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "ilyr",
-      "accent": "#5fa8ff",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "ilyr",
+        "fixed_god_id": "veskar",
         "fixed_deck": [
-          "le_sac_a_murmures_n2",
-          "mache_mur_n1",
-          "dard_de_traverse_n1",
-          "fouisseur_aveugle_n2",
-          "pique_en_haut_n3",
-          "laffame_du_puits_n1",
-          "dos_fendu_n1",
-          "longuepine_n3"
+          "mache_mur_n2",
+          "valet_a_lenvers_n1",
+          "dos_fendu_n2",
+          "devoracle_n1",
+          "jumeau_de_cuivre_n1",
+          "roulette_vorace_n2",
+          "avortons_des_caves_n3",
+          "le_sac_a_murmures_n3"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -2722,22 +2722,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "sylkha",
-      "accent": "#7fc95b",
+      "theme_god_id": "nerava",
+      "accent": "#9b6bc7",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "sylkha",
+        "fixed_god_id": "nerava",
         "fixed_deck": [
-          "le_porte_visages_n1",
-          "nud_vivant_n3",
-          "mante_des_racines_n2",
-          "fourmilion_des_nerfs_n2",
-          "tisse_griffe_n3",
           "le_sac_a_murmures_n3",
-          "devoreur_de_lanternes_n2",
-          "avortons_des_caves_n3"
+          "fouisseur_aveugle_n2",
+          "le_nud_hurlant_n1",
+          "dos_fendu_n2",
+          "sonneur_pestifere_n1",
+          "ronge_chair_n1",
+          "machoire_moisie_n3",
+          "ecorche_angle_n1"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -2768,8 +2768,8 @@
       "dead_end": false,
       "mini_boss_kind": "mandatory",
       "tutorial_id": "",
-      "theme_god_id": "nerava",
-      "accent": "#9b6bc7",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
       "encounter": {
         "game_mode": "mirror",
         "opponent_god_policy": "mirrored",
@@ -2805,22 +2805,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "enigma",
-      "accent": "#ef8b45",
+      "theme_god_id": "kharun",
+      "accent": "#72c7d8",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "enigma",
+        "fixed_god_id": "kharun",
         "fixed_deck": [
-          "le_sac_a_murmures_n2",
-          "chirurgien_dacier_n1",
-          "gueule_de_travers_n2",
-          "dos_fendu_n1",
-          "mache_mur_n2",
-          "recycleur_thoracique_n1",
-          "preleveur_de_plaques_n1",
-          "avortons_des_caves_n2"
+          "eclat_cuirasse_n2",
+          "le_nud_hurlant_n1",
+          "ecorche_angle_n1",
+          "le_sac_a_murmures_n1",
+          "avortons_des_caves_n2",
+          "golem_de_faience_n1",
+          "colosse_rivete_n1",
+          "la_veuve_suspendue_n1"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -2851,8 +2851,8 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "kharun",
-      "accent": "#72c7d8",
+      "theme_god_id": "nerava",
+      "accent": "#9b6bc7",
       "encounter": {
         "game_mode": "random",
         "opponent_god_policy": "generated",
@@ -2888,22 +2888,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "veskar",
-      "accent": "#e75aa8",
+      "theme_god_id": "ilyr",
+      "accent": "#5fa8ff",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "veskar",
+        "fixed_god_id": "ilyr",
         "fixed_deck": [
-          "croupier_manchot_n2",
-          "valet_a_lenvers_n1",
-          "fouisseur_aveugle_n1",
-          "le_nud_hurlant_n1",
-          "roulette_vorace_n1",
-          "mordeur_des_combles_n3",
-          "jumeau_de_cuivre_n1",
-          "avortons_des_caves_n3"
+          "ecorche_angle_n1",
+          "devoreur_de_lanternes_n2",
+          "longuepine_n3",
+          "dos_fendu_n2",
+          "le_replie_n1",
+          "dard_de_traverse_n1",
+          "mille_gueules_n1",
+          "fauche_fond_n3"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -2934,13 +2934,13 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "nerava",
-      "accent": "#9b6bc7",
+      "theme_god_id": "sylkha",
+      "accent": "#7fc95b",
       "encounter": {
         "game_mode": "draft",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "draft",
-        "fixed_god_id": "nerava",
+        "fixed_god_id": "sylkha",
         "fixed_deck": [],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -2971,22 +2971,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "kharun",
-      "accent": "#72c7d8",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "kharun",
+        "fixed_god_id": "enigma",
         "fixed_deck": [
+          "mordeur_des_combles_n1",
+          "le_sac_a_murmures_n3",
+          "avortons_des_caves_n3",
+          "collecteur_de_dents_n2",
+          "le_demonteur_n1",
+          "scie_boiteuse_n3",
           "fouisseur_aveugle_n2",
-          "le_porte_visages_n1",
-          "le_nud_hurlant_n1",
-          "golem_de_faience_n1",
-          "colosse_rivete_n2",
-          "le_reliquaire_ambulant_n1",
-          "devoreur_de_lanternes_n2",
-          "osselet_blinde_n2"
+          "devoreur_de_lanternes_n2"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -3017,8 +3017,8 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "ilyr",
-      "accent": "#5fa8ff",
+      "theme_god_id": "kharun",
+      "accent": "#72c7d8",
       "encounter": {
         "game_mode": "mirror",
         "opponent_god_policy": "mirrored",
@@ -3054,22 +3054,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "ilyr",
-      "accent": "#5fa8ff",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "ilyr",
+        "fixed_god_id": "veskar",
         "fixed_deck": [
-          "le_drape_du_seuil_n2",
-          "mache_mur_n2",
-          "fouisseur_aveugle_n2",
-          "longuepine_n2",
+          "dos_fendu_n1",
+          "de_boiteux_n2",
+          "sou_ricanant_n2",
           "le_porte_visages_n1",
-          "pique_en_haut_n2",
-          "bouche_arbalete_n2",
-          "avortons_des_caves_n2"
+          "jumeau_de_cuivre_n2",
+          "fouisseur_aveugle_n2",
+          "le_sac_a_murmures_n3",
+          "devoreur_de_lanternes_n2"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -3100,8 +3100,8 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "sylkha",
-      "accent": "#7fc95b",
+      "theme_god_id": "ilyr",
+      "accent": "#5fa8ff",
       "encounter": {
         "game_mode": "random",
         "opponent_god_policy": "generated",
@@ -3137,13 +3137,13 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "sylkha",
-      "accent": "#7fc95b",
+      "theme_god_id": "nerava",
+      "accent": "#9b6bc7",
       "encounter": {
         "game_mode": "draft",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "draft",
-        "fixed_god_id": "sylkha",
+        "fixed_god_id": "nerava",
         "fixed_deck": [],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -3174,22 +3174,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "enigma",
-      "accent": "#ef8b45",
+      "theme_god_id": "kharun",
+      "accent": "#72c7d8",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "enigma",
+        "fixed_god_id": "kharun",
         "fixed_deck": [
-          "pince_carcasse_n2",
-          "le_drape_du_seuil_n2",
-          "la_broyeuse_dempreintes_n1",
-          "ogre_droitier_n1",
-          "ogre_a_deux_bouches_n1",
-          "preleveur_de_plaques_n1",
+          "le_sac_a_murmures_n2",
+          "fouisseur_aveugle_n2",
+          "osselet_blinde_n3",
+          "le_reliquaire_ambulant_n1",
           "avortons_des_caves_n3",
-          "devoreur_de_lanternes_n2"
+          "portail_dos_n2",
+          "devoreur_de_lanternes_n2",
+          "le_bastion_fendu_n1"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -3220,22 +3220,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "veskar",
-      "accent": "#e75aa8",
+      "theme_god_id": "ilyr",
+      "accent": "#5fa8ff",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "veskar",
+        "fixed_god_id": "ilyr",
         "fixed_deck": [
-          "la_dame_aux_deux_visages_n1",
-          "la_veuve_suspendue_n2",
-          "griffe_a_jetons_n2",
-          "la_machine_a_malchance_n1",
-          "croupier_manchot_n2",
+          "dard_de_traverse_n2",
+          "mache_mur_n2",
           "le_sac_a_murmures_n3",
-          "le_drape_du_seuil_n2",
-          "devoracle_n1"
+          "veilleur_bifurque_n2",
+          "devoreur_de_lanternes_n2",
+          "perce_voute_n2",
+          "longuepine_n3",
+          "avortons_des_caves_n3"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -3266,8 +3266,8 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "enigma",
-      "accent": "#ef8b45",
+      "theme_god_id": "sylkha",
+      "accent": "#7fc95b",
       "encounter": {
         "game_mode": "random",
         "opponent_god_policy": "generated",
@@ -3303,22 +3303,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "nerava",
-      "accent": "#9b6bc7",
+      "theme_god_id": "sylkha",
+      "accent": "#7fc95b",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "nerava",
+        "fixed_god_id": "sylkha",
         "fixed_deck": [
-          "mille_gueules_n1",
-          "rampant_des_fosses_n4",
-          "ogre_droitier_n4",
-          "le_porte_cercueil_n1",
-          "le_voyeur_n1",
-          "ronge_chair_n2",
-          "crache_cendre_n2",
-          "le_roi_des_oubliettes_n1"
+          "ecorche_angle_n4",
+          "devoreur_de_lanternes_n3",
+          "la_nourrice_nouee_n1",
+          "mache_mur_n3",
+          "la_gueule_sous_le_lit_n1",
+          "le_cur_de_la_colonie_n1",
+          "nud_vivant_n1",
+          "gueule_de_travers_n1"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -3349,22 +3349,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "kharun",
-      "accent": "#72c7d8",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "kharun",
+        "fixed_god_id": "enigma",
         "fixed_deck": [
-          "dos_fendu_n1",
-          "gueule_de_travers_n3",
-          "colosse_rivete_n2",
-          "le_roi_des_oubliettes_n1",
-          "ogre_a_deux_bouches_n3",
-          "chevalier_sans_visage_n1",
-          "mille_gueules_n2",
-          "osselet_blinde_n1"
+          "mille_gueules_n1",
+          "le_demonteur_n1",
+          "le_porte_visages_n1",
+          "pince_carcasse_n2",
+          "la_broyeuse_dempreintes_n2",
+          "la_veuve_suspendue_n1",
+          "chirurgien_dacier_n1",
+          "tricorne_errant_n1"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -3389,14 +3389,14 @@
       "region": "Les Profondeurs",
       "type": "mini_boss",
       "position": {
-        "x": 120,
-        "y": 11760
+        "x": 80.0,
+        "y": 12720.0
       },
       "dead_end": true,
       "mini_boss_kind": "optional",
       "tutorial_id": "",
-      "theme_god_id": "veskar",
-      "accent": "#e75aa8",
+      "theme_god_id": "ilyr",
+      "accent": "#5fa8ff",
       "encounter": {
         "game_mode": "mirror",
         "opponent_god_policy": "mirrored",
@@ -3417,8 +3417,8 @@
         ],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.8,
-          "anticipation": false
+          "precision": 0.92,
+          "anticipation": true
         },
         "series_format": "ft2",
         "seed_policy": "fixed_per_node",
@@ -3435,8 +3435,8 @@
       "region": "Les Profondeurs",
       "type": "mini_boss",
       "position": {
-        "x": 960,
-        "y": 11760
+        "x": 1000.0,
+        "y": 12720.0
       },
       "dead_end": true,
       "mini_boss_kind": "optional",
@@ -3454,8 +3454,8 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.15,
-          "anticipation": false
+          "precision": 0.92,
+          "anticipation": true
         },
         "series_format": "ft2",
         "seed_policy": "fixed_per_node",
@@ -3478,22 +3478,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "sylkha",
-      "accent": "#7fc95b",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "sylkha",
+        "fixed_god_id": "veskar",
         "fixed_deck": [
-          "porte_nid_n2",
-          "bourgeon_mordant_n3",
-          "mille_gueules_n1",
-          "larve_dancrage_n3",
-          "gueule_de_travers_n2",
-          "le_drape_du_seuil_n1",
-          "le_tisseur_de_meutes_n1",
-          "mante_des_racines_n1"
+          "croupier_manchot_n2",
+          "valet_a_lenvers_n1",
+          "fouisseur_aveugle_n1",
+          "le_nud_hurlant_n1",
+          "roulette_vorace_n1",
+          "mordeur_des_combles_n3",
+          "jumeau_de_cuivre_n1",
+          "avortons_des_caves_n3"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -3524,13 +3524,13 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "enigma",
-      "accent": "#ef8b45",
+      "theme_god_id": "nerava",
+      "accent": "#9b6bc7",
       "encounter": {
         "game_mode": "draft",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "draft",
-        "fixed_god_id": "enigma",
+        "fixed_god_id": "nerava",
         "fixed_deck": [],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -3561,8 +3561,8 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "nerava",
-      "accent": "#9b6bc7",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
       "encounter": {
         "game_mode": "random",
         "opponent_god_policy": "generated",
@@ -3598,22 +3598,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "veskar",
-      "accent": "#e75aa8",
+      "theme_god_id": "kharun",
+      "accent": "#72c7d8",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "veskar",
+        "fixed_god_id": "kharun",
         "fixed_deck": [
-          "la_gueule_sous_le_lit_n1",
-          "mille_gueules_n2",
-          "gueule_de_travers_n2",
-          "valet_a_lenvers_n2",
-          "griffe_a_jetons_n1",
-          "le_dernier_pari_n1",
-          "le_sac_a_murmures_n1",
-          "sou_ricanant_n3"
+          "ecorche_angle_n4",
+          "heaume_errant_n4",
+          "osselet_blinde_n4",
+          "le_drape_du_seuil_n2",
+          "eclat_cuirasse_n4",
+          "rampant_des_fosses_n4",
+          "golem_de_faience_n2",
+          "devoreur_de_lanternes_n3"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -3644,22 +3644,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "nerava",
-      "accent": "#9b6bc7",
+      "theme_god_id": "ilyr",
+      "accent": "#5fa8ff",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "nerava",
+        "fixed_god_id": "ilyr",
         "fixed_deck": [
-          "veuve_des_spores_n2",
-          "griffe_septique_n1",
-          "crache_cendre_n1",
-          "le_porte_visages_n1",
-          "le_precheur_des_fievres_n1",
-          "tricorne_errant_n1",
-          "ogre_a_deux_bouches_n2",
-          "avortons_des_caves_n3"
+          "lil_empale_n1",
+          "le_nud_hurlant_n2",
+          "dard_de_traverse_n2",
+          "avortons_des_caves_n3",
+          "devoreur_de_lanternes_n2",
+          "pique_en_haut_n3",
+          "fauche_fond_n3",
+          "le_sac_a_murmures_n3"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -3690,22 +3690,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "kharun",
-      "accent": "#72c7d8",
+      "theme_god_id": "sylkha",
+      "accent": "#7fc95b",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "kharun",
+        "fixed_god_id": "sylkha",
         "fixed_deck": [
-          "avortons_des_caves_n1",
-          "gueule_de_travers_n3",
-          "colosse_rivete_n1",
-          "mille_gueules_n1",
-          "rampant_des_fosses_n3",
-          "le_bastion_fendu_n1",
-          "devoreur_de_lanternes_n2",
-          "golem_de_faience_n2"
+          "charognard_courbe_n2",
+          "devoreur_de_lanternes_n1",
+          "ogre_droitier_n1",
+          "nud_vivant_n3",
+          "rampant_des_fosses_n1",
+          "le_tisseur_de_meutes_n1",
+          "tisse_griffe_n3",
+          "avortons_des_caves_n3"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -3736,22 +3736,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "ilyr",
-      "accent": "#5fa8ff",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "ilyr",
+        "fixed_god_id": "enigma",
         "fixed_deck": [
-          "perce_voute_n1",
-          "mache_mur_n3",
-          "lil_empale_n1",
-          "le_sac_a_murmures_n3",
-          "fauche_fond_n3",
-          "devoreur_de_lanternes_n2",
-          "echassier_des_brumes_n2",
-          "avortons_des_caves_n3"
+          "chirurgien_dacier_n2",
+          "fouisseur_aveugle_n2",
+          "la_broyeuse_dempreintes_n1",
+          "depeceur_rampant_n3",
+          "le_demonteur_n1",
+          "ogre_a_deux_bouches_n2",
+          "mille_gueules_n1",
+          "avortons_des_caves_n2"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -3782,8 +3782,8 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "kharun",
-      "accent": "#72c7d8",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
       "encounter": {
         "game_mode": "mirror",
         "opponent_god_policy": "mirrored",
@@ -3819,22 +3819,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "sylkha",
-      "accent": "#7fc95b",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "sylkha",
+        "fixed_god_id": "veskar",
         "fixed_deck": [
-          "rampant_des_fosses_n4",
-          "la_gueule_sous_le_lit_n1",
-          "le_nud_hurlant_n1",
-          "bourgeon_mordant_n4",
-          "tisse_griffe_n4",
-          "le_roi_des_oubliettes_n1",
-          "larve_dancrage_n1",
-          "ogre_droitier_n1"
+          "rampant_des_fosses_n1",
+          "charognard_courbe_n1",
+          "le_replie_n1",
+          "ogre_droitier_n2",
+          "le_voyeur_n1",
+          "la_dame_aux_deux_visages_n2",
+          "jumeau_de_cuivre_n3",
+          "roulette_vorace_n3"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -3865,8 +3865,8 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "ilyr",
-      "accent": "#5fa8ff",
+      "theme_god_id": "nerava",
+      "accent": "#9b6bc7",
       "encounter": {
         "game_mode": "mirror",
         "opponent_god_policy": "mirrored",
@@ -3902,22 +3902,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "enigma",
-      "accent": "#ef8b45",
+      "theme_god_id": "nerava",
+      "accent": "#9b6bc7",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "enigma",
+        "fixed_god_id": "nerava",
         "fixed_deck": [
-          "mordeur_des_combles_n1",
-          "le_sac_a_murmures_n3",
+          "mache_mur_n3",
+          "le_precheur_des_fievres_n1",
           "avortons_des_caves_n3",
-          "collecteur_de_dents_n2",
-          "le_demonteur_n1",
-          "scie_boiteuse_n3",
-          "fouisseur_aveugle_n2",
-          "devoreur_de_lanternes_n2"
+          "sonneur_pestifere_n1",
+          "laffame_du_puits_n1",
+          "veuve_des_spores_n2",
+          "charognard_courbe_n2",
+          "le_drape_du_seuil_n2"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -3948,13 +3948,13 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "veskar",
-      "accent": "#e75aa8",
+      "theme_god_id": "kharun",
+      "accent": "#72c7d8",
       "encounter": {
         "game_mode": "draft",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "draft",
-        "fixed_god_id": "veskar",
+        "fixed_god_id": "kharun",
         "fixed_deck": [],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -3985,8 +3985,8 @@
       "dead_end": false,
       "mini_boss_kind": "mandatory",
       "tutorial_id": "",
-      "theme_god_id": "sylkha",
-      "accent": "#7fc95b",
+      "theme_god_id": "kharun",
+      "accent": "#72c7d8",
       "encounter": {
         "game_mode": "random",
         "opponent_god_policy": "generated",
@@ -4016,8 +4016,8 @@
       "region": "Les Visages",
       "type": "mini_boss",
       "position": {
-        "x": 960,
-        "y": 13060
+        "x": 960.0,
+        "y": 14020.0
       },
       "dead_end": true,
       "mini_boss_kind": "optional",
@@ -4035,8 +4035,8 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.74,
-          "anticipation": false
+          "precision": 0.95,
+          "anticipation": true
         },
         "series_format": "ft2",
         "seed_policy": "fixed_per_node",
@@ -4059,22 +4059,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "kharun",
-      "accent": "#72c7d8",
+      "theme_god_id": "ilyr",
+      "accent": "#5fa8ff",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "kharun",
+        "fixed_god_id": "ilyr",
         "fixed_deck": [
-          "colosse_rivete_n2",
-          "le_roi_des_oubliettes_n1",
-          "fouisseur_aveugle_n3",
-          "carapace_vide_n2",
-          "ogre_a_deux_bouches_n1",
-          "le_gardien_des_decombres_n1",
-          "le_sac_a_murmures_n1",
-          "mordeur_des_combles_n1"
+          "lil_empale_n2",
+          "le_drape_du_seuil_n1",
+          "le_porte_visages_n1",
+          "la_gueule_sous_le_lit_n1",
+          "le_voyeur_n1",
+          "la_croisee_des_regards_n1",
+          "tricorne_errant_n3",
+          "perce_voute_n2"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -4105,8 +4105,8 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "enigma",
-      "accent": "#ef8b45",
+      "theme_god_id": "ilyr",
+      "accent": "#5fa8ff",
       "encounter": {
         "game_mode": "random",
         "opponent_god_policy": "generated",
@@ -4142,8 +4142,8 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "veskar",
-      "accent": "#e75aa8",
+      "theme_god_id": "sylkha",
+      "accent": "#7fc95b",
       "encounter": {
         "game_mode": "random",
         "opponent_god_policy": "generated",
@@ -4179,22 +4179,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "ilyr",
-      "accent": "#5fa8ff",
+      "theme_god_id": "sylkha",
+      "accent": "#7fc95b",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "ilyr",
+        "fixed_god_id": "sylkha",
         "fixed_deck": [
+          "bourgeon_mordant_n2",
           "le_sac_a_murmures_n2",
-          "veilleur_bifurque_n2",
-          "fouisseur_aveugle_n1",
-          "rampant_des_fosses_n3",
-          "gueule_de_travers_n3",
-          "dard_de_traverse_n2",
-          "avortons_des_caves_n2",
-          "echassier_des_brumes_n1"
+          "la_nourrice_nouee_n1",
+          "larve_dancrage_n1",
+          "mache_mur_n2",
+          "ecorche_angle_n2",
+          "fouisseur_aveugle_n2",
+          "avortons_des_caves_n3"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -4225,13 +4225,13 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "sylkha",
-      "accent": "#7fc95b",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
       "encounter": {
         "game_mode": "draft",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "draft",
-        "fixed_god_id": "sylkha",
+        "fixed_god_id": "enigma",
         "fixed_deck": [],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -4262,22 +4262,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "enigma",
-      "accent": "#ef8b45",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "enigma",
+        "fixed_god_id": "veskar",
         "fixed_deck": [
-          "gueule_de_travers_n1",
-          "le_demonteur_n1",
-          "pince_carcasse_n3",
-          "chirurgien_dacier_n1",
-          "laffame_du_puits_n1",
-          "rampant_des_fosses_n1",
-          "avortons_des_caves_n3",
-          "le_sac_a_murmures_n3"
+          "griffe_a_jetons_n2",
+          "la_machine_a_malchance_n1",
+          "sou_ricanant_n1",
+          "le_sac_a_murmures_n3",
+          "ogre_droitier_n2",
+          "le_drape_du_seuil_n3",
+          "roulette_vorace_n2",
+          "avortons_des_caves_n3"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -4308,8 +4308,8 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "nerava",
-      "accent": "#9b6bc7",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
       "encounter": {
         "game_mode": "random",
         "opponent_god_policy": "generated",
@@ -4345,22 +4345,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "veskar",
-      "accent": "#e75aa8",
+      "theme_god_id": "nerava",
+      "accent": "#9b6bc7",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "veskar",
+        "fixed_god_id": "nerava",
         "fixed_deck": [
-          "le_drape_du_seuil_n4",
-          "le_dernier_pari_n1",
-          "le_voyeur_n1",
-          "sou_ricanant_n4",
-          "charognard_courbe_n2",
-          "croupier_manchot_n2",
-          "rampant_des_fosses_n1",
-          "avortons_des_caves_n4"
+          "le_precheur_des_fievres_n1",
+          "le_drape_du_seuil_n3",
+          "porte_fievre_n3",
+          "gueule_de_travers_n4",
+          "le_porte_visages_n2",
+          "griffe_septique_n1",
+          "le_nud_hurlant_n3",
+          "la_cathedrale_malade_n1"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -4385,8 +4385,8 @@
       "region": "Les Cendres",
       "type": "mini_boss",
       "position": {
-        "x": 900,
-        "y": 14840
+        "x": 80.0,
+        "y": 15840.0
       },
       "dead_end": true,
       "mini_boss_kind": "optional",
@@ -4413,8 +4413,8 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.85,
-          "anticipation": false
+          "precision": 0.95,
+          "anticipation": true
         },
         "series_format": "ft2",
         "seed_policy": "fixed_per_node",
@@ -4437,22 +4437,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "nerava",
-      "accent": "#9b6bc7",
+      "theme_god_id": "kharun",
+      "accent": "#72c7d8",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "nerava",
+        "fixed_god_id": "kharun",
         "fixed_deck": [
-          "griffe_septique_n3",
-          "veuve_des_spores_n1",
-          "dos_fendu_n2",
-          "fouisseur_aveugle_n3",
-          "le_porte_cercueil_n2",
-          "le_voyeur_n1",
-          "le_nud_hurlant_n3",
-          "le_dernier_souffle_n1"
+          "le_porte_visages_n2",
+          "avortons_des_caves_n3",
+          "ecorche_angle_n4",
+          "le_drape_du_seuil_n3",
+          "fouisseur_aveugle_n2",
+          "chevalier_sans_visage_n3",
+          "le_gardien_des_decombres_n1",
+          "colosse_rivete_n2"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -4483,21 +4483,21 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "kharun",
-      "accent": "#72c7d8",
+      "theme_god_id": "ilyr",
+      "accent": "#5fa8ff",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "kharun",
+        "fixed_god_id": "ilyr",
         "fixed_deck": [
+          "perce_voute_n2",
           "ecorche_angle_n4",
-          "heaume_errant_n4",
-          "osselet_blinde_n4",
+          "le_traverse_nuit_n1",
+          "ogre_droitier_n2",
           "le_drape_du_seuil_n2",
-          "eclat_cuirasse_n4",
-          "rampant_des_fosses_n4",
-          "golem_de_faience_n2",
+          "le_porte_visages_n2",
+          "veilleur_bifurque_n3",
           "devoreur_de_lanternes_n3"
         ],
         "generator_god_id": "",
@@ -4523,28 +4523,28 @@
       "region": "L'Objectif",
       "type": "normal",
       "position": {
-        "x": 160,
+        "x": 260.0,
         "y": 15420
       },
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "ilyr",
-      "accent": "#5fa8ff",
+      "theme_god_id": "sylkha",
+      "accent": "#7fc95b",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "ilyr",
+        "fixed_god_id": "sylkha",
         "fixed_deck": [
-          "lil_empale_n2",
-          "le_drape_du_seuil_n1",
-          "le_porte_visages_n1",
+          "le_roi_des_oubliettes_n1",
+          "le_sac_a_murmures_n2",
           "la_gueule_sous_le_lit_n1",
-          "le_voyeur_n1",
-          "la_croisee_des_regards_n1",
-          "tricorne_errant_n3",
-          "perce_voute_n2"
+          "fourmilion_des_nerfs_n2",
+          "fouisseur_aveugle_n3",
+          "nud_vivant_n4",
+          "bourgeon_mordant_n1",
+          "gueule_de_travers_n3"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -4575,8 +4575,8 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "kharun",
-      "accent": "#72c7d8",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
       "encounter": {
         "game_mode": "random",
         "opponent_god_policy": "generated",
@@ -4612,22 +4612,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "sylkha",
-      "accent": "#7fc95b",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "sylkha",
+        "fixed_god_id": "enigma",
         "fixed_deck": [
+          "pince_carcasse_n2",
+          "gueule_de_travers_n2",
+          "rampant_des_fosses_n2",
+          "chirurgien_dacier_n1",
+          "preleveur_de_plaques_n2",
           "le_roi_des_oubliettes_n1",
-          "le_sac_a_murmures_n2",
-          "la_gueule_sous_le_lit_n1",
-          "fourmilion_des_nerfs_n2",
-          "fouisseur_aveugle_n3",
-          "nud_vivant_n4",
-          "bourgeon_mordant_n1",
-          "gueule_de_travers_n3"
+          "la_veuve_suspendue_n2",
+          "devoreur_de_lanternes_n3"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -4652,14 +4652,14 @@
       "region": "L'Objectif",
       "type": "normal",
       "position": {
-        "x": 120,
+        "x": 170.0,
         "y": 15660
       },
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "ilyr",
-      "accent": "#5fa8ff",
+      "theme_god_id": "nerava",
+      "accent": "#9b6bc7",
       "encounter": {
         "game_mode": "random",
         "opponent_god_policy": "generated",
@@ -4695,13 +4695,13 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "enigma",
-      "accent": "#ef8b45",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
       "encounter": {
         "game_mode": "draft",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "draft",
-        "fixed_god_id": "enigma",
+        "fixed_god_id": "veskar",
         "fixed_deck": [],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -4732,8 +4732,8 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "sylkha",
-      "accent": "#7fc95b",
+      "theme_god_id": "kharun",
+      "accent": "#72c7d8",
       "encounter": {
         "game_mode": "mirror",
         "opponent_god_policy": "mirrored",
@@ -4769,13 +4769,13 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "veskar",
-      "accent": "#e75aa8",
+      "theme_god_id": "nerava",
+      "accent": "#9b6bc7",
       "encounter": {
         "game_mode": "draft",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "draft",
-        "fixed_god_id": "veskar",
+        "fixed_god_id": "nerava",
         "fixed_deck": [],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -4806,8 +4806,8 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "enigma",
-      "accent": "#ef8b45",
+      "theme_god_id": "ilyr",
+      "accent": "#5fa8ff",
       "encounter": {
         "game_mode": "mirror",
         "opponent_god_policy": "mirrored",
@@ -4843,22 +4843,22 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "nerava",
-      "accent": "#9b6bc7",
+      "theme_god_id": "kharun",
+      "accent": "#72c7d8",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "fixed",
         "opponent_deck_policy": "fixed",
-        "fixed_god_id": "nerava",
+        "fixed_god_id": "kharun",
         "fixed_deck": [
-          "le_precheur_des_fievres_n1",
-          "le_drape_du_seuil_n3",
-          "porte_fievre_n3",
-          "gueule_de_travers_n4",
-          "le_porte_visages_n2",
-          "griffe_septique_n1",
-          "le_nud_hurlant_n3",
-          "la_cathedrale_malade_n1"
+          "dos_fendu_n1",
+          "gueule_de_travers_n3",
+          "colosse_rivete_n2",
+          "le_roi_des_oubliettes_n1",
+          "ogre_a_deux_bouches_n3",
+          "chevalier_sans_visage_n1",
+          "mille_gueules_n2",
+          "osselet_blinde_n1"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -4889,8 +4889,8 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "veskar",
-      "accent": "#e75aa8",
+      "theme_god_id": "sylkha",
+      "accent": "#7fc95b",
       "encounter": {
         "game_mode": "classic",
         "opponent_god_policy": "profile",
@@ -4926,8 +4926,8 @@
       "dead_end": false,
       "mini_boss_kind": "",
       "tutorial_id": "",
-      "theme_god_id": "nerava",
-      "accent": "#9b6bc7",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
       "encounter": {
         "game_mode": "mirror",
         "opponent_god_policy": "mirrored",
@@ -4971,14 +4971,14 @@
         "opponent_deck_policy": "fixed",
         "fixed_god_id": "sylkha",
         "fixed_deck": [
-          "la_nourrice_nouee_n2",
-          "mante_des_racines_n1",
-          "le_cur_de_la_colonie_n1",
-          "la_veuve_suspendue_n1",
+          "rampant_des_fosses_n4",
           "la_gueule_sous_le_lit_n1",
-          "tisse_griffe_n3",
-          "porte_nid_n3",
-          "rampant_des_fosses_n1"
+          "le_nud_hurlant_n1",
+          "bourgeon_mordant_n4",
+          "tisse_griffe_n4",
+          "le_roi_des_oubliettes_n1",
+          "larve_dancrage_n1",
+          "ogre_droitier_n1"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
@@ -5003,8 +5003,8 @@
       "region": "Les Assimilateurs",
       "type": "mini_boss",
       "position": {
-        "x": 960,
-        "y": 16380
+        "x": 960.0,
+        "y": 17580.0
       },
       "dead_end": true,
       "mini_boss_kind": "optional",
@@ -5031,8 +5031,8 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.9,
-          "anticipation": false
+          "precision": 1.0,
+          "anticipation": true
         },
         "series_format": "ft2",
         "seed_policy": "per_attempt",
@@ -5078,6 +5078,1390 @@
       "visual": {
         "scale": 1.0
       }
+    },
+    {
+      "id": "mini_optional_02_path_1",
+      "name": "Le Seuil des Dépouilles",
+      "chapter": "Cime",
+      "region": "Les Assimilateurs",
+      "type": "normal",
+      "position": {
+        "x": 1000,
+        "y": 16380
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "enigma",
+        "fixed_deck": [
+          "gueule_de_travers_n1",
+          "le_demonteur_n1",
+          "pince_carcasse_n3",
+          "chirurgien_dacier_n1",
+          "laffame_du_puits_n1",
+          "rampant_des_fosses_n1",
+          "avortons_des_caves_n3",
+          "le_sac_a_murmures_n3"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.75,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 9440
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "mini_optional_02_path_2",
+      "name": "La Salle des Mille Yeux",
+      "chapter": "Cime",
+      "region": "Les Assimilateurs",
+      "type": "normal",
+      "position": {
+        "x": 940,
+        "y": 16620
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "enigma",
+        "fixed_deck": [
+          "pince_carcasse_n2",
+          "le_drape_du_seuil_n2",
+          "la_broyeuse_dempreintes_n1",
+          "ogre_droitier_n1",
+          "ogre_a_deux_bouches_n1",
+          "preleveur_de_plaques_n1",
+          "avortons_des_caves_n3",
+          "devoreur_de_lanternes_n2"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.8,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 9477
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "mini_optional_02_path_3",
+      "name": "Le Couloir des Faces",
+      "chapter": "Cime",
+      "region": "Les Assimilateurs",
+      "type": "normal",
+      "position": {
+        "x": 1000,
+        "y": 16860
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "enigma",
+        "fixed_deck": [
+          "le_demonteur_n1",
+          "devoreur_de_lanternes_n2",
+          "fouisseur_aveugle_n2",
+          "preleveur_de_plaques_n2",
+          "le_sac_a_murmures_n3",
+          "porte_greffes_n2",
+          "avortons_des_caves_n3",
+          "la_broyeuse_dempreintes_n1"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.85,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 9514
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "mini_optional_02_path_4",
+      "name": "Le Cabinet des Peaux",
+      "chapter": "Cime",
+      "region": "Les Assimilateurs",
+      "type": "normal",
+      "position": {
+        "x": 940,
+        "y": 17100
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "enigma",
+        "fixed_deck": [
+          "mache_mur_n1",
+          "la_machine_aux_mille_depouilles_n1",
+          "le_demonteur_n1",
+          "le_nud_hurlant_n2",
+          "le_voyeur_n1",
+          "preleveur_de_plaques_n1",
+          "recycleur_thoracique_n3",
+          "avortons_des_caves_n4"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.9,
+          "anticipation": true
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 9551
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "mini_optional_02_path_5",
+      "name": "Le Trône du Collectionneur",
+      "chapter": "Cime",
+      "region": "Les Assimilateurs",
+      "type": "normal",
+      "position": {
+        "x": 1000,
+        "y": 17340
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "enigma",
+        "fixed_deck": [
+          "ogre_droitier_n2",
+          "chirurgien_dacier_n1",
+          "la_gueule_sous_le_lit_n1",
+          "la_veuve_suspendue_n1",
+          "le_demonteur_n2",
+          "mache_mur_n2",
+          "pince_carcasse_n4",
+          "avortons_des_caves_n4"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.95,
+          "anticipation": true
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 9588
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r11_mini_path_1",
+      "name": "Les Allées Calcinées",
+      "chapter": "Les Jardins de Cendre",
+      "region": "Les Cendres",
+      "type": "normal",
+      "position": {
+        "x": 80,
+        "y": 14600
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "kharun",
+      "accent": "#72c7d8",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "kharun",
+        "fixed_deck": [
+          "avortons_des_caves_n1",
+          "gueule_de_travers_n3",
+          "colosse_rivete_n1",
+          "mille_gueules_n1",
+          "rampant_des_fosses_n3",
+          "le_bastion_fendu_n1",
+          "devoreur_de_lanternes_n2",
+          "golem_de_faience_n2"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.7,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 9625
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r11_mini_path_2",
+      "name": "Le Mur des Cendres",
+      "chapter": "Les Jardins de Cendre",
+      "region": "Les Cendres",
+      "type": "normal",
+      "position": {
+        "x": 80,
+        "y": 14840
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "kharun",
+      "accent": "#72c7d8",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "kharun",
+        "fixed_deck": [
+          "rampant_des_fosses_n2",
+          "le_porte_visages_n1",
+          "chevalier_sans_visage_n1",
+          "osselet_blinde_n2",
+          "laffame_du_puits_n1",
+          "ogre_a_deux_bouches_n2",
+          "le_sac_a_murmures_n3",
+          "colosse_rivete_n2"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.77,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 9662
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r11_mini_path_3",
+      "name": "La Forge Éteinte",
+      "chapter": "Les Jardins de Cendre",
+      "region": "Les Cendres",
+      "type": "normal",
+      "position": {
+        "x": 80,
+        "y": 15080
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "kharun",
+      "accent": "#72c7d8",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "kharun",
+        "fixed_deck": [
+          "le_roi_des_oubliettes_n1",
+          "le_bastion_fendu_n1",
+          "heaume_errant_n3",
+          "tricorne_errant_n2",
+          "mille_gueules_n2",
+          "le_porte_visages_n2",
+          "le_sac_a_murmures_n3",
+          "colosse_rivete_n2"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.83,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 9699
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r11_mini_path_4",
+      "name": "Le Chemin des Carapaces",
+      "chapter": "Les Jardins de Cendre",
+      "region": "Les Cendres",
+      "type": "normal",
+      "position": {
+        "x": 80,
+        "y": 15320
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "kharun",
+      "accent": "#72c7d8",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "kharun",
+        "fixed_deck": [
+          "colosse_rivete_n2",
+          "le_roi_des_oubliettes_n1",
+          "fouisseur_aveugle_n3",
+          "carapace_vide_n2",
+          "ogre_a_deux_bouches_n1",
+          "le_gardien_des_decombres_n1",
+          "le_sac_a_murmures_n1",
+          "mordeur_des_combles_n1"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.9,
+          "anticipation": true
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 9736
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r10_mini_path_1",
+      "name": "La Galerie des Fièvres",
+      "chapter": "La Cour des Masques",
+      "region": "Les Visages",
+      "type": "normal",
+      "position": {
+        "x": 1000,
+        "y": 13060
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "nerava",
+      "accent": "#9b6bc7",
+      "encounter": {
+        "game_mode": "draft",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "draft",
+        "fixed_god_id": "nerava",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.7,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 9773
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r10_mini_path_2",
+      "name": "Le Bal des Masques",
+      "chapter": "La Cour des Masques",
+      "region": "Les Visages",
+      "type": "normal",
+      "position": {
+        "x": 940,
+        "y": 13300
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "nerava",
+      "accent": "#9b6bc7",
+      "encounter": {
+        "game_mode": "draft",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "draft",
+        "fixed_god_id": "nerava",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.77,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 9810
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r10_mini_path_3",
+      "name": "La Loge des Malades",
+      "chapter": "La Cour des Masques",
+      "region": "Les Visages",
+      "type": "normal",
+      "position": {
+        "x": 1000,
+        "y": 13540
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "nerava",
+      "accent": "#9b6bc7",
+      "encounter": {
+        "game_mode": "draft",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "draft",
+        "fixed_god_id": "nerava",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.83,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 9847
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r10_mini_path_4",
+      "name": "Le Théâtre des Contagions",
+      "chapter": "La Cour des Masques",
+      "region": "Les Visages",
+      "type": "normal",
+      "position": {
+        "x": 940,
+        "y": 13780
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "nerava",
+      "accent": "#9b6bc7",
+      "encounter": {
+        "game_mode": "draft",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "draft",
+        "fixed_god_id": "nerava",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.9,
+          "anticipation": true
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 9884
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r09_mini1_path_1",
+      "name": "Le Puits des Reflets",
+      "chapter": "Le Puits des Échos",
+      "region": "Les Profondeurs",
+      "type": "normal",
+      "position": {
+        "x": 80,
+        "y": 11760
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "ilyr",
+      "accent": "#5fa8ff",
+      "encounter": {
+        "game_mode": "mirror",
+        "opponent_god_policy": "mirrored",
+        "opponent_deck_policy": "mirrored",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "generator_god_id": "ilyr",
+        "generator_min_god_cards": 7,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.67,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 9921
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r09_mini1_path_2",
+      "name": "La Galerie des Veilleurs",
+      "chapter": "Le Puits des Échos",
+      "region": "Les Profondeurs",
+      "type": "normal",
+      "position": {
+        "x": 160,
+        "y": 12000
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "ilyr",
+      "accent": "#5fa8ff",
+      "encounter": {
+        "game_mode": "mirror",
+        "opponent_god_policy": "mirrored",
+        "opponent_deck_policy": "mirrored",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "generator_god_id": "ilyr",
+        "generator_min_god_cards": 7,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.74,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 9958
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r09_mini1_path_3",
+      "name": "Le Mur des Échos",
+      "chapter": "Le Puits des Échos",
+      "region": "Les Profondeurs",
+      "type": "normal",
+      "position": {
+        "x": 80,
+        "y": 12240
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "ilyr",
+      "accent": "#5fa8ff",
+      "encounter": {
+        "game_mode": "mirror",
+        "opponent_god_policy": "mirrored",
+        "opponent_deck_policy": "mirrored",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "generator_god_id": "ilyr",
+        "generator_min_god_cards": 7,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.8,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 9995
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r09_mini1_path_4",
+      "name": "La Garde sans Ombre",
+      "chapter": "Le Puits des Échos",
+      "region": "Les Profondeurs",
+      "type": "normal",
+      "position": {
+        "x": 160,
+        "y": 12480
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "ilyr",
+      "accent": "#5fa8ff",
+      "encounter": {
+        "game_mode": "mirror",
+        "opponent_god_policy": "mirrored",
+        "opponent_deck_policy": "mirrored",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "generator_god_id": "ilyr",
+        "generator_min_god_cards": 7,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.87,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 10032
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r09_mini2_path_1",
+      "name": "Le Chœur Bas",
+      "chapter": "Le Puits des Échos",
+      "region": "Les Profondeurs",
+      "type": "normal",
+      "position": {
+        "x": 1000,
+        "y": 11760
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "ilyr",
+      "accent": "#5fa8ff",
+      "encounter": {
+        "game_mode": "draft",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "draft",
+        "fixed_god_id": "ilyr",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.67,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 10069
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r09_mini2_path_2",
+      "name": "Les Voix Noyées",
+      "chapter": "Le Puits des Échos",
+      "region": "Les Profondeurs",
+      "type": "normal",
+      "position": {
+        "x": 940,
+        "y": 12000
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "ilyr",
+      "accent": "#5fa8ff",
+      "encounter": {
+        "game_mode": "draft",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "draft",
+        "fixed_god_id": "ilyr",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.74,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 10106
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r09_mini2_path_3",
+      "name": "La Nef des Murmures",
+      "chapter": "Le Puits des Échos",
+      "region": "Les Profondeurs",
+      "type": "normal",
+      "position": {
+        "x": 1000,
+        "y": 12240
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "ilyr",
+      "accent": "#5fa8ff",
+      "encounter": {
+        "game_mode": "draft",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "draft",
+        "fixed_god_id": "ilyr",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.8,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 10143
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r09_mini2_path_4",
+      "name": "L’Autel du Chœur",
+      "chapter": "Le Puits des Échos",
+      "region": "Les Profondeurs",
+      "type": "normal",
+      "position": {
+        "x": 940,
+        "y": 12480
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "ilyr",
+      "accent": "#5fa8ff",
+      "encounter": {
+        "game_mode": "draft",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "draft",
+        "fixed_god_id": "ilyr",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.87,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 10180
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r06_mini_path_1",
+      "name": "La Ruelle des Peaux",
+      "chapter": "Le Marché Nocturne",
+      "region": "Les Échanges",
+      "type": "normal",
+      "position": {
+        "x": 1000,
+        "y": 7260
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "sylkha",
+      "accent": "#7fc95b",
+      "encounter": {
+        "game_mode": "random",
+        "opponent_god_policy": "generated",
+        "opponent_deck_policy": "generated",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "generator_god_id": "sylkha",
+        "generator_min_god_cards": 8,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.65,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 10217
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r06_mini_path_2",
+      "name": "Le Comptoir des Os",
+      "chapter": "Le Marché Nocturne",
+      "region": "Les Échanges",
+      "type": "normal",
+      "position": {
+        "x": 1000,
+        "y": 7500
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "sylkha",
+      "accent": "#7fc95b",
+      "encounter": {
+        "game_mode": "random",
+        "opponent_god_policy": "generated",
+        "opponent_deck_policy": "generated",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "generator_god_id": "sylkha",
+        "generator_min_god_cards": 8,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.75,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 10254
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r06_mini_path_3",
+      "name": "Le Passage du Colporteur",
+      "chapter": "Le Marché Nocturne",
+      "region": "Les Échanges",
+      "type": "normal",
+      "position": {
+        "x": 940,
+        "y": 7740
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "sylkha",
+      "accent": "#7fc95b",
+      "encounter": {
+        "game_mode": "random",
+        "opponent_god_policy": "generated",
+        "opponent_deck_policy": "generated",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "generator_god_id": "sylkha",
+        "generator_min_god_cards": 8,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.85,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 10291
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r05_mini_path_1",
+      "name": "Les Rayons Interdits",
+      "chapter": "La Bibliothèque des Os",
+      "region": "Les Archives",
+      "type": "normal",
+      "position": {
+        "x": 80,
+        "y": 6080
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "kharun",
+      "accent": "#72c7d8",
+      "encounter": {
+        "game_mode": "draft",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "draft",
+        "fixed_god_id": "kharun",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.63,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 10328
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r05_mini_path_2",
+      "name": "Le Cabinet des Dettes",
+      "chapter": "La Bibliothèque des Os",
+      "region": "Les Archives",
+      "type": "normal",
+      "position": {
+        "x": 160,
+        "y": 6320
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "kharun",
+      "accent": "#72c7d8",
+      "encounter": {
+        "game_mode": "draft",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "draft",
+        "fixed_god_id": "kharun",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.73,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 10365
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r05_mini_path_3",
+      "name": "La Chambre d’Encre",
+      "chapter": "La Bibliothèque des Os",
+      "region": "Les Archives",
+      "type": "normal",
+      "position": {
+        "x": 80,
+        "y": 6560
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "kharun",
+      "accent": "#72c7d8",
+      "encounter": {
+        "game_mode": "draft",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "draft",
+        "fixed_god_id": "kharun",
+        "fixed_deck": [],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.83,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 10402
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r04_mini_path_1",
+      "name": "La Coulée des Larves",
+      "chapter": "Les Forges Basses",
+      "region": "Les Souffles",
+      "type": "normal",
+      "position": {
+        "x": 1000,
+        "y": 4060
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "sylkha",
+      "accent": "#7fc95b",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "sylkha",
+        "fixed_deck": [
+          "fourmilion_des_nerfs_n1",
+          "ecorche_angle_n2",
+          "bourgeon_mordant_n1",
+          "ogre_a_deux_bouches_n1",
+          "porte_nid_n1",
+          "tisse_griffe_n1",
+          "ogre_droitier_n2",
+          "avortons_des_caves_n2"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 0.6,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 10439
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r04_mini_path_2",
+      "name": "Le Nid des Soufflets",
+      "chapter": "Les Forges Basses",
+      "region": "Les Souffles",
+      "type": "normal",
+      "position": {
+        "x": 940,
+        "y": 4300
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "sylkha",
+      "accent": "#7fc95b",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "sylkha",
+        "fixed_deck": [
+          "mante_des_racines_n1",
+          "le_sac_a_murmures_n2",
+          "le_drape_du_seuil_n2",
+          "ronce_rampante_n1",
+          "tisse_griffe_n2",
+          "avortons_des_caves_n2",
+          "fourmilion_des_nerfs_n1",
+          "devoreur_de_lanternes_n1"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 0.7,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 10476
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r04_mini_path_3",
+      "name": "L’Antichambre de l’Essaim",
+      "chapter": "Les Forges Basses",
+      "region": "Les Souffles",
+      "type": "normal",
+      "position": {
+        "x": 1000,
+        "y": 4540
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "sylkha",
+      "accent": "#7fc95b",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "sylkha",
+        "fixed_deck": [
+          "fourmilion_des_nerfs_n1",
+          "le_drape_du_seuil_n2",
+          "ogre_a_deux_bouches_n1",
+          "larve_dancrage_n2",
+          "nud_vivant_n2",
+          "mante_des_racines_n1",
+          "ogre_droitier_n2",
+          "avortons_des_caves_n2"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 0.8,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 10513
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r03_mini_path_1",
+      "name": "Le Détour des Dés",
+      "chapter": "Le Marais des Serments",
+      "region": "Les Vœux Noyés",
+      "type": "normal",
+      "position": {
+        "x": 1000,
+        "y": 3240
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
+      "encounter": {
+        "game_mode": "random",
+        "opponent_god_policy": "generated",
+        "opponent_deck_policy": "generated",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "generator_god_id": "veskar",
+        "generator_min_god_cards": 8,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 0.55,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 10550
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "r03_mini_path_2",
+      "name": "La Passe Truquée",
+      "chapter": "Le Marais des Serments",
+      "region": "Les Vœux Noyés",
+      "type": "normal",
+      "position": {
+        "x": 940,
+        "y": 3480
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
+      "encounter": {
+        "game_mode": "random",
+        "opponent_god_policy": "generated",
+        "opponent_deck_policy": "generated",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "generator_god_id": "veskar",
+        "generator_min_god_cards": 8,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 3,
+        "ai_profile": {
+          "precision": 0.75,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 10587
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "mini_optional_01_path_1",
+      "name": "Le Vestibule des Fièvres",
+      "chapter": "Carrefour",
+      "region": "Les Assimilateurs",
+      "type": "normal",
+      "position": {
+        "x": 80,
+        "y": 1220
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "nerava",
+      "accent": "#9b6bc7",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "nerava",
+        "fixed_deck": [
+          "le_nud_hurlant_n1",
+          "mordeur_des_combles_n1",
+          "clochelet_malade_n1",
+          "ogre_a_deux_bouches_n1",
+          "machoire_moisie_n2",
+          "crache_cendre_n2",
+          "tricorne_errant_n1",
+          "le_sac_a_murmures_n2"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 0.55,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 10624
+      },
+      "visual": {
+        "scale": 1.0
+      }
+    },
+    {
+      "id": "mini_optional_01_path_2",
+      "name": "La Salle des Souffles",
+      "chapter": "Carrefour",
+      "region": "Les Assimilateurs",
+      "type": "normal",
+      "position": {
+        "x": 80,
+        "y": 1460
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "nerava",
+      "accent": "#9b6bc7",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "nerava",
+        "fixed_deck": [
+          "veuve_des_spores_n1",
+          "la_veuve_suspendue_n1",
+          "ogre_droitier_n1",
+          "le_sac_a_murmures_n2",
+          "avortons_des_caves_n2",
+          "devoreur_de_lanternes_n1",
+          "crache_cendre_n2",
+          "porte_fievre_n2"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 0.75,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 10661
+      },
+      "visual": {
+        "scale": 1.0
+      }
     }
   ],
   "edges": [
@@ -5105,11 +6489,6 @@
       "id": "e_tuto_03_kharun_01",
       "from": "tuto_03",
       "to": "kharun_01"
-    },
-    {
-      "id": "e_veskar_01_mini_optional_01",
-      "from": "veskar_01",
-      "to": "mini_optional_01"
     },
     {
       "id": "e_veskar_01_veskar_02",
@@ -5222,11 +6601,6 @@
       "to": "r03_c"
     },
     {
-      "id": "e_r03_m_r03_mini",
-      "from": "r03_m",
-      "to": "r03_mini"
-    },
-    {
       "id": "e_r03_c_r03_exit",
       "from": "r03_c",
       "to": "r03_exit"
@@ -5245,11 +6619,6 @@
       "id": "e_r04_entry_r04_b",
       "from": "r04_entry",
       "to": "r04_b"
-    },
-    {
-      "id": "e_r04_entry_r04_mini",
-      "from": "r04_entry",
-      "to": "r04_mini"
     },
     {
       "id": "e_r04_a_r04_a1",
@@ -5322,11 +6691,6 @@
       "to": "r05_a2"
     },
     {
-      "id": "e_r05_a1_r05_mini",
-      "from": "r05_a1",
-      "to": "r05_mini"
-    },
-    {
       "id": "e_r05_b1_r05_b2",
       "from": "r05_b1",
       "to": "r05_b2"
@@ -5365,11 +6729,6 @@
       "id": "e_r06_entry_r06_c",
       "from": "r06_entry",
       "to": "r06_c"
-    },
-    {
-      "id": "e_r06_entry_r06_mini",
-      "from": "r06_entry",
-      "to": "r06_mini"
     },
     {
       "id": "e_r06_a_r06_a1",
@@ -5557,19 +6916,9 @@
       "to": "r09_c"
     },
     {
-      "id": "e_r09_a_r09_mini1",
-      "from": "r09_a",
-      "to": "r09_mini1"
-    },
-    {
       "id": "e_r09_a_r09_a1",
       "from": "r09_a",
       "to": "r09_a1"
-    },
-    {
-      "id": "e_r09_b_r09_mini2",
-      "from": "r09_b",
-      "to": "r09_mini2"
     },
     {
       "id": "e_r09_b_r09_b1",
@@ -5635,11 +6984,6 @@
       "id": "e_r10_c_r10_d",
       "from": "r10_c",
       "to": "r10_d"
-    },
-    {
-      "id": "e_r10_c_r10_mini",
-      "from": "r10_c",
-      "to": "r10_mini"
     },
     {
       "id": "e_r10_a1_r10_m",
@@ -5715,11 +7059,6 @@
       "id": "e_r11_b2_r11_m",
       "from": "r11_b2",
       "to": "r11_m"
-    },
-    {
-      "id": "e_r11_m_r11_mini",
-      "from": "r11_m",
-      "to": "r11_mini"
     },
     {
       "id": "e_r11_m_r11_exit",
@@ -5817,11 +7156,6 @@
       "to": "sylkha_02"
     },
     {
-      "id": "e_choice_01_mini_optional_02",
-      "from": "choice_01",
-      "to": "mini_optional_02"
-    },
-    {
       "id": "e_ilyr_02_final_01",
       "from": "ilyr_02",
       "to": "final_01"
@@ -5830,6 +7164,226 @@
       "id": "e_sylkha_02_final_01",
       "from": "sylkha_02",
       "to": "final_01"
+    },
+    {
+      "id": "e_choice_01_mini_optional_02_path_1",
+      "from": "choice_01",
+      "to": "mini_optional_02_path_1"
+    },
+    {
+      "id": "e_mini_optional_02_path_1_mini_optional_02_path_2",
+      "from": "mini_optional_02_path_1",
+      "to": "mini_optional_02_path_2"
+    },
+    {
+      "id": "e_mini_optional_02_path_2_mini_optional_02_path_3",
+      "from": "mini_optional_02_path_2",
+      "to": "mini_optional_02_path_3"
+    },
+    {
+      "id": "e_mini_optional_02_path_3_mini_optional_02_path_4",
+      "from": "mini_optional_02_path_3",
+      "to": "mini_optional_02_path_4"
+    },
+    {
+      "id": "e_mini_optional_02_path_4_mini_optional_02_path_5",
+      "from": "mini_optional_02_path_4",
+      "to": "mini_optional_02_path_5"
+    },
+    {
+      "id": "e_mini_optional_02_path_5_mini_optional_02",
+      "from": "mini_optional_02_path_5",
+      "to": "mini_optional_02"
+    },
+    {
+      "id": "e_r11_m_r11_mini_path_1",
+      "from": "r11_m",
+      "to": "r11_mini_path_1"
+    },
+    {
+      "id": "e_r11_mini_path_1_r11_mini_path_2",
+      "from": "r11_mini_path_1",
+      "to": "r11_mini_path_2"
+    },
+    {
+      "id": "e_r11_mini_path_2_r11_mini_path_3",
+      "from": "r11_mini_path_2",
+      "to": "r11_mini_path_3"
+    },
+    {
+      "id": "e_r11_mini_path_3_r11_mini_path_4",
+      "from": "r11_mini_path_3",
+      "to": "r11_mini_path_4"
+    },
+    {
+      "id": "e_r11_mini_path_4_r11_mini",
+      "from": "r11_mini_path_4",
+      "to": "r11_mini"
+    },
+    {
+      "id": "e_r10_c_r10_mini_path_1",
+      "from": "r10_c",
+      "to": "r10_mini_path_1"
+    },
+    {
+      "id": "e_r10_mini_path_1_r10_mini_path_2",
+      "from": "r10_mini_path_1",
+      "to": "r10_mini_path_2"
+    },
+    {
+      "id": "e_r10_mini_path_2_r10_mini_path_3",
+      "from": "r10_mini_path_2",
+      "to": "r10_mini_path_3"
+    },
+    {
+      "id": "e_r10_mini_path_3_r10_mini_path_4",
+      "from": "r10_mini_path_3",
+      "to": "r10_mini_path_4"
+    },
+    {
+      "id": "e_r10_mini_path_4_r10_mini",
+      "from": "r10_mini_path_4",
+      "to": "r10_mini"
+    },
+    {
+      "id": "e_r09_a_r09_mini1_path_1",
+      "from": "r09_a",
+      "to": "r09_mini1_path_1"
+    },
+    {
+      "id": "e_r09_mini1_path_1_r09_mini1_path_2",
+      "from": "r09_mini1_path_1",
+      "to": "r09_mini1_path_2"
+    },
+    {
+      "id": "e_r09_mini1_path_2_r09_mini1_path_3",
+      "from": "r09_mini1_path_2",
+      "to": "r09_mini1_path_3"
+    },
+    {
+      "id": "e_r09_mini1_path_3_r09_mini1_path_4",
+      "from": "r09_mini1_path_3",
+      "to": "r09_mini1_path_4"
+    },
+    {
+      "id": "e_r09_mini1_path_4_r09_mini1",
+      "from": "r09_mini1_path_4",
+      "to": "r09_mini1"
+    },
+    {
+      "id": "e_r09_b_r09_mini2_path_1",
+      "from": "r09_b",
+      "to": "r09_mini2_path_1"
+    },
+    {
+      "id": "e_r09_mini2_path_1_r09_mini2_path_2",
+      "from": "r09_mini2_path_1",
+      "to": "r09_mini2_path_2"
+    },
+    {
+      "id": "e_r09_mini2_path_2_r09_mini2_path_3",
+      "from": "r09_mini2_path_2",
+      "to": "r09_mini2_path_3"
+    },
+    {
+      "id": "e_r09_mini2_path_3_r09_mini2_path_4",
+      "from": "r09_mini2_path_3",
+      "to": "r09_mini2_path_4"
+    },
+    {
+      "id": "e_r09_mini2_path_4_r09_mini2",
+      "from": "r09_mini2_path_4",
+      "to": "r09_mini2"
+    },
+    {
+      "id": "e_r06_entry_r06_mini_path_1",
+      "from": "r06_entry",
+      "to": "r06_mini_path_1"
+    },
+    {
+      "id": "e_r06_mini_path_1_r06_mini_path_2",
+      "from": "r06_mini_path_1",
+      "to": "r06_mini_path_2"
+    },
+    {
+      "id": "e_r06_mini_path_2_r06_mini_path_3",
+      "from": "r06_mini_path_2",
+      "to": "r06_mini_path_3"
+    },
+    {
+      "id": "e_r06_mini_path_3_r06_mini",
+      "from": "r06_mini_path_3",
+      "to": "r06_mini"
+    },
+    {
+      "id": "e_r05_a1_r05_mini_path_1",
+      "from": "r05_a1",
+      "to": "r05_mini_path_1"
+    },
+    {
+      "id": "e_r05_mini_path_1_r05_mini_path_2",
+      "from": "r05_mini_path_1",
+      "to": "r05_mini_path_2"
+    },
+    {
+      "id": "e_r05_mini_path_2_r05_mini_path_3",
+      "from": "r05_mini_path_2",
+      "to": "r05_mini_path_3"
+    },
+    {
+      "id": "e_r05_mini_path_3_r05_mini",
+      "from": "r05_mini_path_3",
+      "to": "r05_mini"
+    },
+    {
+      "id": "e_r04_entry_r04_mini_path_1",
+      "from": "r04_entry",
+      "to": "r04_mini_path_1"
+    },
+    {
+      "id": "e_r04_mini_path_1_r04_mini_path_2",
+      "from": "r04_mini_path_1",
+      "to": "r04_mini_path_2"
+    },
+    {
+      "id": "e_r04_mini_path_2_r04_mini_path_3",
+      "from": "r04_mini_path_2",
+      "to": "r04_mini_path_3"
+    },
+    {
+      "id": "e_r04_mini_path_3_r04_mini",
+      "from": "r04_mini_path_3",
+      "to": "r04_mini"
+    },
+    {
+      "id": "e_r03_m_r03_mini_path_1",
+      "from": "r03_m",
+      "to": "r03_mini_path_1"
+    },
+    {
+      "id": "e_r03_mini_path_1_r03_mini_path_2",
+      "from": "r03_mini_path_1",
+      "to": "r03_mini_path_2"
+    },
+    {
+      "id": "e_r03_mini_path_2_r03_mini",
+      "from": "r03_mini_path_2",
+      "to": "r03_mini"
+    },
+    {
+      "id": "e_veskar_01_mini_optional_01_path_1",
+      "from": "veskar_01",
+      "to": "mini_optional_01_path_1"
+    },
+    {
+      "id": "e_mini_optional_01_path_1_mini_optional_01_path_2",
+      "from": "mini_optional_01_path_1",
+      "to": "mini_optional_01_path_2"
+    },
+    {
+      "id": "e_mini_optional_01_path_2_mini_optional_01",
+      "from": "mini_optional_01_path_2",
+      "to": "mini_optional_01"
     }
   ]
 }

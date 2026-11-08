@@ -108,8 +108,9 @@ func generator_god_id() -> String:
 
 
 func generator_min_god_cards() -> int:
-	return clampi(int(encounter.get("generator_min_god_cards", 0)), 0,
-		DeckRules.DECK_SIZE)
+	# Ne jamais corriger silencieusement la donnée source : le validateur doit
+	# pouvoir signaler une valeur négative ou supérieure à la taille du deck.
+	return int(encounter.get("generator_min_god_cards", 0))
 
 
 func mirror_fixed_deck() -> Array:

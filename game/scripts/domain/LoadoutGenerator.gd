@@ -193,7 +193,10 @@ static func _common_totals(first: Array, second: Array) -> Array:
 ## ─── Modes Aléatoire et Miroir ──────────────────────────────────────────────
 
 ## Choisit deux dieux puis deux decks légaux ayant exactement le même total.
-func generate_random(seed: int, god_ids: Array, max_tier: int) -> Dictionary:
+func generate_random(seed: int, god_ids: Array, max_tier: int,
+		min_god_cards: int = 0) -> Dictionary:
+	if min_god_cards < 0 or min_god_cards > deck_size:
+		return _fail("Le minimum de cartes du dieu est hors bornes.")
 	var valid := _valid_gods(god_ids, max_tier)
 	if valid.is_empty():
 		return _fail("Aucun dieu ne permet un deck complet avec cette limite.")
@@ -214,12 +217,15 @@ func generate_random(seed: int, god_ids: Array, max_tier: int) -> Dictionary:
 	_shuffle(pairs, rng)
 	for pair_value in pairs:
 		var pair: Dictionary = pair_value
-		for target_value in _randomized_rich_targets(pair["totals"], rng):
+		for target_value in _targets_for_constraint(pair["totals"], rng,
+				min_god_cards > 0):
 			var target := int(target_value)
-			var deck_one := _build_exact(str(pair["god_one"]), target, max_tier, rng)
+			var deck_one := _build_exact(str(pair["god_one"]), target, max_tier, rng,
+				min_god_cards)
 			if deck_one.is_empty():
 				continue
-			var deck_two := _build_exact(str(pair["god_two"]), target, max_tier, rng)
+			var deck_two := _build_exact(str(pair["god_two"]), target, max_tier, rng,
+				min_god_cards)
 			if deck_two.is_empty():
 				continue
 			return {
@@ -262,7 +268,10 @@ func generate_for_god(seed: int, god_id: String, max_tier: int) -> Dictionary:
 
 ## Un seul loadout légal, dupliqué en profondeur par l'appelant. Le premier
 ## joueur n'est jamais déduit de ce loadout : il reste un tirage séparé.
-func generate_mirror(seed: int, god_ids: Array, max_tier: int) -> Dictionary:
+func generate_mirror(seed: int, god_ids: Array, max_tier: int,
+		min_god_cards: int = 0) -> Dictionary:
+	if min_god_cards < 0 or min_god_cards > deck_size:
+		return _fail("Le minimum de cartes du dieu est hors bornes.")
 	var valid := _valid_gods(god_ids, max_tier)
 	if valid.is_empty():
 		return _fail("Aucun dieu ne permet un deck complet avec cette limite.")
@@ -271,9 +280,9 @@ func generate_mirror(seed: int, god_ids: Array, max_tier: int) -> Dictionary:
 	var totals := reachable_totals(god_id, max_tier)
 	if totals.is_empty():
 		return _fail("Aucun total réalisable pour le dieu tiré.")
-	for target_value in _randomized_rich_targets(totals, rng):
+	for target_value in _targets_for_constraint(totals, rng, min_god_cards > 0):
 		var target := int(target_value)
-		var deck := _build_exact(god_id, target, max_tier, rng)
+		var deck := _build_exact(god_id, target, max_tier, rng, min_god_cards)
 		if deck.is_empty():
 			continue
 		return {
@@ -295,6 +304,26 @@ func _randomized_rich_targets(totals: Array, rng: RandomNumberGenerator) -> Arra
 	var result: Array = totals.slice(first, totals.size())
 	_shuffle(result, rng)
 	return result
+
+
+## Sans contrainte, conserve le tirage historique dans la moitié haute. Avec
+## une affinité minimale, essaie ensuite les autres totaux afin qu'une solution
+## légale moins chère ne soit jamais ignorée.
+func _targets_for_constraint(totals: Array, rng: RandomNumberGenerator,
+		include_fallback: bool) -> Array:
+	var rich := _randomized_rich_targets(totals, rng)
+	if not include_fallback or rich.size() == totals.size():
+		return rich
+	var rich_lookup := {}
+	for value in rich:
+		rich_lookup[int(value)] = true
+	var fallback: Array = []
+	for value in totals:
+		if not rich_lookup.has(int(value)):
+			fallback.append(value)
+	_shuffle(fallback, rng)
+	rich.append_array(fallback)
+	return rich
 
 
 static func duplicate_loadout(loadout: Dictionary) -> Dictionary:
@@ -380,7 +409,7 @@ func _uniform_by_cost(god_id: String, max_tier: int) -> Dictionary:
 ## ─── Solveur de deck exact ──────────────────────────────────────────────────
 
 func _build_exact(god_id: String, target: int, max_tier: int,
-		rng: RandomNumberGenerator) -> Array:
+		rng: RandomNumberGenerator, min_god_cards: int = 0) -> Array:
 	var options := lineages_for_god(god_id, max_tier)
 	if options.size() < deck_size:
 		return []
@@ -392,17 +421,21 @@ func _build_exact(god_id: String, target: int, max_tier: int,
 		var values: Array = (options[lineage] as Array).duplicate()
 		_shuffle(values, rng)
 		candidates[lineage] = values
-	var found: Variant = _search_exact(order, candidates, 0, 0, target, {})
+	var found: Variant = _search_exact(order, candidates, 0, 0, target, 0,
+		god_id, min_god_cards, {})
 	return (found as Array).duplicate() if found is Array else []
 
 
 func _search_exact(order: Array, candidates: Dictionary, index: int, count: int,
-		remaining: int, memo: Dictionary) -> Variant:
+		remaining: int, god_count: int, god_id: String, min_god_cards: int,
+		memo: Dictionary) -> Variant:
 	if count == deck_size:
-		return [] if remaining == 0 else null
+		return [] if remaining == 0 and god_count >= min_god_cards else null
 	if index >= order.size() or order.size() - index < deck_size - count:
 		return null
-	var key := "%d|%d|%d" % [index, count, remaining]
+	if god_count + deck_size - count < min_god_cards:
+		return null
+	var key := "%d|%d|%d|%d" % [index, count, remaining, god_count]
 	if memo.has(key):
 		var cached: Variant = memo[key]
 		return (cached as Array).duplicate() if cached is Array else null
@@ -412,8 +445,9 @@ func _search_exact(order: Array, candidates: Dictionary, index: int, count: int,
 		var cost := int(card_data["cost_q"])
 		if cost > remaining:
 			continue
+		var next_god_count := god_count + (1 if str(card_data["god_id"]) == god_id else 0)
 		var tail: Variant = _search_exact(order, candidates, index + 1, count + 1,
-			remaining - cost, memo)
+			remaining - cost, next_god_count, god_id, min_god_cards, memo)
 		if tail is Array:
 			var result: Array = (tail as Array).duplicate()
 			result.push_front(str(card_data["id"]))
@@ -424,7 +458,7 @@ func _search_exact(order: Array, candidates: Dictionary, index: int, count: int,
 	# lignées de l'ordre mélangé, rendant certains seeds pourtant valides
 	# impossibles à construire.
 	var skipped: Variant = _search_exact(order, candidates, index + 1, count,
-		remaining, memo)
+		remaining, god_count, god_id, min_god_cards, memo)
 	if skipped is Array:
 		memo[key] = (skipped as Array).duplicate()
 		return (skipped as Array).duplicate()

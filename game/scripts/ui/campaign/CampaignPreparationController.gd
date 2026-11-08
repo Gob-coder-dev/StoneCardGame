@@ -5,6 +5,7 @@
 extends Control
 
 const Routes := preload("res://scripts/ui/GameRoutes.gd")
+const EncounterPresenter := preload("res://scripts/ui/campaign/CampaignEncounterPresenter.gd")
 
 @onready var background: MenuBackground = $Background
 @onready var back_button: Button = $Root/Header/BackButton
@@ -25,7 +26,9 @@ func _ready() -> void:
 	confirm_button.pressed.connect(_on_confirm)
 	offers_grid.card_chosen.connect(_on_card_chosen)
 	background.set_god(StoneLoader.get_god(PlayerData.player_god_id))
-	var summary := CampaignContext.active_summary(PlayerData.player_god_id)
+	var service := CampaignContext.get_service()
+	var summary := EncounterPresenter.summary(service.node(CampaignContext.active_node_id()),
+		PlayerData.player_god_id)
 	title_label.text = str(summary.get("name", "PRÉPARATION")).to_upper()
 	_refresh()
 

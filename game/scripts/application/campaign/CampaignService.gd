@@ -14,12 +14,15 @@ const UnlockRulesModel := preload("res://scripts/domain/campaign/CampaignUnlockR
 const ValidatorModel := preload("res://scripts/domain/campaign/CampaignValidator.gd")
 const MigrationModel := preload("res://scripts/application/campaign/CampaignSaveMigration.gd")
 const FactoryModel := preload("res://scripts/application/campaign/CampaignEncounterFactory.gd")
+const PositionStateModel := preload("res://scripts/application/campaign/CampaignMapPositionState.gd")
 
 var _graph: CampaignGraph = null
 var _progress: CampaignProgress = null
 var _store: CampaignProgressStore = null
 var _problems: Array[String] = []
 var _load_error: Error = OK
+
+const NAVIGATION_OFFSET_WRITE_THRESHOLD: float = 4.0
 
 
 func _init(graph: CampaignGraph = null, progress: CampaignProgress = null,
@@ -116,8 +119,56 @@ func focus_node_id() -> String:
 		_progress.last_selected)
 
 
-func summary(node_id: String, player_god_id: String = "") -> Dictionary:
-	return FactoryModel.summary(_graph.node(node_id), player_god_id)
+## Ancre de secours si l'ancienne position référence un nœud supprimé : dernier
+## niveau consulté, puis niveau terminé le plus avancé dans l'ordre du contenu.
+func navigation_fallback_node_id() -> String:
+	if _graph.has_node(_progress.last_selected):
+		return _progress.last_selected
+	var last_completed := ""
+	for node_id in _graph.node_ids():
+		if _progress.is_completed(node_id):
+			last_completed = node_id
+	if last_completed != "":
+		return last_completed
+	var focus := focus_node_id()
+	if _graph.has_node(focus):
+		return focus
+	return _graph.start_node_id
+
+
+func has_map_navigation() -> bool:
+	return not PositionStateModel.from_dict(_progress.map_navigation).is_empty()
+
+
+## Position de navigation résolue avec les mêmes règles de repli que la carte.
+## Une vieille sauvegarde sans champ `map_navigation` pointe sur le départ.
+func map_navigation_state():
+	if not has_map_navigation():
+		return PositionStateModel.make(_graph.start_node_id, 0.0, 0.0)
+	return PositionStateModel.from_dict(_progress.map_navigation).resolved(
+		_graph, navigation_fallback_node_id())
+
+
+## Sauvegarde uniquement la navigation ; la progression et la sélection sont
+## recopiées telles quelles. Le debounce de l'appelant est complété par un seuil
+## logique afin qu'un mouvement imperceptible ne réécrive pas tout le fichier.
+func save_map_navigation(anchor_node_id: String, offset_y: float,
+		scroll_vertical: float) -> Error:
+	if not _graph.has_node(anchor_node_id):
+		return ERR_DOES_NOT_EXIST
+	var state = PositionStateModel.make(anchor_node_id, offset_y, scroll_vertical)
+	var serialized: Dictionary = state.to_dict()
+	var previous = PositionStateModel.from_dict(_progress.map_navigation)
+	if previous.anchor_node_id == state.anchor_node_id \
+			and absf(previous.offset_y - state.offset_y) < NAVIGATION_OFFSET_WRITE_THRESHOLD:
+		return OK
+	var copy := _progress.duplicate_progress()
+	copy.set_map_navigation(serialized)
+	var error := _store.save(copy)
+	if error != OK:
+		return error
+	_progress = copy
+	return OK
 
 
 func encounter_for(node_id: String, player_god_id: String, player_deck: Array,
@@ -159,6 +210,14 @@ func begin_attempt(node_id: String, tutorial_id: String = "",
 		return {"ok": false, "error": error, "attempt": 0}
 	_progress = copy
 	return {"ok": true, "error": OK, "attempt": attempt}
+
+
+## Numéro candidat sans mutation. La rencontre peut ainsi valider toutes ses
+## générations avant que begin_attempt() ne publie la tentative sur disque.
+func next_attempt_number(node_id: String) -> int:
+	if not has_node(node_id):
+		return 0
+	return _progress.attempts_for(node_id) + 1
 
 
 ## Applied once. La copie n'est publiée qu'après réussite de l'écriture : la

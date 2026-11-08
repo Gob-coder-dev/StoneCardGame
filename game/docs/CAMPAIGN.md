@@ -1,10 +1,10 @@
 # Campagne unifiée
 
 La campagne est un graphe orienté acyclique unique, chargé depuis
-`data/campaign/campaign_v2.json`. Elle contient **120 niveaux**, **148 arêtes**
-et **12 sections visuelles** sur une seule carte de **1080 × 16920** unités.
+`data/campaign/campaign_v2.json`. Elle contient **154 niveaux**, **182 arêtes**
+et **12 sections visuelles** sur une seule carte de **1080 × 17880** unités.
 `CampaignContentLoader.DEFAULT_PATH` pointe vers ce fichier et
-`campaign_version` vaut `2`.
+`campaign_version` vaut `3`.
 
 L'ancien fichier `campaign_v1.json` reste dans le dépôt comme archive et source
 de comparaison historique. Il n'est plus chargé par le jeu.
@@ -13,38 +13,38 @@ de comparaison historique. Il n'est plus chargé par le jeu.
 
 | Mesure | Valeur |
 | --- | --- |
-| Niveaux | 120 |
-| Arêtes | 148 |
+| Niveaux | 154 |
+| Arêtes | 182 |
 | Sections visuelles | 12 |
-| Profondeur minimale / maximale | 0 / 65 |
-| Plus longue série de mode | 6, dans l'introduction |
-| Plus longue série d'un même dieu | 3 |
-| Carte logique | 1080 × 16920 |
+| Profondeur minimale / maximale | 0 / 69 |
+| Plus longue série de mode | 8, dans la branche finale d'Énigma |
+| Plus longue série d'un même dieu | 6, approches et mini-boss d'Énigma |
+| Carte logique | 1080 × 17880 |
 | Niveaux du Professeur Stone | 3 |
 | Mini-boss facultatifs | 10 |
 | Mini-boss obligatoires | 4 |
 | Mini-boss en FT2 | 14 |
-| Séries FT1 / FT2 / FT3 | 99 / 20 / 1 |
-| Decks fixes uniques | 69 |
-| Générateurs contraints | 2 (Véskar, Ilyr) |
+| Séries FT1 / FT2 / FT3 | 133 / 20 / 1 |
+| Decks fixes uniques | 83 |
+| Générateurs contraints | 12 nœuds, dont 3 mini-boss (Véskar, Sylkha, Ilyr) |
 | Decks miroirs fixes | 1 (Ilyr) |
 | Cartes du dieu par deck fixe | 3 minimum |
 
 ### Dieux
 
 Les trois premiers nœuds sont des tutoriels du Professeur Stone, sans thème
-divin. Les 117 autres nœuds sont répartis entre les six dieux.
+divin. Les 151 autres nœuds sont répartis entre les six dieux.
 
 | Dieu | Nœuds thématiques | Nœuds à dieu réellement fixé |
 | --- | ---: | ---: |
-| Véskar | 20 | 15 |
-| Nérava | 20 | 15 |
-| Kharûn | 19 | 14 |
-| Énigma | 20 | 14 |
-| Ilyr | 19 | 14 |
-| Sylkha | 19 | 14 |
+| Véskar | 25 | 18 |
+| Nérava | 25 | 21 |
+| Kharûn | 25 | 21 |
+| Énigma | 26 | 20 |
+| Ilyr | 25 | 15 |
+| Sylkha | 25 | 16 |
 
-Le total des nœuds à dieu fixé est de 86. Les autres rencontres utilisent les
+Le total des nœuds à dieu fixé est de 111. Les 40 autres rencontres utilisent les
 règles de génération de leur mode ; leur `theme_god_id` sert à l'accent visuel et
 au libellé d'inspiration, pas à verrouiller le tirage.
 
@@ -52,16 +52,17 @@ au libellé d'inspiration, pas à verrouiller le tirage.
 
 | Mode | Niveaux |
 | --- | ---: |
-| Classique | 72 |
-| Aléatoire | 18 |
-| Miroir | 12 |
-| Sélection | 18 |
+| Classique | 86 |
+| Aléatoire | 23 |
+| Miroir | 16 |
+| Sélection | 29 |
 
 Les tutoriels sont Classiques. L'Aléatoire apparaît au Carrefour, le Miroir suit
 immédiatement, puis la Sélection rejoint les autres modes. Aucun mode ne
-disparaît en fin de campagne.
+disparaît en fin de campagne. Les 34 niveaux d'approche ajoutent 14 Classiques,
+5 Aléatoires, 4 Miroirs et 11 Sélections à la campagne précédente.
 
-Soixante-neuf Classiques utilisent un deck fixe explicite. Les exceptions
+Quatre-vingt-trois Classiques utilisent un deck fixe explicite. Les exceptions
 Classiques restent déclarées dans les politiques de deck et ne changent pas les
 règles du mode.
 
@@ -70,9 +71,9 @@ règles du mode.
 | Palier maximal | Niveaux |
 | --- | ---: |
 | 1 | 2 |
-| 2 | 32 |
-| 3 | 52 |
-| 4 | 34 |
+| 2 | 38 |
+| 3 | 69 |
+| 4 | 45 |
 
 Le palier est calculé avec `CardPowerTierRules` : niveau de forme plus décalage
 de rareté, avec l'exception explicite éventuelle du catalogue. Une légendaire
@@ -80,17 +81,17 @@ niveau 1 n'est donc pas une carte de palier 1.
 
 ### Précision de l'IA
 
-Les 120 profils utilisent **37 valeurs distinctes** entre 0 et 1. Cent nœuds
+Les 154 profils utilisent **49 valeurs distinctes** entre 0 et 1. 131 nœuds
 utilisent une valeur qui n'est pas un multiple de 0,25. La précision suit la
 profondeur et la fonction de la rencontre, sans progression strictement
 linéaire.
 
 | Tranche de profondeur | Niveaux | Précision minimale | Précision maximale | Moyenne |
 | --- | ---: | ---: | ---: | ---: |
-| 0–19 | 34 | 0,00 | 0,98 | 0,376 |
-| 20–39 | 32 | 0,04 | 0,93 | 0,439 |
-| 40–59 | 40 | 0,04 | 0,96 | 0,677 |
-| 60–79 | 14 | 0,50 | 1,00 | 0,841 |
+| 0–19 | 41 | 0,00 | 0,98 | 0,443 |
+| 20–39 | 38 | 0,04 | 0,93 | 0,519 |
+| 40–59 | 53 | 0,04 | 0,96 | 0,734 |
+| 60–79 | 22 | 0,50 | 1,00 | 0,862 |
 
 Les mini-boss et les rencontres majeures servent de pics ; les nœuds qui suivent
 une impasse ou un mini-boss peuvent redescendre pour laisser respirer le joueur.
@@ -124,23 +125,23 @@ regroupement est débloqué par **n'importe lequel** de ses prédécesseurs.
 | Section | Niveaux |
 | --- | ---: |
 | Seuil | 3 |
-| Carrefour | 12 |
-| Le Marais des Serments | 10 |
-| Les Forges Basses | 10 |
-| La Bibliothèque des Os | 10 |
-| Le Marché Nocturne | 10 |
+| Carrefour | 14 |
+| Le Marais des Serments | 12 |
+| Les Forges Basses | 13 |
+| La Bibliothèque des Os | 13 |
+| Le Marché Nocturne | 13 |
 | Les Serres de Verre | 10 |
 | Les Remparts Muets | 10 |
-| Le Puits des Échos | 10 |
-| La Cour des Masques | 10 |
-| Les Jardins de Cendre | 10 |
-| Cime | 15 |
+| Le Puits des Échos | 18 |
+| La Cour des Masques | 14 |
+| Les Jardins de Cendre | 14 |
+| Cime | 20 |
 
 Le Carrefour contient les trois tutoriels, les branches d'introduction, les
 premiers mini-boss et les routes parallèles. Les neuf régions intermédiaires
 utilisent neuf topologies différentes : elles ne sont pas des copies d'un même
-groupe de cinq niveaux. La Cime réunit les dix nouveaux nœuds finaux et les cinq
-nœuds finaux historiques.
+groupe de cinq niveaux. La Cime réunit les vingt nœuds finaux, dont les cinq
+niveaux historiques et les approches du Collectionneur.
 
 ## Format de `campaign_v2.json`
 
@@ -152,8 +153,8 @@ Le fichier est la source de vérité du contenu livré. Il est produit par
 {
   "id": "samstone_campaign",
   "title": "La Carte de SamStone",
-  "campaign_version": 2,
-  "map": {"width": 1080, "height": 16920},
+  "campaign_version": 3,
+  "map": {"width": 1080, "height": 17880},
   "start_node_id": "tuto_01",
   "final_node_id": "final_01",
   "nodes": [
@@ -241,8 +242,10 @@ entièrement neutres. La validation utilise `DeckRules.validate_deck`, pas une
 règle parallèle.
 
 Les champs de génération sont optionnels et additifs. `generator_god_id` filtre
-le pool du mode Aléatoire ou Miroir ; `generator_min_god_cards: 8` ne conserve
-que les cartes du dieu, ce qui produit deux decks purs pour Véskar. Un
+le pool du mode Aléatoire ou Miroir. `generator_min_god_cards` est une vraie
+contrainte du solveur : 7 garantit au moins sept cartes du dieu et 8 exclut
+toutes les cartes neutres. Une valeur hors de 0–8 est refusée, jamais corrigée
+silencieusement. Un
 `mirror_fixed_deck` non vide est validé comme un deck de huit cartes, puis copié
 pour les deux camps. Le validateur vérifie les mêmes règles de palier, de
 lignées, de budget et de minimum de cartes du dieu que pour un deck fixe.
@@ -285,29 +288,37 @@ Les 14 mini-boss sont en FT2. Six autres rencontres majeures utilisent aussi
 FT2 : quatre nœuds de milieu ou de fin de campagne et deux rencontres
 historiques (`veskar_02`, `kharun_02`). Le total est de 20 FT2.
 
-### Six mini-boss signés
+### Dix mini-boss facultatifs et leurs approches
 
-Six mini-boss facultatifs existants portent une identité de génération propre :
-ils ne créent aucun nœud ni aucune arête supplémentaire et restent dans leur
-impasse FT2.
+Chaque impasse facultative possède maintenant une chaîne de 2 à 5 niveaux
+ordinaires avant son mini-boss. Ces niveaux reprennent le dieu et le mode du
+mini-boss, montent progressivement de palier et de précision, et restent en FT1.
+Le mini-boss reste le pic de la branche, en FT2 et sans sortie. Les cinq
+approches de `mini_optional_02` forment la plus longue chaîne ; celle de
+`r09_mini1` est passée au thème Ilyr pour coïncider avec son deck miroir réel.
 
-| Nœud | Nom | Dieu imposé | Mode | Palier | IA | Particularité |
-| --- | --- | --- | --- | ---: | --- | --- |
-| `mini_optional_01` | La Cloche des Fièvres | Nérava | Classique | 2 | 0,35 | Deck fixe 100 % Flétri, 4 N2 + 4 N1 |
-| `r03_mini` | Le Jeu des Six Faces | Véskar | Aléatoire | 3 | 0,55 | Deux decks 100 % Aléators, sans neutre |
-| `r04_mini` | Le Premier Essaim | Sylkha | Classique | 2 | 1,00 + anticipation | Deck fixe 5 N1 + 3 N2 |
-| `r09_mini1` | La Garde en Reflet | Ilyr | Miroir | 4 | 0,80 | Deck miroir fixe, 7 Veilleurs sur 8 cartes |
-| `r11_mini` | Le Rempart de Carapace | Kharûn | Classique | 4 | 0,85 | Deck fixe à 58 boucliers, avec `carapace_vide_n4` |
-| `mini_optional_02` | Les Faces du Collectionneur | Énigma | Classique | 4 | 0,90 | Deck fixe majoritairement Énigma |
+| Nœud | Nom | Dieu imposé | Mode | Palier | IA | Approches | Particularité |
+| --- | --- | --- | --- | ---: | --- | ---: | --- |
+| `mini_optional_01` | La Cloche des Fièvres | Nérava | Classique | 2 | 0,80 | 2 | Deck fixe 100 % Flétri |
+| `r03_mini` | Le Jeu des Six Faces | Véskar | Aléatoire | 3 | 0,80 | 2 | Deux decks 100 % Aléators, sans neutre |
+| `r04_mini` | Le Premier Essaim | Sylkha | Classique | 2 | 0,85 | 3 | Deck fixe 5 N1 + 3 N2 |
+| `r05_mini` | L'Encre Dévorante | Kharûn | Sélection | 3 | 0,88 | 3 | Draft Kharûn, palier 3 maintenu |
+| `r06_mini` | Le Colporteur de Peaux | Sylkha | Aléatoire | 4 | 0,90 | 3 | Générateur Sylkha à 8 cartes |
+| `r09_mini1` | La Garde en Reflet | Ilyr | Miroir | 4 | 0,92 + anticipation | 4 | Deck miroir fixe, 7 Veilleurs sur 8 cartes |
+| `r09_mini2` | Le Chœur Noyé | Ilyr | Sélection | 4 | 0,92 + anticipation | 4 | Draft Ilyr, palier 3 → 4 |
+| `r10_mini` | Le Mime Absolu | Nérava | Sélection | 4 | 0,95 + anticipation | 4 | Draft Nérava, palier 3 → 4 |
+| `r11_mini` | Le Rempart de Carapace | Kharûn | Classique | 4 | 0,95 + anticipation | 4 | Deck fixe à 58 boucliers, avec `carapace_vide_n4` |
+| `mini_optional_02` | Les Faces du Collectionneur | Énigma | Classique | 4 | 1,00 + anticipation | 5 | Deck fixe majoritairement Énigma |
 
 Les cartes signées de Nérava, Sylkha, Kharûn et Énigma sont des decks fixes
-explicites. Véskar utilise le mode Aléatoire avec un générateur filtré ; Ilyr
-utilise le mode Miroir avec un deck fixe copié aux deux camps. Les deux modes
-restent les modes partagés : aucune règle PVP n'est dupliquée dans la campagne.
+explicites. Véskar et Sylkha utilisent l'Aléatoire avec un générateur filtré ;
+Ilyr utilise le Miroir avec un deck fixe copié aux deux camps. Les modes
+restent ceux du jeu partagé : aucune règle PVP n'est dupliquée dans la campagne.
 
-Pour conserver la répartition 72/18/12/18, deux rencontres ordinaires
-compensent les changements de mode : `r05_b2` passe en Sélection et `r10_b1`
-en Miroir.
+Les 34 niveaux d'approche sont ajoutés sans supprimer aucune impasse ni rendre
+un mini-boss obligatoire. Le graphe reste acyclique, les mini-boss facultatifs
+restent les seuls nœuds qui ferment leur branche, et les anciennes sauvegardes
+qui les avaient déjà vaincus reçoivent leurs niveaux d'approche terminés.
 
 ## Progression et déblocage
 
@@ -327,17 +338,18 @@ et l'archive de migration.
 
 ## Migration des sauvegardes
 
-`campaign_version` vaut `2`. La migration est idempotente et conserve les
+`campaign_version` vaut `3`. La migration est idempotente et conserve les
 victoires existantes.
 
 - Un profil de l'ancienne campagne par dieu est converti seulement quand la
   victoire désigne un nœud sans ambiguïté ; les autres victoires sont archivées
   et les statistiques du profil restent intactes.
 - Un profil de la campagne unifiée à 20 niveaux conserve ses vingt victoires.
-  Les nouveaux nœuds du Carrefour et la suite de la Cime s'ouvrent derrière
-  `boss_required_gate` déjà terminé, sans exiger de recommencer les vingt
-  niveaux.
-- Un profil neuf démarre sur `tuto_01` avec la campagne à 120 niveaux.
+  Si un ancien mini-boss facultatif est terminé, ses 2 à 5 nouveaux niveaux
+  d'approche sont marqués terminés : la sauvegarde de référence passe ainsi à
+  27 victoires, sans rejouer l'impasse. Les nouveaux nœuds du Carrefour et la
+  suite de la Cime s'ouvrent derrière `boss_required_gate` déjà terminé.
+- Un profil neuf démarre sur `tuto_01` avec la campagne à 154 niveaux.
 - Une migration interrompue ou rejouée ne duplique pas les victoires et ne
   réinitialise jamais la progression.
 
@@ -346,30 +358,97 @@ identifiants sont stables et n'entrent pas en collision avec les anciens.
 
 ## Carte et lisibilité
 
-`CampaignMapView` rend les 120 nœuds dans le même espace logique que les
-arêtes : fond, nœuds, courbes et points de contrôle partagent les coordonnées du
-fichier de campagne.
+La carte est **virtualisée** : les 154 nœuds et les 182 arêtes restent dans les
+données, mais seuls les nœuds des secteurs utiles possèdent un `Control`. Le
+fond, les nœuds, les courbes et les points de contrôle partagent toujours le
+même espace logique et le même facteur d'échelle.
 
+- `CampaignMapLayout` calcule les positions, le rectangle visible logique et le
+  défilement d'une ancre, sans instancier d'interface.
+- `CampaignMapChunkManager` découpe la carte en secteurs de `540 × 720` unités.
+  Il charge la zone visible avec une marge de 0,75 écran, puis conserve une
+  marge plus large de 1,75 écran pour éviter les cycles chargement/déchargement.
+- `CampaignMapView` instancie la première zone par un lot initial de 8 nœuds,
+  puis au maximum 6 nœuds par image. Une arête n'est dessinée que lorsque ses
+  deux extrémités sont chargées ; les connexions de frontière réapparaissent
+  avec le lot suivant.
+- `CampaignMapPositionState` conserve une ancre de niveau, un offset logique et
+  une position de `ScrollContainer` de secours, avec un numéro de version. Il
+  est stocké dans `CampaignProgress.map_navigation`, séparément des nœuds
+  terminés et de `last_selected`.
+- Le premier accès sans position sauvegardée ouvre au début. Les accès suivants
+  restaurent l'ancre avant de charger la zone, sans parcourir les niveaux
+  intermédiaires. Si l'ancre a disparu, le repli utilise le dernier niveau
+  terminé existant, puis le focus disponible, puis le départ.
+- La position est écrite après 0,65 s d'inactivité de défilement et lors de la
+  fermeture ou du lancement d'un niveau ; elle n'est jamais écrite par pixel.
+- L'indicateur « Chargement de la carte… » n'apparaît qu'après 0,28 s sans que
+  la zone demandée soit prête. Il ne bloque aucune entrée et disparaît dès que
+  le lot est terminé.
 - Les nœuds ont un diamètre de 150 unités et une distance minimale mesurée de
-  180 unités.
-- Le validateur impose une distance minimale de 170 unités et une clearance de
-  76 unités entre une courbe et un nœud non relié ; toutes les arêtes livrées
-  respectent ce seuil.
-- Les courbes sont mises en cache et ne sont pas recalculées à chaque image.
-- Les 12 labels de section sont dessinés dans la carte, pas dans un panneau
-  séparé.
+  180 unités. Le placement local des approches conserve cette distance. Les
+  courbes sont mises en cache et les nœuds disponibles seuls
+  animent leur pulsation ; les 154 anciens `_process()` ne sont plus exécutés.
+- Les labels de section sont limités aux chapitres dont un nœud est chargé.
 - Le défilement, l'inertie, le toucher et le glissement sont testés sur les
   formats téléphone et tablette.
-- La caméra se centre sur la dernière zone pertinente et ne revient pas
-  systématiquement en haut de la carte.
 
-La carte reste volontairement haute : 16 920 unités pour 120 nœuds. Le
+La carte reste volontairement haute : 17 880 unités pour 154 nœuds. Le
 défilement est donc une partie normale de la navigation, pas un défaut de mise
 en page.
 
+Les approches des mini-boss facultatifs sont placées localement dans les
+couloirs libres de leur impasse. Le builder ne décale pas globalement les nœuds
+existants : il place les approches et leur mini-boss, puis décale seulement
+`r12_a` et `r12_a1` de quelques dizaines d'unités pour ouvrir le couloir de
+`r11_mini`. Les arêtes historiques gardent ainsi leur longueur et leur tracé,
+au lieu de traverser la carte après l'insertion des nouveaux niveaux.
+
+### Mesures de la refactorisation
+
+Mesures headless sur la machine de développement, avec
+`tests/MeasureCampaignMap.tscn` :
+
+| Mesure | Avant | Après (154 nœuds) |
+| --- | ---: | ---: |
+| Lecture + validation structurelle du contenu | 5 849,65 ms | 30,78 ms |
+| Construction de la vue | 47,84 ms | 5,82 ms |
+| Ajout de la page complète | 59,86 ms | 9,41 ms |
+| Nœuds visuels à l'ouverture | 154 | 8 immédiatement, 23 après 6 frames |
+| Mémoire statique approximative | 49,06 Mo | 45,04 Mo |
+
+La validation complète des générations et de la géométrie reste exécutée par
+`CampaignContentLoader.read(path, true)` avec `CampaignGenerationValidator` et
+`CampaignLayoutValidator` ; elle n'est plus dans le chemin d'ouverture. Sur la
+même mesure, les 154 générations réelles prennent environ 9,03 s et les
+contrôles structurels et géométriques environ 28 ms et 58 ms. Ces coûts sont
+donc payés par les tests de livraison, jamais par le joueur. Les chiffres ne
+constituent pas un objectif garanti sur tous les appareils, mais la réduction
+du travail synchrone est structurelle, pas un simple masquage derrière un écran
+de chargement.
+
+### Chargement et déchargement
+
+- Le rectangle de chargement utilise la taille réelle du viewport, la position
+du `ScrollContainer` et une marge calculée en unités logiques ; il prend en
+compte les deux axes pour les branches latérales.
+- Les demandes en double et les callbacks d'une carte fermée sont filtrés par
+les identifiants chargés/en attente et par la durée de vie des `Control`.
+- Un nœud sélectionné qui sort de la zone garde son état logique ; il est
+reconfiguré avec cet état à son retour.
+- La progression n'est jamais recalculée ni modifiée par un chargement ou un
+déchargement.
+
 ## Validation automatique
 
-`CampaignValidator` vérifie les invariants structurels et de contenu :
+`CampaignValidator.problems(definition)` vérifie les invariants structurels et
+les données immédiatement vérifiables. `CampaignGenerationValidator` prépare
+réellement les decks et drafts, tandis que `CampaignLayoutValidator` contrôle
+la distance des courbes aux nœuds. Ces deux validations coûteuses sont activées
+par `CampaignContentLoader.read(path, true)` dans les tests de livraison, mais
+pas à chaque clic sur Campagne.
+
+Il vérifie :
 
 - identifiants uniques, arêtes valides, absence de cycles ;
 - nœud de départ, nœud final et nœuds accessibles ;
@@ -394,13 +473,13 @@ objectifs de contenu ne sont plus tenus.
 
 ### Decks
 
-Les 69 decks fixes sont uniques. Aucun doublon exact n'est présent. Les 66 decks
+Les 83 decks fixes sont uniques. Aucun doublon exact n'est présent. Les 80 decks
 à dieu identifié contiennent chacun au moins trois cartes de ce dieu ; la
-répartition finale est de 39 decks à 3 cartes, 20 à 4 et 7 à 5. Les trois
-tutoriels Pr.Stone restent neutres. L'audit signale une seule paire partageant
-sept cartes sur huit : `tuto_01` et `tuto_02`, qui utilisent volontairement des
-cartes neutres différentes du même petit palier pédagogique. Cette exception est
-explicitement signalée, pas masquée.
+répartition finale est de 48 decks à 3 cartes, 25 à 4, 4 à 5 et 3 à 8 cartes.
+Les trois tutoriels Pr.Stone restent neutres. L'audit signale une seule paire
+partageant sept cartes sur huit : `tuto_01` et `tuto_02`, qui utilisent
+volontairement des cartes neutres différentes du même petit palier pédagogique.
+Cette exception est explicitement signalée, pas masquée.
 
 Un deck fixe peut être :
 
@@ -481,8 +560,14 @@ godot --headless --fixed-fps 60 --path . res://tests/TouchInputChecks.tscn
 Dernière validation du contenu livré :
 
 ```text
-GOD_SYSTEM_CHECKS: 1379 passed, 0 failed, 0 Godot errors
+GOD_SYSTEM_CHECKS: 1605 passed, 0 failed, 0 Godot errors
 TACTILE : 95 vérifications, 0 échec(s), 0 erreur(s) Godot.
+```
+
+Mesure reproductible :
+
+```sh
+godot --headless --fixed-fps 60 --path . res://tests/MeasureCampaignMap.tscn
 ```
 
 Les erreurs `PlayerData: profil non enregistré` et les avertissements de profil
@@ -497,5 +582,9 @@ avec le code `0`.
   les collisions, pas le rendu d'un écran physique.
 - La paire de tutoriels partage sept cartes sur huit ; c'est une exception
   pédagogique signalée par l'audit.
+- Le cache de secteurs est volontairement simple : les `Control` libérés ne sont
+  pas remis dans un pool. Le profilage ne montrait pas l'instanciation répétée
+  comme coût dominant ; un pool pourra être ajouté si une mesure sur appareil
+  réel le justifie.
 - Le fichier `campaign_v1.json` reste une archive : toute modification de
   contenu doit être faite dans `campaign_v2.json` via le builder.

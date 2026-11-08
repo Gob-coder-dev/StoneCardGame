@@ -1,9 +1,10 @@
-"""Construit la campagne de 120 nœuds à partir d'un plan de graphe explicite.
+"""Construit la campagne de 154 nœuds à partir d'un plan de graphe explicite.
 
 Le script ne fabrique pas de decks : il choisit dans `campaign_deck_library.json`
 des decks déjà produits et validés par Godot. Les identifiants des 20 nœuds de
-la première campagne unifiée sont conservés ; la version passe à 2 pour que la
-migration des sauvegardes soit explicite.
+la première campagne unifiée sont conservés ; la version passe à 3 pour que la
+migration des sauvegardes soit explicite. Les dix mini-boss facultatifs reçoivent
+2 à 5 niveaux d'approche monochrome, insérés dans leur branche.
 """
 from __future__ import annotations
 
@@ -90,6 +91,79 @@ MINI_REWORK = {
 }
 
 MODE_REWORK = {"r05_b2": "draft", "r10_b1": "mirror"}
+
+# Les six mini-boss signés gardent leur identité ; les quatre autres sont
+# alignés sur la même exigence de difficulté. Le générateur n'est renseigné
+# que lorsque le mode ne porte pas déjà un dieu fixe.
+OPTIONAL_MINI_TUNING = {
+    "mini_optional_01": dict(precision=0.80, anticipation=False, theme_god="nerava"),
+    "r03_mini": dict(precision=0.80, anticipation=False, theme_god="veskar"),
+    "r04_mini": dict(precision=0.85, anticipation=False, theme_god="sylkha"),
+    "r05_mini": dict(precision=0.88, anticipation=False, theme_god="kharun"),
+    "r06_mini": dict(precision=0.90, anticipation=False,
+                      theme_god="sylkha", generator_god="sylkha", generator_min=8),
+    "r09_mini1": dict(precision=0.92, anticipation=True, theme_god="ilyr"),
+    "r09_mini2": dict(precision=0.92, anticipation=True, theme_god="ilyr"),
+    "r10_mini": dict(precision=0.95, anticipation=True, theme_god="nerava"),
+    "r11_mini": dict(precision=0.95, anticipation=True, theme_god="kharun"),
+    "mini_optional_02": dict(precision=1.0, anticipation=True, theme_god="enigma"),
+}
+
+# Une impasse facultative reçoit 2 à 5 niveaux avant son mini-boss. La
+# longueur augmente avec l'avancement ; le mode et le dieu du mini-boss sont
+# conservés sur toute la branche.
+OPTIONAL_PATHS = {
+    "mini_optional_01": dict(length=2, names=[
+        "Le Vestibule des Fièvres", "La Salle des Souffles"]),
+    "r03_mini": dict(length=2, names=[
+        "Le Détour des Dés", "La Passe Truquée"]),
+    "r04_mini": dict(length=3, names=[
+        "La Coulée des Larves", "Le Nid des Soufflets",
+        "L’Antichambre de l’Essaim"]),
+    "r05_mini": dict(length=3, names=[
+        "Les Rayons Interdits", "Le Cabinet des Dettes",
+        "La Chambre d’Encre"]),
+    "r06_mini": dict(length=3, names=[
+        "La Ruelle des Peaux", "Le Comptoir des Os",
+        "Le Passage du Colporteur"]),
+    "r09_mini1": dict(length=4, names=[
+        "Le Puits des Reflets", "La Galerie des Veilleurs",
+        "Le Mur des Échos", "La Garde sans Ombre"]),
+    "r09_mini2": dict(length=4, names=[
+        "Le Chœur Bas", "Les Voix Noyées", "La Nef des Murmures",
+        "L’Autel du Chœur"]),
+    "r10_mini": dict(length=4, names=[
+        "La Galerie des Fièvres", "Le Bal des Masques",
+        "La Loge des Malades", "Le Théâtre des Contagions"]),
+    "r11_mini": dict(length=4, names=[
+        "Les Allées Calcinées", "Le Mur des Cendres",
+        "La Forge Éteinte", "Le Chemin des Carapaces"]),
+    "mini_optional_02": dict(length=5, names=[
+        "Le Seuil des Dépouilles", "La Salle des Mille Yeux",
+        "Le Couloir des Faces", "Le Cabinet des Peaux",
+        "Le Trône du Collectionneur"]),
+}
+
+# Placement local des approches. Les couloirs extérieurs évitent de décaler
+# les nœuds existants : seuls les nouveau chemin et son mini-boss bougent.
+# offset_y est relatif à la ligne du prédécesseur ; xs alterne les deux bords
+# libres de la region. Les valeurs maintiennent 170 unités entre les centres.
+OPTIONAL_PATH_LAYOUTS = {
+    "mini_optional_01": dict(xs=[80, 80], offset_y=0, boss_x=90),
+    "r03_mini": dict(xs=[1000, 940], offset_y=0, boss_x=760),
+    "r04_mini": dict(xs=[1000, 940, 1000], offset_y=0, boss_x=900),
+    "r05_mini": dict(xs=[80, 160, 80], offset_y=0, boss_x=100),
+    "r06_mini": dict(xs=[1000, 1000, 940], offset_y=120, boss_x=900),
+    "r09_mini1": dict(xs=[80, 160, 80, 160], offset_y=0, boss_x=80),
+    "r09_mini2": dict(xs=[1000, 940, 1000, 940], offset_y=0, boss_x=1000),
+    "r10_mini": dict(xs=[1000, 940, 1000, 940], offset_y=0, boss_x=960),
+    "r11_mini": dict(xs=[80, 80, 80, 80], offset_y=-240, boss_y=15840,
+                       boss_x=80),
+    "mini_optional_02": dict(xs=[1000, 940, 1000, 940, 1000], offset_y=0,
+                             boss_x=960),
+}
+
+PATH_STEP = 240
 
 # Les trois premiers nœuds et le carrefour historique restent les mêmes IDs.
 OLD = {
@@ -564,6 +638,111 @@ for node_id, spec in MINI_REWORK.items():
     enc["mirror_fixed_deck"] = (list(CURATED_DECKS[node_id])
                                  if spec.get("mirror_deck", False) else [])
 
+# Les quatre mini-boss facultatifs restants reçoivent la même exigence de
+# difficulté. Une contrainte de génération rend aussi leur dieu réel cohérent
+# avec celui de l'impasse.
+for node_id, spec in OPTIONAL_MINI_TUNING.items():
+    if node_id not in nodes:
+        raise SystemExit(f"mini-boss facultatif absent : {node_id}")
+    node = nodes[node_id]
+    enc = node["encounter"]
+    node["type"] = "mini_boss"
+    node["mini_boss_kind"] = "optional"
+    node["dead_end"] = True
+    enc["generator_god_id"] = spec.get("generator_god", enc.get("generator_god_id", ""))
+    enc["generator_min_god_cards"] = spec.get("generator_min",
+                                                enc.get("generator_min_god_cards", 0))
+    if spec.get("theme_god"):
+        node["theme_god_id"] = spec["theme_god"]
+
+
+def branch_god(node: dict) -> str:
+    """Dieu réellement combattu par un mini-boss, tous modes confondus."""
+    enc = node["encounter"]
+    return str(enc.get("fixed_god_id") or enc.get("generator_god_id")
+               or node.get("theme_god_id", ""))
+
+
+def insert_optional_paths() -> dict:
+    """Insère les branches avant les mini-boss facultatifs.
+
+    Les branches sont placées localement dans des couloirs extérieurs libres :
+    aucun nœud existant n'est décalé, donc aucune arête historique ne s'étire.
+    Seul le mini-boss descend sous son prédécesseur, avec ses nouveaux niveaux
+    d'approche. Les couloirs et les offsets sont explicites par branche.
+    """
+    branch_pred = {}
+    for edge in edges:
+        if edge["to"] in OPTIONAL_PATHS:
+            branch_pred[edge["to"]] = edge["from"]
+    if set(branch_pred) != set(OPTIONAL_PATHS):
+        raise SystemExit("un mini-boss facultatif n'a pas exactement une entrée")
+
+    inserted = {}
+    ordered = sorted(OPTIONAL_PATHS, key=lambda boss_id: nodes[boss_id]["position"]["y"],
+                     reverse=True)
+    for boss_id in ordered:
+        path_spec = OPTIONAL_PATHS[boss_id]
+        names = list(path_spec["names"])
+        count = int(path_spec["length"])
+        layout = OPTIONAL_PATH_LAYOUTS.get(boss_id, {})
+        xs = list(layout.get("xs", []))
+        if count < 2 or count > 5 or len(names) != count or len(xs) != count:
+            raise SystemExit(f"branche facultative invalide pour {boss_id}")
+        pred_id = branch_pred[boss_id]
+        pred_y = nodes[pred_id]["position"]["y"]
+        before = len(edges)
+        edges[:] = [edge for edge in edges
+                    if not (edge["from"] == pred_id and edge["to"] == boss_id)]
+        if len(edges) != before - 1:
+            raise SystemExit(f"arête de mini-boss introuvable : {pred_id} -> {boss_id}")
+
+        offset_y = int(layout.get("offset_y", 0))
+        boss = nodes[boss_id]
+        enc = boss["encounter"]
+        mode = enc["game_mode"]
+        mode_key = {value: key for key, value in MODES.items()}[mode]
+        god = branch_god(boss)
+        if god == "":
+            raise SystemExit(f"dieu absent sur la branche de {boss_id}")
+        path_ids = []
+        for index, name in enumerate(names):
+            path_id = f"{boss_id}_path_{index + 1}"
+            spec = {
+                "name": name, "chapter": boss["chapter"], "region": boss["region"],
+                "mode": mode_key, "type": "normal", "dead_end": False,
+                "god": god if mode in ("classic", "draft") else "",
+                "tier": 2, "precision": 0.0, "series": "ft1",
+            }
+            add_node(path_id, spec, xs[index],
+                     pred_y + offset_y + PATH_STEP * (index + 1))
+            path_node = nodes[path_id]
+            path_node["theme_god_id"] = god
+            if mode in ("random", "mirror"):
+                path_node["encounter"]["generator_god_id"] = enc.get("generator_god_id", "")
+                path_node["encounter"]["generator_min_god_cards"] = enc.get(
+                    "generator_min_god_cards", 0)
+            path_ids.append(path_id)
+        boss["position"]["x"] = float(layout.get("boss_x", boss["position"]["x"]))
+        boss_y = layout.get("boss_y")
+        if boss_y is None:
+            boss_y = pred_y + offset_y + PATH_STEP * (count + 1)
+        boss["position"]["y"] = float(boss_y)
+        chain = [pred_id] + path_ids + [boss_id]
+        for source, target in zip(chain, chain[1:]):
+            add_edge(source, target)
+        inserted[boss_id] = path_ids
+    return inserted
+
+
+optional_paths = insert_optional_paths()
+
+# Le couloir gauche des approches de r11_mini traverse la rangée r12. Ces deux
+# nœuds existants sont seulement décalés vers la droite pour ouvrir le passage ;
+# le reste du graphe garde ses positions et ses arêtes courtes.
+nodes["r12_a"]["position"]["x"] = 260.0
+nodes["r12_a1"]["position"]["x"] = 170.0
+
 # ── Graphe, profondeurs et tiers ─────────────────────────────────────────────
 outgoing = defaultdict(list)
 incoming = defaultdict(list)
@@ -634,13 +813,35 @@ for node_id in ["r05_m", "r08_m1", "r09_m", "r12_m"]:
 for node_id, spec in MINI_REWORK.items():
     nodes[node_id]["encounter"]["max_power_tier"] = spec["tier"]
 
+# Les niveaux d'approche montent d'un palier avant le mini-boss. Le dernier
+# palier ne dépasse jamais celui du mini-boss, et la Sélection reste au moins
+# au palier 3 comme toutes les Sélections de campagne.
+for boss_id, path_ids in optional_paths.items():
+    boss_tier = int(nodes[boss_id]["encounter"]["max_power_tier"])
+    low_tier = max(2, boss_tier - 1)
+    high_count = max(1, len(path_ids) // 2)
+    for index, path_id in enumerate(path_ids):
+        tier = low_tier if index < len(path_ids) - high_count else boss_tier
+        if nodes[path_id]["encounter"]["game_mode"] == "draft":
+            tier = max(3, tier)
+        nodes[path_id]["encounter"]["max_power_tier"] = tier
+
 # ── Thèmes de dieu : équilibre global, sans dieu fixe dans les modes variables ─
 theme_counts = Counter()
 last_theme = ""
+forced_theme = {}
+for boss_id, path_ids in optional_paths.items():
+    boss_theme = branch_god(nodes[boss_id])
+    forced_theme[boss_id] = boss_theme
+    for path_id in path_ids:
+        forced_theme[path_id] = boss_theme
+for node_id, theme in forced_theme.items():
+    nodes[node_id]["theme_god_id"] = theme
+    theme_counts[theme] += 1
 fixed_pending = []
 variable = []
 for node_id, node in nodes.items():
-    if node["type"] == "tutorial":
+    if node["type"] == "tutorial" or node_id in forced_theme:
         continue
     fixed = node["encounter"].get("fixed_god_id", "")
     if fixed:
@@ -720,13 +921,28 @@ for node_id, node in nodes.items():
 for node_id in ["final_01"]:
     nodes[node_id]["encounter"]["ai_profile"] = {"precision": 1.0, "anticipation": True}
 
-# Les six mini-boss gardent leur courbe de difficulté propre, y compris les
-# deux rencontres très tôt dans la campagne.
-for node_id, spec in MINI_REWORK.items():
-    nodes[node_id]["encounter"]["ai_profile"] = {
-        "precision": spec["precision"],
-        "anticipation": spec["anticipation"],
+# Les mini-boss facultatifs sont tous des pics de difficulté. Les niveaux
+# d'approche montent vers leur précision sans jamais la dépasser, et le dernier
+# niveau de la branche reste un cran sous le mini-boss.
+for boss_id, spec in OPTIONAL_MINI_TUNING.items():
+    boss = nodes[boss_id]
+    boss_precision = float(spec["precision"])
+    boss["encounter"]["ai_profile"] = {
+        "precision": boss_precision,
+        "anticipation": bool(spec["anticipation"]),
     }
+    path_ids = optional_paths[boss_id]
+    count = len(path_ids)
+    start = max(0.40, boss_precision - 0.25)
+    end = boss_precision - 0.05
+    for index, path_id in enumerate(path_ids):
+        ratio = float(index) / float(max(1, count - 1))
+        precision = round(start + (end - start) * ratio, 2)
+        path = nodes[path_id]
+        path["encounter"]["ai_profile"] = {
+            "precision": precision,
+            "anticipation": bool(spec["anticipation"] and precision >= 0.90),
+        }
 
 # ── Decks fixes distincts ───────────────────────────────────────────────────
 neutral_used = set()
@@ -792,12 +1008,12 @@ for node_id, node in nodes.items():
     selected_decks.append(lineages(deck))
 
 # ── Contrôles de construction ───────────────────────────────────────────────
-if len(nodes) != 120:
-    raise SystemExit(f"120 nœuds attendus, obtenu {len(nodes)}")
+if len(nodes) != 154:
+    raise SystemExit(f"154 nœuds attendus, obtenu {len(nodes)}")
 if len(set(depth)) != 1 and max(depth.values()) < 45:
     raise SystemExit("profondeur de graphe insuffisante")
-if len(edges) < 145:
-    raise SystemExit(f"graphe trop pauvre : {len(edges)} arêtes")
+if len(edges) != 182:
+    raise SystemExit(f"182 arêtes attendues, obtenu {len(edges)}")
 weak_decks = []
 for node_id, node in nodes.items():
     god = node["encounter"].get("fixed_god_id", "")
@@ -825,7 +1041,7 @@ map_height = max(n["position"]["y"] for n in nodes.values()) + 300
 result = {
     "id": "samstone_campaign",
     "title": "La Carte de SamStone",
-    "campaign_version": 2,
+    "campaign_version": 3,
     "map": {"width": 1080, "height": int(map_height)},
     "start_node_id": "tuto_01",
     "final_node_id": "final_01",

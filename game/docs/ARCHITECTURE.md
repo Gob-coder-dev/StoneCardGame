@@ -143,13 +143,17 @@ d'ENet lorsqu'un pair reste connecté mais cesse de poursuivre le protocole.
 | `data/stones.json` | — | Définition complète de chaque carte, pouvoirs compris |
 | `data/gods.json` | — | Dieux, familles, couleurs et descriptions |
 | `data/npcs.json` | — | Six adversaires historiques, leurs decks et profils d'IA |
-| `data/campaign/campaign_v2.json` | `CampaignContentLoader` | Définition consolidée du graphe : 120 nœuds, rencontres, positions et arêtes |
+| `data/campaign/campaign_v2.json` | `CampaignContentLoader` | Définition consolidée du graphe : 154 nœuds, rencontres, positions et arêtes |
 | `CampaignGraph`, `CampaignNode`, `CampaignEdge` | `build`, `node`, `predecessors`, `successors`, `reachable_from`, `has_cycle` | Définition immuable, indexation et requêtes du graphe ; aucune sauvegarde ni interface |
-| `CampaignUnlockRules`, `CampaignProgress` | `states`, `state_for`, `mark_completed`, `record_attempt` | Règle ANY, états et progression sérialisable par identifiant de nœud |
-| `CampaignValidator` | `problems` | Validation exhaustive du contenu, des modes, des decks et des mini-boss |
+| `CampaignUnlockRules`, `CampaignProgress` | `states`, `state_for`, `mark_completed`, `record_attempt` | Règle ANY, états et progression sérialisable par identifiant de nœud ; `map_navigation` y reste une donnée de navigation séparée |
+| `CampaignValidator` | `problems` | Validation structurelle, modes, decks fixes et mini-boss, sans dépendance vers la couche application |
+| `CampaignGenerationValidator`, `CampaignLayoutValidator` | `problems` | Contrôles de livraison coûteux : générations réelles et géométrie des courbes, absents du chemin runtime |
+| `CampaignMapLayout`, `CampaignMapChunkManager` | `node_center`, `visible_rect`, `update` | Géométrie logique et sélection des secteurs chargés/ préchargés/ libérés, sans `Control` |
+| `CampaignMapPositionState` | `make`, `from_dict`, `resolved` | Ancre, offset logique et secours de position, versionnés séparément de la progression |
 | `CampaignAudit` | `build` | Métriques de livraison : dieux, modes, paliers, séries, topologie, précisions et diversité des decks |
 | `CampaignService`, `CampaignContext` | `states`, `begin_attempt`, `complete_node`, `enter_node` | Façade applicative et contexte transitoire de lancement |
-| `CampaignEncounterFactory`, `CampaignCompletionService` | `build`, `summary`, `apply_victory` | Nœud → adversaire/mode partagé, puis victoire idempotente |
+| `CampaignEncounterFactory`, `CampaignCompletionService` | `build`, `apply_victory` | Nœud → adversaire/mode partagé, puis victoire idempotente |
+| `CampaignEncounterPresenter` | `summary` | Données d'affichage de la fiche de niveau, sans création de rencontre ni progression |
 | `CampaignProgressStore`, `CampaignSaveMigration` | `load_progress`, `save`, `migrate` | Fichier dédié et conversion prudente des anciennes victoires |
 | `OpponentCatalog` | `build`, `build_neutral`, `deck_for`, `neutral_deck_for`, `levels_for`, `source_id_of`, `sources` | Historique : génère les adversaires dieu ou neutre × palier × difficulté et les sept sources |
 | `EncounterPath` | `states`, `current_index`, `next_level`, `completed_count` | Historique : états d'un ancien chemin linéaire, sans interface ni sauvegarde |
@@ -508,7 +512,7 @@ Le bouton **CAMPAGNE** du menu principal ouvre `scenes/campaign/CampaignMap.tscn
 Le joueur y voit un graphe vertical : trois tutoriels Pr.Stone, puis des branches
 non exclusives mélangeant les six dieux, les quatre modes, les paliers et les
 profils d'IA. Une fiche de niveau affiche la synthèse calculée par
-`CampaignEncounterFactory` ; le lancement passe par `CampaignContext.enter_node()`,
+`CampaignEncounterPresenter` ; le lancement passe par `CampaignContext.enter_node()`,
 la préparation locale si le mode l'exige, puis `PreBattle` et `Board`.
 
 `CampaignGraph` est la seule autorité sur les liens. `CampaignUnlockRules`
@@ -524,7 +528,9 @@ obligatoires contournables et les combinaisons mode/politique impossibles.
 compatibles avec `BattleContext` et `CampaignModeSession`, en réutilisant
 `GameModeRules`, `CardPowerTierRules`, `LoadoutGenerator` et les règles de deck.
 Un deck généré, un dieu temporaire et un loadout de manche ne sont jamais écrits
-dans `PlayerData`. `CampaignCompletionService` n'applique une victoire qu'une
+dans `PlayerData`. La génération et la session sont validées avant que la
+tentative soit écrite et que `BattleContext` soit publié : un échec ne consomme
+donc aucune tentative. `CampaignCompletionService` n'applique une victoire qu'une
 fois, après la sauvegarde ; `BattleContext.persist_result()` sépare les
 statistiques du profil de la complétion du nœud pour rendre un nouvel essai sûr.
 
@@ -534,6 +540,18 @@ fond, les courbes et les nœuds. Les arêtes sont dessinées derrière les ronds
 peuvent porter deux points de contrôle. Un appui ouvre un niveau accessible ou
 terminé ; un glissement fait défiler sans activer ; un niveau verrouillé reste
 inactif. Après un résultat, la carte se recentre sur le nœud concerné.
+
+La représentation est virtualisée par `CampaignMapChunkManager`. La première
+zone est créée par lots (8 nœuds immédiatement, puis 6 par image), et les
+secteurs situés hors d'une marge de conservation sont libérés. Les positions
+logiques viennent de `CampaignMapLayout`, donc les connexions et le centrage ne
+dépendent jamais de l'instanciation d'un bouton. `CampaignMapView` ne dessine
+que les arêtes dont les deux extrémités sont chargées. `CampaignMapPositionState`
+conserve une ancre et un offset dans `CampaignProgress.map_navigation` ; la
+position est restaurée avant le chargement des zones et sauvegardée avec un
+debounce de 0,65 s. Une ancre devenue invalide retombe sur le dernier niveau
+terminé, puis le focus disponible, puis le départ. Le détail des mesures et des
+règles est dans [CAMPAIGN.md](CAMPAIGN.md).
 
 `GameRoutes` centralise les chemins des scènes de la boucle principale et
 diagnostique un changement impossible. Les contrôleurs conservent la décision
@@ -625,7 +643,7 @@ les cinq difficultés affrontent les mêmes cartes. L'identifiant
 | Très difficile | 1 | oui | 1,2 s |
 
 Cette table décrit les cinq profils historiques d'`OpponentCatalog`. La campagne
-unifiée utilise en plus des profils à précision continue, avec 37 valeurs
+unifiée utilise en plus des profils à précision continue, avec 49 valeurs
 distinctes réparties entre 0 et 1 selon la profondeur et le rôle du nœud.
 
 Avec la probabilité `precision`, l'IA joue le meilleur coup évalué, au hasard

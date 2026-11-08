@@ -10,6 +10,7 @@ const ServiceModel := preload("res://scripts/application/campaign/CampaignServic
 const FactoryModel := preload("res://scripts/application/campaign/CampaignEncounterFactory.gd")
 const ProfileFixture := preload("res://tests/support/PlayerProfileFixture.gd")
 const PATH := "user://campaign_encounter_checks.json"
+const BAD_PATH := "user://campaign_encounter_missing_dir/progress.json"
 
 var _service: CampaignService = null
 var _graph: CampaignGraph = null
@@ -39,6 +40,8 @@ func run() -> void:
 	_test_draft_mode()
 	_test_special_minis()
 	_test_profile_mirror()
+	_test_failed_preparation_is_transactional()
+	_test_failed_attempt_save_is_transactional()
 	_check(PlayerData.get_profile() == profile_before,
 		"rencontres : aucun dieu ni deck généré n'est écrit dans le profil permanent")
 	BattleContext.clear_campaign_node()
@@ -50,7 +53,8 @@ func run() -> void:
 
 
 func _cleanup() -> void:
-	for path in [PATH, PATH + ".tmp", PATH + ".unreadable"]:
+	for path in [PATH, PATH + ".tmp", PATH + ".unreadable", BAD_PATH,
+			BAD_PATH + ".tmp"]:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(path)
 
@@ -192,11 +196,19 @@ func _test_special_minis() -> void:
 		"rencontres : le deck miroir d'Ilyr contient sept Veilleurs sur huit cartes")
 	BattleContext.clear_campaign_node()
 
+	for index in range(1, 5):
+		var path_id := "r09_mini1_path_%d" % index
+		_enter(path_id)
+		_check(BattleContext.confirm_mode_preparation()
+			and _affinity_count(BattleContext.player_loadout.deck, "ilyr") >= 7,
+			"rencontres : l'approche '%s' génère au moins sept cartes Ilyr" % path_id)
+		BattleContext.clear_campaign_node()
+
 	var fixed_checks := [
-		["mini_optional_01", "nerava", 2, 0.35, false],
-		["r04_mini", "sylkha", 2, 1.0, true],
-		["r11_mini", "kharun", 4, 0.85, false],
-		["mini_optional_02", "enigma", 4, 0.9, false],
+		["mini_optional_01", "nerava", 2, 0.80, false],
+		["r04_mini", "sylkha", 2, 0.85, false],
+		["r11_mini", "kharun", 4, 0.95, true],
+		["mini_optional_02", "enigma", 4, 1.0, true],
 	]
 	for entry in fixed_checks:
 		var node_id := str(entry[0])
@@ -232,3 +244,32 @@ func _test_profile_mirror() -> void:
 		and (npc.get("deck", []) as Array) == PlayerData.get_active_deck(),
 		"rencontres : Classique profil reprend le dieu et le deck du joueur pour l'adversaire")
 	BattleContext.clear_campaign_node()
+
+
+func _test_failed_preparation_is_transactional() -> void:
+	var node: CampaignNode = _graph.node("r09_mini1_path_1")
+	var original := node.encounter.duplicate(true)
+	node.encounter["generator_min_god_cards"] = DeckRules.DECK_SIZE + 1
+	var attempts_before := _service.progress().attempts_for(node.id)
+	var result := CampaignContext.enter_node(node.id)
+	_check(not bool(result.get("ok", true))
+		and _service.progress().attempts_for(node.id) == attempts_before
+		and not BattleContext.has_campaign_node(),
+		"rencontres : une préparation invalide ne consomme aucune tentative et ne publie aucun contexte")
+	node.encounter = original
+
+
+func _test_failed_attempt_save_is_transactional() -> void:
+	BattleContext.clear_campaign_node()
+	var progress := _service.progress().duplicate_progress()
+	var failing_service := ServiceModel.new(_graph, progress,
+		StoreModel.new(BAD_PATH), [])
+	CampaignContext.set_service_for_tests(failing_service)
+	var attempts_before := progress.attempts_for("veskar_02")
+	var result := CampaignContext.enter_node("veskar_02")
+	_check(not bool(result.get("ok", true))
+		and failing_service.progress().attempts_for("veskar_02") == attempts_before
+		and not BattleContext.has_campaign_node()
+		and not BattleContext.has_mode_session(),
+		"rencontres : un échec de sauvegarde ne publie ni tentative ni session partielle")
+	CampaignContext.set_service_for_tests(_service)

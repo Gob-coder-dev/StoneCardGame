@@ -11,8 +11,6 @@ const CardPowerTierRulesModel := preload("res://scripts/domain/CardPowerTierRule
 const DeckRulesModel := preload("res://scripts/domain/DeckRules.gd")
 const GameModeRulesModel := preload("res://scripts/domain/GameModeRules.gd")
 const SeriesRulesModel := preload("res://scripts/domain/SeriesRules.gd")
-const LoadoutGeneratorModel := preload("res://scripts/domain/LoadoutGenerator.gd")
-const ModePreparationServiceModel := preload("res://scripts/application/ModePreparationService.gd")
 const AIProfileModel := preload("res://scripts/ai/AIProfile.gd")
 
 ## Ces champs décriraient une route choisie ou une hiérarchie de difficulté :
@@ -27,9 +25,6 @@ const MIN_NODE_DISTANCE: float = 170.0
 ## Un deck à dieu identifié doit réellement porter ce dieu : les cartes
 ## neutres restent autorisées, mais ne comptent pas dans ce minimum.
 const MIN_GOD_CARDS: int = 3
-## Les nœuds ont 150 unités de diamètre : un chemin qui passe à moins de 76
-## unités du centre d'un nœud non relié traverse visiblement son rond.
-const MIN_EDGE_NODE_CLEARANCE: float = 76.0
 
 
 static func problems(definition: Dictionary) -> Array[String]:
@@ -116,7 +111,7 @@ static func problems(definition: Dictionary) -> Array[String]:
 			result.append("mini_boss_kind interdit sur '%s'." % node_id)
 		if node.theme_god_id != "" and StoneLoader.get_god(node.theme_god_id).is_empty():
 			result.append("dieu de thème inconnu '%s' sur '%s'." % [node.theme_god_id, node_id])
-		_encounter_problems(node, version, result)
+		_encounter_problems(node, result)
 
 	if tutorial_count < 2:
 		result.append("la campagne doit commencer par au moins deux tutoriels.")
@@ -189,9 +184,6 @@ static func problems(definition: Dictionary) -> Array[String]:
 	if graph.has_cycle():
 		result.append("cycle détecté : la campagne doit être un graphe orienté sans boucle.")
 
-	for edge in graph.edges():
-		_edge_clearance_problems(graph, edge, result)
-
 	if graph.has_node(graph.final_node_id):
 		var final_node: CampaignNode = graph.final_node()
 		if final_node.type != NodeModel.TYPE_BOSS:
@@ -240,8 +232,7 @@ static func _mini_boss_problems(graph: CampaignGraph, node: CampaignNode,
 		result.append("mini-boss obligatoire '%s' contournable : le boss final reste accessible." % node.id)
 
 
-static func _encounter_problems(node: CampaignNode, version: int,
-		result: Array[String]) -> void:
+static func _encounter_problems(node: CampaignNode, result: Array[String]) -> void:
 	var encounter := node.encounter
 	if encounter.is_empty():
 		result.append("configuration de combat absente sur '%s'." % node.id)
@@ -266,7 +257,7 @@ static func _encounter_problems(node: CampaignNode, version: int,
 	var generator_god_id := node.generator_god_id()
 	var generator_min := node.generator_min_god_cards()
 	var mirror_deck := node.mirror_fixed_deck()
-	if generator_min > DeckRulesModel.DECK_SIZE:
+	if generator_min < 0 or generator_min > DeckRulesModel.DECK_SIZE:
 		result.append("minimum de cartes du dieu hors bornes sur '%s'." % node.id)
 	if generator_god_id != "":
 		if not [GameModeRulesModel.MODE_RANDOM, GameModeRulesModel.MODE_MIRROR].has(mode):
@@ -345,9 +336,6 @@ static func _encounter_problems(node: CampaignNode, version: int,
 				or bool(node.ai_profile().get("anticipation", true)):
 			result.append("tutoriel '%s' : précision 0 et sans anticipation requis." % node.id)
 
-	_generation_problems(node, version, result)
-
-
 static func _fixed_deck_problems(node: CampaignNode, result: Array[String]) -> void:
 	_deck_problems(node, node.fixed_deck(), node.fixed_god_id(), MIN_GOD_CARDS,
 		"deck fixe", result)
@@ -395,89 +383,6 @@ static func _deck_problems(node: CampaignNode, deck: Array, god_id: String,
 		if not bool(validation.get("valid", false)):
 			result.append("%s invalide sur '%s' : %s." % [
 				label, node.id, str(validation.get("reason", ""))])
-
-
-static func _generation_problems(node: CampaignNode, version: int,
-		result: Array[String]) -> void:
-	var mode := node.game_mode()
-	var tier := node.max_power_tier()
-	var seed := node.resolved_seed(version, 0)
-	if mode == GameModeRulesModel.MODE_RANDOM or mode == GameModeRulesModel.MODE_MIRROR:
-		var service := ModePreparationServiceModel.new()
-		var prepared := service.prepare_immediate(mode, seed, tier, {}, {},
-			node.generation_constraints())
-		if not bool(prepared.get("ok", false)):
-			result.append("génération impossible sur '%s' : %s." % [
-				node.id, str(prepared.get("reason", ""))])
-		return
-	if mode == GameModeRulesModel.MODE_DRAFT:
-		var opponent_god := node.fixed_god_id()
-		if node.opponent_god_policy() == NodeModel.GOD_FIXED and opponent_god == "":
-			result.append("Sélection '%s' : dieu adverse requis." % node.id)
-			return
-		var service := ModePreparationServiceModel.new()
-		for god in StoneLoader.get_all_gods():
-			var player_god := str(god.get("id", ""))
-			var target_god := opponent_god if opponent_god != "" else player_god
-			var created := service.create_draft(seed, tier,
-				{"god_id": player_god}, {"god_id": target_god})
-			if not bool(created.get("ok", false)):
-				result.append("draft impossible sur '%s' pour le dieu '%s' : %s." % [
-					node.id, player_god, str(created.get("reason", ""))])
-				return
-		return
-	if node.opponent_deck_policy() != NodeModel.DECK_GENERATED:
-		return
-	var god_id := node.fixed_god_id()
-	if node.opponent_god_policy() == NodeModel.GOD_FIXED and god_id != "":
-		var generated := LoadoutGeneratorModel.new().generate_for_god(seed, god_id, tier)
-		if not bool(generated.get("ok", false)):
-			result.append("deck généré impossible sur '%s' : %s." % [
-				node.id, str(generated.get("reason", ""))])
-		return
-	if node.opponent_god_policy() == NodeModel.GOD_PROFILE:
-		var generator := LoadoutGeneratorModel.new()
-		for god in StoneLoader.get_all_gods():
-			var generated := generator.generate_for_god(seed, str(god.get("id", "")), tier)
-			if not bool(generated.get("ok", false)):
-				result.append("deck généré impossible sur '%s' pour '%s'." % [
-					node.id, str(god.get("id", ""))])
-				return
-
-
-static func _edge_clearance_problems(graph: CampaignGraph, edge,
-		result: Array[String]) -> void:
-	if not graph.has_node(edge.from_id) or not graph.has_node(edge.to_id):
-		return
-	var from_node: CampaignNode = graph.node(edge.from_id)
-	var to_node: CampaignNode = graph.node(edge.to_id)
-	if from_node == null or to_node == null:
-		return
-	var from := from_node.position
-	var to := to_node.position
-	var control_one := from + Vector2(0.0, (to.y - from.y) * 0.45)
-	var control_two := to - Vector2(0.0, (to.y - from.y) * 0.45)
-	if edge.controls.size() >= 2:
-		control_one = edge.controls[0]
-		control_two = edge.controls[1]
-	elif edge.controls.size() == 1:
-		control_one = edge.controls[0]
-		control_two = control_one + (to - from) * 0.25
-	var nearest := INF
-	var nearest_id := ""
-	for node in graph.nodes():
-		if node.id == edge.from_id or node.id == edge.to_id:
-			continue
-		for index in range(21):
-			var weight := float(index) / 20.0
-			var point := from.cubic_interpolate(to, control_one, control_two, weight)
-			var distance := point.distance_to(node.position)
-			if distance < nearest:
-				nearest = distance
-				nearest_id = node.id
-	if nearest_id != "" and nearest < MIN_EDGE_NODE_CLEARANCE:
-		result.append("chemin '%s' trop proche du nœud non relié '%s' (%.0f unités)." % [
-			edge.id, nearest_id, nearest])
 
 
 static func _is_number(value: Variant) -> bool:

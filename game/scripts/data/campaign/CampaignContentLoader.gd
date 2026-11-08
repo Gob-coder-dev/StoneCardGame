@@ -9,9 +9,17 @@ extends RefCounted
 const DEFAULT_PATH := "res://data/campaign/campaign_v2.json"
 const REGION_DIR := "res://data/campaign/"
 const ValidatorModel := preload("res://scripts/domain/campaign/CampaignValidator.gd")
+const GenerationValidatorModel := preload("res://scripts/application/campaign/CampaignGenerationValidator.gd")
+const LayoutValidatorModel := preload("res://scripts/data/campaign/CampaignLayoutValidator.gd")
+const GraphModel := preload("res://scripts/domain/campaign/CampaignGraph.gd")
 
 
-static func read(path: String = DEFAULT_PATH) -> Dictionary:
+## `validate_delivery` active les contrôles complets de livraison : génération
+## réelle des rencontres et géométrie de la carte. Le runtime le laisse faux :
+## préparer tous les drafts à chaque ouverture bloquait la carte plusieurs
+## secondes, alors que la suite de tests couvre déjà ce même contenu.
+static func read(path: String = DEFAULT_PATH,
+		validate_delivery: bool = false) -> Dictionary:
 	var parsed: Variant = _parse(path)
 	if not parsed is Dictionary:
 		return {
@@ -19,7 +27,9 @@ static func read(path: String = DEFAULT_PATH) -> Dictionary:
 			"definition": {},
 			"problems": ["Campagne illisible ou JSON invalide : %s." % path],
 		}
-	var definition: Dictionary = (parsed as Dictionary).duplicate(true)
+	# Le JSON produit déjà une structure neuve ; le validateur ne la modifie
+	# jamais. Éviter la copie profonde des 154 nœuds raccourcit l'ouverture.
+	var definition: Dictionary = parsed
 	var problems: Array[String] = []
 	var raw_regions: Variant = definition.get("regions", [])
 	if raw_regions is Array and not (raw_regions as Array).is_empty():
@@ -43,6 +53,9 @@ static func read(path: String = DEFAULT_PATH) -> Dictionary:
 		definition["nodes"] = nodes
 		definition["edges"] = edges
 	problems.append_array(ValidatorModel.problems(definition))
+	if validate_delivery and problems.is_empty():
+		problems.append_array(GenerationValidatorModel.problems(definition))
+		problems.append_array(LayoutValidatorModel.problems(GraphModel.build(definition)))
 	return {
 		"ok": problems.is_empty(),
 		"definition": definition,

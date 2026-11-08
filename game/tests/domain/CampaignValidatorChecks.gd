@@ -115,7 +115,9 @@ func _has(problems: Array[String], fragment: String) -> bool:
 
 
 func _test_shipped_content() -> void:
-	var content := ContentLoader.read()
+	# Seul contrôle qui prépare réellement les drafts : il reste dans la suite
+	# de contenu, jamais dans le chemin d'ouverture de la carte.
+	var content := ContentLoader.read(ContentLoader.DEFAULT_PATH, true)
 	_check(bool(content.get("ok", false)) and (content.get("problems", []) as Array).is_empty(),
 		"validateur : la campagne livrée ne produit aucune erreur")
 	if not bool(content.get("ok", false)):
@@ -275,6 +277,18 @@ func _test_deck_and_tier_rules() -> void:
 	random_encounter["generator_min_god_cards"] = DeckRules.DECK_SIZE
 	_check(_has(ValidatorModel.problems(definition), "dieu de génération inconnu"),
 		"validateur : un générateur contraint refuse un dieu inexistant")
+
+	definition = _minimal()
+	var excessive_encounter: Dictionary = definition["nodes"][2]["encounter"]
+	excessive_encounter["game_mode"] = "random"
+	excessive_encounter["opponent_god_policy"] = "generated"
+	excessive_encounter["opponent_deck_policy"] = "generated"
+	excessive_encounter["fixed_god_id"] = ""
+	excessive_encounter["fixed_deck"] = []
+	excessive_encounter["generator_god_id"] = "ilyr"
+	excessive_encounter["generator_min_god_cards"] = DeckRules.DECK_SIZE + 1
+	_check(_has(ValidatorModel.problems(definition), "minimum de cartes du dieu hors bornes"),
+		"validateur : une affinité minimale supérieure à la taille du deck est refusée")
 
 	definition = _minimal()
 	var mirror_encounter: Dictionary = definition["nodes"][2]["encounter"]
