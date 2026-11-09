@@ -429,6 +429,13 @@ même espace logique et le même facteur d'échelle.
   courbes sont mises en cache et les nœuds disponibles seuls
   animent leur pulsation ; les 162 anciens `_process()` ne sont plus exécutés.
 - Les labels de section sont limités aux chapitres dont un nœud est chargé.
+- `CampaignSectionTheme` transforme les treize chapitres en bandes contiguës :
+  la frontière entre deux chapitres est placée au milieu de leurs médianes Y,
+  ce qui absorbe les plages qui se chevauchent. `CampaignSectionArt` dessine
+  ensuite, dans le repère logique, un aplat sombre avec fondu, un emblème
+  central en contour et des motifs de bord. Les alphas restent sous 0,50,
+  0,16 et 0,07 ; seules les sections proches du viewport sont parcourues et
+  aucun `Control` n'est créé.
 - Le défilement, l'inertie, le toucher et le glissement sont testés sur les
   formats téléphone et tablette.
 

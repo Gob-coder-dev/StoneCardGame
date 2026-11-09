@@ -61,6 +61,15 @@ contraste.
 Le dessin est actualisé au chargement, au changement de dieu ou au
 redimensionnement et ignore les événements d'entrée.
 
+La carte de campagne ajoute ses propres variations dans la vue défilante, sans
+modifier `MenuBackground.gd` : `CampaignSectionTheme` découpe les treize
+chapitres en bandes contiguës et `CampaignSectionArt` y trace un aplat très
+sombre, un grand emblème central en contour et de petits motifs de bord. Les
+frontières suivent les médianes des nœuds pour absorber les chevauchements de
+chapitres. Les alphas restent sous 0,50 pour les bandes, 0,16 pour les motifs
+de bord et 0,07 pour l'emblème central ; aucun `Control` ni texture n'est
+ajouté, et seules les sections proches du viewport sont dessinées.
+
 La pièce du tirage reprend les codes d'une monnaie : tranche épaisse et crantée,
 champ de métal en relief, liseré gravé et poinçons d'atelier. Les couleurs bleue
 et rouge des camps sur le plateau restent inchangées.
@@ -92,8 +101,9 @@ Les six portraits sont fournis dans `assets/gods/`. Le champ `asset` de
   remplit la largeur disponible ; son conteneur réserve la même hauteur pour
   qu'elle reste carrée et ne recouvre pas les textes. Son logo de pouvoir est
   agrandi pour cette vue et le même pictogramme précède le texte d'explication.
-- Carte de campagne : un graphe vertical sur le fond commun à deux filets, avec
-  un espace logique de 1080 unités et des ronds de 150 unités réduits ensemble sur
+- Carte de campagne : un graphe vertical sur le fond commun à deux filets,
+  enrichi dans la vue défilante par les treize thèmes de section, avec un espace
+  logique de 1080 unités et des ronds de 150 unités réduits ensemble sur
   téléphone. Les courbes passent derrière les nœuds ; terminé, accessible,
   verrouillé, tutoriel, mini-boss et boss se distinguent par la couleur et par
   la forme (coche, anneau, cadenas, livre, losange, couronne). Un nœud accessible

@@ -8,6 +8,8 @@ const StoreModel := preload("res://scripts/data/campaign/CampaignProgressStore.g
 const ServiceModel := preload("res://scripts/application/campaign/CampaignService.gd")
 const UnlockRules := preload("res://scripts/domain/campaign/CampaignUnlockRules.gd")
 const MapViewScript := preload("res://scripts/ui/campaign/CampaignMapView.gd")
+const SectionTheme := preload("res://scripts/ui/campaign/CampaignSectionTheme.gd")
+const SectionArt := preload("res://scripts/ui/campaign/CampaignSectionArt.gd")
 const PATH := "user://campaign_map_checks.json"
 
 var _service: CampaignService = null
@@ -21,6 +23,7 @@ func run() -> void:
 		_check(false, "carte : le contenu de campagne est valide")
 		return
 	_graph = GraphModel.build(content["definition"])
+	_test_sections()
 	var progress := ProgressModel.new()
 	progress.mark_completed("tuto_01")
 	_service = ServiceModel.new(_graph, progress, StoreModel.new(PATH), [])
@@ -50,11 +53,59 @@ func _cleanup() -> void:
 			DirAccess.remove_absolute(path)
 
 
+## Les bandes visuelles viennent des chapitres du graphe, pas des données
+## sauvegardées : leur géométrie doit rester contiguë et discrète.
+func _test_sections() -> void:
+	var sections := SectionTheme.build(_graph)
+	_check(sections.size() == 13,
+		"sections : les 13 chapitres produisent 13 bandes visuelles")
+	var chapters := {}
+	var tints := {}
+	var motifs := {}
+	var contiguous := true
+	var medians_inside := true
+	var palettes := true
+	var cursor := 0.0
+	for section in sections:
+		var top := float(section.get("top", 0.0))
+		var bottom := float(section.get("bottom", 0.0))
+		var median_y := float(section.get("median_y", 0.0))
+		chapters[str(section.get("chapter", ""))] = true
+		tints[section.get("tint")] = true
+		motifs[str(section.get("motif", ""))] = true
+		contiguous = contiguous and is_equal_approx(top, cursor)
+		cursor = bottom
+		medians_inside = medians_inside and median_y >= top and median_y <= bottom
+		palettes = palettes and section.get("tint") is Color \
+			and section.get("accent") is Color \
+			and str(section.get("motif", "")) != ""
+	_check(contiguous,
+		"sections : les bandes restent contiguës, sans trou ni recouvrement")
+	_check(is_equal_approx(cursor,
+		_graph.map_size.y + UITheme.CAMPAIGN_BOTTOM_PAD),
+		"sections : la dernière bande couvre la marge basse de la carte")
+	_check(chapters.size() == 13,
+		"sections : chaque chapitre apparaît une seule fois")
+	_check(tints.size() == 13,
+		"sections : les treize teintes restent distinctes")
+	_check(motifs.size() == 13,
+		"sections : les treize motifs restent distincts")
+	_check(medians_inside,
+		"sections : la médiane de chaque chapitre reste dans sa bande")
+	_check(palettes,
+		"sections : chaque bande possède une teinte, un accent et un motif")
+	_check(SectionArt.TINT_ALPHA <= 0.5 and SectionArt.EDGE_ALPHA <= 0.16
+		and SectionArt.CENTER_ALPHA <= 0.07,
+		"sections : le budget de contraste reste très discret")
+
+
 func _test_page(page: Control) -> void:
 	var view: CampaignMapView = page.map_view
 	var scroll: ScrollContainer = page.scroll
 	_check(_graph.node_count() == 162,
 		"carte virtuelle : les données conservent les 162 niveaux")
+	_check(view.section_count() == 13,
+		"carte virtuelle : les 13 sections visuelles sont construites avec le graphe")
 	_check(view.loaded_count() > 0 and view.loaded_count() < _graph.node_count(),
 		"carte virtuelle : l'ouverture n'instancie pas les 162 représentations")
 	_check(view.pending_count() == 0,

@@ -13,6 +13,8 @@ const NodeScene := preload("res://scenes/campaign/CampaignNode.tscn")
 const UnlockRulesModel := preload("res://scripts/domain/campaign/CampaignUnlockRules.gd")
 const LayoutModel := preload("res://scripts/ui/campaign/CampaignMapLayout.gd")
 const ChunkManagerModel := preload("res://scripts/ui/campaign/CampaignMapChunkManager.gd")
+const SectionThemeModel := preload("res://scripts/ui/campaign/CampaignSectionTheme.gd")
+const SectionArtModel := preload("res://scripts/ui/campaign/CampaignSectionArt.gd")
 
 ## Le premier lot rend la zone immédiatement lisible sans attendre la fin du
 ## chargement. Les lots suivants laissent respirer le thread principal.
@@ -38,6 +40,7 @@ var _viewport_logical := Vector2(UITheme.CAMPAIGN_MAP_WIDTH, DEFAULT_VIEWPORT_HE
 var _edge_points_cache: Dictionary = {}
 var _visible_edges: Array = []
 var _visible_chapters: Dictionary = {}
+var _sections: Array = []
 var _setup_done := false
 
 
@@ -53,6 +56,7 @@ func setup(graph: CampaignGraph, states: Dictionary, selected_id: String = "",
 		focus_id: String = "", viewport_height: float = 0.0) -> void:
 	_clear_streamed_views()
 	_graph = graph
+	_sections = SectionThemeModel.build(_graph)
 	_states = states
 	_selected_id = selected_id
 	_focus_id = focus_id
@@ -140,6 +144,11 @@ func loaded_node_ids() -> Array:
 
 func is_streaming() -> bool:
 	return not _pending.is_empty()
+
+
+## Nombre de bandes visuelles construites depuis les chapitres du graphe.
+func section_count() -> int:
+	return _sections.size()
 
 
 ## Met à jour la zone utile depuis le ScrollContainer. Le gestionnaire choisit
@@ -234,6 +243,7 @@ func _clear_streamed_views() -> void:
 	_pending_lookup.clear()
 	_visible_edges.clear()
 	_visible_chapters.clear()
+	_sections.clear()
 	set_process(false)
 
 
@@ -395,8 +405,18 @@ func _emit_streaming() -> void:
 func _draw() -> void:
 	if _graph == null:
 		return
+	_draw_section_backdrop()
 	_draw_edges()
 	_draw_map_marks()
+
+
+## Le fond est tracé avant les arêtes et les repères ; les nœuds étant des
+## enfants, ils passent naturellement au-dessus. La transformation logique est
+## remise à l'identité par CampaignSectionArt avant le reste du dessin.
+func _draw_section_backdrop() -> void:
+	if _sections.is_empty():
+		return
+	SectionArtModel.draw_backdrop(self, _sections, _scale, _visible_rect)
 
 
 func _draw_edges() -> void:

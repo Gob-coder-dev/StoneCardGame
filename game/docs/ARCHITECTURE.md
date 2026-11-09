@@ -150,6 +150,7 @@ d'ENet lorsqu'un pair reste connecté mais cesse de poursuivre le protocole.
 | `CampaignValidator` | `problems` | Validation structurelle, modes, decks fixes et mini-boss, sans dépendance vers la couche application |
 | `CampaignGenerationValidator`, `CampaignLayoutValidator` | `problems` | Contrôles de livraison coûteux : générations réelles et géométrie des courbes, absents du chemin runtime |
 | `CampaignMapLayout`, `CampaignMapChunkManager` | `node_center`, `visible_rect`, `update` | Géométrie logique et sélection des secteurs chargés/ préchargés/ libérés, sans `Control` |
+| `CampaignSectionTheme`, `CampaignSectionArt` | `build`, `draw_backdrop` | Découpe visuelle des treize chapitres en bandes contiguës et dessin procédural du fond, sans `Control` ni texture |
 | `CampaignMapPositionState` | `make`, `from_dict`, `resolved` | Ancre, offset logique et secours de position, versionnés séparément de la progression |
 | `CampaignAudit` | `build` | Métriques de livraison : dieux, modes, paliers, séries, topologie, précisions et diversité des decks |
 | `CampaignService`, `CampaignContext` | `states`, `begin_attempt`, `complete_node`, `enter_node` | Façade applicative et contexte transitoire de lancement |
@@ -553,7 +554,10 @@ zone est créée par lots (8 nœuds immédiatement, puis 6 par image), et les
 secteurs situés hors d'une marge de conservation sont libérés. Les positions
 logiques viennent de `CampaignMapLayout`, donc les connexions et le centrage ne
 dépendent jamais de l'instanciation d'un bouton. `CampaignMapView` ne dessine
-que les arêtes dont les deux extrémités sont chargées. `CampaignMapPositionState`
+que les arêtes dont les deux extrémités sont chargées. Le fond de section est
+tracé avant elles par `CampaignSectionArt` : `CampaignSectionTheme` fournit des
+bandes contiguës dérivées des médianes de chapitres, et le dessin reste limité
+aux sections proches du viewport, sans `Control` ni texture. `CampaignMapPositionState`
 conserve une ancre et un offset dans `CampaignProgress.map_navigation` ; la
 position est restaurée avant le chargement des zones et sauvegardée avec un
 debounce de 0,65 s. Une ancre devenue invalide retombe sur le dernier niveau
