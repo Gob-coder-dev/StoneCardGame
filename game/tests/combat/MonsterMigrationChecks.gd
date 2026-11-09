@@ -123,7 +123,7 @@ func _test_backup() -> void:
 		"un échec de copie de sécurité empêche la réécriture et annule la sélection")
 	player._save_path = PATH
 	_check(player.set_selected_deck(1) and Storage.read(backup_path) == original
-		and Storage.read(PATH)["save_version"] == 5,
+		and Storage.read(PATH)["save_version"] == Codec.VERSION,
 		"la première modification conserve le JSON d'origine puis enregistre le profil converti")
 	player.set_selected_deck(2)
 	player.load_save()

@@ -15,6 +15,7 @@ const BotCardTierRulesModel := preload("res://scripts/domain/BotCardTierRules.gd
 const NEUTRAL_BOT_ID := "pr_stone"
 const NEUTRAL_BOT_NAME := "Pr.Stone"
 const NEUTRAL_BOT_COLOR := "#a89a83"
+const NEUTRAL_BOT_ASSET := "res://assets/gods/pr_stone.png"
 
 ## Paliers de puissance : le niveau de bot combine le niveau de forme et son
 ## plancher de rareté, sans modifier le niveau utilisé par le moteur.
@@ -116,7 +117,7 @@ static func build_neutral(bracket_id: String, difficulty_id: String) -> Dictiona
 		"%s — %s" % [str(source["name"]), str(tier["name"])],
 		"",
 		str(source["description"]),
-		"",
+		str(source.get("asset", "")),
 		deck,
 		tier,
 		level
@@ -132,7 +133,7 @@ static func neutral_source() -> Dictionary:
 		"family_name": "Sans dieu • cartes neutres",
 		"color": NEUTRAL_BOT_COLOR,
 		"description": "Adversaire sans dieu, son deck est composé uniquement de cartes neutres.",
-		"asset": "",
+		"asset": NEUTRAL_BOT_ASSET,
 	}
 
 

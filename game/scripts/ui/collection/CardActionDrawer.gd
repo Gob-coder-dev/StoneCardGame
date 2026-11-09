@@ -1,4 +1,4 @@
-## Tiroir d'actions affiché directement sous une carte de la collection.
+## Tiroir d'actions superposé près d'une carte, hors des conteneurs de layout.
 class_name CardActionDrawer
 extends PanelContainer
 
@@ -11,6 +11,10 @@ enum Source { DECK, COLLECTION }
 @onready var info_button: Button = $Actions/InfoButton
 @onready var primary_button: Button = $Actions/PrimaryButton
 @onready var upgrade_button: Button = $Actions/UpgradeButton
+@onready var upgrade_title: Label = $Actions/UpgradeButton/Content/Title
+@onready var upgrade_soul_icon: TextureRect = \
+	$Actions/UpgradeButton/Content/Price/SoulIcon
+@onready var upgrade_price: Label = $Actions/UpgradeButton/Content/Price/Amount
 
 var _stone_id: String = ""
 var _source: Source = Source.COLLECTION
@@ -40,8 +44,7 @@ func _refresh() -> void:
 		int(entry.get("unlocked_level", 0)), EconomyConfig.get_config())
 	upgrade_button.visible = not requirement.is_empty()
 	if upgrade_button.visible:
-		upgrade_button.text = "AMÉLIORER  •  %s" % UIFormat.integer(
-			int(requirement.get("souls", 0)))
+		upgrade_price.text = UIFormat.integer(int(requirement.get("souls", 0)))
 		upgrade_button.disabled = not PlayerData.can_upgrade_card(lineage_id)
 
 

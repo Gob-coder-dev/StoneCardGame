@@ -264,6 +264,21 @@ func card_entry(lineage_id: String) -> Dictionary:
 	return _inventory.entry(lineage_id)
 
 
+func pending_card_reward_count() -> int:
+	_ensure_inventory()
+	return _inventory.pending_lineage_count()
+
+
+func pending_card_reward_copy_count() -> int:
+	_ensure_inventory()
+	return _inventory.pending_copy_count()
+
+
+func pending_card_rewards_by_god() -> Dictionary:
+	_ensure_inventory()
+	return _inventory.pending_rewards_by_god().duplicate(true)
+
+
 func owns_stone(stone_id: String) -> bool:
 	_ensure_inventory()
 	return _inventory.owns_stone(stone_id)

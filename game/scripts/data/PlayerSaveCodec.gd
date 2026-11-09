@@ -1,6 +1,6 @@
 ## Format de sauvegarde et migration des profils, sans lecture/écriture disque.
 extends RefCounted
-const VERSION := 5
+const VERSION := 6
 const DeckMigration := preload("res://scripts/data/DeckCatalogueMigration.gd")
 const EconomyConfigModel := preload("res://scripts/data/economy/EconomyConfig.gd")
 const InventoryModel := preload("res://scripts/domain/economy/PlayerInventory.gd")

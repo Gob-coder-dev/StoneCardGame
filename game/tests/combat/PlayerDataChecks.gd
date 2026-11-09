@@ -31,7 +31,8 @@ func _test_codec() -> void:
 		"le contexte du combat reste absent de la sauvegarde du joueur")
 	var version_one := Codec.decode({"save_version": 1, "player_god_id": "veskar", "player_deck": ["le_nud_hurlant_n2"]})
 	_check(version_one["decks_by_god"]["veskar"] == [["le_nud_hurlant_n2"], [], []]
-		and version_one["save_version"] == 5, "la version 1 conserve son deck et crée deux emplacements vides")
+		and version_one["save_version"] == Codec.VERSION,
+		"la version 1 conserve son deck et crée deux emplacements vides")
 
 
 func _test_banks_codec() -> void:

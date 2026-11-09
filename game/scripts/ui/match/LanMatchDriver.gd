@@ -9,6 +9,7 @@ extends MatchDriver
 
 const StateFingerprintModel := preload("res://scripts/engine/StateFingerprint.gd")
 const CoordinatorModel := preload("res://scripts/network/LanMatchCoordinator.gd")
+const GodIdentityModel := preload("res://scripts/data/GodIdentity.gd")
 
 var _coordinator: LanMatchCoordinator = null
 var _link: LanSessionLink = null
@@ -24,8 +25,8 @@ func start() -> bool:
 	records_campaign_stats = false
 	local_name = PvpMatchContext.local_name
 	opponent_name = PvpMatchContext.remote_name
-	local_god = StoneLoader.get_god(PvpMatchContext.local_god_id)
-	opponent_god = StoneLoader.get_god(PvpMatchContext.remote_god_id)
+	local_god = GodIdentityModel.player(PvpMatchContext.local_god_id)
+	opponent_god = GodIdentityModel.player(PvpMatchContext.remote_god_id)
 
 	var one := PvpMatchContext.participant_for_side(GameState.PLAYER_ONE)
 	var two := PvpMatchContext.participant_for_side(GameState.PLAYER_TWO)

@@ -2,6 +2,7 @@
 extends Control
 
 const Routes := preload("res://scripts/ui/GameRoutes.gd")
+const GodIdentityModel := preload("res://scripts/data/GodIdentity.gd")
 
 ## Destination de chaque mode, après validation du deck.
 const MODE_SCENES: Dictionary = {
@@ -65,14 +66,15 @@ func _fit_portrait() -> void:
 
 func _refresh() -> void:
 	profile_button.text = "%s\nProfil & statistiques" % PlayerData.player_name
-	var god := StoneLoader.get_god(PlayerData.player_god_id)
-	background.set_god(god)
-	var portrait_path := str(god.get("asset", ""))
+	var identity := GodIdentityModel.player(PlayerData.player_god_id)
+	background.set_god(identity)
+	var portrait_path := str(identity.get("asset", ""))
 	god_portrait.texture = load(portrait_path) as Texture2D if portrait_path != "" else null
-	god_name.text = (str(god.get("name", "Dieu")) if not god.is_empty() else "Sans dieu").to_upper()
-	god_title.text = str(god.get("title", "")).capitalize() if not god.is_empty() else "Deck neutre"
-	god_family.text = str(god.get("family_name", "")) if not god.is_empty() else "Pierres neutres"
-	god_family.add_theme_color_override("font_color", Color(str(god.get("color", "#e9e1d1"))))
+	god_name.text = str(identity.get("name", "Sans dieu")).to_upper()
+	var godless := str(identity.get("id", "")) == ""
+	god_title.text = "Deck neutre" if godless else str(identity.get("title", "")).capitalize()
+	god_family.text = str(identity.get("family_name", "Pierres neutres"))
+	god_family.add_theme_color_override("font_color", Color(str(identity.get("color", "#e9e1d1"))))
 	god_title.add_theme_color_override("font_color", UITheme.COL_TEXT_DIM)
 	_restore_deck_status()
 	var deck := PlayerData.get_active_deck()

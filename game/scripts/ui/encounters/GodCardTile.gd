@@ -71,20 +71,19 @@ func _build_content() -> void:
 	column.add_theme_constant_override("separation", 6)
 	margin.add_child(column)
 
-	if not neutral:
-		_portrait = GodPortraitView.new()
-		_portrait.name = "Portrait"
-		_portrait.custom_minimum_size = Vector2(0, UITheme.GOD_TILE_PORTRAIT_HEIGHT)
-		_portrait.size_flags_vertical = Control.SIZE_EXPAND_FILL
-		var frame := UITheme.panel_style(
-			UITheme.COL_BG.darkened(0.18), _family_color.darkened(0.25), 2, 12)
-		frame.content_margin_left = 6
-		frame.content_margin_right = 6
-		frame.content_margin_top = 6
-		frame.content_margin_bottom = 6
-		_portrait.add_theme_stylebox_override("panel", frame)
-		_portrait.setup(_god)
-		column.add_child(_portrait)
+	_portrait = GodPortraitView.new()
+	_portrait.name = "Portrait"
+	_portrait.custom_minimum_size = Vector2(0, UITheme.GOD_TILE_PORTRAIT_HEIGHT)
+	_portrait.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	var frame := UITheme.panel_style(
+		UITheme.COL_BG.darkened(0.18), _family_color.darkened(0.25), 2, 12)
+	frame.content_margin_left = 6
+	frame.content_margin_right = 6
+	frame.content_margin_top = 6
+	frame.content_margin_bottom = 6
+	_portrait.add_theme_stylebox_override("panel", frame)
+	_portrait.setup(_god)
+	column.add_child(_portrait)
 
 	_name_label = Label.new()
 	_name_label.name = "Name"

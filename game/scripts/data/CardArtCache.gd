@@ -8,6 +8,7 @@ signal warmup_progress(god_id: String, loaded: int, total: int)
 signal warmup_finished(god_id: String)
 
 const MAX_PARALLEL_LOADS := 2
+const GodIdentityModel := preload("res://scripts/data/GodIdentity.gd")
 
 var _textures: Dictionary = {}
 var _failed: Dictionary = {}
@@ -58,9 +59,9 @@ func activate_god(god_id: String, preview_level: int = 1, deck: Array = []) -> v
 	_emit_warmup_progress()
 
 
-## Les six portraits sont petits en nombre, présents dans plusieurs écrans et
-## conservés pour toute la session. Ils ne font pas partie de la progression
-## des cartes du dieu actif.
+## Les portraits des dieux et les deux identités sans dieu sont petits en
+## nombre, présents dans plusieurs écrans et conservés pour toute la session.
+## Ils ne font pas partie de la progression des cartes du dieu actif.
 func preload_god_portraits() -> void:
 	for god in StoneLoader.get_all_gods():
 		var path := str(god.get("asset", ""))
@@ -69,6 +70,13 @@ func preload_god_portraits() -> void:
 		_persistent_paths[path] = true
 		_active_paths[path] = true
 		_request(path, true)
+	for identity in [GodIdentityModel.player_godless(), GodIdentityModel.bot_godless()]:
+		var identity_path := str(identity.get("asset", ""))
+		if identity_path.is_empty():
+			continue
+		_persistent_paths[identity_path] = true
+		_active_paths[identity_path] = true
+		_request(identity_path, true)
 
 
 ## Demande non bloquante utilisée par StoneCard. Une texture déjà chargée est

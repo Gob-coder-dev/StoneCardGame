@@ -5,6 +5,7 @@ signal god_selected(god_id: String)
 
 const TouchButtonScript := preload("res://scripts/ui/input/TouchButton.gd")
 const GodPortraitView := preload("res://scripts/ui/GodPortrait.gd")
+const GodIdentityModel := preload("res://scripts/data/GodIdentity.gd")
 
 var god_button: Button
 var selected_portrait: GodPortrait
@@ -44,11 +45,9 @@ func _setup_god_menu() -> void:
 		child.queue_free()
 	_option_buttons.clear()
 	_option_gods.clear()
-	var choices: Array = [{
-		"id": "", "name": "Sans dieu", "title": "Deck neutre",
-		"family_name": "Pierres neutres", "description": "Un deck entièrement neutre, sans pouvoir divin.",
-		"color": UITheme.COL_TEXT_DIM.to_html(), "asset": "",
-	}]
+	var godless := GodIdentityModel.player_godless()
+	godless["color"] = UITheme.COL_TEXT_DIM.to_html()
+	var choices: Array = [godless]
 	for god in StoneLoader.get_all_gods():
 		if PlayerData.has_unlocked_god(str(god.get("id", ""))):
 			choices.append(god)
@@ -103,11 +102,9 @@ func _make_option_content(god: Dictionary) -> VBoxContainer:
 
 
 func refresh(god_id: String) -> void:
-	var god := StoneLoader.get_god(god_id)
+	var god := GodIdentityModel.player(god_id)
 	if god_id == "":
-		god = {"id": "", "name": "Sans dieu", "title": "Deck neutre",
-			"family_name": "Pierres neutres", "description": "Un deck entièrement neutre, sans pouvoir divin.",
-			"color": UITheme.COL_TEXT_DIM.to_html(), "asset": ""}
+		god["color"] = UITheme.COL_TEXT_DIM.to_html()
 	change_label.text = "CHANGER  %s" % ("▲" if god_menu.visible else "▼")
 	if god_id == _shown_god_id:
 		return

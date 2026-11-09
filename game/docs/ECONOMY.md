@@ -73,6 +73,19 @@ réservées au premier tutoriel ainsi qu’aux boss et mini-boss possédant une
 récompense fixe dans les données. Les identifiants de transaction empêchent un
 double paiement si un résultat ou un signal est traité deux fois.
 
+Une carte neutre, ou une carte liée à un dieu déjà débloqué, rejoint directement
+la collection. Une carte liée à un dieu encore verrouillé est conservée dans la
+réserve persistante `pending_card_rewards` : elle reste inutilisable et hors de
+la collection, mais l’écran de résultat annonce sa mise en attente. L’achat du
+dieu transfère atomiquement toutes ses récompenses différées dans la collection.
+Le chargement migre également vers cette réserve les cartes divines que les
+anciennes versions auraient accordées avant le déblocage de leur dieu.
+
+Le créateur de decks expose cette réserve depuis le bouton **Coffre**, placé à
+côté de « Cartes possédées ». Sa pastille compte les lignées distinctes en
+attente ; la fenêtre regroupe ensuite les cartes par dieu et affiche le nombre
+exact de copies. Les sections vides ne sont jamais créées.
+
 ## Architecture et persistance
 
 | Élément | Mission unique |
@@ -85,8 +98,9 @@ double paiement si un résultat ou un signal est traité deux fois.
 | `CampaignRewardService` | traduire une victoire de nœud en transaction économique |
 | `PlayerData` | posséder le profil et l’enregistrer de façon atomique |
 
-Le profil version 5 sérialise l’inventaire avec les banques de decks. Les
-services préparent une copie du prochain état puis appellent une seule écriture
+Le profil version 6 sérialise l’inventaire avec les banques de decks et les
+récompenses divines différées. Les services préparent une copie du prochain
+état puis appellent une seule écriture
 transactionnelle. En cas d’échec disque, l’inventaire et le deck restent
 inchangés en mémoire. La progression de campagne demeure dans son fichier
 séparé et ne duplique aucune valeur économique.

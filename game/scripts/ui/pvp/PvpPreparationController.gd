@@ -3,6 +3,7 @@ extends Control
 const RulesModel := preload("res://scripts/domain/MatchRules.gd")
 const Routes := preload("res://scripts/ui/GameRoutes.gd")
 const LayoutModel := preload("res://scripts/ui/pvp/PvpPreparationLayout.gd")
+const GodIdentityModel := preload("res://scripts/data/GodIdentity.gd")
 
 @onready var back_button: Button = $Root/Header/BackButton
 @onready var title_label: Label = $Root/Header/Titles/Title
@@ -182,9 +183,9 @@ func _render_loadout(loadout: Dictionary, series: Dictionary, format: String) ->
 	reveal_panel.visible = true
 	wait_label.visible = false
 	confirm_button.visible = true
-	var god := StoneLoader.get_god(str(loadout.get("god_id", "")))
+	var god := GodIdentityModel.player(str(loadout.get("god_id", "")))
 	god_portrait.setup(god)
-	god_name.text = str(god.get("name", loadout.get("god_id", "")))
+	god_name.text = str(god.get("name", "Sans dieu"))
 	var family := str(god.get("family_name", ""))
 	god_family.text = family if family != "" else "Dieu"
 	god_family.add_theme_color_override("font_color",

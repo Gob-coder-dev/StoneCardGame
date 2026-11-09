@@ -30,24 +30,28 @@ de saisie et les barres de défilement.
 ## Fonds et illustrations
 
 `MenuBackground.gd` dessine un fond de pierre sombre avec quelques formes
-néon simples : halo ouvragé à l'accueil, filets roses sur toute la hauteur du
-bestiaire, angles fins dans les règles, arche des rencontres et rails de la carte
-des niveaux. Le rituel de
-pièce reçoit des cercles néon concentriques autour de la monnaie pour en faire le
-point focal. Les accents néon suivent la couleur du dieu affiché : le dieu
-actif sur l'accueil et dans le bestiaire, le dieu sélectionné dans les
-rencontres, puis les deux dieux en duel, sur le plateau et au résultat. Les
-deux accents secondaires d'un dieu décalent sa teinte d'environ 40° de part et
-d'autre, l'un plus clair et saturé, l'autre plus sombre : trois néons distincts
-restent dans la gamme du dieu sans se confondre. En duel, le troisième accent
-provient de la teinte intermédiaire des deux dieux. Les filets néon sont plus
-épais sur tous les décors sauf le profil et le bestiaire, dont les panneaux
-occupent déjà la largeur ; le rituel de la pièce et le résultat les épaississent
-davantage encore. À l'accueil, le cercle est calé sur le portrait du dieu et le
-nom comme les commandes remontent au-dessus de la barre de navigation. Le plateau conserve les couleurs bleu et rouge des
-camps ; seuls ses détails de fond reprennent les couleurs divines. Les règles et
-les statistiques restent neutres. Les effets lumineux restent en marge ou à
-faible contraste.
+néon simples. Le bestiaire, la campagne, la boutique, le profil et les règles
+partagent le même décor : deux filets verticaux qui vont d'un bord à l'autre de
+l'écran et traversent toute la hauteur. Dessinés dans l'espace écran, hors de la
+zone d'artwork, ils restent pleine hauteur sur les téléphones 20:9 et passent
+toujours à l'extérieur des panneaux opaques sur tablette ; leur couleur suit le
+néon secondaire, donc la teinte claire du dieu quand l'écran en affiche un. L'accueil garde son halo ouvragé, les
+rencontres leur arche, et la carte de campagne ne garde que ses nœuds et ses
+courbes. Le rituel de pièce reçoit des cercles néon concentriques autour de la
+monnaie pour en faire le point focal. Les accents néon suivent la couleur du
+dieu affiché : le dieu actif sur l'accueil, dans le bestiaire et sur la carte de
+campagne, le dieu sélectionné dans les rencontres, puis les deux dieux en duel,
+sur le plateau et au résultat. Les deux accents secondaires d'un dieu décalent
+sa teinte d'environ 40° de part et d'autre, l'un plus clair et saturé, l'autre
+plus sombre : trois néons distincts restent dans la gamme du dieu sans se
+confondre. En duel, le troisième accent provient de la teinte intermédiaire des
+deux dieux. Les filets néon des autres décors gardent leur relief ; le rituel de
+la pièce et le résultat les épaississent davantage encore. À l'accueil, le cercle
+est calé sur le portrait du dieu et le nom comme les commandes remontent
+au-dessus de la barre de navigation. Le plateau conserve les couleurs bleu et
+rouge des camps ; seuls ses détails de fond reprennent les couleurs divines. Les
+règles et les statistiques restent neutres. Les effets lumineux restent en marge
+ou à faible contraste.
 Le dessin est actualisé au chargement, au changement de dieu ou au
 redimensionnement et ignore les événements d'entrée.
 
@@ -82,8 +86,8 @@ Les six portraits sont fournis dans `assets/gods/`. Le champ `asset` de
   remplit la largeur disponible ; son conteneur réserve la même hauteur pour
   qu'elle reste carrée et ne recouvre pas les textes. Son logo de pouvoir est
   agrandi pour cette vue et le même pictogramme précède le texte d'explication.
-- Carte de campagne : un graphe vertical sur fond de refuge, avec un espace
-  logique de 1080 unités et des ronds de 150 unités réduits ensemble sur
+- Carte de campagne : un graphe vertical sur le fond commun à deux filets, avec
+  un espace logique de 1080 unités et des ronds de 150 unités réduits ensemble sur
   téléphone. Les courbes passent derrière les nœuds ; terminé, accessible,
   verrouillé, tutoriel, mini-boss et boss se distinguent par la couleur et par
   la forme (coche, anneau, cadenas, livre, losange, couronne). Un nœud accessible

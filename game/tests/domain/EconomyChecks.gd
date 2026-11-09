@@ -17,6 +17,8 @@ func run() -> void:
 	await _test_menu_balance_ui()
 	_test_first_tutorial_reward()
 	PlayerData._apply_profile(Codec.starter_profile())
+	await _test_deferred_god_reward()
+	PlayerData._apply_profile(Codec.starter_profile())
 	_test_three_by_three_state()
 	_test_rewards_and_upgrade()
 	_test_god_purchase()
@@ -76,9 +78,11 @@ func _test_collection_economy_ui() -> void:
 	var options: GridContainer = page.god_options
 	var first_slot: VBoxContainer = page.deck_rows.get_child(0).get_child(0)
 	var progress := first_slot.get_node("Progress") as CardProgressBar
+	var godless_option := options.get_child(0)
 	_check(page.god_name.text == "SANS DIEU" and options.get_child_count() == 1
-		and str(options.get_child(0).get_meta("god_id", "missing")) == "",
-		"collection : un profil neuf affiche Sans dieu et aucun dieu non acheté")
+		and str(godless_option.get_meta("god_id", "missing")) == ""
+		and godless_option.get_node("Content/Portrait").has_portrait(),
+		"collection : un profil neuf affiche Sans dieu avec sa stèle et aucun dieu non acheté")
 	_check(page.locked_collection_rows.visible and page.locked_collection_title.visible
 		and page.locked_collection_title.text == "CARTES NON POSSÉDÉES",
 		"collection : les cartes absentes vivent dans une section séparée")
@@ -92,13 +96,35 @@ func _test_collection_economy_ui() -> void:
 	_check(starter_wrapper.get_parent() == page._collection_grid._locked_grid,
 		"collection : sa N2 verrouillée passe dans les cartes non possédées en aperçu N2")
 	page._select_preview_level(1)
+	var deck_card := first_slot.get_child(0) as StoneCard
+	var deck_card_size := deck_card.size
+	var deck_wrapper_size := first_slot.size
+	var deck_row := first_slot.get_parent() as HBoxContainer
+	var deck_positions: Array = deck_row.get_children().map(func(wrapper: Control):
+		return wrapper.position)
 	page._open_card_actions(PlayerData.get_active_deck()[0], first_slot,
 		CardActionDrawer.Source.DECK)
+	for _frame in range(4):
+		await get_tree().process_frame
 	var drawer: CardActionDrawer = page._action_drawer
 	_check(drawer != null and drawer.upgrade_button.visible
-		and drawer.upgrade_button.icon != null
-		and not drawer.upgrade_button.text.to_upper().contains("ÂME"),
+		and drawer.upgrade_soul_icon.texture != null
+		and drawer.upgrade_title.text == "AMÉLIORER"
+		and not drawer.upgrade_price.text.to_upper().contains("ÂME"),
 		"collection : Améliorer est dans le tiroir et son prix utilise le pictogramme")
+	_check(drawer.get_parent() == page.action_drawer_layer
+		and deck_card.size == deck_card_size and first_slot.size == deck_wrapper_size
+		and deck_row.get_children().map(func(wrapper: Control):
+			return wrapper.position) == deck_positions,
+		"deck : le tiroir superposé ne redimensionne ni la carte ni sa rangée")
+	var deck_rect := first_slot.get_global_rect()
+	_check(drawer.visible and drawer.global_position.y >= deck_rect.end.y
+		and is_equal_approx(drawer.size.x, deck_rect.size.x),
+		"deck : le tiroir reste sous la carte et reprend sa largeur")
+	page.scroll.scroll_vertical += 20
+	await get_tree().process_frame
+	_check(not is_instance_valid(page._action_drawer),
+		"deck : le tiroir se ferme au premier défilement au lieu de se déplacer")
 	page.queue_free()
 	await get_tree().process_frame
 
@@ -160,6 +186,87 @@ func _test_three_by_three_state() -> void:
 		and RulesEngine.get_free_cells(state).size() == 9
 		and state.adjacent_positions(1, 1).size() == 4,
 		"tutoriel : le moteur construit un vrai plateau 3 × 3 sans coordonnées 4 × 4")
+
+
+func _test_deferred_god_reward() -> void:
+	var service := Economy.new()
+	var lineage := "porte_fievre"
+	var reward := service.grant_reward("test:locked-god-reward", 11,
+		[{"lineage_id": lineage, "copies": 2}])
+	var duplicate := service.grant_reward("test:locked-god-reward", 11,
+		[{"lineage_id": lineage, "copies": 2}])
+	var inventory := PlayerData.inventory_dict()
+	_check(bool(reward.get("ok", false))
+		and bool(duplicate.get("already_applied", false))
+		and (reward.get("cards", []) as Array).is_empty()
+		and (reward.get("deferred_cards", []) as Array).size() == 1
+		and not PlayerData.owns_stone("porte_fievre_n1")
+		and int(inventory.get("pending_card_rewards", {}).get(lineage, 0)) == 2
+		and PlayerData.pending_card_reward_count() == 1
+		and PlayerData.pending_card_reward_copy_count() == 2,
+		"économie : une carte divine différée reste hors collection et idempotente")
+	PlayerData._apply_profile(Codec.decode(PlayerData.get_profile()))
+	_check(int(PlayerData.inventory_dict().get("pending_card_rewards", {}).get(lineage, 0)) == 2
+		and not PlayerData.owns_stone("porte_fievre_n1"),
+		"économie : la récompense différée survit à la sérialisation du profil")
+	service.grant_reward("test:drawer-layout", 0, [
+		{"lineage_id": "avortons_des_caves", "copies": 1},
+		{"lineage_id": "mordeur_des_combles", "copies": 1},
+		{"lineage_id": "mache_mur", "copies": 1},
+	])
+	var page := (load("res://scenes/menus/CollectionScreen.tscn") as PackedScene).instantiate()
+	add_child(page)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var collection_wrappers: Array = [
+		page._collection_grid._wrappers["avortons_des_caves"],
+		page._collection_grid._wrappers["mordeur_des_combles"],
+		page._collection_grid._wrappers["mache_mur"],
+	]
+	var positions_before: Array = collection_wrappers.map(func(wrapper: Control):
+		return wrapper.position)
+	var selected_wrapper := collection_wrappers[1] as VBoxContainer
+	var selected_card := selected_wrapper.get_child(0) as StoneCard
+	var card_size_before := selected_card.size
+	var wrapper_size_before := selected_wrapper.size
+	page._open_card_actions("mordeur_des_combles_n1", selected_wrapper,
+		CardActionDrawer.Source.COLLECTION)
+	for _frame in range(4):
+		await get_tree().process_frame
+	var positions_after: Array = collection_wrappers.map(func(wrapper: Control):
+		return wrapper.position)
+	var collection_rect := selected_wrapper.get_global_rect()
+	_check(page._action_drawer.get_parent() == page.action_drawer_layer
+		and selected_card.size == card_size_before
+		and selected_wrapper.size == wrapper_size_before
+		and positions_after == positions_before
+		and page._action_drawer.visible
+		and page._action_drawer.global_position.y >= collection_rect.end.y
+		and is_equal_approx(page._action_drawer.size.x, collection_rect.size.x),
+		"collection : sélectionner une carte superpose le tiroir sans déplacer la grille")
+	page._open_pending_rewards()
+	var vault: PendingRewardsVault = page.pending_rewards_vault
+	var section := vault.groups_container.get_child(1) as PanelContainer
+	var grid := section.get_child(0).get_child(1) as GridContainer
+	var quantity := grid.get_child(0).get_node("Quantity") as Label
+	_check(page.pending_rewards_button.get_parent() == page.get_node(
+		"Content/Scroll/Page/CollectionTitle")
+		and page.pending_rewards_badge.visible and page.pending_rewards_badge.text == "1"
+		and vault.visible and section.get_meta("god_id") == "nerava"
+		and quantity.text == "×2",
+		"collection : le coffre regroupe les copies en attente sous leur dieu")
+	_check(service.grant_development_souls(89) == OK, "économie : préparation du premier achat")
+	var bought := service.buy_god("nerava")
+	await get_tree().process_frame
+	_check(bool(bought.get("ok", false)) and PlayerData.has_unlocked_god("nerava")
+		and PlayerData.owns_stone("porte_fievre_n1")
+		and (bought.get("released_cards", []) as Array).size() == 1
+		and not PlayerData.inventory_dict().get("pending_card_rewards", {}).has(lineage)
+		and not page.pending_rewards_badge.visible
+		and vault.empty_label.visible,
+		"économie : acheter le dieu libère atomiquement ses récompenses différées")
+	page.queue_free()
+	await get_tree().process_frame
 
 
 func _test_god_purchase() -> void:
@@ -230,13 +337,18 @@ func _test_result_reward_ui() -> void:
 	BattleContext.last_reward = {
 		"souls": 11,
 		"cards": [{"lineage_id": "avortons_des_caves", "copies": 2}],
+		"deferred_cards": [{"lineage_id": "porte_fievre", "copies": 1,
+			"god_id": "nerava"}],
 	}
 	var page := (load("res://scenes/menus/Result.tscn") as PackedScene).instantiate()
 	add_child(page)
 	await get_tree().process_frame
 	_check(page.rewards.visible and page.reward_divider.visible
 		and page.reward_soul_amount.text == "×11"
-		and page.reward_cards.get_child_count() == 1
+		and page.reward_cards.get_child_count() == 2
+		and (page.reward_cards.get_child(1) as VBoxContainer).get_child_count() == 3
+		and ((page.reward_cards.get_child(1) as VBoxContainer).get_child(2) as Label).text \
+			== "APRÈS NÉRAVA"
 		and page.result_label.get_parent() == page.rewards.get_parent(),
 		"résultat : victoire, score et récompenses partagent une carte lisible et illustrée")
 	page.queue_free()

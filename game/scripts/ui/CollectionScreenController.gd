@@ -15,6 +15,9 @@ const CollectionGridView := preload("res://scripts/ui/collection/CollectionGrid.
 const GodSelectorView := preload("res://scripts/ui/collection/GodSelector.gd")
 const NumberedSelector := preload("res://scripts/ui/collection/NumberedSelector.gd")
 const EconomyServiceModel := preload("res://scripts/application/economy/EconomyService.gd")
+const ACTION_DRAWER_GAP := 10.0
+const ACTION_DRAWER_MARGIN := 24.0
+const BOTTOM_SPACER_DEFAULT := 30.0
 var _deck_panel: RefCounted
 var _collection_grid: RefCounted
 var _god_selector: RefCounted
@@ -38,6 +41,11 @@ var _preview_level := 1
 @onready var collection_rows: VBoxContainer = $Content/Scroll/Page/CollectionRows
 @onready var locked_collection_rows: VBoxContainer = $Content/Scroll/Page/LockedCollectionRows
 @onready var locked_collection_title: Label = $Content/Scroll/Page/LockedCollectionTitle
+@onready var pending_rewards_button: Button = \
+	$Content/Scroll/Page/CollectionTitle/PendingRewardsButton
+@onready var pending_rewards_badge: Label = \
+	$Content/Scroll/Page/CollectionTitle/PendingRewardsButton/Badge
+@onready var pending_rewards_vault: PendingRewardsVault = $PendingRewardsVault
 @onready var sort_button: Button = $Content/Scroll/Page/CollectionHeader/SortButton
 @onready var sort_menu: PanelContainer = $Content/Scroll/Page/SortMenu
 @onready var sort_options: VBoxContainer = $Content/Scroll/Page/SortMenu/SortOptions
@@ -46,15 +54,22 @@ var _preview_level := 1
 @onready var replacement_panel: ReplacementPanel = $ReplacementPanel
 @onready var level_button: Button = $Content/Scroll/Page/LevelButton
 @onready var level_menu: PanelContainer = $Content/Scroll/Page/LevelMenu
+@onready var action_drawer_layer: Control = $ActionDrawerLayer
+@onready var bottom_spacer: Control = $Content/Scroll/Page/BottomSpacer
 
 var _current_deck: Array = []
 var _sort_mode: int = SortMode.FAMILY
 var _action_drawer: CardActionDrawer = null
 var _action_card: StoneCard = null
+var _action_wrapper: Control = null
 var _action_stone_id: String = ""
 var _action_source: int = -1
 var _replacement_stone_id: String = ""
 var _scroll_tap := Gesture.new()
+var _outside_pointer: int = -1
+var _outside_origin := Vector2.ZERO
+var _outside_canceled: bool = false
+var _adjusting_drawer_scroll: bool = false
 var _suppress_scroll_tap: bool = false
 var _clearing_scroll_tap: bool = false
 
@@ -63,6 +78,9 @@ func _ready() -> void:
 	_current_deck = PlayerData.get_active_deck()
 	_prepare_card_art()
 	scroll.gui_input.connect(_on_scroll_gui_input)
+	scroll.scroll_started.connect(_close_action_drawer)
+	scroll.get_v_scroll_bar().value_changed.connect(_on_scroll_value_changed)
+	action_drawer_layer.resized.connect(_position_action_drawer)
 	god_button.pressed.connect(_toggle_god_menu)
 	_deck_panel = DeckPanelView.new(deck_rows)
 	_collection_grid = CollectionGridView.new(collection_rows, locked_collection_rows,
@@ -87,6 +105,10 @@ func _ready() -> void:
 	_setup_sort()
 	sort_button.pressed.connect(_toggle_sort_menu)
 	replacement_panel.replacement_requested.connect(_on_replacement_requested)
+	pending_rewards_button.pressed.connect(_open_pending_rewards)
+	pending_rewards_vault.shop_requested.connect(_open_shop_from_vault)
+	if not PlayerData.inventory_changed.is_connected(_on_inventory_changed):
+		PlayerData.inventory_changed.connect(_on_inventory_changed)
 	sort_menu.visible = false
 	_refresh_all(false, true)
 
@@ -208,12 +230,91 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 
+## Les panneaux flottants ne doivent pas dépendre du contrôle situé sous le
+## doigt : un Label ou un bouton peut consommer l'événement avant le Scroll.
+## On ferme donc ici tout panneau touché depuis l'extérieur, au relâchement
+## d'un véritable appui. Un glissement ou un geste annulé ne ferme rien.
+func _input(event: InputEvent) -> void:
+	if not _outside_tap_released(event):
+		return
+	if is_instance_valid(_action_drawer) \
+			and not _event_hits_control(event, _action_drawer) \
+			and not _event_hits_control(event, _action_card):
+		_close_action_drawer()
+	if sort_menu.visible \
+			and not _event_hits_control(event, sort_menu) \
+			and not _event_hits_control(event, sort_button):
+		_close_inline_menus()
+	elif level_menu.visible \
+			and not _event_hits_control(event, level_menu) \
+			and not _event_hits_control(event, level_button):
+		_close_inline_menus()
+	elif god_menu.visible \
+			and not _event_hits_control(event, god_menu) \
+			and not _event_hits_control(event, god_button):
+		_close_inline_menus()
+
+
+func _outside_tap_released(event: InputEvent) -> bool:
+	var pointer := -1
+	var position := Vector2.ZERO
+	var pressed := false
+	var released := false
+	var canceled := false
+	if event is InputEventScreenTouch:
+		pointer = event.index
+		position = event.position
+		pressed = event.pressed
+		released = not event.pressed
+		canceled = event.canceled
+	elif event is InputEventScreenDrag:
+		pointer = event.index
+		position = event.position
+	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		pointer = -2
+		position = event.position
+		pressed = event.pressed
+		released = not event.pressed
+		canceled = event.canceled
+	elif event is InputEventMouseMotion and _outside_pointer == -2:
+		pointer = -2
+		position = event.position
+	else:
+		return false
+	if pressed:
+		if _outside_pointer == -1:
+			_outside_pointer = pointer
+			_outside_origin = position
+			_outside_canceled = false
+		return false
+	if pointer != _outside_pointer:
+		return false
+	if position.distance_to(_outside_origin) > UITheme.TOUCH_SLOP:
+		_outside_canceled = true
+	if not released:
+		return false
+	var tapped := not canceled and not _outside_canceled
+	_outside_pointer = -1
+	_outside_canceled = false
+	return tapped
+
+
+func _event_hits_control(event: InputEvent, control: Control) -> bool:
+	if not is_instance_valid(control) or not control.is_visible_in_tree():
+		return false
+	var local_event := control.make_input_local(event)
+	return Rect2(Vector2.ZERO, control.size).has_point(local_event.position)
+
+
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
 		_go_back()
 
 
 func _go_back() -> void:
+	if pending_rewards_vault.visible:
+		pending_rewards_vault.close()
+		return
 	if info_sheet.visible:
 		info_sheet.close_sheet()
 		return
@@ -274,6 +375,7 @@ func _refresh_all(preserve_scroll: bool = true, rebuild_collection: bool = false
 	else:
 		_collection_grid.update_deck(_current_deck)
 	_refresh_god_panel()
+	_refresh_pending_rewards()
 	var cost := DeckRules.deck_cost(_current_deck)
 	deck_count_label.text = "%d/%d  •  %s/%d pts" % [
 		_current_deck.size(), DeckRules.DECK_SIZE, UIFormat.cost(cost), DeckRules.DECK_BUDGET
@@ -284,6 +386,30 @@ func _refresh_all(preserve_scroll: bool = true, rebuild_collection: bool = false
 	)
 	if preserve_scroll:
 		_restore_scroll_deferred(previous_scroll)
+
+
+func _open_pending_rewards() -> void:
+	_close_card_panels()
+	_close_inline_menus()
+	pending_rewards_vault.open()
+
+
+func _open_shop_from_vault() -> void:
+	Routes.go(get_tree(), Routes.SHOP)
+
+
+func _refresh_pending_rewards() -> void:
+	var count := PlayerData.pending_card_reward_count()
+	pending_rewards_badge.visible = count > 0
+	pending_rewards_badge.text = str(count)
+	pending_rewards_button.tooltip_text = "%d récompense%s en attente" % [
+		count, "s" if count != 1 else ""] if count > 0 else "Aucune récompense en attente"
+	if pending_rewards_vault.visible:
+		pending_rewards_vault.rebuild()
+
+
+func _on_inventory_changed() -> void:
+	_refresh_pending_rewards()
 
 
 func _refresh_god_panel() -> void:
@@ -320,15 +446,73 @@ func _open_card_actions(stone_id: String, wrapper: VBoxContainer, source: int) -
 	_update_sort_labels()
 	_action_stone_id = stone_id
 	_action_source = source
+	_action_wrapper = wrapper
 	_action_card = wrapper.get_child(0) as StoneCard
 	if _action_card != null:
 		_action_card.set_selected(true)
 	_action_drawer = ACTION_DRAWER_SCENE.instantiate() as CardActionDrawer
-	wrapper.add_child(_action_drawer)
+	action_drawer_layer.add_child(_action_drawer)
 	_action_drawer.setup(stone_id, source)
 	_action_drawer.info_requested.connect(_on_info_requested)
 	_action_drawer.primary_requested.connect(_on_primary_requested)
 	_action_drawer.upgrade_requested.connect(_upgrade_card)
+	_action_drawer.visible = false
+	_position_action_drawer_deferred()
+
+
+func _position_action_drawer_deferred() -> void:
+	await get_tree().process_frame
+	if not is_instance_valid(_action_drawer) or not is_instance_valid(_action_wrapper):
+		return
+	var drawer_height := _action_drawer.get_combined_minimum_size().y
+	_adjusting_drawer_scroll = true
+	bottom_spacer.custom_minimum_size.y = maxf(BOTTOM_SPACER_DEFAULT,
+		drawer_height + ACTION_DRAWER_GAP + ACTION_DRAWER_MARGIN)
+	await get_tree().process_frame
+	if not is_instance_valid(_action_drawer) or not is_instance_valid(_action_wrapper):
+		_adjusting_drawer_scroll = false
+		return
+	var target_rect := _action_wrapper.get_global_rect()
+	var visible_rect := scroll.get_global_rect()
+	var overflow := target_rect.end.y + ACTION_DRAWER_GAP + drawer_height \
+		- (visible_rect.end.y - ACTION_DRAWER_MARGIN)
+	if overflow > 0.0:
+		scroll.scroll_vertical += ceili(overflow)
+		await get_tree().process_frame
+	_adjusting_drawer_scroll = false
+	if not is_instance_valid(_action_drawer):
+		return
+	_position_action_drawer()
+	_action_drawer.visible = true
+
+
+## Le tiroir vit dans une couche superposée : il ne participe jamais au calcul
+## des colonnes et ne peut donc modifier ni la carte ni la grille.
+func _position_action_drawer() -> void:
+	if not is_instance_valid(_action_drawer) or not is_instance_valid(_action_wrapper):
+		return
+	var target_rect := _action_wrapper.get_global_rect()
+	var visible_rect := scroll.get_global_rect()
+	var minimum := _action_drawer.get_combined_minimum_size()
+	# La largeur suit exactement l'emplacement de la carte. Le tiroir ne peut
+	# ainsi paraître plus gros que la carte, ni élargir une colonne.
+	var drawer_size := Vector2(maxf(target_rect.size.x, minimum.x), minimum.y)
+	_action_drawer.custom_minimum_size = drawer_size
+	_action_drawer.size = drawer_size
+	var global_x := target_rect.get_center().x - drawer_size.x * 0.5
+	global_x = clampf(global_x, visible_rect.position.x + ACTION_DRAWER_MARGIN,
+		visible_rect.end.x - drawer_size.x - ACTION_DRAWER_MARGIN)
+	# Le tiroir appartient visuellement à la carte : il reste toujours dessous.
+	var global_y := target_rect.end.y + ACTION_DRAWER_GAP
+	var layer_origin := action_drawer_layer.get_global_transform_with_canvas().origin
+	_action_drawer.position = Vector2(global_x, global_y) - layer_origin
+
+
+func _on_scroll_value_changed(_value: float) -> void:
+	# Une superposition ne doit jamais poursuivre sa carte pendant le scroll.
+	# Le prochain appui la rouvrira à la bonne position.
+	if not _adjusting_drawer_scroll:
+		_close_action_drawer()
 
 
 func _close_action_drawer() -> void:
@@ -341,8 +525,10 @@ func _close_action_drawer() -> void:
 		_action_drawer.queue_free()
 	_action_drawer = null
 	_action_card = null
+	_action_wrapper = null
 	_action_stone_id = ""
 	_action_source = -1
+	bottom_spacer.custom_minimum_size.y = BOTTOM_SPACER_DEFAULT
 
 
 func _on_info_requested(stone_id: String) -> void:

@@ -24,10 +24,9 @@ const NEON_HUE_SHIFT := 0.10
 const NEON_LIGHT_STEP := 0.12
 const NEON_DARK_STEP := 0.28
 
-## Filets plus épais partout, sauf sur le profil et le bestiaire (decks), dont
-## les panneaux occupent déjà la largeur et n'ont pas besoin de ce relief. Le
-## rituel de la pièce et le résultat, plus dépouillés, reçoivent un trait plus
-## marqué encore.
+## Filets plus épais sur les décors dessinés dans l'artwork. Le rituel de la
+## pièce et le résultat, plus dépouillés, reçoivent un trait plus marqué encore.
+## Les deux filets latéraux partagés gardent une épaisseur fixe.
 const NEON_WIDTH_SCALE := 1.5
 const NEON_WIDTH_SCALE_COIN := 2.6
 const NEON_WIDTH_SCALE_STRONG := 3.0
@@ -102,8 +101,6 @@ func _neon_variant(base: Color, direction: float) -> Color:
 
 func _neon_width_scale() -> float:
 	match room:
-		Room.PROFILE, Room.BESTIARY:
-			return 1.0
 		Room.COIN_RITUAL:
 			return NEON_WIDTH_SCALE_COIN
 		Room.AFTERMATH, Room.AFTERMATH_DEFEAT, Room.AFTERMATH_DRAW:
@@ -120,6 +117,7 @@ func _draw() -> void:
 		return
 
 	_draw_base()
+	_draw_side_rails_for_room()
 	var full_bleed := room == Room.BOARD or room == Room.PVP
 	var scale := _full_bleed_scale_for_size(size) if full_bleed \
 		else _artwork_scale_for_size(size)
@@ -132,14 +130,8 @@ func _draw() -> void:
 	match room:
 		Room.REFUGE:
 			_draw_main_menu()
-		Room.BESTIARY:
-			_draw_relic_menu()
-		Room.JOURNAL:
-			_draw_journal()
 		Room.ENCOUNTERS:
 			_draw_encounters()
-		Room.ENCOUNTER_PATH:
-			_draw_encounter_path()
 		Room.COIN_RITUAL:
 			_draw_coin_ritual()
 		Room.BOARD:
@@ -150,8 +142,6 @@ func _draw() -> void:
 			_draw_aftermath_defeat()
 		Room.AFTERMATH_DRAW:
 			_draw_aftermath_draw()
-		Room.PROFILE:
-			_draw_profile()
 		Room.PVP:
 			_draw_pvp(visible_bottom)
 	draw_set_transform(Vector2.ZERO)
@@ -198,6 +188,24 @@ func _artwork_bottom_for_size(viewport_size: Vector2) -> float:
 	return (viewport_size.y - offset.y) / scale
 
 
+## Le bestiaire (personnalisation de deck), la campagne, la boutique, le profil
+## et les règles partagent le même décor : deux néons verticaux d'un bord à
+## l'autre. Dessinés en espace écran, hors de la zone d'artwork, ils couvrent
+## toute la hauteur sur les téléphones 20:9 et restent dans la marge extérieure
+## des panneaux opaques sur tablette.
+func _uses_side_rails() -> bool:
+	return room in [Room.BESTIARY, Room.ENCOUNTER_PATH, Room.PROFILE, Room.JOURNAL]
+
+
+func _draw_side_rails_for_room() -> void:
+	if not _uses_side_rails():
+		return
+	for ratio in [0.022, 0.978]:
+		var x := size.x * float(ratio)
+		_draw_neon_line(Vector2(x, 0.0), Vector2(x, size.y),
+			neon_secondary_color, 2.0, false)
+
+
 ## Le cercle se cale sur le portrait du dieu ; les flicks supérieurs suivent le
 ## même décalage pour rester dans l'axe de l'arche.
 func _draw_main_menu() -> void:
@@ -210,32 +218,12 @@ func _draw_main_menu() -> void:
 	_draw_corner_marks(neon_primary_color, 56.0, 110.0)
 
 
-func _draw_relic_menu() -> void:
-	for x in [20.0, 1060.0]:
-		_draw_neon_line(Vector2(x, 0.0), Vector2(x, 1920.0), neon_secondary_color, 2.0)
-
-
-func _draw_journal() -> void:
-	_draw_corner_marks(neon_primary_color, 42.0, 70.0)
-	_draw_neon_line(Vector2(48.0, 152.0), Vector2(48.0, 1768.0), neon_primary_color, 1.5)
-
-
 func _draw_encounters() -> void:
 	var center := Vector2(540.0, 985.0)
 	_draw_glow(center, 430.0, neon_primary_color, 0.014)
 	_draw_neon_arc(center, 430.0, PI * 1.08, PI * 1.92, neon_secondary_color, 3.0)
 	_draw_neon_arc(center, 397.0, PI * 1.10, PI * 1.90, neon_primary_color, 2.0)
 	_draw_corner_marks(neon_secondary_color, 48.0, 88.0)
-
-
-## Le serpentin reste au centre ; le décor se contente de deux rails et d'un
-## halo, pour ne jamais concurrencer les ronds et leur tracé.
-func _draw_encounter_path() -> void:
-	var center := Vector2(540.0, 1010.0)
-	_draw_glow(center, 520.0, neon_primary_color, 0.013)
-	_draw_neon_line(Vector2(52.0, 150.0), Vector2(52.0, 1770.0), neon_secondary_color, 2.0)
-	_draw_neon_line(Vector2(1028.0, 150.0), Vector2(1028.0, 1770.0), neon_secondary_color, 2.0)
-	_draw_corner_marks(neon_primary_color, 44.0, 86.0)
 
 
 func _draw_coin_ritual() -> void:
@@ -421,20 +409,6 @@ func _skull_point(center: Vector2, point: Vector2) -> Vector2:
 	return center + point * SKULL_SCALE
 
 
-func _draw_profile() -> void:
-	for x in [22.0, 1058.0]:
-		_draw_neon_line(Vector2(x, 220.0), Vector2(x, 1710.0), neon_primary_color, 2.0)
-		_draw_neon_line(Vector2(x, 220.0), Vector2(x + (52.0 if x < 540.0 else -52.0), 168.0),
-			neon_tertiary_color, 2.0)
-		_draw_neon_line(Vector2(x, 1710.0), Vector2(x + (52.0 if x < 540.0 else -52.0), 1762.0),
-			neon_secondary_color, 2.0)
-	_draw_neon_line(Vector2(74.0, 195.0), Vector2(270.0, 195.0), neon_primary_color, 1.5)
-	_draw_neon_line(Vector2(810.0, 195.0), Vector2(1006.0, 195.0), neon_primary_color, 1.5)
-	_draw_neon_line(Vector2(514.0, 195.0), Vector2(540.0, 164.0), neon_tertiary_color, 2.0)
-	_draw_neon_line(Vector2(540.0, 164.0), Vector2(566.0, 195.0), neon_tertiary_color, 2.0)
-	_draw_neon_circle(Vector2(540.0, 1760.0), 22.0, neon_secondary_color, 1.5)
-
-
 ## Le choix, la recherche et la salle partagent le même décor d'arène.
 func _draw_pvp(visible_bottom: float = PVP_ARCH_BOTTOM) -> void:
 	_draw_arena_architecture(neon_primary_color, neon_secondary_color,
@@ -551,8 +525,10 @@ func _draw_neon_arc(center: Vector2, radius: float, start: float, end: float,
 	draw_arc(center, radius, start, end, 64, color, width, true)
 
 
-func _draw_neon_line(from: Vector2, to: Vector2, color: Color, width: float = 2.0) -> void:
-	width *= _neon_width_scale()
+func _draw_neon_line(from: Vector2, to: Vector2, color: Color, width: float = 2.0,
+		scale_by_room: bool = true) -> void:
+	if scale_by_room:
+		width *= _neon_width_scale()
 	var glow := color
 	glow.a = 0.10
 	draw_line(from, to, glow, width * 7.0, true)

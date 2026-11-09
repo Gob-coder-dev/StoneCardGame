@@ -19,7 +19,7 @@ func grant_reward(transaction_id: String, souls: int, cards: Array = [],
 	var next := InventoryModel.from_dict(PlayerData.inventory_dict())
 	if next.has_transaction(transaction_id):
 		return {"ok": true, "reason": "", "already_applied": true,
-			"souls": 0, "cards": []}
+			"souls": 0, "cards": [], "deferred_cards": []}
 	var normalized: Array = []
 	for raw in cards:
 		if not raw is Dictionary:
@@ -30,8 +30,22 @@ func grant_reward(transaction_id: String, souls: int, cards: Array = [],
 			return _fail("Récompense inconnue : %s." % lineage_id)
 		normalized.append({"lineage_id": lineage_id, "copies": amount})
 	next.souls += souls
+	var granted: Array = []
+	var deferred: Array = []
 	for reward in normalized:
-		next.add_copies(str(reward["lineage_id"]), int(reward["copies"]))
+		var lineage_id := str(reward["lineage_id"])
+		var amount := int(reward["copies"])
+		var first_form := StoneLoader.variant_id(lineage_id, 1)
+		var affinity := StoneLoader.stone_affinity(first_form)
+		if affinity == "neutral" or next.has_god(affinity):
+			next.add_copies(lineage_id, amount)
+			granted.append(reward.duplicate())
+		elif next.defer_copies(lineage_id, amount):
+			var pending: Dictionary = reward.duplicate()
+			pending["god_id"] = affinity
+			deferred.append(pending)
+		else:
+			return _fail("Récompense de carte invalide : %s." % lineage_id)
 	next.mark_transaction(transaction_id)
 	var deck_override: Variant = null
 	if not starter_deck_cards.is_empty() and PlayerData.player_god_id == "":
@@ -47,7 +61,7 @@ func grant_reward(transaction_id: String, souls: int, cards: Array = [],
 	if error != OK:
 		return _save_fail(error)
 	return {"ok": true, "reason": "", "already_applied": false,
-		"souls": souls, "cards": normalized}
+		"souls": souls, "cards": granted, "deferred_cards": deferred}
 
 
 func upgrade_card(lineage_id: String) -> Dictionary:
@@ -91,6 +105,7 @@ func buy_god(god_id: String) -> Dictionary:
 	next.souls -= price
 	next.unlock_god(god_id)
 	next.first_god_discount_used = true
+	var released := next.release_pending_for_god(god_id)
 	var granted: Array = []
 	for lineage_id in gifts:
 		next.add_copies(str(lineage_id), 1)
@@ -98,7 +113,8 @@ func buy_god(god_id: String) -> Dictionary:
 	var error := PlayerData.commit_inventory(next)
 	if error != OK:
 		return _save_fail(error)
-	return {"ok": true, "reason": "", "price": price, "cards": granted}
+	return {"ok": true, "reason": "", "price": price, "cards": granted,
+		"released_cards": released}
 
 
 ## Outils de test/développement. Aucun écran de production ne les appelle.
@@ -114,6 +130,9 @@ func unlock_all_for_development(copies_per_lineage: int = 1000) -> Error:
 	var next := InventoryModel.from_dict(PlayerData.inventory_dict())
 	for god in StoneLoader.get_all_gods():
 		next.unlock_god(str(god.get("id", "")))
+	# Le profil de développement reçoit déjà tout le catalogue : aucune
+	# récompense différée ne doit rester en double dans la sauvegarde.
+	next.pending_card_rewards.clear()
 	next.first_god_discount_used = true
 	var seen := {}
 	for stone in StoneLoader.get_all_stones():

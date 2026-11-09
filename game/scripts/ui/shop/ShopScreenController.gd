@@ -128,8 +128,17 @@ func _buy_offer(offer_id: String) -> void:
 
 func _buy_god(god_id: String) -> void:
 	var result := _economy.buy_god(god_id)
-	_show_status(str(result.get("reason", "Dieu et cartes débloqués.")),
-		not bool(result.get("ok", false)))
+	var message := str(result.get("reason", "Dieu et cartes débloqués."))
+	if bool(result.get("ok", false)):
+		var released: Array = result.get("released_cards", [])
+		var released_count := 0
+		for card_reward in released:
+			released_count += int(card_reward.get("copies", 0))
+		if released_count > 0:
+			message = "Dieu débloqué : %d récompense%s en attente récupérée%s." % [
+				released_count, "s" if released_count > 1 else "",
+				"es" if released_count > 1 else "e"]
+	_show_status(message, not bool(result.get("ok", false)))
 	_refresh()
 
 

@@ -9,6 +9,7 @@ extends Control
 const SessionLink := preload("res://scripts/network/LanSessionLink.gd")
 const CoordinatorModel := preload("res://scripts/network/LanMatchCoordinator.gd")
 const Routes := preload("res://scripts/ui/GameRoutes.gd")
+const GodIdentityModel := preload("res://scripts/data/GodIdentity.gd")
 
 @onready var duel_label: Label = $VBoxCenter/DuelLabel
 @onready var npc_label: Label = $VBoxCenter/NPCLabel
@@ -74,14 +75,17 @@ func _setup_campaign() -> void:
 		npc.get("combatant_name", npc.get("name", "Adversaire"))), 24)
 	difficulty_label.visible = true
 	difficulty_label.text = _opponent_subtitle(npc)
-	var human_god := StoneLoader.get_god(BattleContext.effective_player_god_id())
-	var npc_god := StoneLoader.get_god(BattleContext.effective_opponent_god_id())
-	var npc_is_godless := npc_god.is_empty()
-	background.set_gods(human_god, npc_god)
+	var human_id := BattleContext.effective_player_god_id()
+	var npc_id := BattleContext.effective_opponent_god_id()
+	var human_identity := GodIdentityModel.player(human_id)
+	var npc_identity := GodIdentityModel.bot(npc_id)
+	var npc_is_godless := StoneLoader.get_god(npc_id).is_empty()
+	background.set_gods(human_identity, npc_identity)
 	_setup_god_identity(player_god_portrait, player_god_name, player_god_family,
-		human_god, "TOI • %s" % str(human_god.get("name", "?")))
+		human_identity, "TOI • %s" % str(human_identity.get("name", "Sans dieu")))
+	var npc_god_label := "Sans dieu" if npc_is_godless else str(npc_identity.get("name", "?"))
 	_setup_god_identity(opponent_god_portrait, opponent_god_name, opponent_god_family,
-		npc_god, "LUI • %s" % ("Sans dieu" if npc_is_godless else str(npc_god["name"])))
+		npc_identity, "LUI • %s" % npc_god_label)
 
 
 ## ─── PVP local ───────────────────────────────────────────────────────────────
@@ -94,13 +98,13 @@ func _setup_pvp() -> void:
 		else "Adversaire"
 	difficulty_label.text = "PVP"
 	difficulty_label.visible = true
-	var local_god := StoneLoader.get_god(PvpMatchContext.local_god_id)
-	var remote_god := StoneLoader.get_god(PvpMatchContext.remote_god_id)
-	background.set_gods(local_god, remote_god)
+	var local_identity := GodIdentityModel.player(PvpMatchContext.local_god_id)
+	var remote_identity := GodIdentityModel.player(PvpMatchContext.remote_god_id)
+	background.set_gods(local_identity, remote_identity)
 	_setup_god_identity(player_god_portrait, player_god_name, player_god_family,
-		local_god, "TOI • %s" % str(local_god.get("name", "?")))
+		local_identity, "TOI • %s" % str(local_identity.get("name", "Sans dieu")))
 	_setup_god_identity(opponent_god_portrait, opponent_god_name, opponent_god_family,
-		remote_god, "LUI • %s" % str(remote_god.get("name", "?")))
+		remote_identity, "LUI • %s" % str(remote_identity.get("name", "Sans dieu")))
 
 
 func _setup_god_identity(portrait: GodPortrait, name_label: Label, family_label: Label,

@@ -220,13 +220,8 @@ func _check_collection() -> void:
 	await _tap(_center(first_card))
 	if is_instance_valid(page._action_drawer):
 		var info_button: Button = page._action_drawer.get_node("Actions/InfoButton")
-		scroll.ensure_control_visible(info_button)
-		await _settle()
 		await _swipe(_center(info_button), Vector2(0, -150))
 		_check(not page.info_sheet.visible, "tiroir : glisser sur Infos n'ouvre pas la fiche")
-		await _reset_scroll(scroll)
-		scroll.ensure_control_visible(info_button)
-		await _settle()
 		await _tap(_center(info_button))
 		_check(page.info_sheet.visible, "tiroir : toucher Infos ouvre la fiche")
 		var modal_scroll := scroll.scroll_vertical
@@ -287,9 +282,10 @@ func _check_evolution_inputs() -> void:
 	scroll.ensure_control_visible(card)
 	await _settle()
 	await _tap(_center(card))
+	# Une carte proche du bas est remontée d'une frame supplémentaire afin que
+	# son tiroir superposé reste entièrement visible sous elle.
+	await get_tree().process_frame
 	var info_button: Button = page._action_drawer.info_button
-	scroll.ensure_control_visible(info_button)
-	await _settle()
 	await _tap(_center(info_button))
 	var info: StoneInfoSheet = page.info_sheet
 	_check(info.visible and info._shown_variant == "avortons_des_caves_n4", "niveaux : Infos ouvre au toucher la forme affichée")

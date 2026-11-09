@@ -1,6 +1,7 @@
 extends "res://tests/support/CombatTestSuite.gd"
 const ProfileFixture := preload("res://tests/support/PlayerProfileFixture.gd")
 const OpponentCatalogModel := preload("res://scripts/data/OpponentCatalog.gd")
+const GodIdentityModel := preload("res://scripts/data/GodIdentity.gd")
 const EncounterPathModel := preload("res://scripts/domain/EncounterPath.gd")
 const TouchButtonScript := preload("res://scripts/ui/input/TouchButton.gd")
 const LobbyCoordinator := preload("res://scripts/network/LanLobbyCoordinator.gd")
@@ -224,7 +225,13 @@ func _test_home_portraits() -> void:
 	_check(not status.text.contains("\n") and status.get_line_count() == 1
 		and widest_status <= status.size.x,
 		"le numéro, les cartes et les points du deck tiennent sur une ligne à la taille de police courante")
+	PlayerData.player_god_id = ""
+	menu._refresh()
+	_check(menu.god_portrait.texture != null and menu.god_name.text == "SANS DIEU"
+		and menu.god_family.text == "Pierres neutres",
+		"l'accueil affiche la stèle Sans dieu pour un profil sans dieu")
 	PlayerData.player_god_id = original_god
+	menu._refresh()
 	menu.queue_free()
 	await get_tree().process_frame
 
@@ -298,11 +305,9 @@ func _test_god_selector_ui() -> void:
 	await get_tree().process_frame
 	var portraits_loaded := true
 	for option in options.get_children():
-		var god_id := str(option.get_meta("god_id", ""))
-		portraits_loaded = portraits_loaded and (god_id == "" \
-			or option.get_node("Content/Portrait").has_portrait())
+		portraits_loaded = portraits_loaded and option.get_node("Content/Portrait").has_portrait()
 	_check(menu.visible and options.columns == 3 and options.get_child_count() == 7 and portraits_loaded,
-		"le tiroir affiche Sans dieu puis les six portraits divins")
+		"le tiroir affiche les portraits de Sans dieu et des six dieux")
 	_check(page.god_portrait.has_portrait() and page.god_name.text == "VÉSKAR"
 		and page.get_node("Content/Scroll/Page/GodDeckPanel/GodDeckContent/GodDeckRow/IdentityDeck/DeckSlots").get_child_count() == 3,
 		"le panneau associe un grand portrait à l'identité du dieu et à ses trois decks")
@@ -520,9 +525,9 @@ func _test_encounter_selection() -> void:
 	_check(portraits_loaded and ids == ["veskar", "nerava", "kharun", "ilyr", "sylkha", "enigma"],
 		"chaque case de dieu charge son portrait et suit l'ordre du catalogue")
 	_check(neutral_tile.god_id == OpponentCatalogModel.NEUTRAL_BOT_ID
-		and not neutral_tile.has_portrait()
+		and neutral_tile.has_portrait()
 		and neutral_tile.god_name_text() == OpponentCatalogModel.NEUTRAL_BOT_NAME.to_upper(),
-		"Pr.Stone reste accessible sans dieu et sans portrait divin")
+		"Pr.Stone reste accessible sans dieu avec son propre portrait")
 	_check(first_tile.god_name_text() == "VÉSKAR"
 		and first_tile.family_text_value() == "LES ALÉATORS",
 		"une case affiche le nom du dieu et sa famille")
@@ -625,8 +630,8 @@ func _test_neutral_bot_battle() -> void:
 	await get_tree().process_frame
 	_check(prebattle.opponent_god_name.text == "LUI • Sans dieu"
 		and prebattle.opponent_god_family.text == ""
-		and not prebattle.opponent_god_portrait.has_portrait(),
-		"l'avant-combat montre Pr.Stone sans texte technique ni portrait divin")
+		and prebattle.opponent_god_portrait.has_portrait(),
+		"l'avant-combat montre Pr.Stone avec son portrait et sans texte technique")
 	prebattle.queue_free()
 	await get_tree().process_frame
 	BattleContext.selected_npc_id = saved_npc
@@ -1213,9 +1218,13 @@ func _test_hud_game_over() -> void:
 	_check(hud._ai_name.text == "Nérava" and hud._banner.text == "Tour de Nérava"
 		and hud._banner.custom_minimum_size.x == UITheme.HUD_BANNER_WIDTH,
 		"le HUD réduit les anciens noms composés dans la plaque et le bandeau de tour")
-	hud.set_gods(StoneLoader.get_god("veskar"), {})
-	_check(hud._ai_god.text == "Sans dieu" and not hud._ai_portrait.has_portrait(),
-		"le HUD identifie explicitement un adversaire sans dieu")
+	hud.set_gods(GodIdentityModel.player("veskar"), GodIdentityModel.bot(""))
+	_check(hud._ai_god.text == "Sans dieu" and hud._ai_portrait.has_portrait(),
+		"le HUD identifie et illustre un adversaire sans dieu")
+	hud.set_gods(GodIdentityModel.player(""), GodIdentityModel.bot(""))
+	_check(hud._human_god.text == "Sans dieu" and hud._human_portrait.has_portrait()
+		and hud._ai_god.text == "Sans dieu" and hud._ai_portrait.has_portrait(),
+		"le HUD distingue la stèle du joueur du portrait de Pr.Stone")
 	hud.queue_free()
 	await get_tree().process_frame
 

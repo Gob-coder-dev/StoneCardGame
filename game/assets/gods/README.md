@@ -17,6 +17,21 @@ Le champ `asset` de [gods.json](../../data/gods.json) fournit le portrait à
 l'accueil, au sélecteur de dieu et aux rencontres. Les identifiants historiques
 des dieux restent inchangés pour préserver les sauvegardes.
 
+## Identités sans dieu
+
+Deux illustrations distinctes représentent l'absence de dieu sans créer de
+nouveau dieu jouable :
+
+| Fichier | Rôle |
+| --- | --- |
+| `sans_dieu.png` | Identité du joueur humain qui ne choisit aucun dieu |
+| `pr_stone.png` | Portrait de Pr.Stone, adversaire IA sans dieu |
+
+`GodIdentity` ([scripts/data/GodIdentity.gd](../../scripts/data/GodIdentity.gd))
+résout ces deux identités : un humain sans dieu reçoit `sans_dieu.png`, un bot
+sans dieu reçoit `pr_stone.png`. Pr.Stone reste hors de `gods.json` pour ne
+jamais devenir un dieu jouable.
+
 Conserver les fichiers `.png.import` : compression sans perte, taille d'origine
-et mipmaps. Les PNG proviennent des créations antérieures avec imagegen ; aucune
-nouvelle illustration n'a été générée pour cette refonte des menus.
+et mipmaps. Les six portraits divins proviennent des créations antérieures ;
+les deux identités sans dieu ont été ajoutées pour distinguer le joueur du bot.

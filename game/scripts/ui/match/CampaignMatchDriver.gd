@@ -4,6 +4,8 @@
 class_name CampaignMatchDriver
 extends MatchDriver
 
+const GodIdentityModel := preload("res://scripts/data/GodIdentity.gd")
+
 var _ai_runner: AITurnRunner = null
 var _npc_data: Dictionary = {}
 
@@ -39,8 +41,8 @@ func start() -> bool:
 		_npc_data.get("combatant_name", _npc_data.get("name", "Adversaire"))), 18)
 	var opponent_god_id := BattleContext.effective_opponent_god_id()
 	var opponent_deck := BattleContext.effective_opponent_deck()
-	local_god = StoneLoader.get_god(player_god_id)
-	opponent_god = StoneLoader.get_god(opponent_god_id)
+	local_god = GodIdentityModel.player(player_god_id)
+	opponent_god = GodIdentityModel.bot(opponent_god_id)
 	if opponent_deck.size() < opponent_hand_size:
 		return false
 	opponent_deck = opponent_deck.slice(0, opponent_hand_size)

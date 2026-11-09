@@ -82,6 +82,10 @@ static func build(node: CampaignNode, campaign_version: int, player_god_id: Stri
 		display_name = str(god.get("name", opponent_god))
 		description = str(god.get("description", ""))
 		portrait = str(god.get("asset", ""))
+	# Tout adversaire IA sans dieu est Pr.Stone, y compris les modes Reflet et
+	# Aléatoire qui n'ont pas de dieu fixe.
+	if portrait == "":
+		portrait = str(OpponentCatalogModel.neutral_source().get("asset", ""))
 
 	var opponent := {
 		"id": "campaign_%s" % node.id,

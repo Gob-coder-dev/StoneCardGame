@@ -4,6 +4,7 @@ extends "res://tests/support/CombatTestSuite.gd"
 
 const OpponentCatalogModel := preload("res://scripts/data/OpponentCatalog.gd")
 const BotCardTierRulesModel := preload("res://scripts/domain/BotCardTierRules.gd")
+const GodIdentityModel := preload("res://scripts/data/GodIdentity.gd")
 
 ## Difficulté → précision fixe, anticipation et étoiles affichées.
 const EXPECTED_TIERS: Array = [
@@ -151,9 +152,16 @@ func _test_progress_sources() -> void:
 	_check(sources.size() == 7 and ids.size() == 7
 		and ids.has(OpponentCatalogModel.NEUTRAL_BOT_ID),
 		"le profil liste les six dieux et Pr.Stone comme sept chemins")
+	var neutral_asset := str(sources[-1].get("asset", ""))
 	_check(str(sources[-1]["id"]) == OpponentCatalogModel.NEUTRAL_BOT_ID
+		and neutral_asset.ends_with("pr_stone.png")
+		and ResourceLoader.exists(neutral_asset, "Texture2D")
 		and str(sources[0].get("asset", "")) != "",
-		"la grille et le profil lisent les mêmes sept sources, dieux puis Pr.Stone")
+		"la grille et le profil lisent les sept sources, Pr.Stone avec son propre portrait")
+	_check(str(GodIdentityModel.player("").get("asset", "")).ends_with("sans_dieu.png")
+		and str(GodIdentityModel.bot("").get("asset", "")).ends_with("pr_stone.png")
+		and str(GodIdentityModel.bot("veskar").get("id", "")) == "veskar",
+		"les identités sans dieu séparent la stèle du joueur du portrait du bot")
 	var all_fifteen := true
 	for source in sources:
 		all_fifteen = all_fifteen \

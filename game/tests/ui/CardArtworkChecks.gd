@@ -1,5 +1,7 @@
 extends "res://tests/support/CombatTestSuite.gd"
 
+const GodIdentityModel := preload("res://scripts/data/GodIdentity.gd")
+
 
 func run() -> void:
 	_test_catalogue_images()
@@ -8,6 +10,7 @@ func run() -> void:
 	_test_illustration_layout()
 	_test_level_badge_layout()
 	_test_rarity_and_board_ownership_styles()
+	_test_godless_portraits()
 
 
 func _test_catalogue_images() -> void:
@@ -91,6 +94,14 @@ func _test_level_badge_layout() -> void:
 	_check(compact_and_aligned,
 		"le niveau reste lisible dans un badge compact, aligné au coin inférieur droit de l'illustration")
 	card.free()
+
+
+func _test_godless_portraits() -> void:
+	var player_asset := str(GodIdentityModel.player_godless().get("asset", ""))
+	var bot_asset := str(GodIdentityModel.bot_godless().get("asset", ""))
+	_check(player_asset.ends_with("sans_dieu.png") and bot_asset.ends_with("pr_stone.png")
+		and load(player_asset) is Texture2D and load(bot_asset) is Texture2D,
+		"les identités sans dieu chargent la stèle du joueur et le portrait de Pr.Stone")
 
 
 func _test_rarity_and_board_ownership_styles() -> void:

@@ -81,28 +81,46 @@ func _refresh_reward() -> void:
 	reward_soul_row.visible = souls > 0
 	reward_soul_amount.text = "×%s" % UIFormat.integer(souls)
 	for card_reward in reward.get("cards", []):
-		var stone_id := StoneLoader.variant_id(str(card_reward.get("lineage_id", "")), 1)
-		if stone_id == "":
-			continue
-		var wrapper := VBoxContainer.new()
-		wrapper.custom_minimum_size.x = 128
-		var card := StoneCard.new()
-		card.custom_minimum_size = Vector2(128, 128)
-		card.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		card.set_show_cost(false)
-		card.setup(StoneLoader.get_stone(stone_id), StoneCard.OWNER_NONE)
-		wrapper.add_child(card)
-		var quantity := Label.new()
-		quantity.text = "×%d" % int(card_reward.get("copies", 1))
-		quantity.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		quantity.add_theme_font_size_override("font_size", 24)
-		wrapper.add_child(quantity)
-		reward_cards.add_child(wrapper)
+		_add_reward_card(card_reward, false)
+	for card_reward in reward.get("deferred_cards", []):
+		_add_reward_card(card_reward, true)
 	if souls <= 0 and reward_cards.get_child_count() == 0:
 		return
 	reward_divider.visible = true
 	rewards.visible = true
 	reward_cards.visible = reward_cards.get_child_count() > 0
+
+
+func _add_reward_card(card_reward: Dictionary, deferred: bool) -> void:
+	var stone_id := StoneLoader.variant_id(str(card_reward.get("lineage_id", "")), 1)
+	if stone_id == "":
+		return
+	var wrapper := VBoxContainer.new()
+	wrapper.custom_minimum_size.x = 144
+	var card := StoneCard.new()
+	card.custom_minimum_size = Vector2(128, 128)
+	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card.set_show_cost(false)
+	card.setup(StoneLoader.get_stone(stone_id), StoneCard.OWNER_NONE)
+	if deferred:
+		card.modulate = Color(0.72, 0.72, 0.78, 1.0)
+	wrapper.add_child(card)
+	var quantity := Label.new()
+	quantity.text = "×%d" % int(card_reward.get("copies", 1))
+	quantity.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	quantity.add_theme_font_size_override("font_size", 24)
+	wrapper.add_child(quantity)
+	if deferred:
+		var god_id := str(card_reward.get("god_id", StoneLoader.stone_affinity(stone_id)))
+		var god_name := str(StoneLoader.get_god(god_id).get("name", god_id))
+		var status := Label.new()
+		status.text = "APRÈS %s" % god_name.to_upper()
+		status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		status.add_theme_font_size_override("font_size", 16)
+		status.add_theme_color_override("font_color", UITheme.COL_WARNING)
+		wrapper.add_child(status)
+	reward_cards.add_child(wrapper)
 
 
 ## En campagne, les anciennes sorties « autre niveau » et « autre dieu » ne
