@@ -25,7 +25,7 @@ static func place_stone(state: GameState, row: int, col: int, stone_id: String, 
 	var battle_stone: BattleStoneModel = BattleStoneModel.new()
 	battle_stone.configure(stone_id, definition, state.take_instance_id())
 	var placement_effects := PlacementEffects.resolve(state, battle_stone, definition)
-	var index := GameState.cell_index(row, col)
+	var index := state.index_of(row, col)
 	state.board[index]["stone_id"] = stone_id
 	state.board[index]["owner"] = player
 	state.board[index]["placed_by"] = player

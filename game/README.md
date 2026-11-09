@@ -33,7 +33,7 @@ Les gestes tactiles sont prévus pour laisser défiler les écrans lorsqu'ils ne
 deviennent pas un appui volontaire.
 
 L'accueil propose deux modes de largeur égale : **CAMPAGNE**, qui ouvre la
-carte unifiée de 154 niveaux contre l'IA, et **PVP**, qui ouvre un salon local. Deux téléphones
+carte unifiée de 162 niveaux contre l'IA, et **PVP**, qui ouvre un salon local. Deux téléphones
 Android sur le même Wi-Fi peuvent créer et rejoindre une partie sans serveur
 Internet, sans compte et sans service externe. Les deux modes partagent le même
 plateau, le même moteur et les mêmes vues ; seul le driver du match change. Un
@@ -141,8 +141,9 @@ page Cartes comporte :
 - la collection, le tri, le remplacement d'une carte et les fiches détaillées ;
 - le choix du niveau à équiper, sans bouton de sauvegarde séparé.
 
-La campagne se lit sur une **carte verticale unifiée** : trois tutoriels Pr.Stone
-ouvrent la progression, puis les six dieux, plusieurs decks, les quatre modes,
+La campagne se lit sur une **carte verticale unifiée** : cinq tutoriels Pr.Stone
+ouvrent la progression, puis six initiations miroir (quatre communes du dieu et
+quatre communes neutres, toutes N1) avant les branches qui mêlent plusieurs decks et les quatre modes,
 les paliers et profils d'IA se mélangent sur des branches non exclusives. Un
 nœud accessible reste jouable, un regroupement s'ouvre dès qu'un seul de ses
 prédécesseurs est terminé, et les mini-boss facultatifs occupent des impasses.
@@ -187,6 +188,7 @@ scripts/
   domain/                Règles pures : modes, séries, decks, coûts et pouvoirs
   application/           Orchestration des parcours sans dépendre des scènes
     campaign/             Façade, contexte, rencontres et migration de campagne
+    economy/              Transactions, améliorations et rotation de boutique
     pvp/                 Contexte, salon et adaptation des loadouts réseau
   engine/                GameState, tours, résolution des combats et effets
   network/               Transport et protocole ; projections PVP dans network/pvp
@@ -194,6 +196,7 @@ scripts/
   ui/                    Menus, cartes, plateau, HUD et composants tactiles
     campaign/            Carte de campagne, fiche de niveau et préparation locale
     collection/          Sélection de dieu/deck, collection et panneaux de cartes
+    shop/                Présentation responsive de la boutique
     combat/              Présentations, géométrie et animations de combat
     encounters/          Anciens parcours par dieu, conservés pour compatibilité
 scenes/                  Scènes Godot des menus, du combat et des composants
@@ -214,7 +217,7 @@ L'IA utilise le même moteur sur des copies de l'état : elle ne lit ni la main
 réelle du joueur ni le prochain tirage aléatoire.
 
 La campagne principale est un graphe orienté acyclique décrit par
-`data/campaign/campaign_v2.json` : 154 nœuds, 182 arêtes et 12 sections
+`data/campaign/campaign_v2.json` : 162 nœuds, 190 arêtes et 13 sections
 visuelles. Chaque nœud porte son adversaire, son mode, ses politiques de dieu et
 de deck, son palier maximal, son profil d'IA et son format de série. Les
 positions ne servent qu'au rendu ; elles ne débloquent aucune branche. Terminer
@@ -239,6 +242,8 @@ Pour le détail de la campagne, du format JSON et de la migration, voir
 et des fichiers, voir [l'architecture complète](docs/ARCHITECTURE.md). Pour la
 palette et les choix de mise en page, voir
 [l'identité visuelle des menus](docs/IDENTITE_VISUELLE_MENUS.md).
+Les âmes, les copies de cartes, les améliorations et la boutique sont décrites
+dans [ECONOMY.md](docs/ECONOMY.md).
 Le PVP local (rôles, ports, protocole, autorité de l'hôte, limites et dépannage)
 est décrit dans [PVP_LOCAL.md](docs/PVP_LOCAL.md).
 L’univers, les familles et les dieux sont décrits dans la
@@ -254,21 +259,25 @@ Les données de contenu sont validées au démarrage :
 - `data/gods.json` : dieux, familles, couleurs, descriptions et portraits ;
 - `data/npcs.json` : six adversaires historiques, conservés pour les tests et
   les anciennes références ;
-- `data/campaign/campaign_v2.json` : graphe de la campagne unifiée, 154 nœuds,
-  182 arêtes et 12 sections, chargé et validé par `CampaignContentLoader`,
+- `data/campaign/campaign_v2.json` : graphe de la campagne unifiée, 162 nœuds,
+  190 arêtes et 13 sections, chargé et validé par `CampaignContentLoader`,
   `CampaignValidator` et `CampaignAudit` ;
 - `OpponentCatalog` : génère les 105 rencontres historiques (six dieux et un bot
   neutre, trois paliers de cartes et cinq difficultés) ; la campagne unifiée
   n'en réutilise que les noms neutres et les identifiants de migration.
+- `data/economy/economy_config.json` : source unique des prix, seuils, lots,
+  cadeaux de dieux et de la rotation de trois heures.
 
 La bibliothèque `tools/campaign_deck_library.json` est une source de
-construction hors exécution : elle fournit les 83 decks fixes uniques validés
+construction hors exécution : elle fournit les 87 decks fixes uniques validés
 dans la campagne.
 
 Le profil local est enregistré dans `user://savegame.json`. Le format actuel est
-la version 4 : il conserve le pseudo, les statistiques, les trois decks de chacun
-des six dieux et le deck sélectionné pour chaque dieu. Les écritures passent par
-un fichier temporaire pour éviter un profil partiellement écrit.
+la version 5 : il conserve le pseudo, les statistiques, les trois decks de chaque
+dieu et de la banque neutre, le deck sélectionné, les âmes, les dieux débloqués,
+les copies et niveaux de cartes ainsi que les achats de la rotation. Les
+écritures passent par un fichier temporaire pour éviter un profil partiellement
+écrit.
 
 La progression de la campagne est séparée dans
 `user://campaign_progress.json` : version de campagne, nœuds terminés, tentatives,

@@ -43,10 +43,10 @@ static func _connected_components(state: GameState, members: Dictionary) -> Arra
 		while not pending.is_empty():
 			var current: int = pending.pop_back()
 			component.append(current)
-			var row := current / GameState.BOARD_SIZE
-			var col := current % GameState.BOARD_SIZE
-			for adjacent in GameState.get_adjacent_positions(row, col):
-				var next_index := GameState.cell_index(adjacent["row"], adjacent["col"])
+			var row := current / state.board_size
+			var col := current % state.board_size
+			for adjacent in state.adjacent_positions(row, col):
+				var next_index := state.index_of(adjacent["row"], adjacent["col"])
 				if not visited.has(next_index) and members.has(next_index) \
 						and state.board[next_index]["owner"] == owner:
 					visited[next_index] = true
@@ -102,8 +102,8 @@ static func snapshot(state: GameState) -> Dictionary:
 		var instance_id := int(stone.instance_id)
 		members[instance_id] = {
 			"instance_id": instance_id,
-			"row": index / GameState.BOARD_SIZE,
-			"col": index % GameState.BOARD_SIZE,
+			"row": index / state.board_size,
+			"col": index % state.board_size,
 			"owner": int(cell["owner"]),
 			"blades": stone.swarm_blades.duplicate(true)
 		}
@@ -112,7 +112,7 @@ static func snapshot(state: GameState) -> Dictionary:
 		for offset in [Vector2i(0, 1), Vector2i(1, 0)]:
 			var next_row: int = int(member["row"]) + offset.x
 			var next_col: int = int(member["col"]) + offset.y
-			if next_row >= GameState.BOARD_SIZE or next_col >= GameState.BOARD_SIZE:
+			if next_row >= state.board_size or next_col >= state.board_size:
 				continue
 			var other_cell := state.get_cell(next_row, next_col)
 			if int(other_cell["owner"]) != int(member["owner"]) or not Board.has_active_power(state, other_cell, Effects.SWARM):

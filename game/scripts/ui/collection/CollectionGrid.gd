@@ -3,6 +3,7 @@
 ## construites mais masquées, et la grille referme les trous sans recréer de carte.
 extends RefCounted
 signal card_requested(stone_id: String, wrapper: VBoxContainer, source: int)
+const CardProgressView := preload("res://scripts/ui/economy/CardProgressBar.gd")
 ## FAMILY : les cartes du dieu, puis les neutres, chaque groupe du moins cher
 ## au plus cher. Chaque tri départage les
 ## ex aequo par le nom, pour un ordre toujours identique.
@@ -13,15 +14,20 @@ const CARDS_PER_ROW := 3
 const CARD_SPACING := 18
 const Layout := preload("res://scripts/ui/collection/CardGridLayout.gd")
 var collection_rows: VBoxContainer
-var _grid: GridContainer = null
+var locked_collection_rows: VBoxContainer
+var locked_collection_title: Label
+var _owned_grid: GridContainer = null
+var _locked_grid: GridContainer = null
 var _current_deck: Array = []
 var _sort_mode: SortMode = SortMode.FAMILY
 var _god_id: String = ""
 var _preview_level := 1
 var _wrappers: Dictionary = {}
 
-func _init(rows: VBoxContainer) -> void:
+func _init(rows: VBoxContainer, locked_rows: VBoxContainer, locked_title: Label) -> void:
 	collection_rows = rows
+	locked_collection_rows = locked_rows
+	locked_collection_title = locked_title
 
 func rebuild(god_id: String, deck: Array, sorting: int) -> void:
 	_god_id = god_id
@@ -33,29 +39,31 @@ func rebuild(god_id: String, deck: Array, sorting: int) -> void:
 ## Les nœuds et la position de défilement sont conservés.
 func update_deck(deck: Array) -> void:
 	_current_deck = deck
-	if not is_instance_valid(_grid):
+	if not is_instance_valid(_owned_grid):
 		return
-	for wrapper in _grid.get_children():
-		var card: StoneCard = wrapper.get_child(0) as StoneCard if wrapper.get_child_count() > 0 else null
-		if card != null:
-			wrapper.visible = DeckRules.lineage_index(deck, StoneLoader.stone_lineage(card.get_stone_id())) < 0
+	for grid in [_owned_grid, _locked_grid]:
+		for wrapper in grid.get_children():
+			var card: StoneCard = wrapper.get_child(0) as StoneCard if wrapper.get_child_count() > 0 else null
+			if card != null:
+				wrapper.visible = DeckRules.lineage_index(deck, StoneLoader.stone_lineage(card.get_stone_id())) < 0
 
 
 func set_preview_level(level: int) -> void:
 	_preview_level = level
-	if not is_instance_valid(_grid):
+	if not is_instance_valid(_owned_grid):
 		return
 	_populate_collection()
 
 func _populate_collection() -> void:
 	var stones := _displayed_stones()
 	stones.sort_custom(_sorts_before)
-	_ensure_grid()
+	_ensure_grids()
 	var desired := {}
 	for stone in stones:
 		desired[StoneLoader.stone_lineage(str(stone["id"]))] = stone
 	var reusable := _detach_obsolete_wrappers(desired)
-	var ordered: Array[VBoxContainer] = []
+	var owned_ordered: Array[VBoxContainer] = []
+	var locked_ordered: Array[VBoxContainer] = []
 	for stone in stones:
 		var lineage := StoneLoader.stone_lineage(str(stone["id"]))
 		var wrapper: VBoxContainer = _wrappers.get(lineage)
@@ -66,35 +74,63 @@ func _populate_collection() -> void:
 		if card.get_stone_id() != str(stone["id"]):
 			card.setup(stone, StoneCard.OWNER_NONE)
 			card.name = "c_" + str(stone["id"])
+		_update_progress(wrapper, lineage, str(stone["id"]))
 		wrapper.visible = DeckRules.lineage_index(_current_deck, lineage) < 0
-		ordered.append(wrapper)
+		# La section décrit exactement la variante actuellement affichée. Posséder
+		# la N1 ne rend donc pas sa N2 possédée tant que cette évolution est verrouillée.
+		var unlocked_level := int(PlayerData.card_entry(lineage).get("unlocked_level", 0))
+		var displayed_level := StoneLoader.stone_level(str(stone["id"]))
+		if unlocked_level >= displayed_level:
+			owned_ordered.append(wrapper)
+		else:
+			locked_ordered.append(wrapper)
 	for wrapper in reusable:
-		_grid.remove_child(wrapper)
+		if wrapper.get_parent() != null:
+			wrapper.get_parent().remove_child(wrapper)
 		wrapper.queue_free()
-	for index in range(ordered.size()):
-		var wrapper := ordered[index]
-		if wrapper.get_parent() != _grid:
-			_grid.add_child(wrapper)
-		_grid.move_child(wrapper, index)
+	_place_ordered(_owned_grid, owned_ordered)
+	_place_ordered(_locked_grid, locked_ordered)
+	locked_collection_rows.visible = not locked_ordered.is_empty()
+	locked_collection_title.visible = not locked_ordered.is_empty()
 
 
 func _displayed_stones() -> Array:
 	var stones: Array = []
-	for base in StoneLoader.get_lineages_for_god(_god_id):
+	var lineages := StoneLoader.get_neutral_lineages() if _god_id == "" \
+		else StoneLoader.get_lineages_for_god(_god_id)
+	for base in lineages:
 		var stone_id := StoneLoader.preview_variant(str(base["id"]), _preview_level)
 		stones.append(StoneLoader.get_stone(stone_id))
 	return stones
 
 
-func _ensure_grid() -> void:
-	if is_instance_valid(_grid):
+func _ensure_grids() -> void:
+	if is_instance_valid(_owned_grid):
 		return
-	_grid = GridContainer.new()
-	_grid.columns = CARDS_PER_ROW
-	_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_grid.add_theme_constant_override("h_separation", CARD_SPACING)
-	_grid.add_theme_constant_override("v_separation", CARD_SPACING)
-	collection_rows.add_child(_grid)
+	_owned_grid = _make_grid("OwnedGrid")
+	_locked_grid = _make_grid("LockedGrid")
+	collection_rows.add_child(_owned_grid)
+	locked_collection_rows.add_child(_locked_grid)
+
+
+func _make_grid(grid_name: String) -> GridContainer:
+	var grid := GridContainer.new()
+	grid.name = grid_name
+	grid.columns = CARDS_PER_ROW
+	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	grid.add_theme_constant_override("h_separation", CARD_SPACING)
+	grid.add_theme_constant_override("v_separation", CARD_SPACING)
+	return grid
+
+
+func _place_ordered(grid: GridContainer, ordered: Array[VBoxContainer]) -> void:
+	for index in range(ordered.size()):
+		var wrapper := ordered[index]
+		if wrapper.get_parent() != grid:
+			if wrapper.get_parent() != null:
+				wrapper.get_parent().remove_child(wrapper)
+			grid.add_child(wrapper)
+		grid.move_child(wrapper, index)
 
 
 func _detach_obsolete_wrappers(desired: Dictionary) -> Array[VBoxContainer]:
@@ -113,7 +149,20 @@ func _make_wrapper() -> VBoxContainer:
 	var card := Layout.make_stone_card({}, StoneCard.OWNER_NONE, UITheme.CARD_COLLECTION)
 	card.card_pressed.connect(card_requested.emit.bind(wrapper, CardActionDrawer.Source.COLLECTION))
 	wrapper.add_child(card)
+	var progress := CardProgressView.new()
+	progress.name = "Progress"
+	wrapper.add_child(progress)
 	return wrapper
+
+
+func _update_progress(wrapper: VBoxContainer, lineage_id: String, shown_stone_id: String) -> void:
+	var card := wrapper.get_child(0) as StoneCard
+	var progress := wrapper.get_node("Progress") as CardProgressBar
+	var entry := PlayerData.card_entry(lineage_id)
+	var unlocked := int(entry.get("unlocked_level", 0))
+	var shown_owned := unlocked >= StoneLoader.stone_level(shown_stone_id)
+	card.modulate = Color.WHITE if shown_owned else Color(0.38, 0.38, 0.43, 0.72)
+	progress.setup(lineage_id)
 
 
 ## Comparaison du tri choisi ; le nom départage les égalités.

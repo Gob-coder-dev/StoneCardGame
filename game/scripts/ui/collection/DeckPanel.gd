@@ -2,6 +2,7 @@
 extends RefCounted
 signal card_requested(stone_id: String, wrapper: VBoxContainer, source: int)
 const Layout := preload("res://scripts/ui/collection/CardGridLayout.gd")
+const CardProgressView := preload("res://scripts/ui/economy/CardProgressBar.gd")
 var deck_rows: VBoxContainer
 var _current_deck: Array = []
 
@@ -35,6 +36,10 @@ func _make_deck_slot(index: int, expand: bool) -> Control:
 		card.set_marker_scale(StoneCard.BLADE_MARGIN / UITheme.CARD_DECK_EDGE_MARGIN)
 		card.card_pressed.connect(card_requested.emit.bind(wrapper, CardActionDrawer.Source.DECK))
 		wrapper.add_child(card)
+		var progress := CardProgressView.new()
+		progress.name = "Progress"
+		progress.setup(StoneLoader.stone_lineage(stone_id))
+		wrapper.add_child(progress)
 		return wrapper
 	wrapper.add_child(Layout.make_empty_deck_slot())
 	return wrapper

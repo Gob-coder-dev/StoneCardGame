@@ -24,9 +24,12 @@ var _state: GameState
 
 ## `random_seed` fixe le hasard du combat. Le PVP local transmet la graine
 ## choisie par l'hôte ; 0 conserve le tirage habituel de la campagne.
-func start_game(human_hand: Array, ai_hand: Array, blocked_cells: Array, npc_id: String = "", forced_first_player: int = 0, human_god_id: String = "", ai_god_id: String = "", random_seed: int = 0) -> void:
+func start_game(human_hand: Array, ai_hand: Array, blocked_cells: Array,
+		npc_id: String = "", forced_first_player: int = 0,
+		human_god_id: String = "", ai_god_id: String = "",
+		random_seed: int = 0, board_size: int = GameState.DEFAULT_BOARD_SIZE) -> void:
 	phase = Phase.WAITING_INPUT
-	_state = GameState.new()
+	_state = GameState.new(board_size)
 	if _pending_step != null:
 		_pending_step.cancel()
 		_pending_step = null

@@ -1,9 +1,10 @@
-[gd_scene load_steps=5 format=3 uid="uid://howto_screen"]
+[gd_scene load_steps=6 format=3 uid="uid://howto_screen"]
 
 [ext_resource type="Script" path="res://scripts/ui/HowToPlayController.gd" id="1_howto"]
 [ext_resource type="Script" path="res://scripts/ui/MenuBackground.gd" id="2_background"]
 [ext_resource type="PackedScene" path="res://scenes/ui/BottomNav.tscn" id="3_nav"]
 [ext_resource type="Script" path="res://scripts/ui/input/TouchScrollContainer.gd" id="4_touch_scroll"]
+[ext_resource type="PackedScene" path="res://scenes/ui/SoulBalance.tscn" id="5_souls"]
 
 [node name="HowToPlay" type="Control"]
 layout_mode = 3
@@ -32,12 +33,19 @@ offset_right = -40.0
 offset_bottom = -174.0
 theme_override_constants/separation = 24
 
-[node name="Title" type="Label" parent="Content"]
+[node name="Header" type="HBoxContainer" parent="Content"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="Title" type="Label" parent="Content/Header"]
 theme_type_variation = &"ScreenTitle"
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 64
 text = "RÈGLES DU JEU"
-horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="SoulBalance" parent="Content/Header" instance=ExtResource("5_souls")]
 
 [node name="Scroll" type="ScrollContainer" parent="Content"]
 layout_mode = 2
@@ -86,4 +94,4 @@ layout_mode = 2
 mouse_filter = 2
 
 [node name="BottomNav" parent="." instance=ExtResource("3_nav")]
-current_tab = 2
+current_tab = 3

@@ -39,8 +39,8 @@ static func determine_winner(state: GameState) -> int:
 ## Positions jouables (ni bloquées ni occupées). Array de { "row", "col" }.
 static func get_free_cells(state: GameState) -> Array:
 	var cells: Array = []
-	for row in range(GameState.BOARD_SIZE):
-		for col in range(GameState.BOARD_SIZE):
+	for row in range(state.board_size):
+		for col in range(state.board_size):
 			var cell: Dictionary = state.get_cell(row, col)
 			if cell["cell_type"] != GameState.CELL_BLOCKED and cell["owner"] == GameState.PLAYER_NONE:
 				cells.append({ "row": row, "col": col })

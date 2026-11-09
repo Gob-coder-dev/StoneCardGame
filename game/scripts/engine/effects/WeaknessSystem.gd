@@ -31,19 +31,19 @@ static func update_miasma(state: GameState, source_row: int, source_col: int) ->
 			needs_update = needs_update or (stone != null and stone.miasma_weakness > 0)
 	if not needs_update:
 		return events
-	var source_index := GameState.cell_index(source_row, source_col)
+	var source_index := state.index_of(source_row, source_col)
 	for index in range(state.board.size()):
 		var cell: Dictionary = state.board[index]
 		var stone := Board.stone_at(cell)
 		if stone == null:
 			continue
-		var row := index / GameState.BOARD_SIZE
-		var col := index % GameState.BOARD_SIZE
+		var row := index / state.board_size
+		var col := index % state.board_size
 		var aura := 0
 		var aura_source := -1
 		if int(cell["owner"]) != GameState.PLAYER_NONE:
-			for adjacent in GameState.get_adjacent_positions(row, col):
-				var neighbor_index := GameState.cell_index(adjacent["row"], adjacent["col"])
+			for adjacent in state.adjacent_positions(row, col):
+				var neighbor_index := state.index_of(adjacent["row"], adjacent["col"])
 				if active[neighbor_index] == 0:
 					continue
 				if int(state.board[neighbor_index]["owner"]) == int(cell["owner"]):
@@ -59,7 +59,7 @@ static func update_miasma(state: GameState, source_row: int, source_col: int) ->
 		if increased:
 			events.append(CombatEvents.weakness(CombatEvents.WEAKEN, row, col,
 				weakness_before, stone.weakness(),
-				aura_source / GameState.BOARD_SIZE, aura_source % GameState.BOARD_SIZE, "adjacent"))
+				aura_source / state.board_size, aura_source % state.board_size, "adjacent"))
 		else:
 			events.append(CombatEvents.weakness(CombatEvents.WEAKNESS_EXPIRED, row, col,
 				weakness_before, stone.weakness(), -1, -1, "adjacent"))
@@ -98,6 +98,6 @@ static func expire_for_player(state: GameState, player: int) -> Array:
 			stone.temporary_weakness = 0
 			stone.temporary_weakness_owner = GameState.PLAYER_NONE
 			events.append(CombatEvents.weakness(CombatEvents.WEAKNESS_EXPIRED,
-				index / GameState.BOARD_SIZE, index % GameState.BOARD_SIZE,
+				index / state.board_size, index % state.board_size,
 				weakness_before, stone.weakness()))
 	return events

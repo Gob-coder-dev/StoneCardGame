@@ -8,8 +8,13 @@
 ##   Chemin : res://scripts/data/PlayerData.gd
 extends Node
 
+signal inventory_changed
+
 const SaveCodec := preload("res://scripts/data/PlayerSaveCodec.gd")
 const SaveStorage := preload("res://scripts/data/PlayerSaveStorage.gd")
+const InventoryModel := preload("res://scripts/domain/economy/PlayerInventory.gd")
+const ProgressionRules := preload("res://scripts/domain/economy/CardProgressionRules.gd")
+const EconomyConfigModel := preload("res://scripts/data/economy/EconomyConfig.gd")
 
 enum ProfileChange { SUCCESS, INVALID, SAVE_FAILED }
 
@@ -17,6 +22,7 @@ enum ProfileChange { SUCCESS, INVALID, SAVE_FAILED }
 ## Les lectures renvoient des copies ; les écritures passent par les méthodes ci-dessous.
 var _decks_by_god: Dictionary = {}
 var _selected_deck_by_god: Dictionary = {}
+var _inventory: PlayerInventory = null
 
 ## Dieu équipé : il détermine les familles de cartes accessibles au deck.
 var player_god_id: String = ""
@@ -111,7 +117,8 @@ func _init(save_path: String = SAVE_PATH) -> void:
 
 
 func get_profile() -> Dictionary:
-	return SaveCodec.encode(_decks_by_god, _selected_deck_by_god, player_god_id, player_name, stats)
+	return SaveCodec.encode(_decks_by_god, _selected_deck_by_god, player_god_id,
+		player_name, stats, inventory_dict())
 
 
 func save() -> Error:
@@ -142,6 +149,7 @@ func _apply_profile(profile: Dictionary) -> void:
 	player_god_id = profile["player_god_id"]
 	player_name = profile["player_name"]
 	stats = profile["stats"]
+	_inventory = InventoryModel.from_dict(profile.get("inventory", {}))
 
 
 func _ready() -> void:
@@ -171,34 +179,39 @@ func get_active_deck() -> Array:
 
 
 func get_deck(god_id: String, slot: int) -> Array:
-	if not _decks_by_god.has(god_id) or slot < 0 or slot >= DeckRules.DECKS_PER_GOD:
+	var key := _deck_key(god_id)
+	if not _decks_by_god.has(key) or slot < 0 or slot >= DeckRules.DECKS_PER_GOD:
 		return []
-	return _decks_by_god[god_id][slot].duplicate()
+	return _decks_by_god[key][slot].duplicate()
 
 
 func get_selected_deck(god_id: String = "") -> int:
-	return int(_selected_deck_by_god.get(player_god_id if god_id == "" else god_id, 0))
+	var actual_god := player_god_id if god_id == "" else god_id
+	return int(_selected_deck_by_god.get(_deck_key(actual_god), 0))
 
 
 ## Chaque opération est enregistrée avant d'être annoncée comme réussie.
 ## En cas d'échec d'écriture, l'état précédent reste actif.
 func set_player_deck(value: Array) -> bool:
-	if not _decks_by_god.has(player_god_id) or not DeckRules.validate_deck(value, false, player_god_id)["valid"]:
+	var key := _deck_key(player_god_id)
+	if not _decks_by_god.has(key) or not _can_store_deck(value, player_god_id):
 		return false
 	var slot := get_selected_deck()
 	var previous := get_active_deck()
 	if previous == value:
 		return true
-	_decks_by_god[player_god_id][slot] = value.duplicate()
+	_decks_by_god[key][slot] = value.duplicate()
 	if save() != OK:
-		_decks_by_god[player_god_id][slot] = previous
+		_decks_by_god[key][slot] = previous
 		return false
 	return true
 
 
 ## Ouvre la banque du dieu et retrouve son dernier emplacement sélectionné.
 func set_player_god(god_id: String) -> bool:
-	if not _decks_by_god.has(god_id):
+	if god_id != "" and not has_unlocked_god(god_id):
+		return false
+	if not _decks_by_god.has(_deck_key(god_id)):
 		return false
 	if god_id == player_god_id:
 		return true
@@ -211,13 +224,116 @@ func set_player_god(god_id: String) -> bool:
 
 
 func set_selected_deck(slot: int) -> bool:
-	if not _decks_by_god.has(player_god_id) or slot < 0 or slot >= DeckRules.DECKS_PER_GOD:
+	var key := _deck_key(player_god_id)
+	if not _decks_by_god.has(key) or slot < 0 or slot >= DeckRules.DECKS_PER_GOD:
 		return false
 	var previous := get_selected_deck()
 	if slot == previous:
 		return true
-	_selected_deck_by_god[player_god_id] = slot
+	_selected_deck_by_god[key] = slot
 	if save() != OK:
-		_selected_deck_by_god[player_god_id] = previous
+		_selected_deck_by_god[key] = previous
 		return false
 	return true
+
+
+func inventory_dict() -> Dictionary:
+	_ensure_inventory()
+	return _inventory.to_dict()
+
+
+func souls() -> int:
+	_ensure_inventory()
+	return _inventory.souls
+
+
+func unlocked_god_ids() -> Array:
+	_ensure_inventory()
+	var result: Array = _inventory.unlocked_gods.keys()
+	result.sort()
+	return result
+
+
+func has_unlocked_god(god_id: String) -> bool:
+	_ensure_inventory()
+	return _inventory.has_god(god_id)
+
+
+func card_entry(lineage_id: String) -> Dictionary:
+	_ensure_inventory()
+	return _inventory.entry(lineage_id)
+
+
+func owns_stone(stone_id: String) -> bool:
+	_ensure_inventory()
+	return _inventory.owns_stone(stone_id)
+
+
+func can_upgrade_card(lineage_id: String) -> bool:
+	_ensure_inventory()
+	return ProgressionRules.can_upgrade(lineage_id, _inventory.entry(lineage_id),
+		_inventory.souls, EconomyConfigModel.get_config())
+
+
+## Publie une copie économique seulement après l'écriture de tout le profil.
+## Les services d'achat, de récompense et d'amélioration passent tous ici.
+func commit_inventory(next: PlayerInventory) -> Error:
+	return commit_economy(next)
+
+
+## Transaction économique pouvant aussi compléter le deck neutre de départ.
+## Inventaire et deck sont écrits dans le même fichier puis restaurés ensemble
+## si le stockage échoue.
+func commit_economy(next: PlayerInventory, neutral_deck_override: Variant = null) -> Error:
+	if next == null:
+		return ERR_INVALID_PARAMETER
+	_ensure_inventory()
+	var previous_inventory := _inventory
+	var previous_decks := _decks_by_god.duplicate(true)
+	_inventory = next
+	if neutral_deck_override is Array:
+		var candidate: Array = (neutral_deck_override as Array).duplicate()
+		if not bool(DeckRules.validate_deck(candidate, false, "").get("valid", false)):
+			_inventory = previous_inventory
+			return ERR_INVALID_DATA
+		var neutral_key := SaveCodec.NEUTRAL_DECK_KEY
+		var slot := int(_selected_deck_by_god.get(neutral_key, 0))
+		_decks_by_god[neutral_key][slot] = candidate
+	var error := save()
+	if error != OK:
+		_inventory = previous_inventory
+		_decks_by_god = previous_decks
+	else:
+		inventory_changed.emit()
+	return error
+
+
+func reset_to_starter_profile() -> Error:
+	var previous := get_profile()
+	_apply_profile(SaveCodec.starter_profile())
+	var error := save()
+	if error != OK:
+		_apply_profile(previous)
+	else:
+		inventory_changed.emit()
+	return error
+
+
+func _can_store_deck(value: Array, god_id: String) -> bool:
+	if not bool(DeckRules.validate_deck(value, false, god_id)["valid"]):
+		return false
+	for stone_id in value:
+		if not owns_stone(str(stone_id)):
+			return false
+		if god_id == "" and StoneLoader.stone_affinity(str(stone_id)) != "neutral":
+			return false
+	return true
+
+
+func _deck_key(god_id: String) -> String:
+	return SaveCodec.NEUTRAL_DECK_KEY if god_id == "" else god_id
+
+
+func _ensure_inventory() -> void:
+	if _inventory == null:
+		_inventory = InventoryModel.new()

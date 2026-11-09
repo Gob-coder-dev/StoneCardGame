@@ -5,7 +5,8 @@ Pour lancer le jeu et ses tests, consulter le [README du projet](../README.md).
 | Document | Rôle |
 | --- | --- |
 | [Architecture](ARCHITECTURE.md) | Organisation du code, données, IA, interface et vérifications. |
-| [Campagne unifiée](CAMPAIGN.md) | 154 niveaux, graphe, format JSON, modes, mini-boss, approches, progression, migration et ajout de contenu. |
+| [Campagne unifiée](CAMPAIGN.md) | 162 niveaux, graphe, format JSON, modes, initiations miroir, mini-boss, progression, migration et ajout de contenu. |
+| [Économie et boutique](ECONOMY.md) | Âmes, copies, améliorations, rotations, achats de dieux, récompenses et persistance. |
 | [Direction artistique](DIRECTION_ARTISTIQUE_MONSTRES.md) | Univers horrifique, pixel art, couleurs, familles et règles de cohérence. |
 | [Guide de prompts Fooocus](PROMPTS_FOOOCUS.md) | Références validées, palettes et prompts pour refaire les dieux et les 222 cartes restantes. |
 | [Bestiaire](BESTIAIRE.md) | Description des six dieux et des 96 lignées de monstres. |

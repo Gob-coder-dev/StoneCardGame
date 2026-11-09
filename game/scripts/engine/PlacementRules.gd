@@ -5,7 +5,7 @@ extends RefCounted
 static func is_valid(state: GameState, row: int, col: int, stone_id: String, player: int) -> bool:
 	if player != GameState.PLAYER_HUMAN and player != GameState.PLAYER_AI:
 		return false
-	if row < 0 or row >= GameState.BOARD_SIZE or col < 0 or col >= GameState.BOARD_SIZE:
+	if not state.in_bounds(row, col):
 		return false
 	var cell := state.get_cell(row, col)
 	return cell["cell_type"] != GameState.CELL_BLOCKED \

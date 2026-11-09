@@ -16,6 +16,7 @@ const SwarmLinks := preload("res://scripts/ui/combat/SwarmLinkLayer.gd")
 const AnimationController := preload("res://scripts/ui/combat/BoardAnimationController.gd")
 const BlockedOverlay := preload("res://scripts/ui/BlockedCellOverlay.gd")
 var animations: Control
+var _board_size: int = GameState.DEFAULT_BOARD_SIZE
 
 var _slots: Array = []        ## Panel par case (index 1D)
 var _cards: Array = []        ## StoneCard par case (ou null)
@@ -33,6 +34,28 @@ var _cell_styles: Dictionary = {}
 var local_owner: int = GameState.PLAYER_HUMAN
 
 
+## Configure la géométrie avant build(). Le PVP reste en 4 × 4 ; les rencontres
+## de tutoriel peuvent demander un plateau 3 × 3 sans dupliquer la vue.
+func configure_board_size(value: int) -> void:
+	var next_size := clampi(value, GameState.MIN_BOARD_SIZE, GameState.MAX_BOARD_SIZE)
+	if _built and next_size != _board_size:
+		push_error("BoardView: la taille doit être configurée avant build().")
+		return
+	_board_size = next_size
+
+
+func board_size() -> int:
+	return _board_size
+
+
+func _index(row: int, col: int) -> int:
+	return row * _board_size + col
+
+
+func _in_bounds(row: int, col: int) -> bool:
+	return row >= 0 and row < _board_size and col >= 0 and col < _board_size
+
+
 ## Construit les seize cases une seule fois. Leur géométrie peut ensuite être
 ## recalculée uniquement lors d'un vrai changement de viewport ; un changement
 ## d'état du match ne redimensionne jamais le plateau.
@@ -46,8 +69,8 @@ func build() -> void:
 	_slots.clear()
 	_cards.clear()
 
-	for row in range(GameState.BOARD_SIZE):
-		for col in range(GameState.BOARD_SIZE):
+	for row in range(_board_size):
+		for col in range(_board_size):
 			var slot := _make_slot(row, col)
 			add_child(slot)
 			_slots.append(slot)
@@ -65,17 +88,17 @@ func build() -> void:
 
 
 func update_geometry() -> void:
-	if not _built or _slots.size() != GameState.total_cells():
+	if not _built or _slots.size() != _board_size * _board_size:
 		return
 	var board_side := minf(size.x, size.y) if size.y > 0.0 else size.x
 	if board_side <= 0.0:
 		return
-	var cell_size := (board_side - GAP * float(GameState.BOARD_SIZE - 1)) \
-		/ float(GameState.BOARD_SIZE)
+	var cell_size := (board_side - GAP * float(_board_size - 1)) \
+		/ float(_board_size)
 	var origin := Vector2((size.x - board_side) * 0.5, (size.y - board_side) * 0.5)
-	for row in range(GameState.BOARD_SIZE):
-		for col in range(GameState.BOARD_SIZE):
-			var index := GameState.cell_index(row, col)
+	for row in range(_board_size):
+		for col in range(_board_size):
+			var index := _index(row, col)
 			var slot: Panel = _slots[index]
 			slot.position = origin + Vector2(
 				col * (cell_size + GAP), row * (cell_size + GAP))
@@ -109,9 +132,12 @@ func _on_slot_input(event: InputEvent, row: int, col: int) -> void:
 func refresh(state: GameState) -> void:
 	if not _built:
 		return
-	for row in range(GameState.BOARD_SIZE):
-		for col in range(GameState.BOARD_SIZE):
-			var idx := GameState.cell_index(row, col)
+	if state.board_size != _board_size:
+		push_error("BoardView: état %d × %d reçu par une vue %d × %d." % [state.board_size, state.board_size, _board_size, _board_size])
+		return
+	for row in range(_board_size):
+		for col in range(_board_size):
+			var idx := _index(row, col)
 			var cell: Dictionary = state.board[idx]
 			var slot: Panel = _slots[idx]
 
@@ -157,15 +183,15 @@ func _mark_blocked(slot: Panel) -> void:
 ## La capture est montrée à l'impact, avant que le moteur ne publie son état
 ## final. Cette méthode ne change que l'habillage de la case concernée.
 func reveal_cell_owner(row: int, col: int, owner: int) -> void:
-	if row < 0 or row >= GameState.BOARD_SIZE or col < 0 or col >= GameState.BOARD_SIZE:
+	if not _in_bounds(row, col):
 		return
-	_apply_cell_style(GameState.cell_index(row, col), owner)
+	_apply_cell_style(_index(row, col), owner)
 
 
 func _apply_cell_style(index: int, owner: int, blocked: bool = false) -> void:
 	var slot: Panel = _slots[index]
 	var style := _cell_style(owner, blocked)
-	if _drop_target != Vector2i(-1, -1) and index == GameState.cell_index(_drop_target.x, _drop_target.y):
+	if _drop_target != Vector2i(-1, -1) and index == _index(_drop_target.x, _drop_target.y):
 		_drop_previous_style = style
 		return
 	slot.add_theme_stylebox_override("panel", style)
@@ -229,9 +255,9 @@ func nearest_cell(canvas_point: Vector2, accepts: Callable) -> Vector2i:
 	if not _built:
 		return best
 	var best_distance := INF
-	for row in range(GameState.BOARD_SIZE):
-		for col in range(GameState.BOARD_SIZE):
-			var slot: Panel = _slots[GameState.cell_index(row, col)]
+	for row in range(_board_size):
+		for col in range(_board_size):
+			var slot: Panel = _slots[_index(row, col)]
 			var to_canvas := slot.get_global_transform_with_canvas()
 			var reach := DROP_RADIUS * (slot.size.x + GAP) * to_canvas.get_scale().x
 			var distance := canvas_point.distance_to(to_canvas * (slot.size * 0.5))
@@ -244,12 +270,12 @@ func nearest_cell(canvas_point: Vector2, accepts: Callable) -> Vector2i:
 ## Éclaire la case où la carte serait posée ; (-1, -1) retire l'éclairage.
 func set_drop_target(cell: Vector2i) -> void:
 	if _drop_target != Vector2i(-1, -1):
-		var previous: Panel = _slots[GameState.cell_index(_drop_target.x, _drop_target.y)]
+		var previous: Panel = _slots[_index(_drop_target.x, _drop_target.y)]
 		previous.add_theme_stylebox_override("panel", _drop_previous_style)
 	_drop_target = cell
 	if cell == Vector2i(-1, -1):
 		return
-	var slot: Panel = _slots[GameState.cell_index(cell.x, cell.y)]
+	var slot: Panel = _slots[_index(cell.x, cell.y)]
 	_drop_previous_style = slot.get_theme_stylebox("panel")
 	if _drop_style == null:
 		_drop_style = StyleBoxFlat.new()
@@ -262,10 +288,10 @@ func set_drop_target(cell: Vector2i) -> void:
 
 ## Accès géométrique pour le coordinateur d'animations.
 func card_at(row: int, col: int) -> StoneCard:
-	return _cards[GameState.cell_index(row, col)]
+	return _cards[_index(row, col)]
 
 func slot_at(row: int, col: int) -> Panel:
-	return _slots[GameState.cell_index(row, col)]
+	return _slots[_index(row, col)]
 
 func replace_swarm_links(links: Array) -> void:
 	_swarm_link_layer.replace_links(links)

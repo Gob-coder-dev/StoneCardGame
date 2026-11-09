@@ -7,6 +7,7 @@ class_name GameRoutes
 extends RefCounted
 
 const MAIN_MENU := "res://scenes/menus/MainMenu.tscn"
+const SHOP := "res://scenes/menus/ShopScreen.tscn"
 const COLLECTION := "res://scenes/menus/CollectionScreen.tscn"
 const HOW_TO_PLAY := "res://scenes/menus/HowToPlay.tscn"
 const STATS := "res://scenes/menus/Stats.tscn"

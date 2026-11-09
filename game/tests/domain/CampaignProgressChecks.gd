@@ -131,7 +131,7 @@ func _test_twenty_node_save_upgrade() -> void:
 	progress.campaign_version = 1
 	var migrated := MigrationModel.migrate(graph, {}, progress)
 	_check(bool(migrated.get("changed", false))
-		and progress.campaign_version == 3
+		and progress.campaign_version == 5
 		and progress.completed_count() == 27
 		and progress.is_completed("mini_optional_01_path_2")
 		and progress.is_completed("mini_optional_02_path_5")
@@ -139,10 +139,10 @@ func _test_twenty_node_save_upgrade() -> void:
 		"migration : une sauvegarde à 20 niveaux conserve ses victoires et complète les approches")
 	var states := UnlockRules.states(graph, progress.completed)
 	_check(int(states.get("r03_entry", UnlockRules.State.LOCKED)) == UnlockRules.State.AVAILABLE,
-		"migration : la suite de 154 niveaux s'ouvre derrière un carrefour déjà terminé")
+		"migration : la suite de 162 niveaux s'ouvre derrière un carrefour déjà terminé")
 	var second := MigrationModel.migrate(graph, {}, progress)
 	_check(not bool(second.get("changed", false)) and progress.completed_count() == 27,
-		"migration : la conversion 20 → 154 est idempotente")
+		"migration : la conversion 20 → 162 est idempotente")
 
 	var partial := ProgressModel.new()
 	partial.mark_completed("tuto_01")

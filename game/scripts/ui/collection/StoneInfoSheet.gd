@@ -64,6 +64,7 @@ func open_for(stone_id: String, deck: Array = []) -> void:
 		button.queue_free()
 	_selector = NumberedSelector.new(row, StoneLoader.lineage_max_level(_lineage))
 	_selector.value_selected.connect(_select_level)
+	_selector.show_unlocked_through(int(PlayerData.card_entry(_lineage).get("unlocked_level", 0)))
 	_refresh_form(stone_id)
 	$InfoPanel/InfoContent/Scroll.scroll_vertical = 0
 	visible = true
@@ -79,8 +80,10 @@ func _refresh_form(stone_id: String) -> void:
 	_shown_variant = stone_id
 	var stone := StoneLoader.get_stone(stone_id)
 	var level := StoneLoader.stone_level(stone_id)
+	var owned := PlayerData.owns_stone(stone_id)
 	_selector.refresh(level)
-	use_button.disabled = _deck.has(stone_id)
+	use_button.disabled = not owned or _deck.has(stone_id)
+	use_button.text = "NIVEAU VERROUILLÉ" if not owned else "UTILISER"
 	error_label.visible = false
 	title_label.text = stone.get("name", stone_id)
 	var god := StoneLoader.get_god(str(stone.get("god_id", "neutral")))
@@ -101,6 +104,7 @@ func _refresh_form(stone_id: String) -> void:
 		blades.get("left", 0), blades.get("right", 0), _special_summary(stone)
 	]
 	_card.setup(stone, StoneCard.OWNER_NONE)
+	_card.modulate = Color.WHITE if owned else Color(0.38, 0.38, 0.43, 0.72)
 
 
 ## Réutilise exactement les pictogrammes des cartes et des règles. Les cartes

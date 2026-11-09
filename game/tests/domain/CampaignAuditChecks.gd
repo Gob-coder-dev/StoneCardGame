@@ -18,37 +18,37 @@ func run() -> void:
 	var graph: CampaignGraph = GraphModel.build(content["definition"])
 	var audit := AuditModel.build(graph)
 
-	_check(int(audit["total_nodes"]) == 154,
-		"audit : exactement 154 niveaux")
-	_check(int(audit["total_edges"]) == 182,
-		"audit : 182 arêtes relient les 154 niveaux")
-	_check(int(audit["chapter_count"]) == 12,
-		"audit : douze sections visuelles structurent la carte")
-	_check(int(audit["tutorial_count"]) == 3,
-		"audit : trois tutoriels Pr.Stone")
-	var first_three: Array = graph.nodes().slice(0, 3)
-	_check(first_three.all(func(node): return node.is_tutorial()),
-		"audit : les trois premiers nœuds sont les tutoriels Pr.Stone")
-	for node in first_three:
+	_check(int(audit["total_nodes"]) == 162,
+		"audit : exactement 162 niveaux")
+	_check(int(audit["total_edges"]) == 190,
+		"audit : 190 arêtes relient les 162 niveaux")
+	_check(int(audit["chapter_count"]) == 13,
+		"audit : treize sections visuelles structurent la carte")
+	_check(int(audit["tutorial_count"]) == 5,
+		"audit : cinq tutoriels Pr.Stone")
+	var first_five: Array = graph.nodes().slice(0, 5)
+	_check(first_five.all(func(node): return node.is_tutorial()),
+		"audit : les cinq premiers nœuds sont les tutoriels Pr.Stone")
+	for node in first_five:
 		_check(node.game_mode() == GameModeRules.MODE_CLASSIC
-			and node.max_power_tier() <= 2
-			and float(node.ai_profile().get("precision", 1.0)) == 0.0,
-			"audit : le tutoriel '%s' reste simple et sans précision" % node.id)
+			and node.max_power_tier() == 1
+			and float(node.ai_profile().get("precision", 1.0)) <= 0.04,
+			"audit : le tutoriel '%s' reste très facile et au palier 1" % node.id)
 
-	_check(int(audit["mode_counts"].get("classic", 0)) == 86
+	_check(int(audit["mode_counts"].get("classic", 0)) == 88
 		and int(audit["mode_counts"].get("random", 0)) == 23
-		and int(audit["mode_counts"].get("mirror", 0)) == 16
+		and int(audit["mode_counts"].get("mirror", 0)) == 22
 		and int(audit["mode_counts"].get("draft", 0)) == 29,
-		"audit : répartition 86 Classique / 23 Aléatoire / 16 Miroir / 29 Sélection")
-	_check(int(audit["tier_counts"].get("1", 0)) == 2
-		and int(audit["tier_counts"].get("2", 0)) == 38
-		and int(audit["tier_counts"].get("3", 0)) == 69
-		and int(audit["tier_counts"].get("4", 0)) == 45,
-		"audit : paliers 1/2/3/4 = 2/38/69/45")
-	_check(int(audit["series_counts"].get("ft1", 0)) == 133
+		"audit : répartition 88 Classique / 23 Aléatoire / 22 Miroir / 29 Sélection")
+	_check(int(audit["tier_counts"].get("1", 0)) == 11
+		and int(audit["tier_counts"].get("2", 0)) == 34
+		and int(audit["tier_counts"].get("3", 0)) == 59
+		and int(audit["tier_counts"].get("4", 0)) == 58,
+		"audit : paliers 1/2/3/4 = 11/34/59/58")
+	_check(int(audit["series_counts"].get("ft1", 0)) == 141
 		and int(audit["series_counts"].get("ft2", 0)) == 20
 		and int(audit["series_counts"].get("ft3", 0)) == 1,
-		"audit : 133 FT1, 20 FT2 et 1 FT3")
+		"audit : 141 FT1, 20 FT2 et 1 FT3")
 	_check((audit["mini_not_ft2"] as Array).is_empty(),
 		"audit : tous les mini-boss sont en FT2")
 	_check(int(audit["optional_mini_count"]) == 10
@@ -62,13 +62,47 @@ func run() -> void:
 		and int(audit["generator_god_counts"].get("sylkha", 0)) >= 1
 		and int(audit["generator_god_counts"].get("ilyr", 0)) >= 1,
 		"audit : les branches contraintes couvrent Véskar, Sylkha et Ilyr")
-	_check(int(audit["mirror_fixed_deck_count"]) == 1
-		and (audit["mirror_fixed_decks"] as Array).has("r09_mini1"),
-		"audit : le Miroir d'Ilyr utilise un deck fixe réservé")
+	_check(int(audit["mirror_fixed_deck_count"]) == 7
+		and (audit["mirror_fixed_decks"] as Array).has("r09_mini1")
+		and (audit["mirror_fixed_decks"] as Array).has("init_veskar")
+		and (audit["mirror_fixed_decks"] as Array).has("init_enigma"),
+		"audit : les six initiations et le mini-boss Ilyr utilisent des decks miroirs fixes")
+	var trial_gods := {
+		"init_veskar": "veskar", "init_nerava": "nerava", "init_kharun": "kharun",
+		"init_ilyr": "ilyr", "init_sylkha": "sylkha", "init_enigma": "enigma",
+	}
+	for node_id in trial_gods:
+		var trial: CampaignNode = graph.node(node_id)
+		var deck := trial.mirror_fixed_deck()
+		var god_cards := 0
+		var neutral_cards := 0
+		var all_common_n1 := deck.size() == DeckRules.DECK_SIZE
+		for stone_id in deck:
+			var affinity := StoneLoader.stone_affinity(str(stone_id))
+			god_cards += 1 if affinity == str(trial_gods[node_id]) else 0
+			neutral_cards += 1 if affinity == "neutral" else 0
+			all_common_n1 = all_common_n1 \
+				and StoneLoader.stone_rarity(str(stone_id)) == "common" \
+				and StoneLoader.stone_level(str(stone_id)) == 1 \
+				and CardPowerTierRules.effective_tier(StoneLoader.get_stone(str(stone_id))) == 1
+		_check(trial.max_power_tier() == 1 and god_cards == 4 and neutral_cards == 4
+			and all_common_n1,
+			"audit : l'initiation '%s' impose quatre communes du dieu et quatre neutres N1" % node_id)
+
+	for node_id in ["veskar_01", "nerava_01", "kharun_01", "ilyr_01", "sylkha_01"]:
+		var entry: CampaignNode = graph.node(node_id)
+		var tier_one := 0
+		var tier_two := 0
+		for stone_id in entry.fixed_deck():
+			var tier := CardPowerTierRules.effective_tier(StoneLoader.get_stone(str(stone_id)))
+			tier_one += 1 if tier == 1 else 0
+			tier_two += 1 if tier == 2 else 0
+		_check(tier_one == 6 and tier_two == 2,
+			"audit : l'entrée '%s' contient six cartes palier 1 et deux palier 2" % node_id)
 
 	var expected_themes := {
-		"veskar": 25, "nerava": 25, "kharun": 25,
-		"ilyr": 25, "sylkha": 25, "enigma": 26,
+		"veskar": 26, "nerava": 26, "kharun": 26,
+		"ilyr": 26, "sylkha": 26, "enigma": 27,
 	}
 	var expected_fixed := {
 		"veskar": 18, "nerava": 21, "kharun": 21,
@@ -79,7 +113,7 @@ func run() -> void:
 			"audit : le thème %s garde sa part après les approches" % god)
 		_check(int(audit["fixed_god_counts"].get(god, 0)) == int(expected_fixed[god]),
 			"audit : les dieux réellement fixés restent équilibrés pour %s" % god)
-	_check(int(audit["theme_min"]) == 25 and int(audit["theme_max"]) == 26,
+	_check(int(audit["theme_min"]) == 26 and int(audit["theme_max"]) == 27,
 		"audit : aucun dieu n'est massivement surreprésenté")
 
 	_check(int(audit["multi_exit_count"]) >= 25,
@@ -117,18 +151,24 @@ func run() -> void:
 		_check(average >= 0.0 and average <= 1.0,
 			"audit : chaque tranche de profondeur garde une précision valide")
 
-	_check(int(audit["fixed_deck_count"]) == 83
-		and int(audit["unique_fixed_decks"]) == 83,
-		"audit : les 83 decks fixes sont uniques")
-	_check(int(audit["fixed_god_deck_count"]) == 80,
-		"audit : 80 decks fixes identifient un dieu adverse")
+	_check(int(audit["fixed_deck_count"]) == 87
+		and int(audit["unique_fixed_decks"]) == 87,
+		"audit : les 87 decks fixes sont uniques")
+	_check(int(audit["fixed_god_deck_count"]) == 82,
+		"audit : 82 decks fixes identifient un dieu adverse")
 	_check(int(audit["min_fixed_god_cards"]) >= 3
 		and (audit["fixed_decks_below_three"] as Array).is_empty(),
 		"audit : chaque deck fixe contient au moins trois cartes de son dieu")
 	_check((audit["exact_duplicate_decks"] as Array).is_empty(),
 		"audit : aucun deck fixe exactement dupliqué")
-	_check((audit["near_duplicate_decks"] as Array).size() <= 1,
-		"audit : au plus une paire de decks partage sept cartes (tutoriels)")
+	var near_duplicates := audit["near_duplicate_decks"] as Array
+	var only_tutorial_neighbours := near_duplicates.size() == 10
+	for pair in near_duplicates:
+		only_tutorial_neighbours = only_tutorial_neighbours \
+			and str(pair.get("first", "")).begins_with("tuto_") \
+			and str(pair.get("second", "")).begins_with("tuto_")
+	_check(only_tutorial_neighbours,
+		"audit : seules les dix paires des cinq tutoriels partagent sept cartes")
 	_check(float(audit["min_node_distance"]) >= 170.0,
 		"audit : les nœuds restent espacés sur la carte")
 	_test_optional_paths(graph)

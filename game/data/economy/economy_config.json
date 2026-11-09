@@ -1,0 +1,60 @@
+{
+  "currency_name": "âmes",
+  "shop_rotation_seconds": 10800,
+  "shop_offer_count": 4,
+  "repeat_reward_multiplier": 0.25,
+  "first_god_price": 100,
+  "other_god_price": 800,
+  "starter": {
+    "souls": 0,
+    "active_god_id": "",
+    "deck": [
+      "gueule_de_travers_n1",
+      "ogre_droitier_n1",
+      "le_drape_du_seuil_n1",
+      "ecorche_angle_n1",
+      "rampant_des_fosses_n1"
+    ]
+  },
+  "first_tutorial_cards": [
+    "avortons_des_caves",
+    "mordeur_des_combles",
+    "mache_mur",
+    "le_sac_a_murmures"
+  ],
+  "upgrades": {
+    "common": {
+      "1": {"copies": 50, "souls": 200},
+      "2": {"copies": 100, "souls": 700},
+      "3": {"copies": 200, "souls": 1500}
+    },
+    "rare": {
+      "1": {"copies": 25, "souls": 700},
+      "2": {"copies": 50, "souls": 1500}
+    },
+    "epic": {
+      "1": {"copies": 15, "souls": 1500}
+    },
+    "legendary": {}
+  },
+  "shop": {
+    "common": {"min_quantity": 5, "max_quantity": 15, "souls_per_copy": 5},
+    "rare": {"min_quantity": 3, "max_quantity": 10, "souls_per_copy": 15},
+    "epic": {"min_quantity": 1, "max_quantity": 3, "souls_per_copy": 30},
+    "legendary": {"min_quantity": 1, "max_quantity": 1, "fixed_price": 1000},
+    "slot_rarities": [
+      {"common": 100},
+      {"common": 70, "rare": 30},
+      {"common": 20, "rare": 60, "epic": 20},
+      {"common": 45, "rare": 35, "epic": 18, "legendary": 2}
+    ]
+  },
+  "god_gifts": {
+    "veskar": ["devoracle", "sou_ricanant"],
+    "nerava": ["porte_fievre", "crache_cendre"],
+    "kharun": ["eclat_cuirasse", "heaume_errant"],
+    "ilyr": ["longuepine", "pique_en_haut"],
+    "sylkha": ["nud_vivant", "larve_dancrage"],
+    "enigma": ["collecteur_de_dents", "scie_boiteuse"]
+  }
+}

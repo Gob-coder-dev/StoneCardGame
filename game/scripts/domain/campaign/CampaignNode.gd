@@ -147,6 +147,65 @@ func declared_seed() -> int:
 	return int(encounter.get("seed", 0))
 
 
+## Identifiant d'une rencontre des anciennes campagnes, indépendant du nouvel
+## équilibrage. Il permet de réduire une précision ou un palier sans perdre la
+## migration d'une victoire déjà enregistrée dans les statistiques historiques.
+func declared_legacy_opponent_id() -> String:
+	return str(encounter.get("legacy_opponent_id", ""))
+
+
+## Paramètres de plateau facultatifs. Les valeurs absentes conservent le
+## comportement historique 4 × 4 / huit cartes / terrain tiré au sort.
+func board_size() -> int:
+	return clampi(int(encounter.get("board_size", GameState.DEFAULT_BOARD_SIZE)),
+		GameState.MIN_BOARD_SIZE, GameState.MAX_BOARD_SIZE)
+
+
+func player_hand_size() -> int:
+	return clampi(int(encounter.get("player_hand_size", DeckRules.DECK_SIZE)),
+		1, DeckRules.DECK_SIZE)
+
+
+func opponent_hand_size() -> int:
+	return clampi(int(encounter.get("opponent_hand_size", DeckRules.DECK_SIZE)),
+		1, DeckRules.DECK_SIZE)
+
+
+func allows_incomplete_player_deck() -> bool:
+	return bool(encounter.get("allow_incomplete_player_deck", false))
+
+
+func fixed_blocked_cells() -> Array:
+	var value: Variant = encounter.get("blocked_cells", null)
+	return (value as Array).duplicate(true) if value is Array else []
+
+
+func uses_random_blocked_cells() -> bool:
+	return not encounter.has("blocked_cells")
+
+
+func forced_first_player() -> int:
+	return clampi(int(encounter.get("forced_first_player", GameState.PLAYER_NONE)),
+		GameState.PLAYER_NONE, GameState.PLAYER_AI)
+
+
+func reward_definition() -> Dictionary:
+	var value: Variant = raw.get("rewards", {})
+	return (value as Dictionary).duplicate(true) if value is Dictionary else {}
+
+
+func match_setup() -> Dictionary:
+	return {
+		"board_size": board_size(),
+		"player_hand_size": player_hand_size(),
+		"opponent_hand_size": opponent_hand_size(),
+		"allow_incomplete_player_deck": allows_incomplete_player_deck(),
+		"blocked_cells": fixed_blocked_cells(),
+		"random_blocked_cells": uses_random_blocked_cells(),
+		"forced_first_player": forced_first_player(),
+	}
+
+
 ## Graine reproductible : campagne + nœud + graine déclarée. Seule la politique
 ## per_attempt ajoute la tentative, ce qui évite qu'un niveau change sans raison.
 func resolved_seed(campaign_version: int, attempt: int = 0) -> int:

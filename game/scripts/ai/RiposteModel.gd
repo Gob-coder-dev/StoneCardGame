@@ -64,7 +64,7 @@ func _prepare_next_unit() -> void:
 				return
 			_advance_preparation(PreparationPhase.LINES)
 		PreparationPhase.LINES:
-			if _preparation_index < GameState.total_cells():
+			if _preparation_index < _state.cell_count():
 				_prepare_line(_preparation_index)
 				_preparation_index += 1
 				return
@@ -79,7 +79,7 @@ func _prepare_next_unit() -> void:
 		PreparationPhase.HITS:
 			if _preparation_index < _free_cells.size():
 				var cell: Dictionary = _free_cells[_preparation_index]
-				_base_hits[GameState.cell_index(cell["row"], cell["col"])] = \
+				_base_hits[_state.index_of(cell["row"], cell["col"])] = \
 					_shot_hits(_state, cell["row"], cell["col"])
 				_preparation_index += 1
 				return
@@ -112,17 +112,17 @@ func _prepare_card(stone_id: String) -> void:
 
 ## Prépare la ligne d'une case indépendamment des cartes envisagées.
 func _prepare_line(index: int) -> void:
-	var row := index / GameState.BOARD_SIZE
-	var col := index % GameState.BOARD_SIZE
+	var row := index / _state.board_size
+	var col := index % _state.board_size
 	var per_side: Array = []
 	for side in StoneSide.ALL:
 		var delta: Vector2i = StoneSide.GRID[side]
 		var line := PackedInt32Array()
 		var r := row + delta.x
 		var c := col + delta.y
-		while r >= 0 and r < GameState.BOARD_SIZE \
-				and c >= 0 and c < GameState.BOARD_SIZE:
-			line.append(GameState.cell_index(r, c))
+		while r >= 0 and r < _state.board_size \
+				and c >= 0 and c < _state.board_size:
+			line.append(_state.index_of(r, c))
 			r += delta.x
 			c += delta.y
 		per_side.append(line)
@@ -169,7 +169,7 @@ func threat(simulation: GameState) -> float:
 	var dirty_sides := PackedByteArray()
 	dirty_sides.resize(StoneSide.ALL.size())
 	for cell in RulesEngine.get_free_cells(simulation):
-		var cell_index := GameState.cell_index(cell["row"], cell["col"])
+		var cell_index := simulation.index_of(cell["row"], cell["col"])
 		var lines: Array = _lines[cell_index]
 		for side in range(lines.size()):
 			dirty_sides[side] = 0

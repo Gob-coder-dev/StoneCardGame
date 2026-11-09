@@ -104,6 +104,8 @@ func _test_errors(page: Control) -> void:
 	var deck := ["avortons_des_caves_n1"]
 	for index in range(7):
 		_register("evo_menu_budget_%d" % index, 4, 4, 2, 0)
+		PlayerData._inventory.cards["evo_menu_budget_%d" % index] = {
+			"unlocked_level": 1, "copies": 1}
 		deck.append("evo_menu_budget_%d" % index)
 	page._commit_operation({"success": true, "deck": deck})
 	page._on_info_requested("avortons_des_caves_n1")

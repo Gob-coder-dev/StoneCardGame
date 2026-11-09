@@ -1,4 +1,4 @@
-"""Construit la campagne de 154 nœuds à partir d'un plan de graphe explicite.
+"""Construit la campagne de 162 nœuds à partir d'un plan de graphe explicite.
 
 Le script ne fabrique pas de decks : il choisit dans `campaign_deck_library.json`
 des decks déjà produits et validés par Godot. Les identifiants des 20 nœuds de
@@ -20,17 +20,52 @@ GODS_DATA = {str(g["id"]): g for g in json.loads((ROOT / "data" / "gods.json").r
 STONES = json.loads((ROOT / "data" / "stones.json").read_text(encoding="utf-8"))
 LINEAGE = {}
 STONE_GOD = {}
+STONE_RARITY = {}
+STONE_LEVEL = {}
+STONE_TIER = {}
+RARITY_OFFSET = {"common": 0, "rare": 1, "epic": 2, "legendary": 3}
 for lineage in STONES["lineages"]:
-    for form in lineage["levels"]:
+    for level_index, form in enumerate(lineage["levels"], start=1):
         form_id = str(form["id"])
+        rarity = str(lineage.get("rarity", ""))
+        level = int(form.get("level", level_index))
         LINEAGE[form_id] = str(lineage["id"])
         STONE_GOD[form_id] = str(lineage.get("god_id", "neutral"))
+        STONE_RARITY[form_id] = rarity
+        STONE_LEVEL[form_id] = level
+        STONE_TIER[form_id] = int(form.get("power_tier", level + RARITY_OFFSET[rarity]))
 
 MODES = {"C": "classic", "R": "random", "M": "mirror", "D": "draft"}
 
-# Decks signés des six mini-boss de campagne. Ils sont réservés avant le tirage
-# dans la bibliothèque pour qu'aucune rencontre ordinaire ne les duplique.
+# Decks fixes signés : mini-boss et premières rencontres volontairement
+# contrôlées. Ils sont réservés avant le tirage dans la bibliothèque pour
+# qu'aucune rencontre ordinaire ne les duplique.
 CURATED_DECKS = {
+    "veskar_01": [
+        "de_boiteux_n1", "devoracle_n1", "griffe_a_jetons_n1", "sou_ricanant_n1",
+        "gueule_de_travers_n1", "ogre_droitier_n1",
+        "croupier_manchot_n1", "jumeau_de_cuivre_n1",
+    ],
+    "nerava_01": [
+        "clochelet_malade_n1", "crache_cendre_n1", "machoire_moisie_n1", "porte_fievre_n1",
+        "le_drape_du_seuil_n1", "rampant_des_fosses_n1",
+        "griffe_septique_n1", "ronge_chair_n1",
+    ],
+    "kharun_01": [
+        "carapace_vide_n1", "eclat_cuirasse_n1", "heaume_errant_n1", "osselet_blinde_n1",
+        "ecorche_angle_n1", "le_sac_a_murmures_n1",
+        "chevalier_sans_visage_n1", "colosse_rivete_n1",
+    ],
+    "ilyr_01": [
+        "bouche_arbalete_n1", "fauche_fond_n1", "longuepine_n1", "pique_en_haut_n1",
+        "mache_mur_n1", "avortons_des_caves_n1",
+        "dard_de_traverse_n1", "perce_voute_n1",
+    ],
+    "sylkha_01": [
+        "bourgeon_mordant_n1", "larve_dancrage_n1", "nud_vivant_n1", "tisse_griffe_n1",
+        "mordeur_des_combles_n1", "gueule_de_travers_n1",
+        "fourmilion_des_nerfs_n1", "mante_des_racines_n1",
+    ],
     "mini_optional_01": [
         "porte_fievre_n2", "crache_cendre_n2", "clochelet_malade_n2",
         "machoire_moisie_n2", "veuve_des_spores_n1", "sonneur_pestifere_n1",
@@ -57,6 +92,30 @@ CURATED_DECKS = {
         "bouche_arbalete_n4", "veilleur_bifurque_n1", "perce_voute_n1",
         "dard_de_traverse_n2", "avortons_des_caves_n1",
     ],
+}
+
+# Initiations obligatoires : les quatre communes N1 du dieu et quatre communes
+# neutres N1 sont copiées à l'identique aux deux camps. Ces loadouts transitoires
+# permettent d'essayer chaque dieu sans l'acheter ni modifier le profil.
+INTRO_TRIALS = {
+    "init_veskar": dict(name="La Table des Reflets", god="veskar", precision=0.03,
+        deck=["de_boiteux_n1", "devoracle_n1", "griffe_a_jetons_n1", "sou_ricanant_n1",
+              "gueule_de_travers_n1", "ogre_droitier_n1", "le_drape_du_seuil_n1", "rampant_des_fosses_n1"]),
+    "init_nerava": dict(name="Le Reflet des Fièvres", god="nerava", precision=0.04,
+        deck=["clochelet_malade_n1", "crache_cendre_n1", "machoire_moisie_n1", "porte_fievre_n1",
+              "ecorche_angle_n1", "le_sac_a_murmures_n1", "mache_mur_n1", "mordeur_des_combles_n1"]),
+    "init_kharun": dict(name="Le Reflet des Remparts", god="kharun", precision=0.05,
+        deck=["carapace_vide_n1", "eclat_cuirasse_n1", "heaume_errant_n1", "osselet_blinde_n1",
+              "gueule_de_travers_n1", "le_drape_du_seuil_n1", "ogre_droitier_n1", "rampant_des_fosses_n1"]),
+    "init_ilyr": dict(name="Le Reflet des Veilleurs", god="ilyr", precision=0.06,
+        deck=["bouche_arbalete_n1", "fauche_fond_n1", "longuepine_n1", "pique_en_haut_n1",
+              "ecorche_angle_n1", "le_sac_a_murmures_n1", "mache_mur_n1", "mordeur_des_combles_n1"]),
+    "init_sylkha": dict(name="Le Reflet de l'Essaim", god="sylkha", precision=0.08,
+        deck=["bourgeon_mordant_n1", "larve_dancrage_n1", "nud_vivant_n1", "tisse_griffe_n1",
+              "gueule_de_travers_n1", "ogre_droitier_n1", "le_drape_du_seuil_n1", "rampant_des_fosses_n1"]),
+    "init_enigma": dict(name="Le Reflet des Assimilateurs", god="enigma", precision=0.10,
+        deck=["collecteur_de_dents_n1", "depeceur_rampant_n1", "pince_carcasse_n1", "scie_boiteuse_n1",
+              "ecorche_angle_n1", "le_sac_a_murmures_n1", "mache_mur_n1", "mordeur_des_combles_n1"]),
 }
 
 # Six mini-boss facultatifs existants reçoivent une identité et des contraintes
@@ -157,15 +216,20 @@ OPTIONAL_PATH_LAYOUTS = {
     "r09_mini1": dict(xs=[80, 160, 80, 160], offset_y=0, boss_x=80),
     "r09_mini2": dict(xs=[1000, 940, 1000, 940], offset_y=0, boss_x=1000),
     "r10_mini": dict(xs=[1000, 940, 1000, 940], offset_y=0, boss_x=960),
-    "r11_mini": dict(xs=[80, 80, 80, 80], offset_y=-240, boss_y=15840,
-                       boss_x=80),
+    # Le dernier tronçon remonte par le bord gauche. Le décaler à x=0
+    # empêche l'arête vers le mini-boss de retraverser les trois approches
+    # précédentes, ce que le validateur géométrique refuse à juste titre.
+    "r11_mini": dict(xs=[80, 80, 80, 0], offset_y=-240, boss_y=15840,
+                       boss_x=0),
     "mini_optional_02": dict(xs=[1000, 940, 1000, 940, 1000], offset_y=0,
                              boss_x=960),
 }
 
 PATH_STEP = 240
 
-# Les trois premiers nœuds et le carrefour historique restent les mêmes IDs.
+# Les trois premiers nœuds gardent leurs IDs. Deux combats d'entraînement puis
+# six initiations miroir forment désormais une rampe obligatoire avant le
+# carrefour historique.
 OLD = {
     "tuto_01": dict(name="Le Seuil", chapter="Seuil", region="Le refuge", mode="C", tier=1,
                     precision=0.0, anticipation=False, god="", deck_kind="neutral_n1",
@@ -173,28 +237,39 @@ OLD = {
     "tuto_02": dict(name="La Leçon", chapter="Seuil", region="Le refuge", mode="C", tier=1,
                     precision=0.0, anticipation=False, god="", deck_kind="neutral_n1",
                     tutorial="tutoriel_lecture", type="tutorial", accent="#a6c79a"),
-    "tuto_03": dict(name="Le Premier Pas", chapter="Seuil", region="Le refuge", mode="C", tier=2,
-                    precision=0.0, anticipation=False, god="", deck_kind="neutral_n2",
+    "tuto_03": dict(name="Le Premier Pas", chapter="Seuil", region="Le refuge", mode="C", tier=1,
+                    precision=0.0, anticipation=False, god="", deck_kind="neutral_n1",
                     tutorial="tutoriel_premier_pas", type="tutorial", accent="#a6c79a"),
+    "tuto_04": dict(name="La Main Assurée", chapter="Seuil", region="Le refuge", mode="C", tier=1,
+                    precision=0.0, anticipation=False, god="", deck_kind="neutral_n1",
+                    tutorial="", type="tutorial", accent="#a6c79a"),
+    "tuto_05": dict(name="Le Dernier Exercice", chapter="Seuil", region="Le refuge", mode="C", tier=1,
+                    precision=0.0, anticipation=False, god="", deck_kind="neutral_n1",
+                    tutorial="", type="tutorial", accent="#a6c79a"),
     "veskar_01": dict(name="La Table du Croupier", chapter="Carrefour", region="Les Aléators",
-                      mode="C", tier=2, precision=0.25, god="veskar"),
+                      mode="C", tier=2, precision=0.10, god="veskar", deck_kind="fixed",
+                      legacy_id="bot_veskar_n2_facile"),
     "nerava_01": dict(name="Les Fièvres Basses", chapter="Carrefour", region="Les Flétris",
-                      mode="C", tier=2, precision=0.25, god="nerava", deck_kind="generated"),
+                      mode="C", tier=2, precision=0.12, god="nerava", deck_kind="fixed",
+                      legacy_id="bot_nerava_n2_facile"),
     "kharun_01": dict(name="La Muraille Fendue", chapter="Carrefour", region="Les Remparts",
-                      mode="C", tier=2, precision=0.25, god="kharun"),
+                      mode="C", tier=2, precision=0.10, god="kharun", deck_kind="fixed",
+                      legacy_id="bot_kharun_n2_facile"),
     "mini_optional_01": dict(name="Le Collectionneur", chapter="Carrefour", region="Les Assimilateurs",
                              mode="C", tier=3, precision=0.75, god="enigma", type="mini_boss",
                              mini_kind="optional", dead_end=True),
     "veskar_02": dict(name="Le Coup Double", chapter="Carrefour", region="Les Aléators",
                       mode="R", tier=3, precision=0.5, god="", series="ft2"),
     "ilyr_01": dict(name="La Ligne de Veille", chapter="Carrefour", region="Les Veilleurs",
-                    mode="C", tier=2, precision=0.25, god="ilyr", deck_kind="generated"),
+                    mode="C", tier=2, precision=0.16, god="ilyr", deck_kind="fixed",
+                    legacy_id="bot_ilyr_n2_facile"),
     "mirror_01": dict(name="Le Miroir de Verre", chapter="Carrefour", region="Le reflet",
                       mode="M", tier=3, precision=0.5, god=""),
     "kharun_02": dict(name="Le Rempart Mobile", chapter="Carrefour", region="Les Remparts",
                       mode="R", tier=3, precision=0.5, god="", series="ft2"),
     "sylkha_01": dict(name="La Meute Naissante", chapter="Carrefour", region="L’Essaim",
-                      mode="C", tier=3, precision=0.5, god="sylkha"),
+                      mode="C", tier=2, precision=0.18, god="sylkha", deck_kind="fixed",
+                      legacy_id="bot_sylkha_n34_moyen"),
     "veilleur_impasse": dict(name="Le Veilleur Immobile", chapter="Carrefour", region="Les Veilleurs",
                              mode="C", tier=3, precision=0.5, god="ilyr", dead_end=True),
     "convergence_01": dict(name="La Convergence", chapter="Carrefour", region="Le passage",
@@ -222,6 +297,7 @@ OLD = {
 # Coordonnées des 20 nœuds historiques, réparties pour laisser respirer les branches.
 OLD_COORDS = {
     "tuto_01": (0, 540), "tuto_02": (1, 540), "tuto_03": (2, 540),
+    "tuto_04": (3, 540), "tuto_05": (4, 540),
     "veskar_01": (0, 160), "nerava_01": (0, 540), "kharun_01": (0, 920),
     "mini_optional_01": (1, 90), "veskar_02": (1, 390), "ilyr_01": (1, 680),
     "kharun_02": (1, 940),
@@ -231,7 +307,12 @@ OLD_COORDS = {
 
 OLD_EDGES = [
     ("tuto_01", "tuto_02"), ("tuto_02", "tuto_03"),
-    ("tuto_03", "veskar_01"), ("tuto_03", "nerava_01"), ("tuto_03", "kharun_01"),
+    ("tuto_03", "tuto_04"), ("tuto_04", "tuto_05"),
+    ("tuto_05", "init_veskar"), ("init_veskar", "init_nerava"),
+    ("init_nerava", "init_kharun"), ("init_kharun", "init_ilyr"),
+    ("init_ilyr", "init_sylkha"), ("init_sylkha", "init_enigma"),
+    ("init_enigma", "veskar_01"), ("init_enigma", "nerava_01"),
+    ("init_enigma", "kharun_01"),
     ("veskar_01", "mini_optional_01"), ("veskar_01", "veskar_02"),
     ("veskar_01", "ilyr_01"), ("veskar_02", "mirror_01"),
     ("ilyr_01", "sylkha_01"), ("mirror_01", "sylkha_01"),
@@ -517,18 +598,51 @@ def add_node(node_id: str, spec: dict, x: float, y: float) -> None:
             "series_format": series,
             "seed_policy": spec.get("seed_policy", "fixed_per_node"),
             "seed": 0,
+            "legacy_opponent_id": spec.get("legacy_id", ""),
         },
+        "rewards": {},
         "visual": {"scale": 1.0},
     }
     nodes[node_id] = node
 
 
-# ── Seuil et carrefour historique ────────────────────────────────────────────
+# ── Seuil, initiations et carrefour historique ───────────────────────────────
 start_y = 160
-for node_id in ["tuto_01", "tuto_02", "tuto_03"]:
+tutorial_ids = ["tuto_01", "tuto_02", "tuto_03", "tuto_04", "tuto_05"]
+for node_id in tutorial_ids:
     depth, x = OLD_COORDS[node_id]
     add_node(node_id, OLD[node_id], x, start_y + depth * 240)
-carrefour_y = start_y + 2 * 240 + 340
+# Seule cette rencontre accepte le deck initial de cinq cartes. Elle est un
+# contrat de contenu explicite, pas une exception dispersée dans l'interface.
+nodes["tuto_01"]["encounter"].update({
+    "board_size": 3,
+    "player_hand_size": 5,
+    "opponent_hand_size": 4,
+    "allow_incomplete_player_deck": True,
+    "blocked_cells": [],
+    "forced_first_player": 1,
+})
+# Les deux combats de transition restent volontairement favorables au joueur.
+for node_id in ["tuto_04", "tuto_05"]:
+    nodes[node_id]["encounter"]["forced_first_player"] = 1
+
+trial_y = start_y + len(tutorial_ids) * 240
+for index, (node_id, trial) in enumerate(INTRO_TRIALS.items()):
+    spec = dict(name=trial["name"], chapter="Initiations", region="La galerie des reflets",
+                mode="M", tier=1, precision=trial["precision"], anticipation=False,
+                god="", type="normal", series="ft1")
+    add_node(node_id, spec, 540, trial_y + index * 240)
+    node = nodes[node_id]
+    node["theme_god_id"] = trial["god"]
+    node["encounter"].update({
+        "generator_god_id": trial["god"],
+        "generator_min_god_cards": 4,
+        "mirror_fixed_deck": list(trial["deck"]),
+        "forced_first_player": 1,
+    })
+
+last_intro_y = trial_y + (len(INTRO_TRIALS) - 1) * 240
+carrefour_y = last_intro_y + 340
 for node_id in ["veskar_01", "nerava_01", "kharun_01", "mini_optional_01",
                 "veskar_02", "ilyr_01", "mirror_01", "kharun_02",
                 "sylkha_01", "veilleur_impasse", "convergence_01",
@@ -789,6 +903,8 @@ for node_id, node in nodes.items():
         continue
     if node_id in OLD:
         continue
+    if node_id in INTRO_TRIALS:
+        continue
     d = depth[node_id]
     tier = base_tier(d)
     if node["mini_boss_kind"]:
@@ -830,6 +946,8 @@ for boss_id, path_ids in optional_paths.items():
 theme_counts = Counter()
 last_theme = ""
 forced_theme = {}
+for node_id, trial in INTRO_TRIALS.items():
+    theme_counts[trial["god"]] += 1
 for boss_id, path_ids in optional_paths.items():
     boss_theme = branch_god(nodes[boss_id])
     forced_theme[boss_id] = boss_theme
@@ -841,7 +959,7 @@ for node_id, theme in forced_theme.items():
 fixed_pending = []
 variable = []
 for node_id, node in nodes.items():
-    if node["type"] == "tutorial" or node_id in forced_theme:
+    if node["type"] == "tutorial" or node_id in forced_theme or node_id in INTRO_TRIALS:
         continue
     fixed = node["encounter"].get("fixed_god_id", "")
     if fixed:
@@ -895,7 +1013,7 @@ for index, (node_id, node) in enumerate(nodes.items()):
 
 # ── Précisions et anticipation des nouveaux nœuds ───────────────────────────
 for node_id, node in nodes.items():
-    if node_id in OLD or node["type"] == "tutorial":
+    if node_id in OLD or node["type"] == "tutorial" or node_id in INTRO_TRIALS:
         continue
     d = depth[node_id]
     region_index = list(nodes).index(node_id) // 10
@@ -1007,13 +1125,38 @@ for node_id, node in nodes.items():
     used_decks.add(sorted_deck(deck))
     selected_decks.append(lineages(deck))
 
+# Récompenses explicites dans le JSON final. Le montant croît avec le palier,
+# la précision et le statut du niveau ; seules les premières victoires de
+# mini-boss/boss distribuent aussi des cartes.
+FIRST_TUTORIAL_REWARDS = [
+    "avortons_des_caves_n1", "mordeur_des_combles_n1",
+    "mache_mur_n1", "le_sac_a_murmures_n1",
+]
+for node_id, node in nodes.items():
+    enc = node["encounter"]
+    tier = int(enc["max_power_tier"])
+    precision = float(enc["ai_profile"]["precision"])
+    boss_bonus = 18 if node["type"] == "boss" else 10 if node["type"] == "mini_boss" else 0
+    base = 8 + tier * 3 + round(precision * 12) + boss_bonus
+    node["rewards"] = {
+        "souls_min": int(base),
+        "souls_max": int(base + 5 + tier),
+        "card_rewards": [],
+    }
+    if node_id == "tuto_01":
+        node["rewards"]["card_rewards"] = FIRST_TUTORIAL_REWARDS
+    elif node["type"] in {"mini_boss", "boss"}:
+        fixed = enc.get("fixed_deck", [])
+        wanted = 2 if node["type"] == "boss" else 1
+        node["rewards"]["card_rewards"] = list(fixed[:wanted])
+
 # ── Contrôles de construction ───────────────────────────────────────────────
-if len(nodes) != 154:
-    raise SystemExit(f"154 nœuds attendus, obtenu {len(nodes)}")
+if len(nodes) != 162:
+    raise SystemExit(f"162 nœuds attendus, obtenu {len(nodes)}")
 if len(set(depth)) != 1 and max(depth.values()) < 45:
     raise SystemExit("profondeur de graphe insuffisante")
-if len(edges) != 182:
-    raise SystemExit(f"182 arêtes attendues, obtenu {len(edges)}")
+if len(edges) != 190:
+    raise SystemExit(f"190 arêtes attendues, obtenu {len(edges)}")
 weak_decks = []
 for node_id, node in nodes.items():
     god = node["encounter"].get("fixed_god_id", "")
@@ -1022,6 +1165,23 @@ for node_id, node in nodes.items():
         weak_decks.append(node_id)
 if weak_decks:
     raise SystemExit("decks fixes sans trois cartes du dieu : " + ", ".join(weak_decks))
+
+for node_id, trial in INTRO_TRIALS.items():
+    deck = trial["deck"]
+    god = trial["god"]
+    if len(deck) != 8 or len(lineages(deck)) != 8:
+        raise SystemExit(f"initiation miroir invalide sur {node_id}")
+    if god_card_count(deck, god) != 4 or god_card_count(deck, "neutral") != 4:
+        raise SystemExit(f"initiation {node_id} sans répartition 4/4")
+    if any(STONE_RARITY.get(card) != "common" or STONE_LEVEL.get(card) != 1
+           or STONE_TIER.get(card) != 1 for card in deck):
+        raise SystemExit(f"initiation {node_id} avec une carte hors palier 1")
+
+for node_id in ["veskar_01", "nerava_01", "kharun_01", "ilyr_01", "sylkha_01"]:
+    deck = nodes[node_id]["encounter"]["fixed_deck"]
+    tiers = Counter(STONE_TIER.get(card, 0) for card in deck)
+    if tiers != Counter({1: 6, 2: 2}):
+        raise SystemExit(f"courbe initiale invalide sur {node_id}: {dict(tiers)}")
 
 # Quelques arêtes historiques traversent un couloir encombré : deux points de
 # contrôle explicites gardent le tracé hors des ronds voisins.
@@ -1041,7 +1201,7 @@ map_height = max(n["position"]["y"] for n in nodes.values()) + 300
 result = {
     "id": "samstone_campaign",
     "title": "La Carte de SamStone",
-    "campaign_version": 3,
+    "campaign_version": 5,
     "map": {"width": 1080, "height": int(map_height)},
     "start_node_id": "tuto_01",
     "final_node_id": "final_01",

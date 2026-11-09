@@ -138,11 +138,12 @@ func _test_shipped_content_graph() -> void:
 	if not bool(content.get("ok", false)):
 		return
 	var graph: CampaignGraph = GraphModel.build(content["definition"])
-	_check(graph.node_count() == 154 and graph.edge_count() == 182,
-		"contenu : la campagne fournit exactement 154 nœuds et 182 arêtes")
+	_check(graph.node_count() == 162 and graph.edge_count() == 190,
+		"contenu : la campagne fournit exactement 162 nœuds et 190 arêtes")
 	_check(not graph.has_cycle(), "contenu : le graphe livré est acyclique")
-	_check(graph.successors("tuto_03").size() == 3,
-		"contenu : les tutoriels ouvrent au moins trois branches")
+	_check(graph.successors("tuto_03") == ["tuto_04"]
+		and graph.successors("init_enigma").size() == 3,
+		"contenu : cinq tutoriels et six initiations précèdent les trois branches")
 	_check(graph.successors("veskar_01").size() >= 2
 		and graph.successors("choice_01").size() >= 2,
 		"contenu : une branche se divise une seconde fois")
@@ -159,9 +160,9 @@ func _test_shipped_content_graph() -> void:
 		if node.is_tutorial():
 			tutorial_count += 1
 			_check(node.game_mode() == GameModeRules.MODE_CLASSIC
-				and node.max_power_tier() <= 2
-				and float(node.ai_profile().get("precision", 1.0)) == 0.0,
-				"contenu : le tutoriel '%s' est Classique, palier ≤ 2, précision 0" % node.id)
+				and node.max_power_tier() == 1
+				and float(node.ai_profile().get("precision", 1.0)) <= 0.04,
+				"contenu : le tutoriel '%s' est Classique et très facile au palier 1" % node.id)
 		else:
 			_check(node.theme_god_id != "",
 				"contenu : chaque rencontre non-tutorielle porte un thème de dieu")
@@ -177,7 +178,7 @@ func _test_shipped_content_graph() -> void:
 				"contenu : le mini-boss facultatif '%s' est au bout d'une impasse" % node.id)
 		if node.is_mandatory_mini_boss():
 			mandatory_mini += 1
-	_check(tutorial_count == 3, "contenu : les trois premiers niveaux sont des tutoriels Pr.Stone")
+	_check(tutorial_count == 5, "contenu : les cinq premiers niveaux sont des tutoriels Pr.Stone")
 	_check(modes.has(GameModeRules.MODE_CLASSIC) and modes.has(GameModeRules.MODE_RANDOM)
 		and modes.has(GameModeRules.MODE_MIRROR) and modes.has(GameModeRules.MODE_DRAFT),
 		"contenu : les quatre modes sont réellement représentés")

@@ -29,20 +29,20 @@ static func build(node: CampaignNode, campaign_version: int, player_god_id: Stri
 		GameModeRulesModel.MODE_RANDOM:
 			var random_god := node.generator_god_id()
 			if random_god != "":
-				display_name = "Aléatoire — %s" % _god_name(random_god)
+				display_name = _god_name(random_god)
 				description = "Deux decks de %s tirés au hasard, sans carte neutre." % _god_name(random_god)
 				portrait = str(StoneLoader.get_god(random_god).get("asset", ""))
 			else:
-				display_name = "Aléatoire"
+				display_name = "Adversaire"
 				description = "Dieux et decks tirés selon les règles du mode Aléatoire."
 		GameModeRulesModel.MODE_MIRROR:
 			var mirror_god := node.generator_god_id()
 			if not node.mirror_fixed_deck().is_empty() and mirror_god != "":
-				display_name = "Miroir — %s" % _god_name(mirror_god)
+				display_name = _god_name(mirror_god)
 				description = "Un deck miroir fixe de %s, copié pour les deux camps." % _god_name(mirror_god)
 				portrait = str(StoneLoader.get_god(mirror_god).get("asset", ""))
 			else:
-				display_name = "Miroir"
+				display_name = "Reflet"
 				description = "Un seul loadout généré, copié pour les deux camps."
 		GameModeRulesModel.MODE_DRAFT:
 			opponent_god = player_god_id if god_policy == CampaignNode.GOD_PROFILE \
@@ -85,7 +85,12 @@ static func build(node: CampaignNode, campaign_version: int, player_god_id: Stri
 
 	var opponent := {
 		"id": "campaign_%s" % node.id,
-		"name": "%s — %s" % [display_name, node.name],
+		# Le nom du combattant reste court dans le HUD, le pile ou face et le
+		# résultat. Le titre narratif appartient à la fiche de campagne.
+		"name": display_name,
+		"combatant_name": display_name,
+		"encounter_name": node.name,
+		"mode_label": GameModeRulesModel.mode_label(mode),
 		"god_id": opponent_god,
 		"description": description,
 		"quote": "",
@@ -99,6 +104,8 @@ static func build(node: CampaignNode, campaign_version: int, player_god_id: Stri
 		"portrait": portrait,
 		"campaign_node_id": node.id,
 		"series": node.series_format(),
+		"match_setup": node.match_setup(),
+		"rewards": node.reward_definition(),
 	}
 	return {
 		"ok": true,
@@ -115,6 +122,7 @@ static func build(node: CampaignNode, campaign_version: int, player_god_id: Stri
 		"seed": seed,
 		"requires_preparation": node.needs_preparation(),
 		"needs_series_session": node.needs_series_session(),
+		"match_setup": node.match_setup(),
 	}
 
 
@@ -124,6 +132,9 @@ static func build(node: CampaignNode, campaign_version: int, player_god_id: Stri
 static func legacy_opponent_id(node: CampaignNode) -> String:
 	if node == null or node.game_mode() != GameModeRulesModel.MODE_CLASSIC:
 		return ""
+	var declared := node.declared_legacy_opponent_id()
+	if declared != "":
+		return declared
 	if node.opponent_god_policy() != CampaignNode.GOD_FIXED:
 		return ""
 	var difficulty := _legacy_difficulty(node.ai_profile())

@@ -24,7 +24,9 @@ func run() -> void:
 		return
 	var graph: CampaignGraph = GraphModel.build(content["definition"])
 	var progress := ProgressModel.new()
-	for node_id in ["tuto_01", "tuto_02", "tuto_03", "veskar_01"]:
+	for node_id in ["tuto_01", "tuto_02", "tuto_03", "tuto_04", "tuto_05",
+			"init_veskar", "init_nerava", "init_kharun", "init_ilyr",
+			"init_sylkha", "init_enigma", "veskar_01"]:
 		progress.mark_completed(node_id)
 	_service = ServiceModel.new(graph, progress, StoreModel.new(PATH), [])
 	CampaignContext.set_service_for_tests(_service)
@@ -147,14 +149,32 @@ func _test_result_screens() -> void:
 
 
 func _test_preparation_scene() -> void:
+	_enter("init_veskar")
+	var mirror_page: Control = (load("res://scenes/campaign/CampaignPreparation.tscn") as PackedScene).instantiate()
+	add_child(mirror_page)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	_check(mirror_page.deck_grid.get_child_count() == DeckRules.DECK_SIZE
+		and mirror_page.deck_grid.columns == 2
+		and mirror_page.deck_title.text == "VOTRE DECK"
+		and not mirror_page.status_label.visible
+		and mirror_page.get_node_or_null("Root/Scroll/Content/OpponentGrid") == null,
+		"préparation campagne : Miroir montre uniquement le deck du joueur")
+	mirror_page.queue_free()
+	await get_tree().process_frame
+	BattleContext.clear_campaign_node()
+
 	_enter("veskar_02")
 	var random_page: Control = (load("res://scenes/campaign/CampaignPreparation.tscn") as PackedScene).instantiate()
 	add_child(random_page)
 	await get_tree().process_frame
+	await get_tree().process_frame
 	_check(random_page.deck_grid.get_child_count() == DeckRules.DECK_SIZE
-		and random_page.opponent_grid.get_child_count() == DeckRules.DECK_SIZE
+		and random_page.deck_grid.columns == 2
+		and random_page.deck_title.text == "VOTRE DECK"
+		and not random_page.status_label.visible
 		and not random_page.confirm_button.disabled,
-		"préparation campagne : Aléatoire affiche les deux loadouts prêts et autorise le lancement")
+		"préparation campagne : Aléatoire montre uniquement le deck du joueur")
 	random_page.queue_free()
 	await get_tree().process_frame
 	BattleContext.clear_campaign_node()

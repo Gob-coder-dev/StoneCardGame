@@ -25,21 +25,25 @@ func _test_codec() -> void:
 		and profile["selected_deck_by_god"]["enigma"] == 0,
 		"l'ancien deck migre dans le premier emplacement de son dieu")
 	var round_trip := Codec.decode(Codec.encode(profile["decks_by_god"], profile["selected_deck_by_god"], profile["player_god_id"],
-		profile["player_name"], profile["stats"]))
+		profile["player_name"], profile["stats"], profile["inventory"]))
 	_check(round_trip == profile, "le nouveau format conserve toutes les données après chargement")
 	_check(not profile.has("selected_npc_id") and not profile.has("last_winner"),
 		"le contexte du combat reste absent de la sauvegarde du joueur")
 	var version_one := Codec.decode({"save_version": 1, "player_god_id": "veskar", "player_deck": ["le_nud_hurlant_n2"]})
 	_check(version_one["decks_by_god"]["veskar"] == [["le_nud_hurlant_n2"], [], []]
-		and version_one["save_version"] == 4, "la version 1 conserve son deck et crée deux emplacements vides")
+		and version_one["save_version"] == 5, "la version 1 conserve son deck et crée deux emplacements vides")
 
 
 func _test_banks_codec() -> void:
 	var profile := Codec.decode({})
-	var valid: bool = profile["decks_by_god"].size() == StoneLoader.get_all_gods().size()
-	for slots in profile["decks_by_god"].values():
-		valid = valid and slots == [[], [], []]
-	_check(valid, "un nouveau profil possède trois decks vides pour chacun des six dieux")
+	var valid: bool = profile["decks_by_god"].size() == StoneLoader.get_all_gods().size() + 1
+	for key in profile["decks_by_god"]:
+		var slots: Array = profile["decks_by_god"][key]
+		valid = valid and slots.size() == DeckRules.DECKS_PER_GOD
+		if key != Codec.NEUTRAL_DECK_KEY:
+			valid = valid and slots == [[], [], []]
+	_check(valid and profile["decks_by_god"][Codec.NEUTRAL_DECK_KEY][0].size() == 5,
+		"un nouveau profil possède sa banque neutre de départ et trois decks par dieu")
 	profile["decks_by_god"]["veskar"][1].append("le_nud_hurlant_n2")
 	_check(profile["decks_by_god"]["veskar"][0].is_empty()
 		and profile["decks_by_god"]["veskar"][2].is_empty()
@@ -49,6 +53,7 @@ func _test_banks_codec() -> void:
 	profile["selected_deck_by_god"]["veskar"] = 1
 	profile["selected_deck_by_god"]["enigma"] = 2
 	profile["player_god_id"] = "veskar"
+	profile["inventory"]["unlocked_god_ids"] = ["veskar", "enigma"]
 	var reloaded := Codec.decode(JSON.parse_string(JSON.stringify(profile)))
 	_check(reloaded["decks_by_god"] == profile["decks_by_god"]
 		and reloaded["selected_deck_by_god"] == profile["selected_deck_by_god"]

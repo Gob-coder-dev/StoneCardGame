@@ -69,9 +69,9 @@ func _refresh() -> void:
 	background.set_god(god)
 	var portrait_path := str(god.get("asset", ""))
 	god_portrait.texture = load(portrait_path) as Texture2D if portrait_path != "" else null
-	god_name.text = str(god.get("name", "Dieu")).to_upper()
-	god_title.text = str(god.get("title", "")).capitalize()
-	god_family.text = str(god.get("family_name", ""))
+	god_name.text = (str(god.get("name", "Dieu")) if not god.is_empty() else "Sans dieu").to_upper()
+	god_title.text = str(god.get("title", "")).capitalize() if not god.is_empty() else "Deck neutre"
+	god_family.text = str(god.get("family_name", "")) if not god.is_empty() else "Pierres neutres"
 	god_family.add_theme_color_override("font_color", Color(str(god.get("color", "#e9e1d1"))))
 	god_title.add_theme_color_override("font_color", UITheme.COL_TEXT_DIM)
 	_restore_deck_status()
@@ -94,12 +94,20 @@ func _restore_deck_status() -> void:
 
 
 ## Condition unique, partagée par les deux modes.
-func _deck_is_ready() -> bool:
-	return DeckRules.is_deck_valid(PlayerData.get_active_deck(), PlayerData.player_god_id)
+func _deck_is_ready(mode: String = "") -> bool:
+	var deck := PlayerData.get_active_deck()
+	if DeckRules.is_deck_valid(deck, PlayerData.player_god_id):
+		return true
+	# Exception d'amorçage unique : le tout premier tutoriel est conçu pour les
+	# cinq cartes du profil neuf. Le PVP et tous les autres niveaux restent à 8.
+	if mode == "campaign" and PlayerData.player_god_id == "" and deck.size() >= 5:
+		var service := CampaignContext.get_service()
+		return service.is_ready() and not service.is_completed("tuto_01")
+	return false
 
 
 func _on_mode_pressed(mode: String) -> void:
-	if not _deck_is_ready():
+	if not _deck_is_ready(mode):
 		_show_deck_warning()
 		return
 	_go_to(str(MODE_SCENES[mode]))

@@ -298,9 +298,11 @@ func _test_god_selector_ui() -> void:
 	await get_tree().process_frame
 	var portraits_loaded := true
 	for option in options.get_children():
-		portraits_loaded = portraits_loaded and option.get_node("Content/Portrait").has_portrait()
-	_check(menu.visible and options.columns == 3 and options.get_child_count() == 6 and portraits_loaded,
-		"le tiroir affiche les six portraits de dieux sur deux rangées de trois")
+		var god_id := str(option.get_meta("god_id", ""))
+		portraits_loaded = portraits_loaded and (god_id == "" \
+			or option.get_node("Content/Portrait").has_portrait())
+	_check(menu.visible and options.columns == 3 and options.get_child_count() == 7 and portraits_loaded,
+		"le tiroir affiche Sans dieu puis les six portraits divins")
 	_check(page.god_portrait.has_portrait() and page.god_name.text == "VÉSKAR"
 		and page.get_node("Content/Scroll/Page/GodDeckPanel/GodDeckContent/GodDeckRow/IdentityDeck/DeckSlots").get_child_count() == 3,
 		"le panneau associe un grand portrait à l'identité du dieu et à ses trois decks")
@@ -622,9 +624,9 @@ func _test_neutral_bot_battle() -> void:
 	add_child(prebattle)
 	await get_tree().process_frame
 	_check(prebattle.opponent_god_name.text == "LUI • Sans dieu"
-		and prebattle.opponent_god_family.text == "Cartes neutres uniquement"
+		and prebattle.opponent_god_family.text == ""
 		and not prebattle.opponent_god_portrait.has_portrait(),
-		"l'avant-combat indique clairement que Pr.Stone n'a ni dieu ni portrait divin")
+		"l'avant-combat montre Pr.Stone sans texte technique ni portrait divin")
 	prebattle.queue_free()
 	await get_tree().process_frame
 	BattleContext.selected_npc_id = saved_npc
@@ -647,10 +649,12 @@ func _test_result_uses_generated_opponent() -> void:
 	var page: Control = (load("res://scenes/menus/Result.tscn") as PackedScene).instantiate()
 	add_child(page)
 	await get_tree().process_frame
+	var expected_name := UIFormat.combatant_name(str(opponent["name"]), 18)
 	_check(page.result_label.text == "VICTOIRE !"
-		and page.score_label.text.contains(opponent["name"])
+		and page.score_label.text.contains(expected_name)
+		and not page.score_label.text.contains(" — Le ")
 		and page.score_label.text.contains("42") and page.score_label.text.contains("17"),
-		"l'écran de résultat affiche le nom et le score de la rencontre générée")
+		"l'écran de résultat affiche le nom court et le score de la rencontre")
 	page.queue_free()
 	await get_tree().process_frame
 	BattleContext.selected_npc_id = saved_id
@@ -1204,6 +1208,11 @@ func _test_hud_game_over() -> void:
 	_check(hud._human_portrait.has_portrait() and hud._ai_portrait.has_portrait()
 		and hud._human_god.text == "Véskar" and hud._ai_god.text == "Kharûn",
 		"le HUD conserve l'image et le nom du dieu de chaque camp pendant le combat")
+	hud.set_names("Joueur", "Miroir — Nérava — Le Reflet des Fièvres")
+	hud.set_active_player(GameState.PLAYER_AI)
+	_check(hud._ai_name.text == "Nérava" and hud._banner.text == "Tour de Nérava"
+		and hud._banner.custom_minimum_size.x == UITheme.HUD_BANNER_WIDTH,
+		"le HUD réduit les anciens noms composés dans la plaque et le bandeau de tour")
 	hud.set_gods(StoneLoader.get_god("veskar"), {})
 	_check(hud._ai_god.text == "Sans dieu" and not hud._ai_portrait.has_portrait(),
 		"le HUD identifie explicitement un adversaire sans dieu")

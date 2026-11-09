@@ -202,7 +202,7 @@ func _check_collection() -> void:
 	await _reset_scroll(scroll)
 	await _tap(_center(sort))
 	_check(page.sort_menu.visible, "tri : rouvrir les options pour tester l'extérieur")
-	var collection_title: Label = scroll.get_node("Page/CollectionHeader/CollectionTitle")
+	var collection_title: Label = scroll.get_node("Page/CollectionTitle")
 	await _tap(_center(collection_title))
 	_check(not page.sort_menu.visible, "tri : toucher hors du menu referme les options")
 	await _tap(_center(sort))

@@ -273,8 +273,8 @@ func _cancel_animations() -> void:
 		remove_child(animation)
 		animation.queue_free()
 	if is_instance_valid(_board):
-		for row in range(GameState.BOARD_SIZE):
-			for col in range(GameState.BOARD_SIZE):
+		for row in range(_board.board_size()):
+			for col in range(_board.board_size()):
 				var card := _board.card_at(row, col)
 				if card != null:
 					card.set_combat_preview(null)

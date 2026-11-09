@@ -8,8 +8,13 @@ const OpponentCatalogModel := preload("res://scripts/data/OpponentCatalog.gd")
 const EncounterPathModel := preload("res://scripts/domain/EncounterPath.gd")
 const Routes := preload("res://scripts/ui/GameRoutes.gd")
 
-@onready var result_label: Label = $VBoxCenter/ResultLabel
-@onready var score_label: Label = $VBoxCenter/ScoreLabel
+@onready var result_label: Label = $VBoxCenter/ResultCard/Content/ResultLabel
+@onready var score_label: Label = $VBoxCenter/ResultCard/Content/ScoreLabel
+@onready var reward_divider: ColorRect = $VBoxCenter/ResultCard/Content/RewardDivider
+@onready var rewards: VBoxContainer = $VBoxCenter/ResultCard/Content/Rewards
+@onready var reward_soul_row: HBoxContainer = $VBoxCenter/ResultCard/Content/Rewards/SoulRow
+@onready var reward_soul_amount: Label = $VBoxCenter/ResultCard/Content/Rewards/SoulRow/Amount
+@onready var reward_cards: HBoxContainer = $VBoxCenter/ResultCard/Content/Rewards/Cards
 @onready var background: MenuBackground = $Background
 @onready var next_btn: Button = $VBoxCenter/NextButton
 @onready var replay_btn: Button = $VBoxCenter/ReplayButton
@@ -47,9 +52,11 @@ func _ready() -> void:
 	else:
 		background.set_result_draw(StoneLoader.get_god(BattleContext.effective_player_god_id()),
 			StoneLoader.get_god(BattleContext.effective_opponent_god_id()))
-	var npc_name: String = npc.get("name", "Adversaire")
+	var npc_name := UIFormat.combatant_name(str(
+		npc.get("combatant_name", npc.get("name", "Adversaire"))), 18)
+	var player_name := UIFormat.combatant_name(PlayerData.player_name, 18)
 	score_label.text = "%s %d  —  %d %s" % [
-		PlayerData.player_name,
+		player_name,
 		BattleContext.last_score_human,
 		BattleContext.last_score_ai,
 		npc_name
@@ -57,6 +64,45 @@ func _ready() -> void:
 	_apply_campaign_copy()
 	_refresh_next_button()
 	_refresh_save_status()
+	_refresh_reward()
+
+
+func _refresh_reward() -> void:
+	reward_divider.visible = false
+	rewards.visible = false
+	for child in reward_cards.get_children():
+		reward_cards.remove_child(child)
+		child.queue_free()
+	if not _campaign or BattleContext.last_winner != GameState.PLAYER_HUMAN \
+			or BattleContext.last_reward.is_empty():
+		return
+	var reward := BattleContext.last_reward
+	var souls := int(reward.get("souls", 0))
+	reward_soul_row.visible = souls > 0
+	reward_soul_amount.text = "×%s" % UIFormat.integer(souls)
+	for card_reward in reward.get("cards", []):
+		var stone_id := StoneLoader.variant_id(str(card_reward.get("lineage_id", "")), 1)
+		if stone_id == "":
+			continue
+		var wrapper := VBoxContainer.new()
+		wrapper.custom_minimum_size.x = 128
+		var card := StoneCard.new()
+		card.custom_minimum_size = Vector2(128, 128)
+		card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		card.set_show_cost(false)
+		card.setup(StoneLoader.get_stone(stone_id), StoneCard.OWNER_NONE)
+		wrapper.add_child(card)
+		var quantity := Label.new()
+		quantity.text = "×%d" % int(card_reward.get("copies", 1))
+		quantity.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		quantity.add_theme_font_size_override("font_size", 24)
+		wrapper.add_child(quantity)
+		reward_cards.add_child(wrapper)
+	if souls <= 0 and reward_cards.get_child_count() == 0:
+		return
+	reward_divider.visible = true
+	rewards.visible = true
+	reward_cards.visible = reward_cards.get_child_count() > 0
 
 
 ## En campagne, les anciennes sorties « autre niveau » et « autre dieu » ne

@@ -12,8 +12,9 @@ func get_global_transform() -> Transform2D:
 
 func _attack_point(row: int, col: int, side: String) -> Vector2:
 	var first: Panel = _board.slot_at(0, 0)
-	var last: Panel = _board.slot_at(GameState.BOARD_SIZE - 1, GameState.BOARD_SIZE - 1)
-	if row < 0 or col < 0 or row >= GameState.BOARD_SIZE or col >= GameState.BOARD_SIZE:
+	var size := _board.board_size()
+	var last: Panel = _board.slot_at(size - 1, size - 1)
+	if row < 0 or col < 0 or row >= size or col >= size:
 		var point := first.position + first.size * 0.5 + Vector2(col, row) * (first.size.x + GAP)
 		point.x = clampf(point.x, first.position.x - first.size.x * 0.10, last.position.x + last.size.x * 1.10)
 		point.y = clampf(point.y, first.position.y - first.size.y * 0.10, last.position.y + last.size.y * 1.10)
@@ -109,7 +110,7 @@ func _swarm_visual_links(raw_links: Array, positions: Dictionary) -> Array:
 func _add_swarm_link_position(positions: Dictionary, instance_id: int,
 	row: int, col: int) -> void:
 	if positions.has(instance_id) or row < 0 or col < 0 \
-		or row >= GameState.BOARD_SIZE or col >= GameState.BOARD_SIZE:
+		or row >= _board.board_size() or col >= _board.board_size():
 		return
 	var card: StoneCard = _board.card_at(row, col)
 	if card == null:
@@ -171,7 +172,7 @@ func swarm_data(event: Dictionary) -> Dictionary:
 		var member: Dictionary = member_value
 		var row := int(member.get("row", -1))
 		var col := int(member.get("col", -1))
-		if row < 0 or col < 0 or row >= GameState.BOARD_SIZE or col >= GameState.BOARD_SIZE:
+		if row < 0 or col < 0 or row >= _board.board_size() or col >= _board.board_size():
 			continue
 		var card: StoneCard = _board.card_at(row, col)
 		if card == null:
@@ -190,7 +191,7 @@ func swarm_data(event: Dictionary) -> Dictionary:
 	var source_row := int(event.get("source_row", -1))
 	var source_col := int(event.get("source_col", -1))
 	var source_center: Vector2
-	if source_row >= 0 and source_col >= 0 and source_row < GameState.BOARD_SIZE and source_col < GameState.BOARD_SIZE:
+	if source_row >= 0 and source_col >= 0 and source_row < _board.board_size() and source_col < _board.board_size():
 		var source_card: StoneCard = _board.card_at(source_row, source_col)
 		if source_card != null:
 			var source_transform := get_global_transform().affine_inverse() * source_card.get_global_transform()

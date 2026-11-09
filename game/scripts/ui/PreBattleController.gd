@@ -70,7 +70,8 @@ func _is_pvp() -> bool:
 
 func _setup_campaign() -> void:
 	var npc := BattleContext.current_opponent()
-	npc_label.text = npc.get("name", "???")
+	npc_label.text = UIFormat.combatant_name(str(
+		npc.get("combatant_name", npc.get("name", "Adversaire"))), 24)
 	difficulty_label.visible = true
 	difficulty_label.text = _opponent_subtitle(npc)
 	var human_god := StoneLoader.get_god(BattleContext.effective_player_god_id())
@@ -80,8 +81,7 @@ func _setup_campaign() -> void:
 	_setup_god_identity(player_god_portrait, player_god_name, player_god_family,
 		human_god, "TOI • %s" % str(human_god.get("name", "?")))
 	_setup_god_identity(opponent_god_portrait, opponent_god_name, opponent_god_family,
-		npc_god, "LUI • %s" % ("Sans dieu" if npc_is_godless else str(npc_god["name"])),
-		"Cartes neutres uniquement" if npc_is_godless else "")
+		npc_god, "LUI • %s" % ("Sans dieu" if npc_is_godless else str(npc_god["name"])))
 
 
 ## ─── PVP local ───────────────────────────────────────────────────────────────
@@ -200,7 +200,9 @@ func _opponent_name() -> String:
 	if _is_pvp():
 		return PvpMatchContext.remote_name if PvpMatchContext.remote_name != "" \
 			else "L'adversaire"
-	return str(BattleContext.current_opponent().get("name", "L'adversaire"))
+	var opponent := BattleContext.current_opponent()
+	return UIFormat.combatant_name(str(
+		opponent.get("combatant_name", opponent.get("name", "L'adversaire"))), 18)
 
 
 func _show_coin_face(show_player: bool) -> void:

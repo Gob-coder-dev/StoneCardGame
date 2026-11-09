@@ -1,10 +1,10 @@
 # Campagne unifiée
 
 La campagne est un graphe orienté acyclique unique, chargé depuis
-`data/campaign/campaign_v2.json`. Elle contient **154 niveaux**, **182 arêtes**
-et **12 sections visuelles** sur une seule carte de **1080 × 17880** unités.
+`data/campaign/campaign_v2.json`. Elle contient **162 niveaux**, **190 arêtes**
+et **13 sections visuelles** sur une seule carte de **1080 × 19800** unités.
 `CampaignContentLoader.DEFAULT_PATH` pointe vers ce fichier et
-`campaign_version` vaut `3`.
+`campaign_version` vaut `5`.
 
 L'ancien fichier `campaign_v1.json` reste dans le dépôt comme archive et source
 de comparaison historique. Il n'est plus chargé par le jeu.
@@ -13,36 +13,36 @@ de comparaison historique. Il n'est plus chargé par le jeu.
 
 | Mesure | Valeur |
 | --- | --- |
-| Niveaux | 154 |
-| Arêtes | 182 |
-| Sections visuelles | 12 |
-| Profondeur minimale / maximale | 0 / 69 |
+| Niveaux | 162 |
+| Arêtes | 190 |
+| Sections visuelles | 13 |
+| Profondeur minimale / maximale | 0 / 77 |
 | Plus longue série de mode | 8, dans la branche finale d'Énigma |
 | Plus longue série d'un même dieu | 6, approches et mini-boss d'Énigma |
-| Carte logique | 1080 × 17880 |
-| Niveaux du Professeur Stone | 3 |
+| Carte logique | 1080 × 19800 |
+| Niveaux du Professeur Stone | 5 |
 | Mini-boss facultatifs | 10 |
 | Mini-boss obligatoires | 4 |
 | Mini-boss en FT2 | 14 |
-| Séries FT1 / FT2 / FT3 | 133 / 20 / 1 |
-| Decks fixes uniques | 83 |
+| Séries FT1 / FT2 / FT3 | 141 / 20 / 1 |
+| Decks fixes uniques | 87 |
 | Générateurs contraints | 12 nœuds, dont 3 mini-boss (Véskar, Sylkha, Ilyr) |
-| Decks miroirs fixes | 1 (Ilyr) |
+| Decks miroirs fixes | 7 (six initiations et Ilyr) |
 | Cartes du dieu par deck fixe | 3 minimum |
 
 ### Dieux
 
-Les trois premiers nœuds sont des tutoriels du Professeur Stone, sans thème
-divin. Les 151 autres nœuds sont répartis entre les six dieux.
+Les cinq premiers nœuds sont des tutoriels du Professeur Stone, sans thème
+divin. Ils sont suivis de six initiations miroir, une par dieu.
 
 | Dieu | Nœuds thématiques | Nœuds à dieu réellement fixé |
 | --- | ---: | ---: |
-| Véskar | 25 | 18 |
-| Nérava | 25 | 21 |
-| Kharûn | 25 | 21 |
-| Énigma | 26 | 20 |
-| Ilyr | 25 | 15 |
-| Sylkha | 25 | 16 |
+| Véskar | 26 | 18 |
+| Nérava | 26 | 21 |
+| Kharûn | 26 | 21 |
+| Énigma | 27 | 20 |
+| Ilyr | 26 | 15 |
+| Sylkha | 26 | 16 |
 
 Le total des nœuds à dieu fixé est de 111. Les 40 autres rencontres utilisent les
 règles de génération de leur mode ; leur `theme_god_id` sert à l'accent visuel et
@@ -52,17 +52,19 @@ au libellé d'inspiration, pas à verrouiller le tirage.
 
 | Mode | Niveaux |
 | --- | ---: |
-| Classique | 86 |
+| Classique | 88 |
 | Aléatoire | 23 |
-| Miroir | 16 |
+| Miroir | 22 |
 | Sélection | 29 |
 
-Les tutoriels sont Classiques. L'Aléatoire apparaît au Carrefour, le Miroir suit
-immédiatement, puis la Sélection rejoint les autres modes. Aucun mode ne
+Les tutoriels sont Classiques. Les six initiations qui suivent sont des Miroirs
+fixes : les deux camps reçoivent le même dieu et le même deck de quatre communes
+du dieu et quatre communes neutres, toutes N1. L'Aléatoire apparaît ensuite au
+Carrefour, puis la Sélection rejoint les autres modes. Aucun mode ne
 disparaît en fin de campagne. Les 34 niveaux d'approche ajoutent 14 Classiques,
 5 Aléatoires, 4 Miroirs et 11 Sélections à la campagne précédente.
 
-Quatre-vingt-trois Classiques utilisent un deck fixe explicite. Les exceptions
+Quatre-vingt-sept rencontres utilisent un deck fixe explicite. Les exceptions
 Classiques restent déclarées dans les politiques de deck et ne changent pas les
 règles du mode.
 
@@ -70,10 +72,10 @@ règles du mode.
 
 | Palier maximal | Niveaux |
 | --- | ---: |
-| 1 | 2 |
-| 2 | 38 |
-| 3 | 69 |
-| 4 | 45 |
+| 1 | 11 |
+| 2 | 34 |
+| 3 | 59 |
+| 4 | 58 |
 
 Le palier est calculé avec `CardPowerTierRules` : niveau de forme plus décalage
 de rareté, avec l'exception explicite éventuelle du catalogue. Une légendaire
@@ -81,7 +83,7 @@ niveau 1 n'est donc pas une carte de palier 1.
 
 ### Précision de l'IA
 
-Les 154 profils utilisent **49 valeurs distinctes** entre 0 et 1. 131 nœuds
+Les 162 profils utilisent **57 valeurs distinctes** entre 0 et 1. 142 nœuds
 utilisent une valeur qui n'est pas un multiple de 0,25. La précision suit la
 profondeur et la fonction de la rencontre, sans progression strictement
 linéaire.
@@ -124,7 +126,8 @@ regroupement est débloqué par **n'importe lequel** de ses prédécesseurs.
 
 | Section | Niveaux |
 | --- | ---: |
-| Seuil | 3 |
+| Seuil | 5 |
+| Initiations | 6 |
 | Carrefour | 14 |
 | Le Marais des Serments | 12 |
 | Les Forges Basses | 13 |
@@ -137,8 +140,9 @@ regroupement est débloqué par **n'importe lequel** de ses prédécesseurs.
 | Les Jardins de Cendre | 14 |
 | Cime | 20 |
 
-Le Carrefour contient les trois tutoriels, les branches d'introduction, les
-premiers mini-boss et les routes parallèles. Les neuf régions intermédiaires
+Le Seuil contient les cinq tutoriels et la section Initiations les six duels
+miroir obligatoires. Le Carrefour ouvre ensuite les branches d'introduction,
+les premiers mini-boss et les routes parallèles. Les neuf régions intermédiaires
 utilisent neuf topologies différentes : elles ne sont pas des copies d'un même
 groupe de cinq niveaux. La Cime réunit les vingt nœuds finaux, dont les cinq
 niveaux historiques et les approches du Collectionneur.
@@ -153,8 +157,8 @@ Le fichier est la source de vérité du contenu livré. Il est produit par
 {
   "id": "samstone_campaign",
   "title": "La Carte de SamStone",
-  "campaign_version": 3,
-  "map": {"width": 1080, "height": 17880},
+  "campaign_version": 5,
+  "map": {"width": 1080, "height": 19800},
   "start_node_id": "tuto_01",
   "final_node_id": "final_01",
   "nodes": [
@@ -189,7 +193,23 @@ Le fichier est la source de vérité du contenu livré. Il est produit par
         "ai_profile": {"precision": 0.0, "anticipation": false},
         "series_format": "ft1",
         "seed_policy": "fixed_per_node",
-        "seed": 5000
+        "seed": 5000,
+        "board_size": 3,
+        "player_hand_size": 5,
+        "opponent_hand_size": 4,
+        "allow_incomplete_player_deck": true,
+        "blocked_cells": [],
+        "forced_first_player": 1
+      },
+      "rewards": {
+        "souls_min": 11,
+        "souls_max": 17,
+        "card_rewards": [
+          "avortons_des_caves_n1",
+          "mordeur_des_combles_n1",
+          "mache_mur_n1",
+          "le_sac_a_murmures_n1"
+        ]
       },
       "visual": {"scale": 1.0}
     }
@@ -210,10 +230,11 @@ Le fichier est la source de vérité du contenu livré. Il est produit par
 | `position` | Coordonnées logiques `x` / `y` de la carte |
 | `dead_end` | Déclare explicitement une impasse |
 | `mini_boss_kind` | Vide, `optional` ou `mandatory` |
-| `tutorial_id` | Identifiant de tutoriel, vide hors des trois tutoriels |
+| `tutorial_id` | Identifiant de tutoriel, vide hors des cinq tutoriels |
 | `theme_god_id` | Dieu d'accent et d'inspiration ; vide pour les tutoriels |
 | `accent` | Couleur ou famille d'accent de la carte |
 | `encounter` | Rencontre préparée par `CampaignEncounterFactory` |
+| `rewards` | Fourchette d’âmes et cartes fixes accordées à la première victoire |
 | `visual` | Paramètres visuels facultatifs, sans effet sur les règles |
 
 ### Rencontre
@@ -233,6 +254,11 @@ Le fichier est la source de vérité du contenu livré. Il est produit par
 | `series_format` | `ft1`, `ft2` ou `ft3` |
 | `seed_policy` | `fixed_per_node` par défaut ; `per_attempt` reste une exception explicite |
 | `seed` | Graine déterministe de la rencontre |
+| `board_size` | Taille du plateau, 4 par défaut et 3 pour le premier tutoriel |
+| `player_hand_size` / `opponent_hand_size` | Nombre de cartes réellement distribuées |
+| `allow_incomplete_player_deck` | Exception explicite, autorisée uniquement sur `tuto_01` |
+| `blocked_cells` | Cases bloquées fixes de la rencontre ; vide signifie aucune case |
+| `forced_first_player` | Camp imposé au premier tour, ou tirage normal si absent |
 
 Un deck fixe doit contenir exactement huit cartes, huit lignées distinctes,
 respecter le dieu, le palier et le budget de 80 points. Pour un deck à dieu
@@ -249,6 +275,19 @@ silencieusement. Un
 `mirror_fixed_deck` non vide est validé comme un deck de huit cartes, puis copié
 pour les deux camps. Le validateur vérifie les mêmes règles de palier, de
 lignées, de budget et de minimum de cartes du dieu que pour un deck fixe.
+
+Le moteur de plateau lit `board_size` depuis `GameState`; règles de placement,
+effets, IA, vue et animations utilisent tous cette même valeur. Le 3 × 3 n’est
+donc pas un faux plateau 4 × 4 masqué. En dehors du premier tutoriel, les
+valeurs par défaut restent un plateau 4 × 4 et huit cartes par camp.
+
+### Récompenses
+
+Chaque nœud livré possède une fourchette `souls_min` / `souls_max`. Les cartes
+de `card_rewards` sont fixes et accordées une seule fois ; les âmes d’une
+revanche victorieuse sont réduites à 25 %. Une défaite, une égalité ou une
+manche intermédiaire de FT2/FT3 ne déclenche aucune transaction. Le détail de
+la progression économique est décrit dans [ECONOMY.md](ECONOMY.md).
 
 ### Graine
 
@@ -338,7 +377,7 @@ et l'archive de migration.
 
 ## Migration des sauvegardes
 
-`campaign_version` vaut `3`. La migration est idempotente et conserve les
+`campaign_version` vaut `5`. La migration est idempotente et conserve les
 victoires existantes.
 
 - Un profil de l'ancienne campagne par dieu est converti seulement quand la
@@ -349,7 +388,7 @@ victoires existantes.
   d'approche sont marqués terminés : la sauvegarde de référence passe ainsi à
   27 victoires, sans rejouer l'impasse. Les nouveaux nœuds du Carrefour et la
   suite de la Cime s'ouvrent derrière `boss_required_gate` déjà terminé.
-- Un profil neuf démarre sur `tuto_01` avec la campagne à 154 niveaux.
+- Un profil neuf démarre sur `tuto_01` avec la campagne à 162 niveaux.
 - Une migration interrompue ou rejouée ne duplique pas les victoires et ne
   réinitialise jamais la progression.
 
@@ -358,7 +397,7 @@ identifiants sont stables et n'entrent pas en collision avec les anciens.
 
 ## Carte et lisibilité
 
-La carte est **virtualisée** : les 154 nœuds et les 182 arêtes restent dans les
+La carte est **virtualisée** : les 162 nœuds et les 190 arêtes restent dans les
 données, mais seuls les nœuds des secteurs utiles possèdent un `Control`. Le
 fond, les nœuds, les courbes et les points de contrôle partagent toujours le
 même espace logique et le même facteur d'échelle.
@@ -388,12 +427,12 @@ même espace logique et le même facteur d'échelle.
 - Les nœuds ont un diamètre de 150 unités et une distance minimale mesurée de
   180 unités. Le placement local des approches conserve cette distance. Les
   courbes sont mises en cache et les nœuds disponibles seuls
-  animent leur pulsation ; les 154 anciens `_process()` ne sont plus exécutés.
+  animent leur pulsation ; les 162 anciens `_process()` ne sont plus exécutés.
 - Les labels de section sont limités aux chapitres dont un nœud est chargé.
 - Le défilement, l'inertie, le toucher et le glissement sont testés sur les
   formats téléphone et tablette.
 
-La carte reste volontairement haute : 17 880 unités pour 154 nœuds. Le
+La carte reste volontairement haute : 19 800 unités pour 162 nœuds. Le
 défilement est donc une partie normale de la navigation, pas un défaut de mise
 en page.
 
@@ -409,7 +448,7 @@ au lieu de traverser la carte après l'insertion des nouveaux niveaux.
 Mesures headless sur la machine de développement, avec
 `tests/MeasureCampaignMap.tscn` :
 
-| Mesure | Avant | Après (154 nœuds) |
+| Mesure | Avant | Après (mesure historique sur 154 nœuds) |
 | --- | ---: | ---: |
 | Lecture + validation structurelle du contenu | 5 849,65 ms | 30,78 ms |
 | Construction de la vue | 47,84 ms | 5,82 ms |
@@ -420,7 +459,7 @@ Mesures headless sur la machine de développement, avec
 La validation complète des générations et de la géométrie reste exécutée par
 `CampaignContentLoader.read(path, true)` avec `CampaignGenerationValidator` et
 `CampaignLayoutValidator` ; elle n'est plus dans le chemin d'ouverture. Sur la
-même mesure, les 154 générations réelles prennent environ 9,03 s et les
+même mesure historique, les 154 générations réelles prenaient environ 9,03 s et les
 contrôles structurels et géométriques environ 28 ms et 58 ms. Ces coûts sont
 donc payés par les tests de livraison, jamais par le joueur. Les chiffres ne
 constituent pas un objectif garanti sur tous les appareils, mais la réduction
@@ -473,13 +512,12 @@ objectifs de contenu ne sont plus tenus.
 
 ### Decks
 
-Les 83 decks fixes sont uniques. Aucun doublon exact n'est présent. Les 80 decks
-à dieu identifié contiennent chacun au moins trois cartes de ce dieu ; la
-répartition finale est de 48 decks à 3 cartes, 25 à 4, 4 à 5 et 3 à 8 cartes.
-Les trois tutoriels Pr.Stone restent neutres. L'audit signale une seule paire
-partageant sept cartes sur huit : `tuto_01` et `tuto_02`, qui utilisent
-volontairement des cartes neutres différentes du même petit palier pédagogique.
-Cette exception est explicitement signalée, pas masquée.
+Les 87 decks fixes sont uniques. Aucun doublon exact n'est présent. Les 82 decks
+à dieu identifié contiennent chacun au moins trois cartes de ce dieu. Les cinq
+tutoriels Pr.Stone restent neutres. Les cinq premières rencontres du Carrefour
+emploient chacune six cartes de palier 1 et seulement deux de palier 2. Les six
+initiations imposent quant à elles quatre communes N1 du dieu et quatre
+communes N1 neutres, identiques pour les deux camps.
 
 Un deck fixe peut être :
 

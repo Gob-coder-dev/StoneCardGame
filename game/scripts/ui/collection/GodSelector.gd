@@ -17,7 +17,7 @@ var god_menu: PanelContainer
 var god_options: GridContainer
 var _option_buttons: Dictionary = {}
 var _option_gods: Dictionary = {}
-var _shown_god_id := ""
+var _shown_god_id := "__uninitialized__"
 
 
 func _init(button: Button, portrait: GodPortrait, name_label: Label, title_label: Label,
@@ -35,15 +35,24 @@ func _init(button: Button, portrait: GodPortrait, name_label: Label, title_label
 	_setup_god_menu()
 
 
-## Les six choix tiennent dans une grille 3 × 2. Chaque bouton reste le seul
-## récepteur tactile ; son contenu décoratif ignore les événements.
+## Le deck neutre et les seuls dieux achetés remplissent progressivement la
+## grille. Chaque bouton reste l'unique récepteur tactile ; son contenu
+## décoratif ignore les événements.
 func _setup_god_menu() -> void:
 	for child in god_options.get_children():
 		god_options.remove_child(child)
 		child.queue_free()
 	_option_buttons.clear()
 	_option_gods.clear()
+	var choices: Array = [{
+		"id": "", "name": "Sans dieu", "title": "Deck neutre",
+		"family_name": "Pierres neutres", "description": "Un deck entièrement neutre, sans pouvoir divin.",
+		"color": UITheme.COL_TEXT_DIM.to_html(), "asset": "",
+	}]
 	for god in StoneLoader.get_all_gods():
+		if PlayerData.has_unlocked_god(str(god.get("id", ""))):
+			choices.append(god)
+	for god in choices:
 		var option: Button = TouchButtonScript.new()
 		option.custom_minimum_size = Vector2(0, UITheme.GOD_DRAWER_TILE_HEIGHT)
 		option.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -51,6 +60,7 @@ func _setup_god_menu() -> void:
 		option.set_meta("god_id", str(god.get("id", "")))
 		option.add_child(_make_option_content(god))
 		option.pressed.connect(god_selected.emit.bind(str(god.get("id", ""))))
+		var god_id := str(god.get("id", ""))
 		god_options.add_child(option)
 		_option_buttons[str(god.get("id", ""))] = option
 		_option_gods[str(god.get("id", ""))] = god
@@ -94,6 +104,10 @@ func _make_option_content(god: Dictionary) -> VBoxContainer:
 
 func refresh(god_id: String) -> void:
 	var god := StoneLoader.get_god(god_id)
+	if god_id == "":
+		god = {"id": "", "name": "Sans dieu", "title": "Deck neutre",
+			"family_name": "Pierres neutres", "description": "Un deck entièrement neutre, sans pouvoir divin.",
+			"color": UITheme.COL_TEXT_DIM.to_html(), "asset": ""}
 	change_label.text = "CHANGER  %s" % ("▲" if god_menu.visible else "▼")
 	if god_id == _shown_god_id:
 		return

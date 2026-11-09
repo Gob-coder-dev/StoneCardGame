@@ -28,7 +28,7 @@ static func read(path: String = DEFAULT_PATH,
 			"problems": ["Campagne illisible ou JSON invalide : %s." % path],
 		}
 	# Le JSON produit déjà une structure neuve ; le validateur ne la modifie
-	# jamais. Éviter la copie profonde des 154 nœuds raccourcit l'ouverture.
+	# jamais. Éviter la copie profonde des 162 nœuds raccourcit l'ouverture.
 	var definition: Dictionary = parsed
 	var problems: Array[String] = []
 	var raw_regions: Variant = definition.get("regions", [])

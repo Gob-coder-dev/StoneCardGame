@@ -7,12 +7,13 @@ extends RefCounted
 const CHANCE_NO_BLOCK := 40
 const CHANCE_ONE_BLOCK := 35
 
-static func generate() -> Array:
+static func generate(board_size: int = GameState.DEFAULT_BOARD_SIZE) -> Array:
+	board_size = clampi(board_size, GameState.MIN_BOARD_SIZE, GameState.MAX_BOARD_SIZE)
 	var roll := randi() % 100
 	var count := 0 if roll < CHANCE_NO_BLOCK else (1 if roll < CHANCE_NO_BLOCK + CHANCE_ONE_BLOCK else 2)
 	var cells: Array = []
-	for index in range(GameState.total_cells()):
-		cells.append([index / GameState.BOARD_SIZE, index % GameState.BOARD_SIZE])
+	for index in range(board_size * board_size):
+		cells.append([index / board_size, index % board_size])
 	var blocked: Array = []
 	for i in range(count):
 		blocked.append(cells.pop_at(randi() % cells.size()))

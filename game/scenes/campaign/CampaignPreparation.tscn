@@ -79,10 +79,11 @@ size_flags_horizontal = 3
 theme_override_constants/separation = 14
 
 [node name="StatusLabel" type="Label" parent="Root/Scroll/Content"]
+visible = false
 layout_mode = 2
 theme_override_colors/font_color = Color(0.737, 0.698, 0.741, 1)
 theme_override_font_sizes/font_size = 24
-text = "Loadouts temporaires."
+text = ""
 horizontal_alignment = 1
 autowrap_mode = 2
 
@@ -96,24 +97,12 @@ script = ExtResource("5_grid")
 layout_mode = 2
 theme_override_colors/font_color = Color(0.737, 0.698, 0.741, 1)
 theme_override_font_sizes/font_size = 26
-text = "VOTRE LOADOUT"
+text = "VOTRE DECK"
 horizontal_alignment = 1
 
 [node name="DeckGrid" type="GridContainer" parent="Root/Scroll/Content"]
 layout_mode = 2
-columns = 4
-script = ExtResource("5_grid")
-
-[node name="OpponentTitle" type="Label" parent="Root/Scroll/Content"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.737, 0.698, 0.741, 1)
-theme_override_font_sizes/font_size = 26
-text = "LOADOUT ADVERSE"
-horizontal_alignment = 1
-
-[node name="OpponentGrid" type="GridContainer" parent="Root/Scroll/Content"]
-layout_mode = 2
-columns = 4
+columns = 2
 script = ExtResource("5_grid")
 
 [node name="ConfirmButton" type="Button" parent="Root"]

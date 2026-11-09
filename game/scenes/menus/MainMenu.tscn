@@ -1,9 +1,10 @@
-[gd_scene format=3 uid="uid://b8hjkpj0hmjtc"]
+[gd_scene load_steps=6 format=3 uid="uid://b8hjkpj0hmjtc"]
 
 [ext_resource type="Script" uid="uid://c620obhplo3k1" path="res://scripts/ui/MainMenu.gd" id="1_mainmenu"]
 [ext_resource type="Script" uid="uid://cms1p5lxyjnml" path="res://scripts/ui/MenuBackground.gd" id="2_parchment"]
 [ext_resource type="PackedScene" path="res://scenes/ui/BottomNav.tscn" id="3_nav"]
 [ext_resource type="Script" uid="uid://153ulybbb0hg" path="res://scripts/ui/input/TouchButton.gd" id="4_touch_button"]
+[ext_resource type="PackedScene" path="res://scenes/ui/SoulBalance.tscn" id="5_souls"]
 
 [node name="MainMenu" type="Control" unique_id=1585933656]
 layout_mode = 3
@@ -53,7 +54,9 @@ script = ExtResource("4_touch_button")
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="GameTitle" type="VBoxContainer" parent="Content"]
+[node name="SoulBalance" parent="Content/Header" instance=ExtResource("5_souls")]
+
+[node name="GameTitle" type="VBoxContainer" parent="Content" unique_id=147584374]
 layout_mode = 2
 theme_override_constants/separation = 0
 alignment = 1
@@ -75,16 +78,18 @@ horizontal_alignment = 1
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="PortraitArea" type="Control" parent="Content/Hero"]
+[node name="PortraitArea" type="Control" parent="Content/Hero" unique_id=1199075020]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 
 [node name="Emblem" type="Control" parent="Content/Hero/PortraitArea" unique_id=1268178240]
 layout_mode = 1
-anchor_left = 0.0
+anchors_preset = 14
 anchor_top = 0.5
 anchor_right = 1.0
 anchor_bottom = 0.5
@@ -104,15 +109,16 @@ mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Identity" type="VBoxContainer" parent="Content/Hero"]
+[node name="Identity" type="VBoxContainer" parent="Content/Hero" unique_id=234570455]
 layout_mode = 1
-anchors_preset = 15
-anchor_left = 0.0
+anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-alignment = 1
+grow_horizontal = 2
+grow_vertical = 2
 theme_override_constants/separation = 8
+alignment = 1
 
 [node name="GodName" type="Label" parent="Content/Hero/Identity" unique_id=423652340]
 layout_mode = 2
@@ -156,11 +162,11 @@ custom_minimum_size = Vector2(0, 16)
 layout_mode = 2
 show_percentage = false
 
-[node name="ModeButtons" type="HBoxContainer" parent="Content/Hero/Identity"]
+[node name="ModeButtons" type="HBoxContainer" parent="Content/Hero/Identity" unique_id=1682283070]
 layout_mode = 2
 theme_override_constants/separation = 20
 
-[node name="CampaignButton" type="Button" parent="Content/Hero/Identity/ModeButtons"]
+[node name="CampaignButton" type="Button" parent="Content/Hero/Identity/ModeButtons" unique_id=1398077613]
 custom_minimum_size = Vector2(0, 152)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -169,7 +175,7 @@ theme_override_font_sizes/font_size = 52
 text = "CAMPAGNE"
 script = ExtResource("4_touch_button")
 
-[node name="PvpButton" type="Button" parent="Content/Hero/Identity/ModeButtons"]
+[node name="PvpButton" type="Button" parent="Content/Hero/Identity/ModeButtons" unique_id=597463622]
 custom_minimum_size = Vector2(0, 152)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -181,7 +187,7 @@ script = ExtResource("4_touch_button")
 [node name="BottomNav" parent="." unique_id=2090898695 instance=ExtResource("3_nav")]
 grow_horizontal = 2
 
-[node name="DeckWarningOverlay" type="Control" parent="."]
+[node name="DeckWarningOverlay" type="Control" parent="." unique_id=885755630]
 visible = false
 z_index = 100
 layout_mode = 1
@@ -190,19 +196,17 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 0
 
-[node name="Backdrop" type="ColorRect" parent="DeckWarningOverlay"]
+[node name="Backdrop" type="ColorRect" parent="DeckWarningOverlay" unique_id=1705810402]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 0
 color = Color(0.02, 0.015, 0.025, 0.86)
 
-[node name="Center" type="CenterContainer" parent="DeckWarningOverlay"]
+[node name="Center" type="CenterContainer" parent="DeckWarningOverlay" unique_id=753687368]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -213,34 +217,34 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 0
 
-[node name="Panel" type="PanelContainer" parent="DeckWarningOverlay/Center"]
+[node name="Panel" type="PanelContainer" parent="DeckWarningOverlay/Center" unique_id=2075747879]
 custom_minimum_size = Vector2(760, 0)
 layout_mode = 2
 theme_type_variation = &"DeckPanel"
 
-[node name="Content" type="VBoxContainer" parent="DeckWarningOverlay/Center/Panel"]
+[node name="Content" type="VBoxContainer" parent="DeckWarningOverlay/Center/Panel" unique_id=745154390]
 layout_mode = 2
 theme_override_constants/separation = 28
 
-[node name="Title" type="Label" parent="DeckWarningOverlay/Center/Panel/Content"]
+[node name="Title" type="Label" parent="DeckWarningOverlay/Center/Panel/Content" unique_id=1932666461]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.678, 0.49, 1)
 theme_override_font_sizes/font_size = 48
 text = "DECK INCOMPLET"
 horizontal_alignment = 1
 
-[node name="Message" type="Label" parent="DeckWarningOverlay/Center/Panel/Content"]
+[node name="Message" type="Label" parent="DeckWarningOverlay/Center/Panel/Content" unique_id=197017348]
 layout_mode = 2
 theme_override_font_sizes/font_size = 32
 text = "VEUILLEZ COMPLÉTER VOTRE DECK"
 horizontal_alignment = 1
 autowrap_mode = 2
 
-[node name="Actions" type="HBoxContainer" parent="DeckWarningOverlay/Center/Panel/Content"]
+[node name="Actions" type="HBoxContainer" parent="DeckWarningOverlay/Center/Panel/Content" unique_id=433887938]
 layout_mode = 2
 theme_override_constants/separation = 18
 
-[node name="CloseButton" type="Button" parent="DeckWarningOverlay/Center/Panel/Content/Actions"]
+[node name="CloseButton" type="Button" parent="DeckWarningOverlay/Center/Panel/Content/Actions" unique_id=954687805]
 custom_minimum_size = Vector2(0, 112)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -248,7 +252,7 @@ theme_override_font_sizes/font_size = 32
 text = "FERMER"
 script = ExtResource("4_touch_button")
 
-[node name="CompleteDeckButton" type="Button" parent="DeckWarningOverlay/Center/Panel/Content/Actions"]
+[node name="CompleteDeckButton" type="Button" parent="DeckWarningOverlay/Center/Panel/Content/Actions" unique_id=2041616265]
 custom_minimum_size = Vector2(0, 112)
 layout_mode = 2
 size_flags_horizontal = 3

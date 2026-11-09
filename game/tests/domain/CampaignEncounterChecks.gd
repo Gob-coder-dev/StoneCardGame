@@ -7,7 +7,7 @@ const GraphModel := preload("res://scripts/domain/campaign/CampaignGraph.gd")
 const ProgressModel := preload("res://scripts/domain/campaign/CampaignProgress.gd")
 const StoreModel := preload("res://scripts/data/campaign/CampaignProgressStore.gd")
 const ServiceModel := preload("res://scripts/application/campaign/CampaignService.gd")
-const FactoryModel := preload("res://scripts/application/campaign/CampaignEncounterFactory.gd")
+const Codec := preload("res://scripts/data/PlayerSaveCodec.gd")
 const ProfileFixture := preload("res://tests/support/PlayerProfileFixture.gd")
 const PATH := "user://campaign_encounter_checks.json"
 const BAD_PATH := "user://campaign_encounter_missing_dir/progress.json"
@@ -33,8 +33,9 @@ func run() -> void:
 	CampaignContext.set_service_for_tests(_service)
 	var profile_before: Dictionary = PlayerData.get_profile()
 	_test_tutorial()
+	_test_intro_mirrors()
 	_test_classic_fixed()
-	_test_classic_generated()
+	_test_early_curve()
 	_test_random_mode()
 	_test_mirror_mode()
 	_test_draft_mode()
@@ -68,6 +69,8 @@ func _enter(node_id: String) -> Dictionary:
 
 
 func _test_tutorial() -> void:
+	var previous_profile := PlayerData.get_profile()
+	PlayerData._apply_profile(Codec.starter_profile())
 	var result := _enter("tuto_01")
 	var npc := BattleContext.current_opponent()
 	_check(not bool(result.get("needs_series_session", true))
@@ -81,7 +84,48 @@ func _test_tutorial() -> void:
 	_check(int(npc.get("bracket_label", "").right(1)) == 1
 		and float(npc.get("ai", {}).get("precision", 1.0)) == 0.0,
 		"rencontres : le tutoriel est palier 1 et précision 0")
+	var setup: Dictionary = npc.get("match_setup", {})
+	_check(int(setup.get("board_size", 0)) == 3
+		and int(setup.get("player_hand_size", 0)) == 5
+		and int(setup.get("opponent_hand_size", 0)) == 4
+		and int(setup.get("forced_first_player", 0)) == GameState.PLAYER_HUMAN,
+		"rencontres : le profil neuf lance le tutoriel 3 × 3, cinq cartes contre quatre, en premier")
 	BattleContext.clear_campaign_node()
+	PlayerData._apply_profile(previous_profile)
+
+
+func _test_intro_mirrors() -> void:
+	var expected := {
+		"init_veskar": "veskar", "init_nerava": "nerava", "init_kharun": "kharun",
+		"init_ilyr": "ilyr", "init_sylkha": "sylkha", "init_enigma": "enigma",
+	}
+	for node_id in expected:
+		var result := _enter(node_id)
+		_check(bool(result.get("needs_series_session", false))
+			and BattleContext.confirm_mode_preparation()
+			and BattleContext.has_prepared_loadouts(),
+			"rencontres : l'initiation '%s' prépare son Miroir local" % node_id)
+		var one := BattleContext.player_loadout
+		var two := BattleContext.opponent_loadout
+		var opponent := BattleContext.current_opponent()
+		var god_id := str(expected[node_id])
+		var all_common_n1 := one != null and one.deck.size() == DeckRules.DECK_SIZE
+		if one != null:
+			for stone_id in one.deck:
+				all_common_n1 = all_common_n1 \
+					and StoneLoader.stone_rarity(str(stone_id)) == "common" \
+					and StoneLoader.stone_level(str(stone_id)) == 1
+		_check(one != null and two != null and one.god_id == god_id
+			and two.god_id == god_id and one.deck == two.deck
+			and _affinity_count(one.deck, god_id) == 4
+			and _affinity_count(one.deck, "neutral") == 4 and all_common_n1
+			and BattleContext.forced_first_player == GameState.PLAYER_HUMAN,
+			"rencontres : '%s' impose le dieu, un deck commun N1 en 4/4 et le joueur commence" % node_id)
+		_check(str(opponent.get("name", "")) == str(opponent.get("combatant_name", ""))
+			and not str(opponent.get("name", "")).contains("—")
+			and str(opponent.get("encounter_name", "")) != "",
+			"rencontres : '%s' sépare le nom court du titre narratif" % node_id)
+		BattleContext.clear_campaign_node()
 
 
 func _test_classic_fixed() -> void:
@@ -96,24 +140,18 @@ func _test_classic_fixed() -> void:
 	BattleContext.clear_campaign_node()
 
 
-func _test_classic_generated() -> void:
-	var node := _graph.node("nerava_01")
-	var first := FactoryModel.build(node, _graph.campaign_version, "veskar",
-		ProfileFixture.DECK, 1)
-	var second := FactoryModel.build(node, _graph.campaign_version, "veskar",
-		ProfileFixture.DECK, 2)
-	_check(bool(first.get("ok", false)) and bool(second.get("ok", false)),
-		"rencontres : un deck adverse généré est réellement produit")
-	var first_deck: Array = first["opponent"]["deck"]
-	_check(first_deck == second["opponent"]["deck"],
-		"rencontres : la graine fixe par nœud reproduit le même deck généré")
-	_check(DeckRules.is_deck_valid(first_deck, "nerava")
-		and first_deck.size() == DeckRules.DECK_SIZE,
-		"rencontres : le deck généré respecte dieu, palier, budget et lignées")
-	_enter("nerava_01")
-	_check(str(BattleContext.current_opponent().get("god_id", "")) == "nerava",
-		"rencontres : Classique avec deck généré conserve le dieu fixe")
-	BattleContext.clear_campaign_node()
+func _test_early_curve() -> void:
+	for node_id in ["veskar_01", "nerava_01", "kharun_01", "ilyr_01", "sylkha_01"]:
+		var node := _graph.node(node_id)
+		var tier_one := 0
+		var tier_two := 0
+		for stone_id in node.fixed_deck():
+			var tier := CardPowerTierRules.effective_tier(StoneLoader.get_stone(str(stone_id)))
+			tier_one += 1 if tier == 1 else 0
+			tier_two += 1 if tier == 2 else 0
+		_check(node.max_power_tier() == 2 and tier_one == 6 and tier_two == 2
+			and float(node.ai_profile().get("precision", 1.0)) <= 0.18,
+			"rencontres : '%s' amorce le Carrefour avec six cartes palier 1 et deux palier 2" % node_id)
 
 
 func _test_random_mode() -> void:

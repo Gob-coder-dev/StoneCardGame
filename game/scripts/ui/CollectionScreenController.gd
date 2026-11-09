@@ -14,6 +14,7 @@ const DeckPanelView := preload("res://scripts/ui/collection/DeckPanel.gd")
 const CollectionGridView := preload("res://scripts/ui/collection/CollectionGrid.gd")
 const GodSelectorView := preload("res://scripts/ui/collection/GodSelector.gd")
 const NumberedSelector := preload("res://scripts/ui/collection/NumberedSelector.gd")
+const EconomyServiceModel := preload("res://scripts/application/economy/EconomyService.gd")
 var _deck_panel: RefCounted
 var _collection_grid: RefCounted
 var _god_selector: RefCounted
@@ -35,6 +36,8 @@ var _preview_level := 1
 @onready var deck_rows: VBoxContainer = $Content/Scroll/Page/DeckPanel/DeckContent/DeckRows
 @onready var deck_count_label: Label = $Content/Scroll/Page/DeckPanel/DeckContent/DeckHeader/DeckCount
 @onready var collection_rows: VBoxContainer = $Content/Scroll/Page/CollectionRows
+@onready var locked_collection_rows: VBoxContainer = $Content/Scroll/Page/LockedCollectionRows
+@onready var locked_collection_title: Label = $Content/Scroll/Page/LockedCollectionTitle
 @onready var sort_button: Button = $Content/Scroll/Page/CollectionHeader/SortButton
 @onready var sort_menu: PanelContainer = $Content/Scroll/Page/SortMenu
 @onready var sort_options: VBoxContainer = $Content/Scroll/Page/SortMenu/SortOptions
@@ -62,7 +65,8 @@ func _ready() -> void:
 	scroll.gui_input.connect(_on_scroll_gui_input)
 	god_button.pressed.connect(_toggle_god_menu)
 	_deck_panel = DeckPanelView.new(deck_rows)
-	_collection_grid = CollectionGridView.new(collection_rows)
+	_collection_grid = CollectionGridView.new(collection_rows, locked_collection_rows,
+		locked_collection_title)
 	_god_selector = GodSelectorView.new(
 		god_button, god_portrait, god_name, god_title, god_family,
 		god_description, god_change_label, god_menu, god_options
@@ -118,7 +122,7 @@ func _toggle_god_menu() -> void:
 
 
 func _select_god(next_god_id: String) -> void:
-	if next_god_id == "" or next_god_id == PlayerData.player_god_id:
+	if next_god_id == PlayerData.player_god_id:
 		god_menu.visible = false
 		_refresh_god_panel()
 		return
@@ -302,6 +306,9 @@ func _open_card_actions(stone_id: String, wrapper: VBoxContainer, source: int) -
 	_suppress_scroll_tap_once()
 	if not StoneLoader.has_stone(stone_id):
 		return
+	if not PlayerData.owns_stone(stone_id):
+		_show_error("Cette carte ou ce niveau n'est pas encore débloqué.")
+		return
 	if _action_stone_id == stone_id and _action_source == source and is_instance_valid(_action_drawer):
 		_close_action_drawer()
 		return
@@ -321,6 +328,7 @@ func _open_card_actions(stone_id: String, wrapper: VBoxContainer, source: int) -
 	_action_drawer.setup(stone_id, source)
 	_action_drawer.info_requested.connect(_on_info_requested)
 	_action_drawer.primary_requested.connect(_on_primary_requested)
+	_action_drawer.upgrade_requested.connect(_upgrade_card)
 
 
 func _close_action_drawer() -> void:
@@ -349,6 +357,9 @@ func _on_primary_requested(stone_id: String, source: CardActionDrawer.Source) ->
 
 
 func _request_use(stone_id: String) -> void:
+	if not PlayerData.owns_stone(stone_id):
+		_show_error("Cette carte ou ce niveau n'est pas encore débloqué.")
+		return
 	var lineage := StoneLoader.stone_lineage(stone_id)
 	var index := DeckRules.lineage_index(_current_deck, lineage)
 	var operation: Dictionary
@@ -399,6 +410,17 @@ func _commit_operation(operation: Dictionary) -> bool:
 
 func _prepare_card_art() -> void:
 	CardArtCache.activate_god(PlayerData.player_god_id, _preview_level, _current_deck)
+
+
+func _upgrade_card(lineage_id: String) -> void:
+	var result := EconomyServiceModel.new().upgrade_card(lineage_id)
+	if not bool(result.get("ok", false)):
+		_show_error(str(result.get("reason", "Amélioration impossible.")))
+		return
+	_close_action_drawer()
+	_clear_status()
+	_populate_collection()
+	_refresh_deck()
 
 
 func _show_error(message: String) -> void:

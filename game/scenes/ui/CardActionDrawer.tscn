@@ -1,7 +1,8 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/collection/CardActionDrawer.gd" id="1_drawer"]
 [ext_resource type="Script" path="res://scripts/ui/input/TouchButton.gd" id="2_touch_button"]
+[ext_resource type="Texture2D" path="res://assets/ui/soul-placeholder.svg" id="3_soul"]
 
 [sub_resource type="StyleBoxFlat" id="DrawerPanel"]
 content_margin_left = 10.0
@@ -18,7 +19,7 @@ corner_radius_bottom_left = 12
 
 [node name="CardActionDrawer" type="PanelContainer"]
 mouse_filter = 1
-custom_minimum_size = Vector2(0, 176)
+custom_minimum_size = Vector2(0, 260)
 theme_override_styles/panel = SubResource("DrawerPanel")
 script = ExtResource("1_drawer")
 
@@ -39,3 +40,13 @@ script = ExtResource("2_touch_button")
 custom_minimum_size = Vector2(0, 76)
 theme_override_font_sizes/font_size = 27
 text = "UTILISER"
+
+[node name="UpgradeButton" type="Button" parent="Actions"]
+layout_mode = 2
+script = ExtResource("2_touch_button")
+custom_minimum_size = Vector2(0, 76)
+theme_override_font_sizes/font_size = 25
+text = "AMÉLIORER  •  200"
+icon = ExtResource("3_soul")
+theme_override_constants/icon_max_width = 38
+alignment = 1

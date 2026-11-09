@@ -48,7 +48,11 @@ func enter_node(node_id: String) -> Dictionary:
 	if not service.is_available(node_id):
 		return _failure("Ce niveau est encore verrouillé.")
 	var player_deck := PlayerData.get_active_deck()
-	if not DeckRules.is_deck_valid(player_deck, PlayerData.player_god_id):
+	var deck_is_valid := DeckRules.is_deck_valid(player_deck, PlayerData.player_god_id)
+	if node.allows_incomplete_player_deck():
+		deck_is_valid = player_deck.size() >= node.player_hand_size() \
+			and bool(DeckRules.validate_deck(player_deck, false, PlayerData.player_god_id).get("valid", false))
+	if not deck_is_valid:
 		return _failure("Complétez votre deck avant de lancer une campagne.")
 	var attempt := service.next_attempt_number(node_id)
 	if attempt <= 0:
@@ -69,7 +73,7 @@ func enter_node(node_id: String) -> Dictionary:
 			int(attempt_result.get("error", ERR_FILE_CANT_WRITE))))
 	BattleContext.enter_campaign_node(node_id, service)
 	BattleContext.select_opponent(built["opponent"])
-	BattleContext.forced_first_player = 0
+	BattleContext.forced_first_player = node.forced_first_player()
 	if prepared_session != null:
 		BattleContext.install_mode_session(prepared_session)
 	focus_node_id = node_id

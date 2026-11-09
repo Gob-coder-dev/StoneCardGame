@@ -75,9 +75,15 @@ func _test_banks() -> void:
 	var profile := Codec.decode(raw)
 	var valid := Codec.needs_catalogue_migration(raw) and not Codec.needs_catalogue_migration(profile)
 	for god in profile["decks_by_god"]:
+		if god == Codec.NEUTRAL_DECK_KEY:
+			continue
 		var slots: Array = profile["decks_by_god"][god]
 		valid = valid and DeckRules.is_deck_valid(slots[0], god) and slots[1] == ["avortons_des_caves_n2"] and slots[2].is_empty()
-	_check(valid and profile["selected_deck_by_god"] == raw["selected_deck_by_god"]
+	var selections_preserved := true
+	for god_id in raw["selected_deck_by_god"]:
+		selections_preserved = selections_preserved \
+			and profile["selected_deck_by_god"].get(god_id, -1) == raw["selected_deck_by_god"][god_id]
+	_check(valid and selections_preserved
 		and profile["player_name"] == raw["player_name"] and profile["stats"]["per_npc"] == raw["stats"]["per_npc"],
 		"la version trois migre les dix-huit emplacements et conserve sélections, pseudo et statistiques par adversaire")
 	for version in [0, 1, 2]:
@@ -117,7 +123,7 @@ func _test_backup() -> void:
 		"un échec de copie de sécurité empêche la réécriture et annule la sélection")
 	player._save_path = PATH
 	_check(player.set_selected_deck(1) and Storage.read(backup_path) == original
-		and Storage.read(PATH)["save_version"] == 4,
+		and Storage.read(PATH)["save_version"] == 5,
 		"la première modification conserve le JSON d'origine puis enregistre le profil converti")
 	player.set_selected_deck(2)
 	player.load_save()

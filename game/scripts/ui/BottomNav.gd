@@ -1,26 +1,29 @@
-## Barre de navigation persistante des trois écrans principaux.
+## Barre de navigation persistante des quatre écrans principaux.
 class_name BottomNav
 extends PanelContainer
 
 const Routes := preload("res://scripts/ui/GameRoutes.gd")
 
-enum Tab { CARDS, PLAY, RULES }
+enum Tab { SHOP, CARDS, PLAY, RULES }
 
 @export var current_tab: Tab = Tab.PLAY
 
 @onready var _buttons: Array[Button] = [
+	$Tabs/ShopButton,
 	$Tabs/CardsButton,
 	$Tabs/PlayButton,
 	$Tabs/RulesButton
 ]
 
 const SCENES: Array[String] = [
+	Routes.SHOP,
 	Routes.COLLECTION,
 	Routes.MAIN_MENU,
 	Routes.HOW_TO_PLAY,
 ]
 
-const ICONS: Array[Texture2D] = [preload("res://assets/ui/nav-decks.svg"),
+const ICONS: Array[Texture2D] = [preload("res://assets/ui/nav-shop.svg"),
+	preload("res://assets/ui/nav-decks.svg"),
 	preload("res://assets/ui/nav-play.svg"), preload("res://assets/ui/nav-rules.svg")]
 
 

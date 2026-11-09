@@ -37,3 +37,13 @@ func _init(row: HBoxContainer, count: int, first_value: int = 1) -> void:
 func refresh(selected: int) -> void:
 	for index in range(_buttons.size()):
 		_buttons[index].set_pressed_no_signal(index + _first_value == selected)
+
+
+## Garde les niveaux verrouillés consultables pour l'aperçu, mais les distingue
+## visuellement. L'autorisation d'équiper reste contrôlée par PlayerData.
+func show_unlocked_through(max_value: int) -> void:
+	for index in range(_buttons.size()):
+		var button := _buttons[index]
+		var unlocked := index + _first_value <= max_value
+		button.modulate = Color.WHITE if unlocked else Color(0.48, 0.48, 0.53, 0.72)
+		button.tooltip_text = "" if unlocked else "Niveau non débloqué"

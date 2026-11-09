@@ -253,6 +253,28 @@ static func _encounter_problems(node: CampaignNode, result: Array[String]) -> vo
 		result.append("opponent_deck_policy inconnue sur '%s'." % node.id)
 	if not NodeModel.SEED_POLICIES.has(node.seed_policy()):
 		result.append("seed_policy inconnue sur '%s'." % node.id)
+	var raw_board_size := int(encounter.get("board_size", GameState.DEFAULT_BOARD_SIZE))
+	if raw_board_size < GameState.MIN_BOARD_SIZE or raw_board_size > GameState.MAX_BOARD_SIZE:
+		result.append("taille de plateau hors bornes sur '%s'." % node.id)
+	for field in ["player_hand_size", "opponent_hand_size"]:
+		var hand_size := int(encounter.get(field, DeckRulesModel.DECK_SIZE))
+		if hand_size < 1 or hand_size > DeckRulesModel.DECK_SIZE:
+			result.append("%s hors bornes sur '%s'." % [field, node.id])
+	var blocked_seen := {}
+	for raw_cell in node.fixed_blocked_cells():
+		if not raw_cell is Array or raw_cell.size() != 2:
+			result.append("case bloquée invalide sur '%s'." % node.id)
+			continue
+		var row := int(raw_cell[0])
+		var col := int(raw_cell[1])
+		var key := "%d:%d" % [row, col]
+		if row < 0 or col < 0 or row >= raw_board_size or col >= raw_board_size \
+				or blocked_seen.has(key):
+			result.append("case bloquée hors plateau ou dupliquée sur '%s'." % node.id)
+		blocked_seen[key] = true
+	if node.allows_incomplete_player_deck() and node.id != "tuto_01":
+		result.append("deck incomplet autorisé hors du premier tutoriel sur '%s'." % node.id)
+	_reward_problems(node, result)
 
 	var generator_god_id := node.generator_god_id()
 	var generator_min := node.generator_min_god_cards()
@@ -335,6 +357,27 @@ static func _encounter_problems(node: CampaignNode, result: Array[String]) -> vo
 		if float(node.ai_profile().get("precision", 1.0)) != 0.0 \
 				or bool(node.ai_profile().get("anticipation", true)):
 			result.append("tutoriel '%s' : précision 0 et sans anticipation requis." % node.id)
+
+
+static func _reward_problems(node: CampaignNode, result: Array[String]) -> void:
+	var reward := node.reward_definition()
+	if reward.is_empty():
+		# Compatibilité des fixtures/outils qui construisent encore des graphes
+		# sans économie. Le contenu livré déclare toutes ses récompenses.
+		return
+	var minimum := int(reward.get("souls_min", -1))
+	var maximum := int(reward.get("souls_max", -1))
+	if minimum < 0 or maximum < minimum:
+		result.append("fourchette d'âmes invalide sur '%s'." % node.id)
+	var cards: Variant = reward.get("card_rewards", [])
+	if not cards is Array:
+		result.append("récompenses de cartes invalides sur '%s'." % node.id)
+		return
+	if not cards.is_empty() and not (node.is_mini_boss() or node.is_boss() or node.id == "tuto_01"):
+		result.append("cartes offertes hors tutoriel initial/mini-boss/boss sur '%s'." % node.id)
+	for raw_stone_id in cards:
+		if not StoneLoader.has_stone(str(raw_stone_id)):
+			result.append("carte de récompense inconnue '%s' sur '%s'." % [raw_stone_id, node.id])
 
 static func _fixed_deck_problems(node: CampaignNode, result: Array[String]) -> void:
 	_deck_problems(node, node.fixed_deck(), node.fixed_god_id(), MIN_GOD_CARDS,

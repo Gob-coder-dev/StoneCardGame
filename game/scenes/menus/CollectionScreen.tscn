@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://collection_screen"]
+[gd_scene load_steps=10 format=3 uid="uid://collection_screen"]
 
 [ext_resource type="Script" path="res://scripts/ui/CollectionScreenController.gd" id="1_controller"]
 [ext_resource type="Script" path="res://scripts/ui/MenuBackground.gd" id="2_background"]
@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://scripts/ui/input/TouchScrollContainer.gd" id="6_touch_scroll"]
 [ext_resource type="Script" path="res://scripts/ui/input/TouchButton.gd" id="7_touch_button"]
 [ext_resource type="Script" path="res://scripts/ui/GodPortrait.gd" id="8_god_portrait"]
+[ext_resource type="PackedScene" path="res://scenes/ui/SoulBalance.tscn" id="9_souls"]
 
 [node name="CollectionScreen" type="Control"]
 layout_mode = 3
@@ -36,12 +37,19 @@ offset_right = -32.0
 offset_bottom = -174.0
 theme_override_constants/separation = 14
 
-[node name="Title" type="Label" parent="Content"]
+[node name="Header" type="HBoxContainer" parent="Content"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="Title" type="Label" parent="Content/Header"]
 theme_type_variation = &"ScreenTitle"
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 66
 text = "MON BESTIAIRE"
-horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="SoulBalance" parent="Content/Header" instance=ExtResource("9_souls")]
 
 [node name="StatusLabel" type="Label" parent="Content"]
 visible = false
@@ -203,13 +211,9 @@ theme_override_constants/separation = 40
 layout_mode = 2
 theme_override_constants/separation = 16
 
-[node name="CollectionTitle" type="Label" parent="Content/Scroll/Page/CollectionHeader"]
-theme_type_variation = &"SectionTitle"
+[node name="Spacer" type="Control" parent="Content/Scroll/Page/CollectionHeader"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 39
-text = "COLLECTION"
-vertical_alignment = 1
 
 [node name="SortButton" type="Button" parent="Content/Scroll/Page/CollectionHeader"]
 layout_mode = 2
@@ -273,7 +277,26 @@ custom_minimum_size = Vector2(0, 92)
 theme_override_font_sizes/font_size = 34
 text = "NOM"
 
+[node name="CollectionTitle" type="Label" parent="Content/Scroll/Page"]
+theme_type_variation = &"SectionTitle"
+layout_mode = 2
+theme_override_font_sizes/font_size = 39
+text = "CARTES POSSÉDÉES"
+horizontal_alignment = 1
+
 [node name="CollectionRows" type="VBoxContainer" parent="Content/Scroll/Page"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 18
+
+[node name="LockedCollectionTitle" type="Label" parent="Content/Scroll/Page"]
+theme_type_variation = &"SectionTitle"
+layout_mode = 2
+theme_override_font_sizes/font_size = 39
+text = "CARTES NON POSSÉDÉES"
+horizontal_alignment = 1
+
+[node name="LockedCollectionRows" type="VBoxContainer" parent="Content/Scroll/Page"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 18
@@ -284,7 +307,7 @@ mouse_filter = 2
 custom_minimum_size = Vector2(0, 30)
 
 [node name="BottomNav" parent="." instance=ExtResource("3_nav")]
-current_tab = 0
+current_tab = 1
 
 [node name="StoneInfoSheet" parent="." instance=ExtResource("4_info")]
 

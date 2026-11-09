@@ -57,6 +57,9 @@ func _ready() -> void:
 
 func _initialize_view() -> void:
 	_apply_responsive_layout()
+	var state := turn_manager.get_state()
+	if state != null:
+		board_view.configure_board_size(state.board_size)
 	board_view.build()
 	_refresh_after_build()
 

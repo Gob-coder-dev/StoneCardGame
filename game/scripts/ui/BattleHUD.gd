@@ -100,6 +100,9 @@ func _build_banner() -> CenterContainer:
 	banner_box.add_child(banner_panel)
 
 	_banner = Label.new()
+	_banner.clip_text = true
+	_banner.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	_banner.custom_minimum_size.x = UITheme.HUD_BANNER_WIDTH
 	_banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_banner.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_banner.add_theme_font_size_override("font_size", UITheme.FONT_BANNER)
@@ -175,9 +178,9 @@ func _plate_style(accent_color: Color, active: bool) -> StyleBoxFlat:
 
 ## Définit les noms affichés (le nom adverse sera clippé s'il est trop long).
 func set_names(human_name: String, ai_name: String) -> void:
-	_ai_display_name = ai_name
-	_human_name.text = human_name
-	_ai_name.text = ai_name
+	_ai_display_name = UIFormat.combatant_name(ai_name, 18)
+	_human_name.text = UIFormat.combatant_name(human_name, 18)
+	_ai_name.text = _ai_display_name
 
 
 ## Les portraits et noms de dieux sont séparés des noms des combattants : les

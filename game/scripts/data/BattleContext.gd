@@ -3,6 +3,7 @@ extends Node
 
 const OpponentCatalogModel := preload("res://scripts/data/OpponentCatalog.gd")
 const CompletionModel := preload("res://scripts/application/campaign/CampaignCompletionService.gd")
+const RewardModel := preload("res://scripts/application/campaign/CampaignRewardService.gd")
 
 var selected_npc_id: String = ""
 ## Source du chemin de rencontres ouvert (id de dieu ou Pr.Stone). Elle permet
@@ -35,6 +36,7 @@ var campaign_service: CampaignService = null
 ## Le profil et la campagne sont deux écritures indépendantes. Ce drapeau évite
 ## de compter deux fois les statistiques si la seconde échoue puis est réessayée.
 var _result_stats_saved: bool = false
+var last_reward: Dictionary = {}
 
 
 ## Mémorise le chemin choisi avant même qu'un adversaire ne soit généré.
@@ -257,6 +259,7 @@ func prepare_result(winner: int, human: int, ai: int, captures_human: int) -> vo
 	last_result_saved = false
 	_result_stats_saved = false
 	last_save_error = OK
+	last_reward = {}
 
 
 ## Enregistrement en deux temps : statistiques du profil, puis complétion du
@@ -276,6 +279,11 @@ func persist_result() -> Error:
 		if campaign_service == null:
 			last_save_error = ERR_UNCONFIGURED
 			return last_save_error
+		var reward := RewardModel.apply_victory(campaign_service, campaign_node_id)
+		if not bool(reward.get("ok", false)):
+			last_save_error = int(reward.get("error", ERR_FILE_CANT_WRITE))
+			return last_save_error
+		last_reward = reward.duplicate(true)
 		var completion := CompletionModel.apply_victory(campaign_service, campaign_node_id)
 		var error := int(completion.get("error", OK))
 		if error != OK:

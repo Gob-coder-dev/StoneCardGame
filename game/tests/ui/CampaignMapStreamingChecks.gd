@@ -36,7 +36,7 @@ func _test_chunks(graph: CampaignGraph) -> void:
 	var first := manager.update(visible, visible.size)
 	var first_add: Array = first["add"]
 	_check(not first_add.is_empty() and first_add.size() < graph.node_count(),
-		"streaming : l'ouverture charge une zone, pas les 154 nœuds")
+		"streaming : l'ouverture charge une zone, pas les 162 nœuds")
 	_check(_unique(first_add).size() == first_add.size(),
 		"streaming : les identifiants demandés ne sont jamais dupliqués")
 	_check(manager.active_node_ids().size() == first_add.size(),

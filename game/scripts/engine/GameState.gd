@@ -10,9 +10,12 @@ extends RefCounted
 
 const BattleStoneModel := preload("res://scripts/engine/BattleStone.gd")
 
-## Constantes du plateau. BOARD_SIZE est la seule valeur à changer pour
-## agrandir le terrain ; tout le reste en dérive.
-const BOARD_SIZE: int = 4
+## Taille historique et valeur par défaut. La taille effective appartient à
+## chaque partie afin que les tutoriels 3×3 n'altèrent jamais le PVP 4×4.
+const DEFAULT_BOARD_SIZE: int = 4
+const BOARD_SIZE: int = DEFAULT_BOARD_SIZE
+const MIN_BOARD_SIZE: int = 3
+const MAX_BOARD_SIZE: int = 4
 
 ## Identifiants génériques des deux camps. La campagne et le PVP local utilisent
 ## exactement les mêmes valeurs : PLAYER_ONE est l'hôte en réseau, PLAYER_TWO le
@@ -45,6 +48,7 @@ static func total_cells() -> int:
 
 ## Le plateau : tableau 1D (index = row * BOARD_SIZE + col)
 var board: Array = []
+var board_size: int = DEFAULT_BOARD_SIZE
 
 ## Mains des joueurs : listes de stone_id (String) uniquement.
 var human_hand: Array = []
@@ -67,14 +71,15 @@ var random_state: int = 1
 var next_instance_id: int = 1
 
 
-func _init() -> void:
+func _init(size: int = DEFAULT_BOARD_SIZE) -> void:
+	board_size = clampi(size, MIN_BOARD_SIZE, MAX_BOARD_SIZE)
 	_reset_board()
 
 
 ## Remet le plateau à zéro (cases vides).
 func _reset_board() -> void:
 	board.clear()
-	for i in range(total_cells()):
+	for i in range(cell_count()):
 		board.append({
 			"cell_type": CELL_EMPTY,
 			"stone_id": "",
@@ -82,7 +87,7 @@ func _reset_board() -> void:
 			"owner": PLAYER_NONE,
 			"placed_by": PLAYER_NONE
 		})
-	empty_playable_cells = total_cells()
+	empty_playable_cells = cell_count()
 	score_human = 0
 	score_ai = 0
 	is_game_over = false
@@ -95,7 +100,9 @@ func apply_blocked_cells(blocked: Array) -> void:
 		## Les cases reçues du réseau ont traversé JSON : 1 devient 1.0.
 		var row: int = int(pos[0]) if pos is Array else int(pos.x)
 		var col: int = int(pos[1]) if pos is Array else int(pos.y)
-		var idx: int = cell_index(row, col)
+		if not in_bounds(row, col):
+			continue
+		var idx: int = index_of(row, col)
 		if board[idx]["cell_type"] != CELL_BLOCKED:
 			board[idx]["cell_type"] = CELL_BLOCKED
 			empty_playable_cells -= 1
@@ -133,7 +140,19 @@ func take_instance_id() -> int:
 ## ─── Accès au plateau ─────────────────────────────────────────────────────────
 
 func get_cell(row: int, col: int) -> Dictionary:
-	return board[cell_index(row, col)]
+	return board[index_of(row, col)]
+
+
+func cell_count() -> int:
+	return board_size * board_size
+
+
+func index_of(row: int, col: int) -> int:
+	return row * board_size + col
+
+
+func in_bounds(row: int, col: int) -> bool:
+	return row >= 0 and row < board_size and col >= 0 and col < board_size
 
 
 ## Conversion (row, col) -> index 1D. Source unique de la formule.
@@ -153,6 +172,19 @@ static func get_adjacent_positions(row: int, col: int) -> Array:
 		result.append({ "row": row, "col": col - 1, "direction": "left" })
 	if col < BOARD_SIZE - 1:
 		result.append({ "row": row, "col": col + 1, "direction": "right" })
+	return result
+
+
+func adjacent_positions(row: int, col: int) -> Array:
+	var result: Array = []
+	if row > 0:
+		result.append({"row": row - 1, "col": col, "direction": "top"})
+	if row < board_size - 1:
+		result.append({"row": row + 1, "col": col, "direction": "bottom"})
+	if col > 0:
+		result.append({"row": row, "col": col - 1, "direction": "left"})
+	if col < board_size - 1:
+		result.append({"row": row, "col": col + 1, "direction": "right"})
 	return result
 
 
@@ -196,7 +228,7 @@ func clone() -> GameState:
 
 
 func _clone_common() -> GameState:
-	var copy := GameState.new()
+	var copy := GameState.new(board_size)
 	copy.board.clear()
 	for cell in board:
 		# Une case ne contient que des valeurs simples et sa pierre, copiée à part.
@@ -221,7 +253,7 @@ func _clone_common() -> GameState:
 
 
 func _public_position_key() -> String:
-	var parts: Array[String] = [str(current_player), str(empty_playable_cells)]
+	var parts: Array[String] = [str(board_size), str(current_player), str(empty_playable_cells)]
 	for cell in board:
 		parts.append("%s:%s" % [cell.get("stone_id", ""), cell.get("owner", PLAYER_NONE)])
 	for stone_id in ai_hand:

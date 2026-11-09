@@ -11,8 +11,6 @@ var _npc_data: Dictionary = {}
 func start() -> bool:
 	var deck := BattleContext.effective_player_deck()
 	var player_god_id := BattleContext.effective_player_god_id()
-	if not DeckRules.is_deck_valid(deck, player_god_id):
-		return false
 	if BattleContext.selected_npc_id == "":
 		return false
 	_npc_data = BattleContext.current_opponent()
@@ -21,17 +19,34 @@ func start() -> bool:
 	if _npc_data.is_empty():
 		push_error("CampaignMatchDriver: adversaire '%s' introuvable." % BattleContext.selected_npc_id)
 		return false
+	var setup: Dictionary = _npc_data.get("match_setup", {})
+	var board_size := clampi(int(setup.get("board_size", GameState.DEFAULT_BOARD_SIZE)),
+		GameState.MIN_BOARD_SIZE, GameState.MAX_BOARD_SIZE)
+	var player_hand_size := clampi(int(setup.get("player_hand_size", DeckRules.DECK_SIZE)),
+		1, DeckRules.DECK_SIZE)
+	var opponent_hand_size := clampi(int(setup.get("opponent_hand_size", DeckRules.DECK_SIZE)),
+		1, DeckRules.DECK_SIZE)
+	var allow_incomplete := bool(setup.get("allow_incomplete_player_deck", false))
+	if (not allow_incomplete and not DeckRules.is_deck_valid(deck, player_god_id)) \
+			or deck.size() < player_hand_size:
+		return false
+	deck = deck.slice(0, player_hand_size)
 
 	local_side = GameState.PLAYER_ONE
 	records_campaign_stats = true
 	local_name = PlayerData.player_name
-	opponent_name = str(_npc_data.get("name", "Adversaire"))
+	opponent_name = UIFormat.combatant_name(str(
+		_npc_data.get("combatant_name", _npc_data.get("name", "Adversaire"))), 18)
 	var opponent_god_id := BattleContext.effective_opponent_god_id()
 	var opponent_deck := BattleContext.effective_opponent_deck()
 	local_god = StoneLoader.get_god(player_god_id)
 	opponent_god = StoneLoader.get_god(opponent_god_id)
-	if not DeckRules.is_deck_valid(opponent_deck, opponent_god_id):
+	if opponent_deck.size() < opponent_hand_size:
 		return false
+	opponent_deck = opponent_deck.slice(0, opponent_hand_size)
+	var blocked: Array = (setup.get("blocked_cells", []) as Array).duplicate(true)
+	if bool(setup.get("random_blocked_cells", true)):
+		blocked = BoardSetupGenerator.generate(board_size)
 
 	var ai := AITurnRunner.create_ai(_npc_data.get("ai", {}))
 	_ai_runner = AITurnRunner.new()
@@ -41,11 +56,13 @@ func start() -> bool:
 	turn_manager.start_game(
 		StoneLoader.build_hand(deck),
 		StoneLoader.build_hand(opponent_deck),
-		BoardSetupGenerator.generate(),
+		blocked,
 		BattleContext.selected_npc_id,
 		BattleContext.forced_first_player,
 		player_god_id,
-		opponent_god_id
+		opponent_god_id,
+		0,
+		board_size
 	)
 	return true
 

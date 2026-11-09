@@ -18,11 +18,11 @@ static func resolve(state: GameState, row: int, col: int, player: int, source: B
 		var hits: Array = []
 		var adjacent_enemy := false
 		var endpoint := {}
-		for distance in range(1, GameState.BOARD_SIZE + 1):
+		for distance in range(1, state.board_size + 1):
 			var target_row := row + delta.x * distance
 			var target_col := col + delta.y * distance
 			endpoint = {"row": target_row, "col": target_col, "distance": distance, "type": "exit"}
-			if target_row < 0 or target_row >= GameState.BOARD_SIZE or target_col < 0 or target_col >= GameState.BOARD_SIZE:
+			if not state.in_bounds(target_row, target_col):
 				break
 			if distance > 1 and long_count == 0:
 				break
