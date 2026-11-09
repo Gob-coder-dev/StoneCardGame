@@ -2,10 +2,12 @@
 extends Control
 
 const Routes := preload("res://scripts/ui/GameRoutes.gd")
+const GodIdentityModel := preload("res://scripts/data/GodIdentity.gd")
 
 const OpponentCatalogModel := preload("res://scripts/data/OpponentCatalog.gd")
 const EncounterPathModel := preload("res://scripts/domain/EncounterPath.gd")
 
+@onready var background: MenuBackground = $Background
 @onready var close_button: Button = $Root/Header/CloseButton
 @onready var scroll: ScrollContainer = $Root/Scroll
 @onready var pseudo_label: Label = $Root/Scroll/Content/ProfilePanel/ProfileContent/PseudoRow/PseudoLabel
@@ -20,6 +22,7 @@ const EncounterPathModel := preload("res://scripts/domain/EncounterPath.gd")
 
 
 func _ready() -> void:
+	background.set_god(GodIdentityModel.player(PlayerData.player_god_id))
 	close_button.pressed.connect(_close)
 	edit_button.pressed.connect(_begin_edit)
 	save_name_button.pressed.connect(_save_name)

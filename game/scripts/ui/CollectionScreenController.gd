@@ -3,6 +3,7 @@
 extends Control
 
 const Routes := preload("res://scripts/ui/GameRoutes.gd")
+const GodIdentityModel := preload("res://scripts/data/GodIdentity.gd")
 
 const SortMode = CollectionGridView.SortMode
 const Gesture := preload("res://scripts/ui/input/TapGesture.gd")
@@ -413,7 +414,7 @@ func _on_inventory_changed() -> void:
 
 
 func _refresh_god_panel() -> void:
-	var god := StoneLoader.get_god(PlayerData.player_god_id)
+	var god := GodIdentityModel.player(PlayerData.player_god_id)
 	background.set_god(god)
 	_god_selector.refresh(PlayerData.player_god_id)
 	_deck_slot_selector.refresh(PlayerData.get_selected_deck())

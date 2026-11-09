@@ -5,6 +5,7 @@
 extends Control
 
 const GodCardTileView := preload("res://scripts/ui/encounters/GodCardTile.gd")
+const GodIdentityModel := preload("res://scripts/data/GodIdentity.gd")
 const OpponentCatalogModel := preload("res://scripts/data/OpponentCatalog.gd")
 const Routes := preload("res://scripts/ui/GameRoutes.gd")
 
@@ -16,7 +17,7 @@ const Routes := preload("res://scripts/ui/GameRoutes.gd")
 
 func _ready() -> void:
 	back_button.pressed.connect(_on_back)
-	background.set_god(StoneLoader.get_god(PlayerData.player_god_id))
+	background.set_god(GodIdentityModel.player(PlayerData.player_god_id))
 	_populate()
 
 

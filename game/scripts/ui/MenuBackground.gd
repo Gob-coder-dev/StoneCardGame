@@ -46,7 +46,7 @@ func _ready() -> void:
 
 func set_god(god: Dictionary) -> void:
 	neon_primary_color = _god_color(god)
-	neon_secondary_color = _neon_variant(neon_primary_color, 1.0)
+	neon_secondary_color = _god_secondary_color(god, neon_primary_color)
 	neon_tertiary_color = _neon_variant(neon_primary_color, -1.0)
 	queue_redraw()
 
@@ -110,6 +110,13 @@ func _neon_width_scale() -> float:
 
 func _god_color(god: Dictionary) -> Color:
 	return Color(str(god.get("color", VIOLET_NEON.to_html())))
+
+
+## Les dieux dérivent leur second néon de leur couleur ; les deux identités sans
+## dieu fournissent une palette explicite pour coller à leur illustration.
+func _god_secondary_color(god: Dictionary, primary: Color) -> Color:
+	var value := str(god.get("secondary_color", ""))
+	return Color(value) if value != "" else _neon_variant(primary, 1.0)
 
 
 func _draw() -> void:

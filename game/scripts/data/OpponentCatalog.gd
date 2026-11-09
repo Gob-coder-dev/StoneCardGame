@@ -14,7 +14,10 @@ const BotCardTierRulesModel := preload("res://scripts/domain/BotCardTierRules.gd
 
 const NEUTRAL_BOT_ID := "pr_stone"
 const NEUTRAL_BOT_NAME := "Pr.Stone"
-const NEUTRAL_BOT_COLOR := "#a89a83"
+## Palette du portrait : le gris de ses cheveux et de son manteau, puis le rouge
+## clair de son visage et de ses fioles.
+const NEUTRAL_BOT_COLOR := "#bdb4ab"
+const NEUTRAL_BOT_ACCENT := "#e08a82"
 const NEUTRAL_BOT_ASSET := "res://assets/gods/pr_stone.png"
 
 ## Paliers de puissance : le niveau de bot combine le niveau de forme et son
@@ -132,6 +135,7 @@ static func neutral_source() -> Dictionary:
 		"name": NEUTRAL_BOT_NAME,
 		"family_name": "Sans dieu • cartes neutres",
 		"color": NEUTRAL_BOT_COLOR,
+		"secondary_color": NEUTRAL_BOT_ACCENT,
 		"description": "Adversaire sans dieu, son deck est composé uniquement de cartes neutres.",
 		"asset": NEUTRAL_BOT_ASSET,
 	}

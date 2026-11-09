@@ -2,6 +2,7 @@
 extends Control
 
 const Routes := preload("res://scripts/ui/GameRoutes.gd")
+const GodIdentityModel := preload("res://scripts/data/GodIdentity.gd")
 
 const Badge := preload("res://scripts/ui/PowerBadge.gd")
 const Effects := preload("res://scripts/domain/StoneEffects.gd")
@@ -42,9 +43,11 @@ const GOD_RULES := {
 @onready var rules_text: RichTextLabel = $Content/Scroll/RulesPanel/Page/RulesText
 @onready var god_rules: VBoxContainer = $Content/Scroll/RulesPanel/Page/GodRules
 @onready var end_text: RichTextLabel = $Content/Scroll/RulesPanel/Page/EndText
+@onready var background: MenuBackground = $Background
 
 
 func _ready() -> void:
+	background.set_god(GodIdentityModel.player(PlayerData.player_god_id))
 	$Content/Scroll/RulesPanel/Page/EndSpace.custom_minimum_size.y = UITheme.RULES_END_SPACE
 	var values := _rule_values()
 	rules_text.text = _rules_bbcode().format(values)

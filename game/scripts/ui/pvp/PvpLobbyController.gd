@@ -8,6 +8,7 @@
 extends Control
 
 const TouchButtonScript := preload("res://scripts/ui/input/TouchButton.gd")
+const GodIdentityModel := preload("res://scripts/data/GodIdentity.gd")
 ## Constantes d'état et type exposé à la vue ; le cycle reste dans le flow.
 const LobbyCoordinator := preload("res://scripts/network/LanLobbyCoordinator.gd")
 const FlowModel := preload("res://scripts/application/pvp/PvpLobbyFlow.gd")
@@ -426,13 +427,13 @@ func _refresh_status() -> void:
 	elif _mode == MODE_JOIN:
 		_reset_ready_button()
 		background.room = MenuBackground.Room.PVP
-		background.set_god(StoneLoader.get_god(PlayerData.player_god_id))
+		background.set_god(GodIdentityModel.player(PlayerData.player_god_id))
 		_fill_join()
 		_show_screen(join_screen)
 	else:
 		_reset_ready_button()
 		background.room = MenuBackground.Room.PVP
-		background.set_god(StoneLoader.get_god(PlayerData.player_god_id))
+		background.set_god(GodIdentityModel.player(PlayerData.player_god_id))
 		_show_screen(mode_screen)
 	background.queue_redraw()
 	_fill_connection_overlay()

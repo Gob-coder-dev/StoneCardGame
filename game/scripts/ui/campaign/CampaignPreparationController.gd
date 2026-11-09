@@ -5,6 +5,7 @@
 extends Control
 
 const Routes := preload("res://scripts/ui/GameRoutes.gd")
+const GodIdentityModel := preload("res://scripts/data/GodIdentity.gd")
 const EncounterPresenter := preload("res://scripts/ui/campaign/CampaignEncounterPresenter.gd")
 const LayoutModel := preload("res://scripts/ui/pvp/PvpPreparationLayout.gd")
 
@@ -30,7 +31,7 @@ func _ready() -> void:
 	confirm_button.pressed.connect(_on_confirm)
 	offers_grid.card_chosen.connect(_on_card_chosen)
 	scroll.resized.connect(_schedule_deck_fit)
-	background.set_god(StoneLoader.get_god(PlayerData.player_god_id))
+	background.set_god(GodIdentityModel.player(PlayerData.player_god_id))
 	var service := CampaignContext.get_service()
 	var summary := EncounterPresenter.summary(service.node(CampaignContext.active_node_id()),
 		PlayerData.player_god_id)

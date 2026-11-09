@@ -8,6 +8,7 @@ const CardLayout := preload("res://scripts/ui/collection/CardGridLayout.gd")
 const GodPortraitView := preload("res://scripts/ui/GodPortrait.gd")
 const TouchButtonScript := preload("res://scripts/ui/input/TouchButton.gd")
 const SOUL_ICON := preload("res://assets/ui/soul-placeholder.svg")
+const GodIdentityModel := preload("res://scripts/data/GodIdentity.gd")
 
 @onready var soul_balance: SoulBalance = $Content/Header/SoulBalance
 @onready var rotation_label: Label = $Content/Scroll/Page/Rotation
@@ -23,6 +24,7 @@ var _rotation_id := -1
 
 func _ready() -> void:
 	$Background.room = MenuBackground.Room.PROFILE
+	$Background.set_god(GodIdentityModel.player(PlayerData.player_god_id))
 	_refresh()
 	_apply_columns()
 	var timer := Timer.new()

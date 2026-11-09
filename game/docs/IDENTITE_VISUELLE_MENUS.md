@@ -41,7 +41,12 @@ courbes. Le rituel de pièce reçoit des cercles néon concentriques autour de l
 monnaie pour en faire le point focal. Les accents néon suivent la couleur du
 dieu affiché : le dieu actif sur l'accueil, dans le bestiaire et sur la carte de
 campagne, le dieu sélectionné dans les rencontres, puis les deux dieux en duel,
-sur le plateau et au résultat. Les deux accents secondaires d'un dieu décalent
+sur le plateau et au résultat. Les deux identités sans dieu ont leur propre
+palette fixe, reprise de leur illustration : Sans dieu marie un violet sombre
+et un marron, Pr.Stone un gris et un rouge clair. La boutique, le profil et les
+règles reprennent cette identité : la palette du dieu actif, ou celle de Sans
+dieu quand aucun dieu n'est équipé. Les deux accents secondaires d'un dieu
+décalent
 sa teinte d'environ 40° de part et d'autre, l'un plus clair et saturé, l'autre
 plus sombre : trois néons distincts restent dans la gamme du dieu sans se
 confondre. En duel, le troisième accent provient de la teinte intermédiaire des
@@ -50,8 +55,9 @@ la pièce et le résultat les épaississent davantage encore. À l'accueil, le c
 est calé sur le portrait du dieu et le nom comme les commandes remontent
 au-dessus de la barre de navigation. Le plateau conserve les couleurs bleu et
 rouge des camps ; seuls ses détails de fond reprennent les couleurs divines. Les
-règles et les statistiques restent neutres. Les effets lumineux restent en marge
-ou à faible contraste.
+règles et les statistiques ne mettent en avant aucun dieu, mais reprennent la
+palette de l'identité active. Les effets lumineux restent en marge ou à faible
+contraste.
 Le dessin est actualisé au chargement, au changement de dieu ou au
 redimensionnement et ignore les événements d'entrée.
 

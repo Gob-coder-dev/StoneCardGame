@@ -6,6 +6,7 @@
 extends Control
 
 const Routes := preload("res://scripts/ui/GameRoutes.gd")
+const GodIdentityModel := preload("res://scripts/data/GodIdentity.gd")
 const EncounterPresenter := preload("res://scripts/ui/campaign/CampaignEncounterPresenter.gd")
 
 @onready var background: MenuBackground = $Background
@@ -41,7 +42,7 @@ func _ready() -> void:
 	if not _service.is_ready():
 		_show_unavailable()
 		return
-	background.set_god(StoneLoader.get_god(PlayerData.player_god_id))
+	background.set_god(GodIdentityModel.player(PlayerData.player_god_id))
 	title_label.text = (_service.graph().title if _service.graph().title != ""
 		else "CARTE DE CAMPAGNE").to_upper()
 	# La carte ne doit pas apparaître au offset 0 puis sauter sur l'ancre après
