@@ -34,6 +34,7 @@ const DECK_WARNING: String = "VEUILLEZ COMPLÉTER VOTRE DECK"
 	$DeckWarningOverlay/Center/Panel/Content/Actions/CompleteDeckButton
 @onready var close_warning_button: Button = \
 	$DeckWarningOverlay/Center/Panel/Content/Actions/CloseButton
+@onready var bottom_nav: Control = $BottomNav
 
 ## Navigation injectable : les tests vérifient la destination réelle sans
 ## changer de scène. Vide en jeu, la scène est alors ouverte normalement.
@@ -55,6 +56,24 @@ func _ready() -> void:
 	_fit_portrait.call_deferred()
 	_refresh()
 	CardArtCache.preload_god_portraits()
+	_register_story_anchors()
+	_start_story_onboarding.call_deferred()
+
+
+## Les ancres sont des vrais Controls de l'accueil : le spotlight ne dessine
+## jamais une copie et le joueur voit exactement la commande qu'il utilisera.
+func _register_story_anchors() -> void:
+	StoryService.register_anchor("menu.profile", profile_button)
+	StoryService.register_anchor("menu.campaign", campaign_button)
+	StoryService.register_anchor("menu.pvp", pvp_button)
+	StoryService.register_anchor("menu.deck", deck_status)
+	StoryService.register_anchor("menu.bottom_nav", bottom_nav)
+
+
+## Le premier lancement présente les menus avant toute navigation. Une fois le
+## chapitre terminé, l'accueil ne le rejoue plus.
+func _start_story_onboarding() -> void:
+	StoryService.notify_screen(Routes.MAIN_MENU)
 
 
 func _fit_portrait() -> void:

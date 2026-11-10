@@ -108,6 +108,24 @@ func apply_blocked_cells(blocked: Array) -> void:
 			empty_playable_cells -= 1
 
 
+## Pose une pierre déjà construite avant le premier tour. Le tutoriel s'en sert
+## pour placer une cible de capture ; aucun autre mode n'appelle cette méthode.
+func place_initial_stone(row: int, col: int, stone: BattleStone, owner: int) -> bool:
+	if stone == null or not in_bounds(row, col):
+		return false
+	if owner != PLAYER_HUMAN and owner != PLAYER_AI:
+		return false
+	var cell: Dictionary = board[index_of(row, col)]
+	if cell["cell_type"] == CELL_BLOCKED or cell["owner"] != PLAYER_NONE:
+		return false
+	cell["stone_id"] = stone.stone_id
+	cell["stone"] = stone
+	cell["owner"] = owner
+	cell["placed_by"] = owner
+	empty_playable_cells = maxi(0, empty_playable_cells - 1)
+	return true
+
+
 ## Installe les mains (listes de stone_id).
 func setup_hands(human_stone_ids: Array, ai_stone_ids: Array) -> void:
 	human_hand = human_stone_ids.duplicate()

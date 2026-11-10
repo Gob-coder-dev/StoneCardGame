@@ -29,6 +29,7 @@ var _profile: ProfileFixture
 func _ready() -> void:
 	TestLog.current = _log
 	OS.add_logger(_log)
+	StoryService.auto_start_tutorials = false
 	get_tree().create_timer(TIME_LIMIT).timeout.connect(_on_time_limit)
 	_run.call_deferred()
 

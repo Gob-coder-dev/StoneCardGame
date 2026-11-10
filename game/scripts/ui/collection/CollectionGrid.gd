@@ -24,6 +24,20 @@ var _god_id: String = ""
 var _preview_level := 1
 var _wrappers: Dictionary = {}
 
+
+## Expose les cartes visibles comme cibles de surbrillance. Le scénario ne
+## manipule jamais la grille : il ne connaît que l'identifiant de la carte.
+func register_story_anchors() -> void:
+	for raw_lineage in _wrappers.keys():
+		var wrapper: VBoxContainer = _wrappers[raw_lineage]
+		if not is_instance_valid(wrapper) or wrapper.get_child_count() == 0:
+			continue
+		if not wrapper.visible:
+			continue
+		var card := wrapper.get_child(0) as StoneCard
+		if card != null:
+			StoryService.register_anchor("collection.card.%s" % card.get_stone_id(), wrapper)
+
 func _init(rows: VBoxContainer, locked_rows: VBoxContainer, locked_title: Label) -> void:
 	collection_rows = rows
 	locked_collection_rows = locked_rows

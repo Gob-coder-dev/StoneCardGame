@@ -12,6 +12,9 @@ var completed: Dictionary = {}
 var attempts: Dictionary = {}
 var last_selected: String = ""
 var tutorial_states: Dictionary = {}
+## États du scénario (séquence vue, chapitre terminé). Champ additif : une
+## sauvegarde antérieure se charge avec un dictionnaire vide.
+var story_states: Dictionary = {}
 ## Position de navigation de la carte uniquement. Ce champ ne participe jamais
 ## aux règles de déblocage et reste absent des anciennes sauvegardes.
 var map_navigation: Dictionary = {}
@@ -37,6 +40,9 @@ static func from_dict(source: Dictionary) -> CampaignProgress:
 	var raw_tutorials: Variant = source.get("tutorial_states", {})
 	if raw_tutorials is Dictionary:
 		progress.tutorial_states = (raw_tutorials as Dictionary).duplicate(true)
+	var raw_story: Variant = source.get("story_states", {})
+	if raw_story is Dictionary:
+		progress.story_states = (raw_story as Dictionary).duplicate(true)
 	var raw_navigation: Variant = source.get("map_navigation", {})
 	if raw_navigation is Dictionary and not (raw_navigation as Dictionary).is_empty():
 		# JSON relit les nombres en float : normaliser les champs de navigation
@@ -64,6 +70,7 @@ func to_dict() -> Dictionary:
 		"attempts_by_node": attempts.duplicate(true),
 		"last_selected_node_id": last_selected,
 		"tutorial_states": tutorial_states.duplicate(true),
+		"story_states": story_states.duplicate(true),
 		"map_navigation": map_navigation.duplicate(true),
 		"legacy": migration.duplicate(true),
 	}
@@ -128,6 +135,16 @@ func set_tutorial_state(tutorial_id: String, state: String) -> void:
 	if tutorial_id == "":
 		return
 	tutorial_states[tutorial_id] = state
+
+
+func story_state(key: String) -> bool:
+	return bool(story_states.get(key, false))
+
+
+func set_story_state(key: String, value: bool) -> void:
+	if key == "":
+		return
+	story_states[key] = value
 
 
 func set_map_navigation(value: Dictionary) -> void:

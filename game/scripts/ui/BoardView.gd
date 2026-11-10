@@ -48,6 +48,10 @@ func board_size() -> int:
 	return _board_size
 
 
+func is_built() -> bool:
+	return _built and _slots.size() == _board_size * _board_size
+
+
 func _index(row: int, col: int) -> int:
 	return row * _board_size + col
 

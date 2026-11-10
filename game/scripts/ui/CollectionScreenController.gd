@@ -112,6 +112,8 @@ func _ready() -> void:
 		PlayerData.inventory_changed.connect(_on_inventory_changed)
 	sort_menu.visible = false
 	_refresh_all(false, true)
+	StoryService.spotlight_requested.connect(_on_story_spotlight_requested)
+	StoryService.notify_screen(Routes.COLLECTION)
 
 
 func _toggle_level_menu() -> void:
@@ -132,6 +134,7 @@ func _select_preview_level(level: int) -> void:
 	level_button.text = "AFFICHER : NIVEAU %d ▼" % level
 	_level_selector.refresh(level)
 	_collection_grid.set_preview_level(level)
+	_register_story_anchors()
 
 
 func _toggle_god_menu() -> void:
@@ -387,6 +390,7 @@ func _refresh_all(preserve_scroll: bool = true, rebuild_collection: bool = false
 	)
 	if preserve_scroll:
 		_restore_scroll_deferred(previous_scroll)
+	_register_story_anchors()
 
 
 func _open_pending_rewards() -> void:
@@ -427,6 +431,27 @@ func _refresh_deck() -> void:
 func _populate_collection() -> void:
 	_close_action_drawer()
 	_collection_grid.rebuild(PlayerData.player_god_id, _current_deck, _sort_mode)
+	_register_story_anchors()
+
+
+func _register_story_anchors() -> void:
+	StoryService.register_anchor("collection.deck_panel", $Content/Scroll/Page/DeckPanel)
+	for row in deck_rows.get_children():
+		for wrapper in row.get_children():
+			if wrapper.get_child_count() == 0:
+				continue
+			var card := wrapper.get_child(0) as StoneCard
+			if card != null:
+				StoryService.register_anchor("collection.deck.%s" % card.get_stone_id(), wrapper)
+	if _collection_grid != null:
+		_collection_grid.register_story_anchors()
+
+
+## Une cible de spotlight peut être plus bas que la zone visible (la nouvelle
+## carte, par exemple). On la fait apparaître avant que le trou ne soit dessiné.
+func _on_story_spotlight_requested(target: Control, _prompt: String, _show_advance: bool) -> void:
+	if is_instance_valid(target) and scroll.is_ancestor_of(target):
+		scroll.ensure_control_visible(target)
 
 
 func _open_card_actions(stone_id: String, wrapper: VBoxContainer, source: int) -> void:
@@ -458,6 +483,9 @@ func _open_card_actions(stone_id: String, wrapper: VBoxContainer, source: int) -
 	_action_drawer.primary_requested.connect(_on_primary_requested)
 	_action_drawer.upgrade_requested.connect(_upgrade_card)
 	_action_drawer.visible = false
+	StoryService.register_anchor("collection.action.primary", _action_drawer.primary_button)
+	StoryService.register_anchor("collection.action.info", _action_drawer.info_button)
+	StoryService.notify_event("collection_card_opened", {"stone_id": stone_id, "source": int(source)})
 	_position_action_drawer_deferred()
 
 
@@ -564,6 +592,8 @@ func _request_use(stone_id: String) -> void:
 			info_sheet.close_sheet()
 			_replacement_stone_id = stone_id
 			replacement_panel.open_for(_current_deck, stone_id)
+			_register_replacement_anchor(stone_id)
+			StoryService.notify_event("replacement_opened", {"stone_id": stone_id})
 		DeckRules.REASON_BUDGET:
 			_show_error("Budget dépassé : %s/%d points." % [
 				UIFormat.cost(operation["cost"]), DeckRules.DECK_BUDGET
@@ -571,7 +601,8 @@ func _request_use(stone_id: String) -> void:
 
 
 func _on_replacement_requested(old_id: String) -> void:
-	var operation := DeckRules.try_replace(_current_deck, old_id, _replacement_stone_id, PlayerData.player_god_id)
+	var incoming_id := _replacement_stone_id
+	var operation := DeckRules.try_replace(_current_deck, old_id, incoming_id, PlayerData.player_god_id)
 	if not operation["success"]:
 		if operation["reason"] == DeckRules.REASON_BUDGET:
 			replacement_panel.show_budget_error(operation["cost"])
@@ -579,6 +610,27 @@ func _on_replacement_requested(old_id: String) -> void:
 	if _commit_operation(operation):
 		replacement_panel.close_panel()
 		_replacement_stone_id = ""
+		StoryService.notify_event("deck_card_replaced", {
+			"old_id": old_id, "new_id": incoming_id,
+		})
+
+
+## Le panneau de remplacement choisit la première carte du deck compatible
+## avec le budget. Le scénario n'a pas à connaître son identifiant : il vise
+## l'alias stable `collection.replace.first`.
+func _register_replacement_anchor(incoming_id: String) -> void:
+	var target_id := ""
+	for old_id in _current_deck:
+		if DeckRules.can_replace(_current_deck, str(old_id), incoming_id, PlayerData.player_god_id):
+			target_id = str(old_id)
+			break
+	if target_id == "" and not _current_deck.is_empty():
+		target_id = str(_current_deck[0])
+	if target_id == "":
+		return
+	var wrapper: Control = replacement_panel.wrapper_for(target_id)
+	if wrapper != null:
+		StoryService.register_anchor("collection.replace.first", wrapper)
 
 
 func _commit_operation(operation: Dictionary) -> bool:

@@ -62,6 +62,8 @@ func _initialize_view() -> void:
 		board_view.configure_board_size(state.board_size)
 	board_view.build()
 	_refresh_after_build()
+	_register_story_anchors()
+	StoryService.notify_screen(Routes.BOARD)
 
 
 func _on_viewport_size_changed() -> void:
@@ -92,6 +94,25 @@ func _refresh_after_build() -> void:
 	board_view.refresh(state)
 	hand_view.refresh(state.hand_of(_driver.local_side))
 	_update_interaction()
+
+
+func _register_story_anchors() -> void:
+	StoryService.register_anchor("board.hand.first_card", hand_view.card_at(0))
+	var state := turn_manager.get_state()
+	if state == null:
+		return
+	for stone_id in state.hand_of(_driver.local_side):
+		var card := hand_view.card_for_stone(str(stone_id))
+		if card != null:
+			StoryService.register_anchor("board.hand.card.%s" % str(stone_id), card)
+	# start_game() émet turn_started avant que la vue différée ne soit construite.
+	# Aucune ancre de case ne doit être lue tant que les slots n'existent pas.
+	if not board_view.is_built():
+		return
+	for row in range(state.board_size):
+		for col in range(state.board_size):
+			StoryService.register_anchor("board.cell.%d.%d" % [row, col],
+				board_view.slot_at(row, col))
 
 
 func _apply_match_identity() -> void:
@@ -130,6 +151,7 @@ func _connect_signals() -> void:
 	turn_manager.game_over.connect(_on_game_over)
 	turn_manager.invalid_move.connect(_on_invalid_move)
 	turn_manager.presentation_requested.connect(_on_presentation_requested)
+	StoryService.tutorial_step_changed.connect(_update_interaction)
 	## Glisser une carte de la main : la couche est ajoutée en dernier pour
 	## que la copie de la carte passe au-dessus du plateau et de la main.
 	_card_drag = CardDragController.new()
@@ -146,13 +168,20 @@ func _connect_signals() -> void:
 func _on_card_selected(stone_id: String) -> void:
 	if _driver == null or not _driver.can_submit():
 		return
+	if not StoryService.selection_allowed({"stone_id": stone_id}):
+		return
 	_selected_stone_id = stone_id
 	hand_view.set_selected(stone_id)
+	StoryService.notify_event("card_selected", {"stone_id": stone_id})
 
 
 func _on_cell_pressed(row: int, col: int) -> void:
-	if _selected_stone_id == "":
+	if StoryService.blocks_placement() or _selected_stone_id == "":
 		return
+	if not StoryService.placement_allowed({"row": row, "col": col,
+			"stone_id": _selected_stone_id, "owner": _driver.local_side}):
+		return
+	StoryService.notify_event("cell_pressed", {"row": row, "col": col})
 	if _driver.request_move(row, col, _selected_stone_id):
 		_selected_stone_id = ""
 		hand_view.clear_selection()
@@ -171,17 +200,26 @@ func _on_card_drag_started(_stone_id: String) -> void:
 
 
 func _on_card_dropped(stone_id: String, row: int, col: int) -> void:
+	if StoryService.blocks_placement():
+		return
+	if not StoryService.placement_allowed({"row": row, "col": col,
+			"stone_id": stone_id, "owner": _driver.local_side}):
+		return
 	_driver.request_move(row, col, stone_id)
 
 
 ## Mêmes règles que pour un appui : PlacementRules décide, au tour du joueur.
 func _can_drop(stone_id: String, row: int, col: int) -> bool:
 	return _human_can_play() \
+		and not StoryService.blocks_placement() \
+		and StoryService.placement_allowed({"row": row, "col": col,
+			"stone_id": stone_id, "owner": _driver.local_side}) \
 		and PlacementRules.is_valid(turn_manager.get_state(), row, col, stone_id, _driver.local_side)
 
 
 func _human_can_play() -> bool:
-	return _driver != null and _driver.can_submit()
+	return _driver != null and _driver.can_submit() \
+		and not StoryService.blocks_placement()
 
 
 ## Seul le camp local peut toucher le plateau, et seulement quand le driver
@@ -194,7 +232,7 @@ func _update_interaction() -> void:
 		board_view.set_input_enabled(false)
 		return
 	board_view.set_input_enabled(state.current_player == _driver.local_side \
-		and _driver.can_submit())
+		and _driver.can_submit() and not StoryService.blocks_placement())
 
 
 ## ─── Réactions aux signaux du TurnManager ────────────────────────────────────
@@ -207,6 +245,8 @@ func _on_turn_started(player: int) -> void:
 	if board_view.animations != null:
 		board_view.animations.set_swarm_links(CombatResolverModel.swarm_links(state))
 	hand_view.refresh(state.hand_of(_driver.local_side))
+	_register_story_anchors()
+	StoryService.notify_event("turn_started", {"player": player})
 	## Surligne la plaque du joueur actif : la plaque de gauche est toujours le
 	## joueur local, même lorsque le camp réseau est PLAYER_TWO.
 	hud.set_active_player(GameState.PLAYER_HUMAN if player == _driver.local_side else GameState.PLAYER_AI)
@@ -221,13 +261,20 @@ func _on_stone_placed(row: int, col: int, _stone_id: String, _owner: int) -> voi
 	var state := turn_manager.get_state()
 	board_view.refresh(state)
 	hand_view.refresh(state.hand_of(_driver.local_side))
+	_register_story_anchors()
 	board_view.set_input_enabled(false)
+	StoryService.notify_event("stone_placed", {
+		"row": row, "col": col, "stone_id": _stone_id, "owner": _owner,
+	})
 
 
 func _on_stone_captured(row: int, col: int, new_owner: int) -> void:
 	if new_owner == _driver.local_side:
 		_local_captures += 1
 	board_view.animations.animate_capture(row, col, new_owner)
+	StoryService.notify_event("stone_captured", {
+		"row": row, "col": col, "owner": new_owner,
+	})
 
 
 func _on_turn_ended(score_human: int, score_ai: int) -> void:
@@ -240,6 +287,10 @@ func _on_turn_ended(score_human: int, score_ai: int) -> void:
 
 func _on_game_over(winner: int, score_human: int, score_ai: int) -> void:
 	hud.set_game_over()
+	if _driver.records_campaign_stats and winner == GameState.PLAYER_HUMAN:
+		StoryService.notify_event("match_won", {
+			"winner": winner, "score_human": score_human, "score_ai": score_ai,
+		})
 	if _driver.records_campaign_stats:
 		BattleContext.prepare_result(winner, score_human, score_ai, _local_captures)
 		# La série doit connaître la manche avant l'enregistrement : un FT2 n'est
@@ -289,6 +340,8 @@ func _on_match_aborted(message: String) -> void:
 
 
 func _exit_tree() -> void:
+	# Le parcours de Pr. Stone survit au changement de scène : c'est l'écran de
+	# résultat qui reprend l'étape suivante, pas la sortie du plateau.
 	if _driver != null:
 		_driver.shutdown()
 	if _finished_pvp:

@@ -122,6 +122,23 @@ func _on_card_input(event: InputEvent, card: StoneCard) -> void:
 			card.get_global_transform_with_canvas() * event.position)
 
 
+func card_count() -> int:
+	return _cards.size()
+
+
+func card_at(index: int) -> StoneCard:
+	if index < 0 or index >= _cards.size():
+		return null
+	return _cards[index]
+
+
+func card_for_stone(stone_id: String) -> StoneCard:
+	for card in _cards:
+		if card.get_stone_id() == stone_id:
+			return card
+	return null
+
+
 func set_selected(stone_id: String) -> void:
 	_selected_id = stone_id
 	_apply_selection()

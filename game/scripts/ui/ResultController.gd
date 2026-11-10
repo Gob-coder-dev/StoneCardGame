@@ -65,6 +65,9 @@ func _ready() -> void:
 	_refresh_next_button()
 	_refresh_save_status()
 	_refresh_reward()
+	StoryService.register_anchor("result.home", menu_btn)
+	StoryService.register_anchor("result.replay", replay_btn)
+	StoryService.notify_screen(Routes.CAMPAIGN_RESULT)
 
 
 func _refresh_reward() -> void:

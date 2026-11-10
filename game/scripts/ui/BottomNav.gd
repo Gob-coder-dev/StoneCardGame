@@ -32,6 +32,10 @@ func _ready() -> void:
 		_add_tab_content(_buttons[index], index)
 		_buttons[index].pressed.connect(_on_tab_pressed.bind(index))
 		_apply_tab_style(_buttons[index], index == current_tab)
+	StoryService.register_anchor("nav.shop", _buttons[0])
+	StoryService.register_anchor("nav.deck", _buttons[1])
+	StoryService.register_anchor("nav.home", _buttons[2])
+	StoryService.register_anchor("nav.rules", _buttons[3])
 
 
 func _add_tab_content(button: Button, index: int) -> void:

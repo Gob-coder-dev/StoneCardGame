@@ -247,3 +247,22 @@ func mark_tutorial_state(tutorial_id: String, state: String) -> Error:
 		return error
 	_progress = copy
 	return OK
+
+
+func story_state(key: String) -> bool:
+	return _progress.story_state(key)
+
+
+## Même transaction que la progression : l'état n'est publié qu'après l'écriture.
+func mark_story_state(key: String, value: bool = true) -> Error:
+	if key == "":
+		return ERR_INVALID_PARAMETER
+	if _progress.story_state(key) == value:
+		return OK
+	var copy := _progress.duplicate_progress()
+	copy.set_story_state(key, value)
+	var error := _store.save(copy)
+	if error != OK:
+		return error
+	_progress = copy
+	return OK

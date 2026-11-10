@@ -26,12 +26,15 @@ var _restoring := false
 var _stream_update_queued := false
 var _position_save_timer: Timer = null
 var _loading_timer: Timer = null
+var _replay_in_progress := false
+var _launch_in_progress := false
 
 
 func _ready() -> void:
 	back_button.pressed.connect(_go_back)
 	map_view.node_activated.connect(_on_node_activated)
 	dialog.launch_requested.connect(_on_launch_requested)
+	dialog.replay_requested.connect(_on_replay_requested)
 	dialog.closed.connect(_on_dialog_closed)
 	map_view.streaming_changed.connect(_on_streaming_changed)
 	scroll.get_v_scroll_bar().value_changed.connect(_on_scroll_changed)
@@ -49,6 +52,8 @@ func _ready() -> void:
 	# la première frame de layout. Elle est révélée avec la bonne position.
 	map_view.modulate.a = 0.0
 	_refresh()
+	_register_story_anchors()
+	StoryService.notify_screen(Routes.CAMPAIGN_MAP)
 	_restore_map_position.call_deferred()
 
 
@@ -129,6 +134,17 @@ func _restore_map_position() -> void:
 	_restoring = false
 	_nav_ready = true
 	map_view.modulate.a = 1.0
+	_register_story_anchors()
+
+
+## Les nœuds sont construits par lots : on réenregistre l'ancre du niveau
+## d'entrée dès qu'elle existe, ainsi que le bouton de la fiche ouverte.
+func _register_story_anchors() -> void:
+	var node: Control = map_view.node_control("tuto_01")
+	if node != null:
+		StoryService.register_anchor("map.node.tuto_01", node)
+	if dialog.visible:
+		StoryService.register_anchor("map.launch", dialog.launch_button)
 
 
 func _on_node_activated(node_id: String) -> void:
@@ -143,17 +159,52 @@ func _on_node_activated(node_id: String) -> void:
 	map_view.set_selected(node_id)
 	dialog.open(EncounterPresenter.summary(_service.node(node_id), PlayerData.player_god_id),
 		_service.state_for(node_id))
+	_register_story_anchors()
+	StoryService.notify_event("campaign_node_opened", {"node_id": node_id})
 
 
 func _on_launch_requested(node_id: String) -> void:
+	if _launch_in_progress or _replay_in_progress:
+		return
+	_launch_in_progress = true
 	var started := CampaignContext.enter_node(node_id)
 	if not bool(started.get("ok", false)):
+		_launch_in_progress = false
 		dialog.show_error(str(started.get("reason", "Lancement impossible.")))
 		return
 	_save_position_now()
 	dialog.close()
+	# L'intro est jouée sur la carte, avant la préparation ou l'avant-combat.
+	# Une séquence déjà vue renvoie null : le lancement reste immédiat.
+	var story := StoryService.play_level_start(node_id)
+	if story != null:
+		await story.finished
+	if not is_inside_tree():
+		return
 	Routes.go(get_tree(), Routes.CAMPAIGN_PREPARATION
 		if bool(started.get("needs_preparation", false)) else Routes.PRE_BATTLE)
+
+
+func _on_replay_requested(sequence_id: String) -> void:
+	if _replay_in_progress or _launch_in_progress:
+		return
+	_replay_in_progress = true
+	# Le dialogue est déjà fermé par le bouton, mais ses contrôles peuvent encore
+	# garder le focus. On isole ensuite la carte et la liste pendant toute la
+	# lecture : un relâchement tardif ne peut plus atteindre le niveau.
+	dialog.close()
+	var map_filter := map_view.mouse_filter
+	var scroll_filter := scroll.mouse_filter
+	map_view.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	scroll.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	await get_tree().process_frame
+	var session := StoryService.play_sequence(sequence_id, {"replay": true})
+	if session != null:
+		await session.finished
+	if is_inside_tree():
+		map_view.mouse_filter = map_filter
+		scroll.mouse_filter = scroll_filter
+	_replay_in_progress = false
 
 
 func _on_dialog_closed() -> void:
@@ -248,6 +299,7 @@ func _save_position_now() -> void:
 
 
 func _on_streaming_changed(pending_count: int) -> void:
+	_register_story_anchors()
 	if _loading_timer == null or loading_hint == null:
 		return
 	if pending_count > 0:

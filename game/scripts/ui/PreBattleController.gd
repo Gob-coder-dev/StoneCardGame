@@ -61,6 +61,8 @@ func _ready() -> void:
 
 	## Lancer l'animation de pièce
 	_animate_coin_flip()
+	StoryService.register_anchor("prebattle.start", start_button)
+	StoryService.notify_screen(Routes.PRE_BATTLE)
 
 
 func _is_pvp() -> bool:
@@ -156,6 +158,11 @@ func _style_coin() -> void:
 func _starting_player() -> int:
 	if _is_pvp():
 		return PvpMatchContext.starting_player
+	# Un niveau scénarisé peut imposer le premier joueur dans son setup de
+	# match. Le tirage ne doit pas écraser cette décision.
+	if BattleContext.forced_first_player == GameState.PLAYER_HUMAN \
+			or BattleContext.forced_first_player == GameState.PLAYER_AI:
+		return BattleContext.forced_first_player
 	var drawn := BoardSetupGenerator.draw_first_player()
 	BattleContext.forced_first_player = drawn
 	return drawn

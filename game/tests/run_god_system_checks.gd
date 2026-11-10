@@ -31,6 +31,12 @@ const SUITES: Array[String] = [
 	"res://tests/domain/CampaignValidatorChecks.gd",
 	"res://tests/domain/CampaignAuditChecks.gd",
 	"res://tests/domain/CampaignProgressChecks.gd",
+	"res://tests/story/StoryContentChecks.gd",
+	"res://tests/story/StoryTriggerChecks.gd",
+	"res://tests/story/StoryProgressChecks.gd",
+	"res://tests/story/StoryOverlayChecks.gd",
+	"res://tests/story/StoryFlowChecks.gd",
+	"res://tests/story/StoryTutorialIntegrationChecks.gd",
 	"res://tests/domain/CampaignEncounterChecks.gd",
 	"res://tests/domain/CampaignFlowChecks.gd",
 	"res://tests/ui/CampaignMapChecks.gd",
@@ -60,6 +66,9 @@ var _finished := false
 func _ready() -> void:
 	TestLog.current = _log
 	OS.add_logger(_log)
+	# Les suites instancient l'accueil : l'onboarding réel ne doit pas ouvrir un
+	# spotlight au milieu d'un test. Les tests du chapitre l'appellent directement.
+	StoryService.auto_start_tutorials = false
 	get_tree().create_timer(TIME_LIMIT).timeout.connect(_on_time_limit)
 	for path in SUITES:
 		_current_suite = path.get_file()

@@ -30,6 +30,18 @@ func open_for(deck: Array, incoming_id: String) -> void:
 	visible = true
 
 
+## Rend la cible d'une carte du deck disponible au spotlight. Le wrapper
+## contient la carte et le calcul de budget, donc le trou reste lisible.
+func wrapper_for(old_id: String) -> Control:
+	for wrapper in deck_grid.get_children():
+		if wrapper.get_child_count() == 0:
+			continue
+		var card := wrapper.get_child(0) as StoneCard
+		if card != null and card.get_stone_id() == old_id:
+			return wrapper as Control
+	return null
+
+
 func close_panel() -> void:
 	visible = false
 	_backdrop_tap.reset()

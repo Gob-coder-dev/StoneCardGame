@@ -30,6 +30,8 @@ CampaignContext="*res://scripts/application/campaign/CampaignContext.gd"
 PvpMatchContext="*res://scripts/data/PvpMatchContext.gd"
 LanSession="*res://scripts/network/LanSession.gd"
 CardArtCache="*res://scripts/data/CardArtCache.gd"
+StoryService="*res://scripts/application/story/StoryService.gd"
+StoryLayer="*res://scripts/ui/story/StoryLayer.gd"
 
 [display]
 

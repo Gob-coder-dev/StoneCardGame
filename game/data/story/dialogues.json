@@ -1,0 +1,175 @@
+{
+  "version": 1,
+  "characters": {
+    "pr_stone": {
+      "name": "Pr. Stone",
+      "asset": "res://assets/gods/pr_stone.png",
+      "color": "#bdb4ab",
+      "accent": "#e08a82",
+      "side": "left"
+    }
+  },
+  "sequences": {
+    "journey_welcome": {
+      "title": "Le Refuge",
+      "lines": [
+        {
+          "speaker": "pr_stone",
+          "text": "Bienvenue au Refuge, {player_name}. C'est ton point de repère."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "D'ici, tu ouvres toutes les portes de ton pouvoir."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Commence par le cabinet : c'est là que se prépare ta première bataille."
+        }
+      ]
+    },
+    "journey_deck_intro": {
+      "title": "Le cabinet",
+      "lines": [
+        {
+          "speaker": "pr_stone",
+          "text": "Voici le cabinet. Ici, tu composes ton deck de monstres."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Chaque pierre a quatre faces. Les combiner, c'est inventer les attaques les plus terrifiantes."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Quand tu voudras façonner ton deck, c'est ici que tout se joue. Retourne maintenant à l'accueil."
+        }
+      ]
+    },
+    "journey_campaign_intro": {
+      "title": "La Campagne",
+      "lines": [
+        {
+          "speaker": "pr_stone",
+          "text": "Retour à l'accueil. La Campagne est la porte de l'aventure."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Choisis-la, puis touche le premier niveau : Le Seuil."
+        }
+      ]
+    },
+    "journey_level_intro": {
+      "title": "Le Seuil",
+      "lines": [
+        {
+          "speaker": "pr_stone",
+          "text": "Le Seuil t'attend. Je t'accompagne : chaque coup sera guidé."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Touche le niveau, puis lance l'affrontement."
+        }
+      ]
+    },
+    "journey_first_move": {
+      "title": "Premier geste",
+      "lines": [
+        {
+          "speaker": "pr_stone",
+          "text": "Ta Gueule de travers est entourée. Touche-la."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Sa face droite vaut 1. Le Mordeur n'a aucune défense à gauche."
+        }
+      ]
+    },
+    "journey_place_first": {
+      "title": "Premier geste",
+      "lines": [
+        {
+          "speaker": "pr_stone",
+          "text": "Pose-la sur la case entourée. Tu vas voir ce qu'est une capture."
+        }
+      ]
+    },
+    "journey_second_move": {
+      "title": "La Muraille",
+      "lines": [
+        {
+          "speaker": "pr_stone",
+          "text": "Bien joué. La Muraille avance : un Drap se dresse devant toi."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Prends l'Écorché d'angle. Sa face droite brisera sa défense."
+        }
+      ]
+    },
+    "journey_third_move": {
+      "title": "Le Mordeur",
+      "lines": [
+        {
+          "speaker": "pr_stone",
+          "text": "Le Mordeur arrive. L'Ogre droitier l'attend de flanc."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Pose-le à sa gauche : sa face droite frappera son flanc nu."
+        }
+      ]
+    },
+    "journey_fourth_move": {
+      "title": "La dernière case",
+      "lines": [
+        {
+          "speaker": "pr_stone",
+          "text": "Une dernière case. Le Rampant des fosses la prendra."
+        }
+      ]
+    },
+    "journey_victory": {
+      "title": "Victoire",
+      "lines": [
+        {
+          "speaker": "pr_stone",
+          "text": "Victoire. Tu as lu le plateau comme un livre ouvert."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Ces cartes sont à toi. Trois rejoignent ton deck ; la quatrième t'attend au cabinet."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Quitte la partie et retourne au deck : il est temps d'apprendre à l'échanger."
+        }
+      ]
+    },
+    "journey_deck_swap_intro": {
+      "title": "Le deck vivant",
+      "lines": [
+        {
+          "speaker": "pr_stone",
+          "text": "Ton deck est complet, mais une nouvelle carte t'attend."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Touche-la, puis choisis la carte du deck qu'elle doit remplacer."
+        }
+      ]
+    },
+    "journey_deck_swap_done": {
+      "title": "Le deck vivant",
+      "lines": [
+        {
+          "speaker": "pr_stone",
+          "text": "Parfait. Ton deck est vivant : tu sais maintenant le façonner."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Le reste du Refuge est à toi. Explore, combats, et invente tes propres combinaisons."
+        }
+      ]
+    }
+  },
+  "triggers": []
+}

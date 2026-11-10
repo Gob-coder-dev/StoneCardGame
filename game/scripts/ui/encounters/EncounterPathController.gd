@@ -48,7 +48,8 @@ func _ready() -> void:
 func _apply_identity() -> void:
 	background.set_god(_source)
 	var color := Color(str(_source.get("color", UITheme.COL_NEON_PINK.to_html())))
-	portrait.visible = str(_source.get("asset", "")) != ""
+	portrait.visible = _source_id != OpponentCatalogModel.NEUTRAL_BOT_ID \
+		and str(_source.get("asset", "")) != ""
 	portrait.setup(_source)
 	god_name.text = str(_source.get("name", "Adversaire")).to_upper()
 	god_name.add_theme_color_override("font_color", color)

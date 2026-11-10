@@ -27,7 +27,8 @@ var _state: GameState
 func start_game(human_hand: Array, ai_hand: Array, blocked_cells: Array,
 		npc_id: String = "", forced_first_player: int = 0,
 		human_god_id: String = "", ai_god_id: String = "",
-		random_seed: int = 0, board_size: int = GameState.DEFAULT_BOARD_SIZE) -> void:
+		random_seed: int = 0, board_size: int = GameState.DEFAULT_BOARD_SIZE,
+		initial_stones: Array = []) -> void:
 	phase = Phase.WAITING_INPUT
 	_state = GameState.new(board_size)
 	if _pending_step != null:
@@ -38,8 +39,24 @@ func start_game(human_hand: Array, ai_hand: Array, blocked_cells: Array,
 	_state.ai_god_id = ai_god_id
 	_state.set_random_seed(random_seed if random_seed != 0 else randi())
 	_state.apply_blocked_cells(blocked_cells)
+	_apply_initial_stones(initial_stones)
 	_state.setup_hands(human_hand, ai_hand)
 	_coin_flip(forced_first_player)
+
+
+func _apply_initial_stones(entries: Array) -> void:
+	for value in entries:
+		if not value is Dictionary:
+			continue
+		var entry: Dictionary = value
+		var stone_id := str(entry.get("stone_id", ""))
+		var definition := StoneLoader.get_stone(stone_id)
+		if stone_id == "" or definition.is_empty():
+			continue
+		var stone := BattleStone.new()
+		stone.configure(stone_id, definition, _state.take_instance_id())
+		_state.place_initial_stone(int(entry.get("row", -1)), int(entry.get("col", -1)),
+			stone, int(entry.get("owner", GameState.PLAYER_AI)))
 
 ## Le premier joueur est normalement tiré avant le combat (écran PreBattle) ;
 ## sans tirage préalable, le même tirage du moteur est utilisé ici.

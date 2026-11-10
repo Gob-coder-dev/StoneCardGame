@@ -1,0 +1,355 @@
+{
+  "version": 1,
+  "chapters": {
+    "first_journey": {
+      "title": "Premiers pas au Refuge",
+      "entry_scene": "res://scenes/menus/MainMenu.tscn",
+      "match_node_id": "tuto_01",
+      "match": {
+        "board_size": 3,
+        "player_hand_size": 5,
+        "opponent_hand_size": 4,
+        "player_deck": [
+          "gueule_de_travers_n1",
+          "ecorche_angle_n1",
+          "ogre_droitier_n1",
+          "rampant_des_fosses_n1",
+          "le_drape_du_seuil_n1"
+        ],
+        "opponent_deck": [
+          "le_drape_du_seuil_n1",
+          "avortons_des_caves_n1",
+          "mordeur_des_combles_n1",
+          "ecorche_angle_n1"
+        ],
+        "initial_stones": [
+          {
+            "row": 0,
+            "col": 1,
+            "stone_id": "mordeur_des_combles_n1",
+            "owner": 2
+          }
+        ],
+        "first_player": 1,
+        "blocked_cells": [],
+        "opponent_plan": [
+          {
+            "row": 1,
+            "col": 2,
+            "stone_id": "le_drape_du_seuil_n1"
+          },
+          {
+            "row": 2,
+            "col": 1,
+            "stone_id": "mordeur_des_combles_n1"
+          },
+          {
+            "row": 2,
+            "col": 2,
+            "stone_id": "avortons_des_caves_n1"
+          },
+          {
+            "row": 0,
+            "col": 2,
+            "stone_id": "ecorche_angle_n1"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "id": "welcome",
+          "scene": "res://scenes/menus/MainMenu.tscn",
+          "dialogue": "journey_welcome"
+        },
+        {
+          "id": "open_decks",
+          "scene": "res://scenes/menus/MainMenu.tscn",
+          "anchor": "nav.deck",
+          "prompt": "Ouvre le cabinet : DECKS.",
+          "wait_for": "screen_opened",
+          "expect": {
+            "scene": "res://scenes/menus/CollectionScreen.tscn"
+          },
+          "timeout": 30.0
+        },
+        {
+          "id": "deck_intro",
+          "scene": "res://scenes/menus/CollectionScreen.tscn",
+          "anchor": "collection.deck_panel",
+          "dialogue": "journey_deck_intro",
+          "prompt": "Voici ton deck. Regarde-le bien.",
+          "wait_for": "tutorial_advance",
+          "timeout": 30.0
+        },
+        {
+          "id": "return_home",
+          "scene": "res://scenes/menus/CollectionScreen.tscn",
+          "anchor": "nav.home",
+          "prompt": "Retourne à l'ACCUEIL.",
+          "wait_for": "screen_opened",
+          "expect": {
+            "scene": "res://scenes/menus/MainMenu.tscn"
+          },
+          "timeout": 30.0
+        },
+        {
+          "id": "campaign",
+          "scene": "res://scenes/menus/MainMenu.tscn",
+          "anchor": "menu.campaign",
+          "dialogue": "journey_campaign_intro",
+          "prompt": "Choisis CAMPAGNE.",
+          "wait_for": "screen_opened",
+          "expect": {
+            "scene": "res://scenes/campaign/CampaignMap.tscn"
+          },
+          "timeout": 30.0
+        },
+        {
+          "id": "first_level",
+          "scene": "res://scenes/campaign/CampaignMap.tscn",
+          "anchor": "map.node.tuto_01",
+          "dialogue": "journey_level_intro",
+          "prompt": "Touche Le Seuil.",
+          "wait_for": "campaign_node_opened",
+          "expect": {
+            "node_id": "tuto_01"
+          },
+          "timeout": 30.0
+        },
+        {
+          "id": "launch_level",
+          "scene": "res://scenes/campaign/CampaignMap.tscn",
+          "anchor": "map.launch",
+          "prompt": "Lance l'affrontement.",
+          "wait_for": "screen_opened",
+          "expect": {
+            "scene": "res://scenes/menus/PreBattle.tscn"
+          },
+          "timeout": 30.0
+        },
+        {
+          "id": "start_match",
+          "scene": "res://scenes/menus/PreBattle.tscn",
+          "anchor": "prebattle.start",
+          "prompt": "Touche COMMENCER.",
+          "wait_for": "screen_opened",
+          "expect": {
+            "scene": "res://scenes/game/Board.tscn"
+          },
+          "timeout": 30.0
+        },
+        {
+          "id": "first_card",
+          "scene": "res://scenes/game/Board.tscn",
+          "anchor": "board.hand.card.gueule_de_travers_n1",
+          "dialogue": "journey_first_move",
+          "prompt": "Touche la Gueule de travers entourée.",
+          "wait_for": "card_selected",
+          "expect": {
+            "stone_id": "gueule_de_travers_n1"
+          },
+          "timeout": 30.0
+        },
+        {
+          "id": "place_first",
+          "scene": "res://scenes/game/Board.tscn",
+          "anchor": "board.cell.0.0",
+          "dialogue": "journey_place_first",
+          "prompt": "Pose-la sur la case entourée.",
+          "wait_for": "stone_placed",
+          "expect": {
+            "row": 0,
+            "col": 0,
+            "stone_id": "gueule_de_travers_n1",
+            "owner": 1
+          },
+          "timeout": 30.0
+        },
+        {
+          "id": "wait_bot_1",
+          "scene": "res://scenes/game/Board.tscn",
+          "spotlight": false,
+          "wait_for": "turn_started",
+          "expect": {
+            "player": 1
+          },
+          "timeout": 30.0
+        },
+        {
+          "id": "second_card",
+          "scene": "res://scenes/game/Board.tscn",
+          "anchor": "board.hand.card.ecorche_angle_n1",
+          "dialogue": "journey_second_move",
+          "prompt": "Touche l'Écorché d'angle entouré.",
+          "wait_for": "card_selected",
+          "expect": {
+            "stone_id": "ecorche_angle_n1"
+          },
+          "timeout": 30.0
+        },
+        {
+          "id": "place_second",
+          "scene": "res://scenes/game/Board.tscn",
+          "anchor": "board.cell.1.1",
+          "prompt": "Pose-le en (1,1) : sa face droite brise le Drap.",
+          "wait_for": "stone_placed",
+          "expect": {
+            "row": 1,
+            "col": 1,
+            "stone_id": "ecorche_angle_n1",
+            "owner": 1
+          },
+          "timeout": 30.0
+        },
+        {
+          "id": "wait_bot_2",
+          "scene": "res://scenes/game/Board.tscn",
+          "spotlight": false,
+          "wait_for": "turn_started",
+          "expect": {
+            "player": 1
+          },
+          "timeout": 30.0
+        },
+        {
+          "id": "third_card",
+          "scene": "res://scenes/game/Board.tscn",
+          "anchor": "board.hand.card.ogre_droitier_n1",
+          "dialogue": "journey_third_move",
+          "prompt": "Touche l'Ogre droitier entouré.",
+          "wait_for": "card_selected",
+          "expect": {
+            "stone_id": "ogre_droitier_n1"
+          },
+          "timeout": 30.0
+        },
+        {
+          "id": "place_third",
+          "scene": "res://scenes/game/Board.tscn",
+          "anchor": "board.cell.2.0",
+          "prompt": "Pose-le en (2,0) : sa face droite frappe le Mordeur de flanc.",
+          "wait_for": "stone_placed",
+          "expect": {
+            "row": 2,
+            "col": 0,
+            "stone_id": "ogre_droitier_n1",
+            "owner": 1
+          },
+          "timeout": 30.0
+        },
+        {
+          "id": "wait_bot_3",
+          "scene": "res://scenes/game/Board.tscn",
+          "spotlight": false,
+          "wait_for": "turn_started",
+          "expect": {
+            "player": 1
+          },
+          "timeout": 30.0
+        },
+        {
+          "id": "fourth_card",
+          "scene": "res://scenes/game/Board.tscn",
+          "anchor": "board.hand.card.rampant_des_fosses_n1",
+          "dialogue": "journey_fourth_move",
+          "prompt": "Touche le Rampant des fosses entouré.",
+          "wait_for": "card_selected",
+          "expect": {
+            "stone_id": "rampant_des_fosses_n1"
+          },
+          "timeout": 30.0
+        },
+        {
+          "id": "place_fourth",
+          "scene": "res://scenes/game/Board.tscn",
+          "anchor": "board.cell.1.0",
+          "prompt": "Occupe la dernière case.",
+          "wait_for": "stone_placed",
+          "expect": {
+            "row": 1,
+            "col": 0,
+            "stone_id": "rampant_des_fosses_n1",
+            "owner": 1
+          },
+          "timeout": 30.0
+        },
+        {
+          "id": "victory_gate",
+          "scene": "res://scenes/game/Board.tscn",
+          "spotlight": false,
+          "wait_for": "match_won",
+          "expect": {
+            "winner": 1
+          },
+          "timeout": 60.0
+        },
+        {
+          "id": "victory",
+          "scene": "res://scenes/menus/Result.tscn",
+          "dialogue": "journey_victory"
+        },
+        {
+          "id": "leave_result",
+          "scene": "res://scenes/menus/Result.tscn",
+          "anchor": "result.home",
+          "prompt": "Quitte la partie et retourne à l'accueil.",
+          "wait_for": "screen_opened",
+          "expect": {
+            "scene": "res://scenes/menus/MainMenu.tscn"
+          },
+          "timeout": 30.0
+        },
+        {
+          "id": "open_decks_again",
+          "scene": "res://scenes/menus/MainMenu.tscn",
+          "anchor": "nav.deck",
+          "prompt": "Ouvre DECKS.",
+          "wait_for": "screen_opened",
+          "expect": {
+            "scene": "res://scenes/menus/CollectionScreen.tscn"
+          },
+          "timeout": 30.0
+        },
+        {
+          "id": "swap_intro",
+          "scene": "res://scenes/menus/CollectionScreen.tscn",
+          "anchor": "collection.card.le_sac_a_murmures_n1",
+          "dialogue": "journey_deck_swap_intro",
+          "prompt": "Touche la nouvelle carte entourée.",
+          "wait_for": "collection_card_opened",
+          "expect": {
+            "stone_id": "le_sac_a_murmures_n1"
+          },
+          "timeout": 30.0
+        },
+        {
+          "id": "swap_use",
+          "scene": "res://scenes/menus/CollectionScreen.tscn",
+          "anchor": "collection.action.primary",
+          "prompt": "Touche UTILISER.",
+          "wait_for": "replacement_opened",
+          "expect": {
+            "stone_id": "le_sac_a_murmures_n1"
+          },
+          "timeout": 30.0
+        },
+        {
+          "id": "swap_target",
+          "scene": "res://scenes/menus/CollectionScreen.tscn",
+          "anchor": "collection.replace.first",
+          "prompt": "Choisis la carte du deck à remplacer.",
+          "wait_for": "deck_card_replaced",
+          "expect": {
+            "new_id": "le_sac_a_murmures_n1"
+          },
+          "timeout": 30.0
+        },
+        {
+          "id": "swap_done",
+          "scene": "res://scenes/menus/CollectionScreen.tscn",
+          "dialogue": "journey_deck_swap_done"
+        }
+      ]
+    }
+  }
+}

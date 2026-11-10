@@ -1,6 +1,8 @@
 ## CampaignMatchDriver.gd
 ## Driver de la campagne : configuration du bot et exécution de son tour.
-## Le moteur, les règles et l'IA restent exactement ceux d'avant.
+## Le moteur, les règles et l'IA restent exactement ceux d'avant. Un chapitre
+## guidé peut fournir un setup de match (mains, pierres initiales, premier
+## joueur et plan du bot) ; ce setup reste une donnée du scénario, pas du niveau.
 class_name CampaignMatchDriver
 extends MatchDriver
 
@@ -11,7 +13,11 @@ var _npc_data: Dictionary = {}
 
 
 func start() -> bool:
-	var deck := BattleContext.effective_player_deck()
+	var story := StoryService.match_setup_for_node(BattleContext.campaign_node_id)
+	var story_match := not story.is_empty()
+	var deck: Array = BattleContext.effective_player_deck()
+	if story_match and story.get("player_deck") is Array:
+		deck = (story.get("player_deck") as Array).duplicate()
 	var player_god_id := BattleContext.effective_player_god_id()
 	if BattleContext.selected_npc_id == "":
 		return false
@@ -22,15 +28,21 @@ func start() -> bool:
 		push_error("CampaignMatchDriver: adversaire '%s' introuvable." % BattleContext.selected_npc_id)
 		return false
 	var setup: Dictionary = _npc_data.get("match_setup", {})
-	var board_size := clampi(int(setup.get("board_size", GameState.DEFAULT_BOARD_SIZE)),
-		GameState.MIN_BOARD_SIZE, GameState.MAX_BOARD_SIZE)
-	var player_hand_size := clampi(int(setup.get("player_hand_size", DeckRules.DECK_SIZE)),
-		1, DeckRules.DECK_SIZE)
-	var opponent_hand_size := clampi(int(setup.get("opponent_hand_size", DeckRules.DECK_SIZE)),
-		1, DeckRules.DECK_SIZE)
+	var board_size := clampi(int(story.get("board_size", setup.get("board_size",
+		GameState.DEFAULT_BOARD_SIZE))), GameState.MIN_BOARD_SIZE, GameState.MAX_BOARD_SIZE)
+	var player_hand_size := clampi(int(story.get("player_hand_size",
+		setup.get("player_hand_size", DeckRules.DECK_SIZE))), 1, DeckRules.DECK_SIZE)
+	var opponent_hand_size := clampi(int(story.get("opponent_hand_size",
+		setup.get("opponent_hand_size", DeckRules.DECK_SIZE))), 1, DeckRules.DECK_SIZE)
 	var allow_incomplete := bool(setup.get("allow_incomplete_player_deck", false))
-	if (not allow_incomplete and not DeckRules.is_deck_valid(deck, player_god_id)) \
+	if story_match:
+		player_hand_size = mini(player_hand_size, deck.size())
+		if player_hand_size <= 0:
+			return false
+	elif (not allow_incomplete and not DeckRules.is_deck_valid(deck, player_god_id)) \
 			or deck.size() < player_hand_size:
+		return false
+	if deck.size() < player_hand_size:
 		return false
 	deck = deck.slice(0, player_hand_size)
 
@@ -40,17 +52,36 @@ func start() -> bool:
 	opponent_name = UIFormat.combatant_name(str(
 		_npc_data.get("combatant_name", _npc_data.get("name", "Adversaire"))), 18)
 	var opponent_god_id := BattleContext.effective_opponent_god_id()
-	var opponent_deck := BattleContext.effective_opponent_deck()
+	var opponent_deck: Array = BattleContext.effective_opponent_deck()
+	if story_match and story.get("opponent_deck") is Array:
+		opponent_deck = (story.get("opponent_deck") as Array).duplicate()
 	local_god = GodIdentityModel.player(player_god_id)
 	opponent_god = GodIdentityModel.bot(opponent_god_id)
+	if story_match:
+		opponent_hand_size = mini(opponent_hand_size, opponent_deck.size())
 	if opponent_deck.size() < opponent_hand_size:
 		return false
 	opponent_deck = opponent_deck.slice(0, opponent_hand_size)
 	var blocked: Array = (setup.get("blocked_cells", []) as Array).duplicate(true)
-	if bool(setup.get("random_blocked_cells", true)):
+	if story_match and story.get("blocked_cells") is Array:
+		blocked = (story.get("blocked_cells") as Array).duplicate(true)
+	elif not story_match and bool(setup.get("random_blocked_cells", true)):
 		blocked = BoardSetupGenerator.generate(board_size)
+	var first_player := BattleContext.forced_first_player
+	if story_match:
+		var scripted_first := int(story.get("first_player", 0))
+		if scripted_first == GameState.PLAYER_HUMAN or scripted_first == GameState.PLAYER_AI:
+			first_player = scripted_first
+	var initial_stones: Array = []
+	if story_match and story.get("initial_stones") is Array:
+		initial_stones = (story.get("initial_stones") as Array).duplicate(true)
 
-	var ai := AITurnRunner.create_ai(_npc_data.get("ai", {}))
+	var ai: AIPlayer = null
+	if story_match and story.get("opponent_plan") is Array \
+			and not (story.get("opponent_plan") as Array).is_empty():
+		ai = ScriptedAI.new(story.get("opponent_plan") as Array)
+	else:
+		ai = AITurnRunner.create_ai(_npc_data.get("ai", {}))
 	_ai_runner = AITurnRunner.new()
 	add_child(_ai_runner)
 	_ai_runner.setup(ai, turn_manager)
@@ -60,11 +91,12 @@ func start() -> bool:
 		StoneLoader.build_hand(opponent_deck),
 		blocked,
 		BattleContext.selected_npc_id,
-		BattleContext.forced_first_player,
+		first_player,
 		player_god_id,
 		opponent_god_id,
 		0,
-		board_size
+		board_size,
+		initial_stones
 	)
 	return true
 
