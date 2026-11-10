@@ -66,6 +66,12 @@ func is_running() -> bool:
 	return _running
 
 
+## Chapitre en cours (vide hors exécution). Les écrans s'en servent pour
+## n'appliquer un traitement qu'au parcours concerné.
+func chapter_id() -> String:
+	return str(_chapter.get("id", ""))
+
+
 ## Pendant une étape guidée, le joueur ne doit pas pouvoir poser une carte par
 ## un glissement ou un raccourci. Les étapes qui attendent explicitement une
 ## pose restent, elles, compatibles avec le plateau.

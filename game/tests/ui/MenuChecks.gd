@@ -836,8 +836,9 @@ func _test_prebattle_reveals_draw() -> void:
 		and page.coin.get_theme_stylebox("panel").bg_color == Color("#35282b")
 		and page.coin.get_theme_stylebox("panel").border_color == Color("#b77451"),
 		"la pièce a un relief sombre et un bord métallique assortis au rituel")
-	## L'animation de la pièce puis la lecture du verdict précèdent le bouton.
-	await get_tree().create_timer(3.2).timeout
+	## Hors du premier parcours guidé, la pièce retombe et le bouton s'active
+	## aussitôt : aucun temps de lecture supplémentaire ne doit subsister.
+	await get_tree().create_timer(1.6).timeout
 	var first := BattleContext.forced_first_player
 	var face: String = page.coin_label.text
 	_check((first == GameState.PLAYER_HUMAN and face == "TOI") or (first == GameState.PLAYER_AI and face == "LUI"),
@@ -865,7 +866,7 @@ func _test_pvp_prebattle() -> void:
 	await get_tree().process_frame
 	_check(page.npc_label.text == "Hôte" and page.difficulty_label.text.contains("PVP"),
 		"l'avant-combat PVP nomme l'adversaire du salon et annonce le mode local")
-	await get_tree().create_timer(3.2).timeout
+	await get_tree().create_timer(1.6).timeout
 	_check(page.coin_label.text == "TOI" and page.coin_flip_label.text == "Tu commences !",
 		"le pile ou face PVP parle au joueur local : le client qui commence voit TOI")
 	_check(BattleContext.forced_first_player == 0,
@@ -881,7 +882,7 @@ func _test_pvp_prebattle() -> void:
 	var host_page: Control = (load("res://scenes/menus/PreBattle.tscn") as PackedScene).instantiate()
 	add_child(host_page)
 	await get_tree().process_frame
-	await get_tree().create_timer(3.2).timeout
+	await get_tree().create_timer(1.6).timeout
 	_check(host_page.coin_label.text == "LUI" and host_page.coin_flip_label.text == "Client commence !",
 		"le même tirage montre la face adverse sur le téléphone de l'hôte")
 	_check(host_page.npc_label.text == "Client" and host_page.player_god_name.text.contains("TOI")

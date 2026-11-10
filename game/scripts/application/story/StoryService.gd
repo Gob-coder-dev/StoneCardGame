@@ -207,6 +207,14 @@ func match_setup_for_node(node_id: String) -> Dictionary:
 	return (setup as Dictionary).duplicate(true) if setup is Dictionary else {}
 
 
+## Le tout premier duel guidé laisse le joueur lire le tirage avant que
+## COMMENCER ne s'active. Une fois le parcours terminé, ou dans tout autre
+## combat, l'avant-combat reste instantané.
+func needs_prebattle_reading_time() -> bool:
+	return _tutorial != null and _tutorial.is_running() \
+		and _tutorial.chapter_id() == "first_journey"
+
+
 func stop_tutorial() -> void:
 	if _tutorial != null:
 		_tutorial.cancel()

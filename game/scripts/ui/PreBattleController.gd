@@ -205,11 +205,12 @@ func _finish_flip(player_starts: bool) -> void:
 	_show_coin_face(player_starts)
 	coin_flip_label.text = "Tu commences !" if player_starts \
 		else "%s commence !" % _opponent_name()
-	## Laisser la pièce et son verdict seuls quelques instants : le bouton
-	## n'apparaît qu'ensuite, une fois le premier joueur bien annoncé.
-	await get_tree().create_timer(RESULT_READ_DELAY).timeout
-	if not is_inside_tree() or _leaving:
-		return
+	## Seul le tout premier duel guidé laisse la pièce et son verdict seuls
+	## quelques instants ; partout ailleurs, COMMENCER s'active aussitôt.
+	if StoryService.needs_prebattle_reading_time():
+		await get_tree().create_timer(RESULT_READ_DELAY).timeout
+		if not is_inside_tree() or _leaving:
+			return
 	start_button.disabled = false
 	if _remote_ready:
 		status_label.text = "L'adversaire est prêt. Touchez COMMENCER."

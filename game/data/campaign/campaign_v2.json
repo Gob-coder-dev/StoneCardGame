@@ -113,7 +113,9 @@
         "series_format": "ft1",
         "seed_policy": "fixed_per_node",
         "seed": 5037,
-        "legacy_opponent_id": ""
+        "legacy_opponent_id": "",
+        "board_size": 4,
+        "blocked_cells": []
       },
       "rewards": {
         "souls_min": 11,
@@ -165,7 +167,18 @@
         "series_format": "ft1",
         "seed_policy": "fixed_per_node",
         "seed": 5074,
-        "legacy_opponent_id": ""
+        "legacy_opponent_id": "",
+        "board_size": 4,
+        "blocked_cells": [
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            2
+          ]
+        ]
       },
       "rewards": {
         "souls_min": 11,

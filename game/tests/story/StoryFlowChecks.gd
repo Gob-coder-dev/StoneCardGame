@@ -58,6 +58,8 @@ func _test_journey_content() -> void:
 	var node := CampaignContext.get_service().node("tuto_01")
 	_check(node != null and node.forced_first_player() == int(setup.get("first_player", 0)),
 		"setup tuto : l'avant-combat et le match annoncent le même premier joueur")
+	_check(StoryService.needs_prebattle_reading_time(),
+		"tirage : le tout premier duel guidé garde le temps de lecture")
 
 
 ## Le dieu présenté par un reflet doit être une identité de dialogue réelle :
@@ -155,8 +157,8 @@ func _test_tutorial_match_wins() -> void:
 		"setup tuto : une fois le parcours terminé, le niveau retrouve son setup normal")
 
 
-## Les chapitres de niveau sont ouverts avant la création du driver : c'est
-## eux qui fournissent la géométrie du plateau et ses cases bloquées.
+## Les chapitres de niveau s'ouvrent avant la création du driver pour
+## présenter la leçon ; la géométrie reste celle de la rencontre.
 func _test_node_chapters(service: CampaignService) -> void:
 	var saved_node := BattleContext.campaign_node_id
 	var saved_service := BattleContext.campaign_service
@@ -174,14 +176,22 @@ func _test_node_chapters(service: CampaignService) -> void:
 	_check(StoryService._tutorial.is_running()
 		and str(StoryService._tutorial._chapter.get("id", "")) == "tuto_02",
 		"chapitres : le niveau 2 ouvre son explication avant le match")
+	_check(not StoryService.needs_prebattle_reading_time(),
+		"tirage : les autres chapitres gardent l'avant-combat instantané")
+	var setup_02 := service.node("tuto_02").match_setup()
+	_check(int(setup_02.get("board_size", 0)) == 4
+		and (setup_02.get("blocked_cells", [1]) as Array).is_empty()
+		and not bool(setup_02.get("random_blocked_cells", true)),
+		"niveau 2 : un plateau de 4, sans aucune case bloquée")
 	StoryService.stop_tutorial()
 	BattleContext.campaign_node_id = "tuto_03"
 	StoryService.start_tutorial_for_node("tuto_03")
-	var setup := StoryService.match_setup_for_node("tuto_03")
+	var setup_03 := service.node("tuto_03").match_setup()
 	_check(StoryService._tutorial.is_running()
-		and int(setup.get("board_size", 0)) == 4
-		and (setup.get("blocked_cells", []) as Array).size() == 2,
-		"chapitres : le niveau 3 fournit un plateau de 4 avec deux cases bloquées")
+		and int(setup_03.get("board_size", 0)) == 4
+		and (setup_03.get("blocked_cells", []) as Array).size() == 2
+		and not bool(setup_03.get("random_blocked_cells", true)),
+		"niveau 3 : le plateau fixe exactement ses deux cases bloquées")
 	StoryService.stop_tutorial()
 	StoryService.auto_start_tutorials = saved_auto
 	StoryService._screen_path = saved_screen

@@ -622,6 +622,17 @@ nodes["tuto_01"]["encounter"].update({
     "blocked_cells": [],
     "forced_first_player": 1,
 })
+# Le niveau 2 ne montre que la taille du plateau : aucune case bloquée. Elles
+# n'arrivent qu'au niveau 3, avec les deux cases de la leçon. Déclarer
+# `blocked_cells` fige aussi la géométrie lors d'un rejeu hors tutoriel.
+nodes["tuto_02"]["encounter"].update({
+    "board_size": 4,
+    "blocked_cells": [],
+})
+nodes["tuto_03"]["encounter"].update({
+    "board_size": 4,
+    "blocked_cells": [[1, 1], [2, 2]],
+})
 # Les deux combats de transition restent volontairement favorables au joueur.
 for node_id in ["tuto_04", "tuto_05"]:
     nodes[node_id]["encounter"]["forced_first_player"] = 1
