@@ -32,6 +32,7 @@ LanSession="*res://scripts/network/LanSession.gd"
 CardArtCache="*res://scripts/data/CardArtCache.gd"
 StoryService="*res://scripts/application/story/StoryService.gd"
 StoryLayer="*res://scripts/ui/story/StoryLayer.gd"
+RitualOpeningContext="*res://scripts/application/economy/RitualOpeningContext.gd"
 
 [display]
 

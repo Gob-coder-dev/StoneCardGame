@@ -197,6 +197,7 @@ scripts/
     campaign/            Carte de campagne, fiche de niveau et préparation locale
     collection/          Sélection de dieu/deck, collection et panneaux de cartes
     shop/                Présentation responsive de la boutique
+    ritual/              Sceaux, embrasement initial et révélations des Rituels
     combat/              Présentations, géométrie et animations de combat
     encounters/          Anciens parcours par dieu, conservés pour compatibilité
 scenes/                  Scènes Godot des menus, du combat et des composants
@@ -242,7 +243,7 @@ Pour le détail de la campagne, du format JSON et de la migration, voir
 et des fichiers, voir [l'architecture complète](docs/ARCHITECTURE.md). Pour la
 palette et les choix de mise en page, voir
 [l'identité visuelle des menus](docs/IDENTITE_VISUELLE_MENUS.md).
-Les âmes, les copies de cartes, les améliorations et la boutique sont décrites
+Les âmes, les bougies, les Rituels, les copies, les améliorations et la boutique sont décrits
 dans [ECONOMY.md](docs/ECONOMY.md).
 Le PVP local (rôles, ports, protocole, autorité de l'hôte, limites et dépannage)
 est décrit dans [PVP_LOCAL.md](docs/PVP_LOCAL.md).
@@ -266,16 +267,19 @@ Les données de contenu sont validées au démarrage :
   neutre, trois paliers de cartes et cinq difficultés) ; la campagne unifiée
   n'en réutilise que les noms neutres et les identifiants de migration.
 - `data/economy/economy_config.json` : source unique des prix, seuils, lots,
-  cadeaux de dieux et de la rotation de trois heures.
+  cadeaux de dieux, bougies de campagne et de la rotation de trois heures ;
+- `data/economy/rituals.json` : prix, compositions, probabilités et identité
+  visuelle des quatre Rituels.
 
 La bibliothèque `tools/campaign_deck_library.json` est une source de
 construction hors exécution : elle fournit les 87 decks fixes uniques validés
 dans la campagne.
 
 Le profil local est enregistré dans `user://savegame.json`. Le format actuel est
-la version 5 : il conserve le pseudo, les statistiques, les trois decks de chaque
-dieu et de la banque neutre, le deck sélectionné, les âmes, les dieux débloqués,
-les copies et niveaux de cartes ainsi que les achats de la rotation. Les
+la version 8 : il conserve le pseudo, les statistiques, les trois decks de chaque
+dieu et de la banque neutre, le deck sélectionné, les âmes, les bougies, les
+dieux débloqués, les copies et niveaux de cartes, les achats de la rotation et
+les récompenses divines conservées au coffre. Les
 écritures passent par un fichier temporaire pour éviter un profil partiellement
 écrit.
 

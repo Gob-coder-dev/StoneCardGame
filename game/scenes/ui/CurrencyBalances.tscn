@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/ui/SoulBalance.tscn" id="1_souls"]
+[ext_resource type="PackedScene" path="res://scenes/ui/CandleBalance.tscn" id="2_candles"]
+
+[node name="CurrencyBalances" type="HBoxContainer"]
+theme_override_constants/separation = 10
+
+[node name="SoulBalance" parent="." instance=ExtResource("1_souls")]
+
+[node name="CandleBalance" parent="." instance=ExtResource("2_candles")]

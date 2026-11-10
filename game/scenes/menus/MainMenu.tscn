@@ -4,7 +4,7 @@
 [ext_resource type="Script" uid="uid://cms1p5lxyjnml" path="res://scripts/ui/MenuBackground.gd" id="2_parchment"]
 [ext_resource type="PackedScene" path="res://scenes/ui/BottomNav.tscn" id="3_nav"]
 [ext_resource type="Script" uid="uid://153ulybbb0hg" path="res://scripts/ui/input/TouchButton.gd" id="4_touch_button"]
-[ext_resource type="PackedScene" path="res://scenes/ui/SoulBalance.tscn" id="5_souls"]
+[ext_resource type="PackedScene" path="res://scenes/ui/CurrencyBalances.tscn" id="5_currency"]
 
 [node name="MainMenu" type="Control" unique_id=1585933656]
 layout_mode = 3
@@ -54,7 +54,7 @@ script = ExtResource("4_touch_button")
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="SoulBalance" parent="Content/Header" instance=ExtResource("5_souls")]
+[node name="CurrencyBalances" parent="Content/Header" instance=ExtResource("5_currency")]
 
 [node name="GameTitle" type="VBoxContainer" parent="Content" unique_id=147584374]
 layout_mode = 2

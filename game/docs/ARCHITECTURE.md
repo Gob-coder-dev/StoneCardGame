@@ -145,6 +145,7 @@ d'ENet lorsqu'un pair reste connecté mais cesse de poursuivre le protocole.
 | `data/npcs.json` | — | Six adversaires historiques, leurs decks et profils d'IA |
 | `data/campaign/campaign_v2.json` | `CampaignContentLoader` | Définition consolidée du graphe : 162 nœuds, rencontres, positions et arêtes |
 | `data/economy/economy_config.json` | `EconomyConfig` | Valeurs uniques des âmes, améliorations, rotations, lots et cadeaux de dieux |
+| `data/economy/rituals.json` | `RitualConfig` | Prix en bougies, sceaux, compositions, quantités et chances des quatre Rituels |
 | `CampaignGraph`, `CampaignNode`, `CampaignEdge` | `build`, `node`, `predecessors`, `successors`, `reachable_from`, `has_cycle` | Définition immuable, indexation et requêtes du graphe ; aucune sauvegarde ni interface |
 | `CampaignUnlockRules`, `CampaignProgress` | `states`, `state_for`, `mark_completed`, `record_attempt` | Règle ANY, états et progression sérialisable par identifiant de nœud ; `map_navigation` y reste une donnée de navigation séparée |
 | `CampaignValidator` | `problems` | Validation structurelle, modes, decks fixes et mini-boss, sans dépendance vers la couche application |
@@ -172,8 +173,10 @@ d'ENet lorsqu'un pair reste connecté mais cesse de poursuivre le protocole.
 | `BotCardTierRules` | `effective_level` | Adaptateur historique des bots : niveau de forme et plancher de rareté, sans changer leur niveau de jeu |
 | `StoneLoader` | `get_stone`, `has_stone`, `has_effect`, `stone_affinity`, `stone_rarity`, `get_neutral_lineages`, `get_god`, `get_npc` | Charge les catalogues, fournit des copies et des lectures sans copie |
 | `ContentValidator` | `find_problems` | Liste les incohérences des catalogues ; `StoneLoader` les signale au démarrage |
-| `PlayerInventory`, `CardProgressionRules` | `to_dict`, `from_dict`, `upgrade_cost`, `progress` | État économique sérialisable et règles pures d’évolution |
+| `PlayerInventory`, `CardProgressionRules` | `to_dict`, `from_dict`, `upgrade_cost`, `progress` | État économique sérialisable (âmes, bougies, cartes et coffre) et règles pures d’évolution |
 | `EconomyService`, `ShopService` | `grant`, `upgrade_card`, `buy_god`, `state`, `buy_offer` | Transactions atomiques et rotation déterministe de la boutique |
+| `RitualRewardGenerator`, `RitualService` | `generate`, `purchase` | Tirage pur, compensation et attribution atomique avant animation |
+| `RitualOpeningContext` | `begin`, `current`, `clear` | Présentation éphémère d’un Rituel, volontairement absente de la sauvegarde |
 | `PlayerData` | `get_active_deck`, `get_deck`, `set_player_deck`, `commit_economy`, `load_save`, `save` | Propriétaire du profil, des banques et de l’inventaire ; une seule écriture atomique |
 | `PlayerSaveCodec` | `encode`, `decode` | Format et migration du profil sans accès disque |
 | `DeckCatalogueMigration` | `requires_conversion`, `convert` | Remplace les anciennes cartes par des formes compatibles, distinctes et dans le budget |
@@ -192,10 +195,13 @@ renomme : une coupure ne laisse jamais un profil à moitié écrit. Un fichier
 illisible est renommé `savegame.json.unreadable` au lieu d'être écrasé, et un
 remplacement interrompu est récupéré au chargement suivant.
 
-Le format version 5 contient `decks_by_god` (trois tableaux d'identifiants de formes par dieu),
+Le format version 8 contient `decks_by_god` (trois tableaux d'identifiants de formes par dieu),
 `selected_deck_by_god` (indices de 0 à 2), `player_god_id`, `player_name` et
-`stats`, ainsi que `inventory` (âmes, dieux débloqués, copies, niveaux et achats
-de boutique). La banque `neutral` permet un deck sans dieu. Il ne conserve plus
+`stats`, ainsi que `inventory` (âmes, bougies, dieux débloqués, copies, niveaux,
+achats de boutique et récompenses divines en attente). Une éventuelle ouverture
+de Rituel issue d'une version 7 est ignorée, car ses récompenses avaient déjà été
+attribuées. La banque `neutral`
+permet un deck sans dieu. Il ne conserve plus
 de copie séparée du deck actif. `PlayerSaveCodec`
 migre les profils sans version et la version 1 : l'ancien `player_deck` devient
 l'emplacement 1 du dieu équipé, ou du dieu déduit des cartes si nécessaire.
@@ -286,7 +292,7 @@ s'appliquent aux IDs de dieux et de PNJ via `resolve_saved_god_id` et
 `resolve_saved_npc_id`. Les champs historiques `catalogue_ref` et `kind` ont
 été retirés : ils étaient redondants et aucun système de jeu ne les lisait.
 
-La version 5 lit les profils antérieurs. `PlayerSaveCodec` confie les tableaux
+La version 8 lit les profils antérieurs. `PlayerSaveCodec` confie les tableaux
 contenant des alias à `DeckCatalogueMigration`. Cette conversion déterministe
 cherche des formes proches de la correspondance déclarée, protège les lignées
 actuelles et réserve un budget pour les cartes restantes. Elle utilise
@@ -296,7 +302,7 @@ statistiques.
 
 `PlayerData.load_save` conserve en mémoire le JSON d'origine à convertir, sans
 écriture. À la première sauvegarde, `PlayerSaveStorage` l'enregistre dans
-`savegame.json.before_monsters` avant le profil version 5. Une copie existante
+`savegame.json.before_monsters` avant le profil version 8. Une copie existante
 est conservée ; si sa création échoue, la modification est annulée. Les tests
 utilisent un chemin distinct et isolent aussi cette copie en attente.
 

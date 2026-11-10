@@ -4,7 +4,7 @@
 [ext_resource type="Script" path="res://scripts/ui/MenuBackground.gd" id="2_background"]
 [ext_resource type="Script" path="res://scripts/ui/input/TouchScrollContainer.gd" id="3_touch_scroll"]
 [ext_resource type="Script" path="res://scripts/ui/input/TouchButton.gd" id="4_touch_button"]
-[ext_resource type="PackedScene" path="res://scenes/ui/SoulBalance.tscn" id="5_souls"]
+[ext_resource type="PackedScene" path="res://scenes/ui/CurrencyBalances.tscn" id="5_currency"]
 
 [node name="Stats" type="Control"]
 layout_mode = 3
@@ -44,7 +44,7 @@ theme_override_font_sizes/font_size = 60
 text = "PROFIL & STATS"
 vertical_alignment = 1
 
-[node name="SoulBalance" parent="Root/Header" instance=ExtResource("5_souls")]
+[node name="CurrencyBalances" parent="Root/Header" instance=ExtResource("5_currency")]
 
 [node name="CloseButton" type="Button" parent="Root/Header"]
 layout_mode = 2

@@ -247,6 +247,11 @@ func souls() -> int:
 	return _inventory.souls
 
 
+func candles() -> int:
+	_ensure_inventory()
+	return _inventory.candles
+
+
 func unlocked_god_ids() -> Array:
 	_ensure_inventory()
 	var result: Array = _inventory.unlocked_gods.keys()

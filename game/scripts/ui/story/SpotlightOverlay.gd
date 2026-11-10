@@ -14,6 +14,13 @@ signal advance_requested
 
 const DIM := Color(0.015, 0.01, 0.025, 0.82)
 const ACCENT := UITheme.COL_ACCENT_LIGHT
+const BANNER_SIDE_MARGIN := 36.0
+const BANNER_TARGET_GAP := 28.0
+# Sur les téléphones très allongés, placer la consigne au bord opposé de la
+# cible la rendait artificiellement lointaine. Cette bande garde le texte dans
+# la partie utile de l'écran, tout en laissant la cible entièrement dégagée.
+const BANNER_CENTER_MIN_RATIO := 0.24
+const BANNER_CENTER_MAX_RATIO := 0.76
 
 var _target: Control = null
 var _hole := Rect2()
@@ -149,15 +156,23 @@ func _set_blocker(index: int, rect: Rect2) -> void:
 func _place_banner(viewport_size: Vector2) -> void:
 	if not _banner.visible:
 		return
-	_banner.custom_minimum_size.x = viewport_size.x - 72.0
-	_banner.size.x = viewport_size.x - 72.0
+	_banner.custom_minimum_size.x = viewport_size.x - BANNER_SIDE_MARGIN * 2.0
+	_banner.size.x = viewport_size.x - BANNER_SIDE_MARGIN * 2.0
 	_banner.reset_size()
 	var banner_height := _banner.size.y
-	var margin := 44.0
-	if _hole.get_center().y > viewport_size.y * 0.5:
-		_banner.position = Vector2(36.0, margin)
+	var target_is_low := _hole.get_center().y > viewport_size.y * 0.5
+	var desired_center_y: float
+	if target_is_low:
+		desired_center_y = _hole.position.y - BANNER_TARGET_GAP - banner_height * 0.5
 	else:
-		_banner.position = Vector2(36.0, viewport_size.y - banner_height - margin)
+		desired_center_y = _hole.end.y + BANNER_TARGET_GAP + banner_height * 0.5
+	var min_center_y := viewport_size.y * BANNER_CENTER_MIN_RATIO
+	var max_center_y := viewport_size.y * BANNER_CENTER_MAX_RATIO
+	var banner_center_y := clampf(desired_center_y, min_center_y, max_center_y)
+	_banner.position = Vector2(
+		BANNER_SIDE_MARGIN,
+		banner_center_y - banner_height * 0.5
+	)
 
 
 func _draw() -> void:

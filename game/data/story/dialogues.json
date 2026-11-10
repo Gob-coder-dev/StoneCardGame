@@ -23,16 +23,16 @@
         },
         {
           "speaker": "pr_stone",
-          "text": "Commence par le cabinet : c'est là que se prépare ta première bataille."
+          "text": "Commence par ton deck : c'est là que se prépare ta première bataille."
         }
       ]
     },
     "journey_deck_intro": {
-      "title": "Le cabinet",
+      "title": "Le deck",
       "lines": [
         {
           "speaker": "pr_stone",
-          "text": "Voici le cabinet. Ici, tu composes ton deck de monstres."
+          "text": "Voici ta zone de deck. Ici, tu composes ton deck de monstres."
         },
         {
           "speaker": "pr_stone",
@@ -49,11 +49,7 @@
       "lines": [
         {
           "speaker": "pr_stone",
-          "text": "Retour à l'accueil. La Campagne est la porte de l'aventure."
-        },
-        {
-          "speaker": "pr_stone",
-          "text": "Choisis-la, puis touche le premier niveau : Le Seuil."
+          "text": "Retour à l'accueil. La Campagne est la porte des combats sataniques."
         }
       ]
     },
@@ -62,7 +58,7 @@
       "lines": [
         {
           "speaker": "pr_stone",
-          "text": "Le Seuil t'attend. Je t'accompagne : chaque coup sera guidé."
+          "text": "Je t'attends au Seuil. Viens m'affronter si tu l'oses."
         },
         {
           "speaker": "pr_stone",
@@ -87,29 +83,20 @@
         }
       ]
     },
-    "journey_place_first": {
-      "title": "Premier geste",
-      "lines": [
-        {
-          "speaker": "pr_stone",
-          "text": "Pose-la en haut à gauche. Une carte posée reste sur le plateau : elle ne revient jamais dans ta main."
-        }
-      ]
-    },
     "journey_second_move": {
       "title": "Le Drap du seuil",
       "lines": [
         {
           "speaker": "pr_stone",
-          "text": "Ton adversaire a posé un Drap du seuil dans le coin opposé, en bas à droite."
+          "text": "J'ai posé un Drap du seuil dans le coin opposé, en bas à droite."
         },
         {
           "speaker": "pr_stone",
-          "text": "Regarde ses flancs : à gauche et à droite, aucune lame. Sa défense y est de 0."
+          "text": "Regarde ses flancs : à gauche et à droite, aucune lame. Sa défense y est nulle."
         },
         {
           "speaker": "pr_stone",
-          "text": "Ton Écorché d'angle frappe à droite avec 1. Pose-le juste à gauche du Drap : 1 contre 0, c'est une capture."
+          "text": "Ton Écorché d'angle frappe à droite avec 1. Pose-le juste à gauche du Drap : 1 contre 0, tu la capturas."
         }
       ]
     },
@@ -118,7 +105,7 @@
       "lines": [
         {
           "speaker": "pr_stone",
-          "text": "Bien joué, le Drap est à toi. Mais regarde : le Mordeur vient de prendre ta Gueule de travers."
+          "text": "Bien joué, le Drap est à toi. Mais regarde : mon Mordeur vient de prendre ta Gueule de travers."
         },
         {
           "speaker": "pr_stone",
@@ -130,7 +117,7 @@
         },
         {
           "speaker": "pr_stone",
-          "text": "À toi de punir. L'Ogre droitier frappe à gauche avec 1 : pose-le en (1,1), à droite du Mordeur."
+          "text": "À toi de me punir. L'Ogre droitier frappe à gauche avec 1 : pose-le à droite du Mordeur."
         }
       ]
     },
@@ -139,11 +126,11 @@
       "lines": [
         {
           "speaker": "pr_stone",
-          "text": "Le Mordeur est revenu dans ton camp. 1 contre 0, la capture est nette."
+          "text": "Le Mordeur est revenu dans ton camp. 1 contre 0."
         },
         {
           "speaker": "pr_stone",
-          "text": "L'Avortons des caves arrive avec 1 sur ses quatre faces. Inutile de l'attaquer de front : tes petites cartes n'y arriveraient pas."
+          "text": "Mes Avortons des caves arrivent avec 1 sur ses quatre faces. Inutile de l'attaquer de front : tes petites cartes n'y arriveraient pas."
         },
         {
           "speaker": "pr_stone",
@@ -156,11 +143,11 @@
       "lines": [
         {
           "speaker": "pr_stone",
-          "text": "Dernière carte, dernière case : le Drap du seuil, en (2,0)."
+          "text": "Dernière carte, dernière case place ton Drap du seuil."
         },
         {
           "speaker": "pr_stone",
-          "text": "Une fois le plateau plein, on compte les pierres. Celles de ton camp restent à toi."
+          "text": "Une fois le plateau plein, on compte les pierres. celui qui possède le plus de cartes gagne."
         }
       ]
     },
@@ -169,15 +156,15 @@
       "lines": [
         {
           "speaker": "pr_stone",
-          "text": "Victoire, {player_name} ! Six pierres contre trois : tu as lu le plateau comme un livre ouvert."
+          "text": "Victoire, {player_name} ! Tu as compris les règles des combats de monstres. Je n'aurai plus besoin te ménager maintenant."
         },
         {
           "speaker": "pr_stone",
-          "text": "Et tu ne repars pas les mains vides : regarde tes récompenses, juste en dessous."
+          "text": "Et tu ne repars pas les mains vides : regarde tes récompenses."
         },
         {
           "speaker": "pr_stone",
-          "text": "Des âmes, et de nouvelles cartes. Trois rejoignent ton deck ; la quatrième t'attend au cabinet."
+          "text": "Des âmes, et de nouvelles cartes. Trois rejoignent ton deck et la quatrième est stockée."
         }
       ]
     },
@@ -199,11 +186,11 @@
       "lines": [
         {
           "speaker": "pr_stone",
-          "text": "Parfait. Ton deck est vivant : tu sais maintenant le façonner."
+          "text": "Parfait. Tu sais maintenant façonner ton deck."
         },
         {
           "speaker": "pr_stone",
-          "text": "Le reste du Refuge est à toi. Explore, combats, et invente tes propres combinaisons."
+          "text": "Le reste du Refuge est à toi. Explore, combats, et invente tes propres combinaisons. Puis retourne souffrir face à moi !"
         }
       ]
     },
@@ -216,11 +203,7 @@
         },
         {
           "speaker": "pr_stone",
-          "text": "Plus d'espace, plus de lignes d'attaque et plus de flancs à surveiller. Ton deck ne change pas : c'est le plateau qui grandit."
-        },
-        {
-          "speaker": "pr_stone",
-          "text": "Repère les bords et le centre. Une carte au bord n'a qu'un côté ouvert ; au centre, on peut la prendre des quatre côtés."
+          "text": "Comme je te l'ai dit, on arrête de rigoler.Plus d'espace, plus de lignes d'attaque ! Montre moi ce que tu as dans le ventre !"
         }
       ]
     },
@@ -229,7 +212,7 @@
       "lines": [
         {
           "speaker": "pr_stone",
-          "text": "Ici, le terrain se brise. Ces cases sombres sont bloquées."
+          "text": "Ici, le terrain se brise. Ces cases rouges avec des croix sont bloquées."
         },
         {
           "speaker": "pr_stone",
@@ -237,7 +220,7 @@
         },
         {
           "speaker": "pr_stone",
-          "text": "Elles dessinent des couloirs. Un couloir protège un flanc… ou t'enferme. Lis le plateau avant de poser."
+          "text": "Elles dessinent des couloirs. Un couloir protège un flanc… ou t'enferme."
         }
       ]
     },
@@ -246,7 +229,7 @@
       "lines": [
         {
           "speaker": "theme_god",
-          "text": "Je suis Véskar, le Manipulateur. Mes lames roses coûtent à moitié prix, et mes pierres jouent leur orientation à pile ou face."
+          "text": "Je suis Véskar, le Manipulateur. Ose jouer ta vie contre moi et montre que tu n'as pas peur du hasard !"
         },
         {
           "speaker": "pr_stone",
@@ -258,7 +241,7 @@
         },
         {
           "speaker": "pr_stone",
-          "text": "Attaque-le de deux côtés à la fois : quel que soit le tirage, l'un de ses flancs restera ouvert."
+          "text": "Attaque-le de tous les côtés, il est imprévisible."
         }
       ]
     },
@@ -267,7 +250,7 @@
       "lines": [
         {
           "speaker": "theme_god",
-          "text": "Nérava, la Mère des Fièvres. Mon Miasme affaiblit de 1 les pierres adverses qui m'entourent."
+          "text": "Nérava, la Mère des Fièvres. Sucombe face à mon Miasme !"
         },
         {
           "speaker": "pr_stone",
@@ -288,7 +271,7 @@
       "lines": [
         {
           "speaker": "theme_god",
-          "text": "Kharûn, la Muraille. Mes boucliers ne frappent jamais : ils tiennent."
+          "text": "Kharûn, la Muraille. Tu n'auras jamais mes cartes de pierre."
         },
         {
           "speaker": "pr_stone",
@@ -296,7 +279,7 @@
         },
         {
           "speaker": "pr_stone",
-          "text": "Ne l'attaque pas là où il s'est blindé : cherche la face qui n'a pas de bouclier."
+          "text": "Ne l'attaque pas là où il s'est blindé : cherche la face qui a peu de bouclier."
         },
         {
           "speaker": "pr_stone",
@@ -309,19 +292,15 @@
       "lines": [
         {
           "speaker": "theme_god",
-          "text": "Ilyr, le Guetteur Éternel. Mes lames bleues traversent les cases vides et les alliés, et frappent au loin."
+          "text": "Ilyr, le Guetteur Éternel. Tu ne peux pas te cacher de moi. J'aurai toutes tes cartes qu'importe où tu les poses."
         },
         {
           "speaker": "pr_stone",
-          "text": "Un deck miroir des Veilleurs. Ses lignes portent loin : la distance ne te protège plus."
+          "text": "Un deck miroir des Veilleurs. Ses lames bleues traversent des lignes entières."
         },
         {
           "speaker": "pr_stone",
-          "text": "Une pierre qui résiste arrête son projectile. Place un mur dans la ligne, ou sors de ses quatre axes."
-        },
-        {
-          "speaker": "pr_stone",
-          "text": "Et souviens-toi : une lame ne frappe que dans sa direction. Un pas de côté suffit souvent."
+          "text": "Mais une carte qui résiste à ses lames arrête son projectile. Place un mur dans la ligne, ou sors de ses quatre axes."
         }
       ]
     },
@@ -330,7 +309,7 @@
       "lines": [
         {
           "speaker": "theme_god",
-          "text": "Sylkha, la Mère-Ruche. Mes pierres liées se renforcent tant qu'elles restent ensemble."
+          "text": "Sylkha, la Mère-Ruche. Mon nid et mes serviteurs ne feront qu'une bouchée de toi."
         },
         {
           "speaker": "pr_stone",
@@ -351,19 +330,15 @@
       "lines": [
         {
           "speaker": "theme_god",
-          "text": "Énigma, la Machine Première. Chaque force que j'arrache devient un bouclier sur mes autres faces."
+          "text": "Énigma, la Machine Première. Fais ce que tu veux je volerai ta puissance !"
         },
         {
           "speaker": "pr_stone",
-          "text": "Un deck miroir des Assimilateurs. Plus tu lui offres de captures faciles, plus il se cuirasse."
+          "text": "Un deck miroir des Assimilateurs. Il vole les attaques de tes cartes pour se les mettre en défense."
         },
         {
           "speaker": "pr_stone",
           "text": "Ne lui donne pas de proie gratuite : n'attaque que lorsque la capture est certaine."
-        },
-        {
-          "speaker": "pr_stone",
-          "text": "Ses boucliers vont sur les faces qu'il n'utilise pas. Frappe celle qu'il vient de montrer."
         }
       ]
     }

@@ -287,7 +287,9 @@ Chaque nœud livré possède une fourchette `souls_min` / `souls_max`. Les carte
 de `card_rewards` sont fixes et accordées une seule fois ; les âmes d’une
 revanche victorieuse sont réduites à 25 %. Une défaite, une égalité ou une
 manche intermédiaire de FT2/FT3 ne déclenche aucune transaction. Le détail de
-la progression économique est décrit dans [ECONOMY.md](ECONOMY.md).
+la progression économique est décrit dans [ECONOMY.md](ECONOMY.md). La table
+`campaign_candles_by_chapter` accorde en plus 1, 2 ou 5 bougies à toute victoire
+finale selon le chapitre, y compris lors d’une revanche.
 
 ### Graine
 

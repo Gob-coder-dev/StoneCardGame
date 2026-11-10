@@ -1,10 +1,11 @@
-[gd_scene load_steps=6 format=3 uid="uid://result_scene"]
+[gd_scene load_steps=7 format=3 uid="uid://result_scene"]
 
 [ext_resource type="Script" path="res://scripts/ui/ResultController.gd" id="1_result"]
 [ext_resource type="Script" path="res://scripts/ui/input/TouchButton.gd" id="2_touch_button"]
 
 [ext_resource type="Script" path="res://scripts/ui/MenuBackground.gd" id="3_background"]
 [ext_resource type="Texture2D" path="res://assets/ui/soul-placeholder.svg" id="4_soul"]
+[ext_resource type="Texture2D" path="res://assets/ui/candle-placeholder.svg" id="5_candle"]
 
 [sub_resource type="StyleBoxFlat" id="ResultCardStyle"]
 content_margin_left = 34.0
@@ -109,6 +110,25 @@ stretch_mode = 5
 layout_mode = 2
 theme_override_font_sizes/font_size = 36
 text = "×11"
+vertical_alignment = 1
+
+[node name="CandleRow" type="HBoxContainer" parent="VBoxCenter/ResultCard/Content/Rewards"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="Icon" type="TextureRect" parent="VBoxCenter/ResultCard/Content/Rewards/CandleRow"]
+custom_minimum_size = Vector2(58, 58)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("5_candle")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="Amount" type="Label" parent="VBoxCenter/ResultCard/Content/Rewards/CandleRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "×1"
 vertical_alignment = 1
 
 [node name="Cards" type="HBoxContainer" parent="VBoxCenter/ResultCard/Content/Rewards"]

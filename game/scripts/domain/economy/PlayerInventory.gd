@@ -7,6 +7,7 @@ extends RefCounted
 const ProgressionRules := preload("res://scripts/domain/economy/CardProgressionRules.gd")
 
 var souls: int = 0
+var candles: int = 0
 var unlocked_gods: Dictionary = {}
 var cards: Dictionary = {}
 ## Copies de cartes divines gagnées avant le déblocage de leur dieu.
@@ -16,6 +17,7 @@ var pending_card_rewards: Dictionary = {}
 var first_god_discount_used: bool = false
 var applied_transactions: Dictionary = {}
 var shop_state: Dictionary = {}
+var ritual_purchase_counter: int = 0
 
 
 static func from_dict(raw: Variant) -> PlayerInventory:
@@ -23,6 +25,7 @@ static func from_dict(raw: Variant) -> PlayerInventory:
 	if not raw is Dictionary:
 		return result
 	result.souls = maxi(0, int(raw.get("souls", 0)))
+	result.candles = maxi(0, int(raw.get("candles", 0)))
 	var gods: Variant = raw.get("unlocked_god_ids", [])
 	if gods is Array:
 		for value in gods:
@@ -59,6 +62,10 @@ static func from_dict(raw: Variant) -> PlayerInventory:
 		var source: Variant = raw.get(field, {})
 		if source is Dictionary:
 			result.set(field, (source as Dictionary).duplicate(true))
+	# Les versions 7 et antérieures pouvaient conserver une animation de Rituel.
+	# Les récompenses étaient déjà attribuées : cette présentation obsolète est
+	# volontairement ignorée et ne doit jamais être reprise après redémarrage.
+	result.ritual_purchase_counter = maxi(0, int(raw.get("ritual_purchase_counter", 0)))
 	return result
 
 
@@ -67,12 +74,14 @@ func to_dict() -> Dictionary:
 	god_ids.sort()
 	return {
 		"souls": souls,
+		"candles": candles,
 		"unlocked_god_ids": god_ids,
 		"cards": cards.duplicate(true),
 		"pending_card_rewards": pending_card_rewards.duplicate(true),
 		"first_god_discount_used": first_god_discount_used,
 		"applied_transactions": applied_transactions.duplicate(true),
 		"shop_state": shop_state.duplicate(true),
+		"ritual_purchase_counter": ritual_purchase_counter,
 	}
 
 

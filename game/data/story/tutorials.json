@@ -156,7 +156,6 @@
           "id": "place_first",
           "scene": "res://scenes/game/Board.tscn",
           "anchor": "board.cell.0.0",
-          "dialogue": "journey_place_first",
           "prompt": "Pose-la sur la case entourée.",
           "wait_for": "stone_placed",
           "expect": {

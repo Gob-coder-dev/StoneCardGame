@@ -1,13 +1,15 @@
 # Économie, collection et boutique
 
-L’économie repose sur une monnaie unique, les **âmes**, et sur des copies de
-cartes persistantes. Ses valeurs d’équilibrage sont centralisées dans
-`data/economy/economy_config.json` : aucune scène ne contient de prix, de seuil
-d’amélioration ou de cadence de rotation en dur.
+L’économie repose sur deux monnaies : les **âmes** servent aux achats ciblés et
+aux améliorations, tandis que les **bougies** servent à accomplir des Rituels
+aléatoires. Les copies de cartes restent persistantes. Les valeurs
+d’équilibrage sont centralisées dans `data/economy/economy_config.json` et
+`data/economy/rituals.json` : aucune scène ne contient de prix, de seuil,
+de lot ou de probabilité en dur.
 
 ## Nouveau profil
 
-Un nouveau joueur commence sans dieu, sans âme, avec une banque de deck
+Un nouveau joueur commence sans dieu, sans âme ni bougie, avec une banque de deck
 `neutral` et une copie niveau 1 de cinq communes neutres : Gueule-de-travers,
 Ogre droitier, Le Drapé du seuil, Écorche-angle et Rampant des fosses. Un deck
 sans dieu reste autorisé ensuite et ne peut contenir que des cartes neutres.
@@ -59,14 +61,55 @@ restent visibles indépendamment de la rotation : le premier dieu acheté coûte
 100 âmes, puis chaque autre dieu coûte 800 âmes. Chaque achat offre deux
 communes fixes du dieu, choisies pour présenter des mécaniques différentes.
 
+## Rituels
+
+Les Rituels sont achetables sans limite de rotation tant que le joueur possède
+assez de bougies. Les quatre fiches sont affichées deux par ligne. Un achat
+produit des lignées distinctes, uniquement parmi les cartes neutres et celles
+des dieux déjà débloqués.
+
+| Rituel | Bougies | Âmes | Invocations normales |
+| --- | ---: | ---: | --- |
+| Petit | 15 | 10 à 20 | 2 communes ×3–5, 1 rare ×1–2 |
+| Basique | 30 | 30 à 50 | 1 commune ×4–7, 2 rares ×3–5, 1 épique ×2–3 |
+| Grand | 70 | 100 à 200 | 1 commune ×8–12, 2 rares ×5–8, 2 épiques ×3–5, 1 légendaire |
+| Unique | 100 | 0 | 1 carte non possédée de tout le catalogue |
+
+Le Petit et le Basique ont 10 % de chances d’utiliser leur composition
+exceptionnelle. Le Rituel unique cherche en priorité une légendaire manquante,
+puis une épique, une rare et une commune, sans exclure les cartes neutres ni les
+dieux verrouillés. Une carte divine verrouillée rejoint le coffre ; elle compte
+alors comme déjà gagnée et ne peut plus être tirée par ce Rituel. Il est
+indisponible lorsque toutes les lignées sont possédées ou déjà au coffre.
+
+Une invocation déjà au niveau maximal est montrée normalement, puis remplacée
+par la moitié de sa valeur unitaire en boutique, arrondie en faveur du joueur :
+3 âmes par commune, 8 par rare, 15 par épique et 500 par légendaire.
+
+L’achat, le tirage, les cartes, les âmes et la dépense de bougies sont enregistrés
+en une transaction avant l’animation. L’ouverture vit uniquement dans
+`RitualOpeningContext` et n’entre jamais dans la sauvegarde : fermer le jeu ne
+perd aucune récompense, mais abandonne définitivement la présentation restante.
+L’animation n’est donc jamais propriétaire de l’économie et ne peut pas être
+reprise.
+
+Dans la boutique, chaque fiche de Rituel et de dieu affiche directement son
+prix, mais toute la fiche reste l'unique zone tactile. Les compositions,
+fourchettes et probabilités des Rituels sont réservées à la confirmation. À
+l'ouverture, un seul embrasement couvre tout l'écran pour invoquer les cartes ;
+les transitions entre les révélations utilisent ensuite uniquement des flammes
+basses afin de ne pas répéter cet effet majeur.
+
 ## Récompenses de campagne
 
-Seules les victoires de campagne donnent des âmes. Chaque nœud déclare
+Seules les victoires de campagne donnent des âmes et des bougies. Chaque nœud déclare
 explicitement `souls_min`, `souls_max` et ses éventuelles `card_rewards`. Le
 montant est tiré de façon déterministe dans la fourchette de la tentative. Une
 première victoire donne le montant complet ; rejouer un nœud déjà terminé donne
 25 % du montant, arrondi par le service. Une défaite ou une égalité ne donne
-rien. Une série FT2/FT3 ne récompense que sa victoire finale.
+rien. Une série FT2/FT3 ne récompense que sa victoire finale. Les victoires
+donnent 1 bougie dans les premiers chapitres, 2 au milieu de la campagne et 5
+dans les trois dernières sections ; une revanche victorieuse conserve ce montant.
 
 Les cartes de récompense sont accordées une seule fois. Elles sont actuellement
 réservées au premier tutoriel ainsi qu’aux boss et mini-boss possédant une
@@ -91,15 +134,19 @@ exact de copies. Les sections vides ne sont jamais créées.
 | Élément | Mission unique |
 | --- | --- |
 | `EconomyConfig` | charger et valider la configuration d’équilibrage |
+| `RitualConfig` | charger et valider les quatre définitions de Rituels |
 | `CardProgressionRules` | calculer seuils, coûts et états d’amélioration |
-| `PlayerInventory` | représenter âmes, dieux, copies, niveaux et achats |
+| `PlayerInventory` | représenter monnaies, dieux, copies, niveaux et achats persistants |
 | `EconomyService` | exécuter récompenses, améliorations et achats de dieux |
 | `ShopService` | produire la rotation et acheter une offre |
+| `RitualRewardGenerator` | tirer des récompenses pures, distinctes et éligibles |
+| `RitualService` | acheter, compenser et sauvegarder toutes les récompenses d’un Rituel |
+| `RitualOpeningContext` | transporter uniquement l’animation courante en mémoire |
 | `CampaignRewardService` | traduire une victoire de nœud en transaction économique |
 | `PlayerData` | posséder le profil et l’enregistrer de façon atomique |
 
-Le profil version 6 sérialise l’inventaire avec les banques de decks et les
-récompenses divines différées. Les services préparent une copie du prochain
+Le profil version 8 sérialise l’inventaire avec les banques de decks, les deux
+monnaies et les récompenses divines différées. Les services préparent une copie du prochain
 état puis appellent une seule écriture
 transactionnelle. En cas d’échec disque, l’inventaire et le deck restent
 inchangés en mémoire. La progression de campagne demeure dans son fichier

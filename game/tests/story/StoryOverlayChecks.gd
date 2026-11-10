@@ -11,6 +11,7 @@ const SessionModel := preload("res://scripts/application/story/StorySession.gd")
 func run() -> void:
 	await _test_dialogue_overlay()
 	await _test_spotlight_overlay()
+	await _test_spotlight_banner_on_tall_phone()
 
 
 ## Une scène Control de taille fixe : les overlays pleine page prennent leur
@@ -131,4 +132,34 @@ func _test_spotlight_overlay() -> void:
 	spotlight.hide_spotlight()
 	_check(not spotlight.visible,
 		"spotlight : la fin de l'étape retire le voile")
+	stage.free()
+
+
+## Régression téléphone allongé : la consigne doit rester dans une zone de
+## lecture proche du contenu, et non se coller au bord opposé de l'écran.
+func _test_spotlight_banner_on_tall_phone() -> void:
+	var stage := Control.new()
+	add_child(stage)
+	stage.size = Vector2(1080, 2400)
+	var target := Control.new()
+	target.position = Vector2(420, 2140)
+	target.size = Vector2(240, 150)
+	stage.add_child(target)
+	var spotlight := SpotlightModel.new()
+	stage.add_child(spotlight)
+	await get_tree().process_frame
+	spotlight.show_target(target, "Ouvre le cabinet : DECKS.")
+	var banner_center_y := spotlight._banner.get_global_rect().get_center().y
+	_check(banner_center_y <= stage.size.y * 0.76 + 1.0
+		and banner_center_y >= stage.size.y * 0.24 - 1.0,
+		"spotlight : sur un téléphone allongé, la consigne basse reste dans la zone de lecture")
+	_check(spotlight._banner.get_global_rect().end.y < spotlight._hole.position.y,
+		"spotlight : la consigne recentrée ne masque pas une cible basse")
+	target.position = Vector2(420, 150)
+	await get_tree().process_frame
+	spotlight._update_geometry()
+	banner_center_y = spotlight._banner.get_global_rect().get_center().y
+	_check(banner_center_y >= stage.size.y * 0.24 - 1.0
+		and spotlight._banner.get_global_rect().position.y > spotlight._hole.end.y,
+		"spotlight : une cible haute garde sa consigne recentrée en dessous")
 	stage.free()

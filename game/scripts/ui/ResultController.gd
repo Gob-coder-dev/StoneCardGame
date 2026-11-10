@@ -14,6 +14,8 @@ const Routes := preload("res://scripts/ui/GameRoutes.gd")
 @onready var rewards: VBoxContainer = $VBoxCenter/ResultCard/Content/Rewards
 @onready var reward_soul_row: HBoxContainer = $VBoxCenter/ResultCard/Content/Rewards/SoulRow
 @onready var reward_soul_amount: Label = $VBoxCenter/ResultCard/Content/Rewards/SoulRow/Amount
+@onready var reward_candle_row: HBoxContainer = $VBoxCenter/ResultCard/Content/Rewards/CandleRow
+@onready var reward_candle_amount: Label = $VBoxCenter/ResultCard/Content/Rewards/CandleRow/Amount
 @onready var reward_cards: HBoxContainer = $VBoxCenter/ResultCard/Content/Rewards/Cards
 @onready var background: MenuBackground = $Background
 @onready var next_btn: Button = $VBoxCenter/NextButton
@@ -81,13 +83,16 @@ func _refresh_reward() -> void:
 		return
 	var reward := BattleContext.last_reward
 	var souls := int(reward.get("souls", 0))
+	var candles := int(reward.get("candles", 0))
 	reward_soul_row.visible = souls > 0
 	reward_soul_amount.text = "×%s" % UIFormat.integer(souls)
+	reward_candle_row.visible = candles > 0
+	reward_candle_amount.text = "×%s" % UIFormat.integer(candles)
 	for card_reward in reward.get("cards", []):
 		_add_reward_card(card_reward, false)
 	for card_reward in reward.get("deferred_cards", []):
 		_add_reward_card(card_reward, true)
-	if souls <= 0 and reward_cards.get_child_count() == 0:
+	if souls <= 0 and candles <= 0 and reward_cards.get_child_count() == 0:
 		return
 	reward_divider.visible = true
 	rewards.visible = true

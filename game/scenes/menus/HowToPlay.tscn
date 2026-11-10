@@ -4,7 +4,7 @@
 [ext_resource type="Script" path="res://scripts/ui/MenuBackground.gd" id="2_background"]
 [ext_resource type="PackedScene" path="res://scenes/ui/BottomNav.tscn" id="3_nav"]
 [ext_resource type="Script" path="res://scripts/ui/input/TouchScrollContainer.gd" id="4_touch_scroll"]
-[ext_resource type="PackedScene" path="res://scenes/ui/SoulBalance.tscn" id="5_souls"]
+[ext_resource type="PackedScene" path="res://scenes/ui/CurrencyBalances.tscn" id="5_currency"]
 
 [node name="HowToPlay" type="Control"]
 layout_mode = 3
@@ -45,7 +45,7 @@ theme_override_font_sizes/font_size = 64
 text = "RÈGLES DU JEU"
 vertical_alignment = 1
 
-[node name="SoulBalance" parent="Content/Header" instance=ExtResource("5_souls")]
+[node name="CurrencyBalances" parent="Content/Header" instance=ExtResource("5_currency")]
 
 [node name="Scroll" type="ScrollContainer" parent="Content"]
 layout_mode = 2

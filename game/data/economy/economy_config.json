@@ -7,6 +7,7 @@
   "other_god_price": 800,
   "starter": {
     "souls": 0,
+    "candles": 0,
     "active_god_id": "",
     "deck": [
       "gueule_de_travers_n1",
@@ -15,6 +16,21 @@
       "ecorche_angle_n1",
       "rampant_des_fosses_n1"
     ]
+  },
+  "campaign_candles_by_chapter": {
+    "Seuil": 1,
+    "Initiations": 1,
+    "Carrefour": 1,
+    "Le Marais des Serments": 1,
+    "Les Forges Basses": 2,
+    "La Bibliothèque des Os": 2,
+    "Le Marché Nocturne": 2,
+    "Les Serres de Verre": 2,
+    "Les Remparts Muets": 2,
+    "Le Puits des Échos": 2,
+    "La Cour des Masques": 5,
+    "Les Jardins de Cendre": 5,
+    "Cime": 5
   },
   "first_tutorial_cards": [
     "avortons_des_caves",

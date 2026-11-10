@@ -6,6 +6,11 @@ const Codec := preload("res://scripts/data/PlayerSaveCodec.gd")
 const Config := preload("res://scripts/data/economy/EconomyConfig.gd")
 const Economy := preload("res://scripts/application/economy/EconomyService.gd")
 const Shop := preload("res://scripts/application/economy/ShopService.gd")
+const Rituals := preload("res://scripts/application/economy/RitualService.gd")
+const RitualConfigModel := preload("res://scripts/data/economy/RitualConfig.gd")
+const RitualGenerator := preload("res://scripts/domain/economy/RitualRewardGenerator.gd")
+const InventoryModel := preload("res://scripts/domain/economy/PlayerInventory.gd")
+const CampaignRewards := preload("res://scripts/application/campaign/CampaignRewardService.gd")
 const Fixture := preload("res://tests/support/PlayerProfileFixture.gd")
 
 
@@ -23,7 +28,11 @@ func run() -> void:
 	_test_rewards_and_upgrade()
 	_test_god_purchase()
 	_test_shop()
+	_test_ritual_config_and_transactions()
+	_test_ritual_compositions()
+	_test_ritual_compensation_and_unique()
 	await _test_shop_screen()
+	await _test_ritual_opening_screen()
 	await _test_result_reward_ui()
 	fixture.restore()
 
@@ -32,6 +41,10 @@ func _test_starter() -> void:
 	var config := Config.get_config()
 	_check(Config.problems(config).is_empty(),
 		"économie : la configuration livrée est cohérente")
+	_check(CampaignRewards._candles_for_chapter("Seuil") == 1
+		and CampaignRewards._candles_for_chapter("Les Forges Basses") == 2
+		and CampaignRewards._candles_for_chapter("Cime") == 5,
+		"économie : la campagne distribue une, deux puis cinq bougies selon sa progression")
 	var shop: Dictionary = config.get("shop", {})
 	_check(int(shop.get("common", {}).get("souls_per_copy", 0)) == 5
 		and int(shop.get("rare", {}).get("souls_per_copy", 0)) == 15
@@ -39,8 +52,9 @@ func _test_starter() -> void:
 		"boutique : les copies communes, rares et épiques coûtent 5, 15 et 30 âmes")
 	var deck := PlayerData.get_active_deck()
 	_check(PlayerData.player_god_id == "" and deck.size() == 5
-		and PlayerData.souls() == 0 and PlayerData.unlocked_god_ids().is_empty(),
-		"économie : le nouveau profil commence sans dieu, sans âme et avec cinq cartes")
+		and PlayerData.souls() == 0 and PlayerData.candles() == 0
+		and PlayerData.unlocked_god_ids().is_empty(),
+		"économie : le nouveau profil commence sans dieu, sans monnaie et avec cinq cartes")
 	var owned := true
 	for stone_id in deck:
 		owned = owned and PlayerData.owns_stone(str(stone_id)) \
@@ -141,23 +155,26 @@ func _test_menu_balance_ui() -> void:
 		var page := (load(path) as PackedScene).instantiate()
 		add_child(page)
 		await get_tree().process_frame
-		var balances := page.find_children("SoulBalance", "SoulBalance", true, false)
-		valid = valid and balances.size() == 1 \
-			and (balances[0] as SoulBalance).amount_label.text == UIFormat.integer(PlayerData.souls())
+		var soul_balances := page.find_children("SoulBalance", "SoulBalance", true, false)
+		var candle_balances := page.find_children("CandleBalance", "CandleBalance", true, false)
+		valid = valid and soul_balances.size() == 1 and candle_balances.size() == 1 \
+			and (soul_balances[0] as SoulBalance).amount_label.text == UIFormat.integer(PlayerData.souls()) \
+			and (candle_balances[0] as CandleBalance).amount_label.text == UIFormat.integer(PlayerData.candles())
 		page.queue_free()
 		await get_tree().process_frame
-	_check(valid, "économie : le solde est visible dans tous les menus généraux")
+	_check(valid, "économie : âmes et bougies sont visibles ensemble dans tous les menus généraux")
 
 
 func _test_rewards_and_upgrade() -> void:
 	var service := Economy.new()
 	var lineage := "gueule_de_travers"
 	var reward := service.grant_reward("test:upgrade", 200,
-		[{"lineage_id": lineage, "copies": 49}])
+		[{"lineage_id": lineage, "copies": 49}], [], 2)
 	var duplicate := service.grant_reward("test:upgrade", 200,
-		[{"lineage_id": lineage, "copies": 49}])
+		[{"lineage_id": lineage, "copies": 49}], [], 2)
 	_check(bool(reward.get("ok", false)) and bool(duplicate.get("already_applied", false))
 		and PlayerData.souls() == 200
+		and PlayerData.candles() == 2
 		and int(PlayerData.card_entry(lineage)["copies"]) == 50,
 		"économie : une récompense est atomique et idempotente")
 	var upgraded := service.upgrade_card(lineage)
@@ -302,18 +319,235 @@ func _test_shop() -> void:
 		"boutique : une offre ne peut être achetée qu'une fois par rotation")
 
 
+func _test_ritual_config_and_transactions() -> void:
+	PlayerData._apply_profile(Codec.starter_profile())
+	_check(RitualConfigModel.problems().is_empty()
+		and RitualConfigModel.definitions().size() == 4,
+		"Rituels : les quatre définitions sont valides et pilotées par les données")
+	var service := Rituals.new()
+	var state := service.state()
+	var unique: Dictionary = (state.get("rituals", []) as Array)[3]
+	_check(bool(unique.get("available", false)),
+		"Rituels : l'invocation unique accepte les cartes neutres sans dieu débloqué")
+	_check(Economy.new().grant_development_candles(100) == OK,
+		"Rituels : le solde de test reçoit ses bougies")
+	var before := PlayerData.candles()
+	var purchased := service.purchase("small", 310_001)
+	var opening: Dictionary = purchased.get("opening", {})
+	var rewards: Array = opening.get("rewards", [])
+	var lineages := {}
+	var eligible := rewards.size() == 4 and str(rewards[0].get("type", "")) == "souls"
+	for reward in rewards:
+		if str(reward.get("type", "")) != "card":
+			continue
+		var lineage_id := str(reward.get("lineage_id", ""))
+		lineages[lineage_id] = true
+		eligible = eligible and StoneLoader.stone_affinity(str(reward.get("stone_id", ""))) == "neutral"
+	_check(bool(purchased.get("ok", false)) and PlayerData.candles() == before - 15
+		and lineages.size() == 3 and eligible,
+		"Rituels : l'achat retire 15 bougies, attribue les récompenses et fige trois monstres distincts")
+	var serialized := Codec.decode(PlayerData.get_profile())
+	_check(not serialized.get("inventory", {}).has("pending_ritual_opening"),
+		"Rituels : aucune ouverture visuelle n'est conservée dans la sauvegarde")
+
+
+func _test_ritual_compositions() -> void:
+	var inventory := InventoryModel.from_dict(Codec.starter_profile().get("inventory", {}))
+	var basic := RitualConfigModel.definition("basic")
+	var normal: Dictionary = {}
+	var lucky: Dictionary = {}
+	for seed in range(1, 5000):
+		var generated := RitualGenerator.generate(basic, inventory, seed)
+		if bool(generated.get("lucky", false)) and lucky.is_empty():
+			lucky = generated
+		elif not bool(generated.get("lucky", false)) and normal.is_empty():
+			normal = generated
+		if not normal.is_empty() and not lucky.is_empty():
+			break
+	var normal_counts := _ritual_rarity_counts(normal.get("rewards", []))
+	var lucky_counts := _ritual_rarity_counts(lucky.get("rewards", []))
+	_check(normal_counts == {"common": 1, "rare": 2, "epic": 1}
+		and lucky_counts == {"common": 1, "rare": 1, "epic": 1, "legendary": 1},
+		"Rituels : le Basique possède ses compositions normale et exceptionnelle exactes")
+	var grand := RitualGenerator.generate(RitualConfigModel.definition("grand"),
+		inventory, 610_001)
+	var grand_counts := _ritual_rarity_counts(grand.get("rewards", []))
+	var quantities_valid := true
+	for reward in grand.get("rewards", []):
+		if str(reward.get("type", "")) != "card":
+			continue
+		var copies := int(reward.get("copies", 0))
+		match str(reward.get("rarity", "")):
+			"common": quantities_valid = quantities_valid and copies >= 8 and copies <= 12
+			"rare": quantities_valid = quantities_valid and copies >= 5 and copies <= 8
+			"epic": quantities_valid = quantities_valid and copies >= 3 and copies <= 5
+			"legendary": quantities_valid = quantities_valid and copies == 1
+	_check(grand_counts == {"common": 1, "rare": 2, "epic": 2, "legendary": 1}
+		and quantities_valid,
+		"Rituels : le Grand garantit six invocations et respecte chaque fourchette")
+
+
+func _ritual_rarity_counts(rewards: Array) -> Dictionary:
+	var result := {}
+	for reward in rewards:
+		if str(reward.get("type", "")) != "card":
+			continue
+		var rarity := str(reward.get("rarity", ""))
+		result[rarity] = int(result.get(rarity, 0)) + 1
+	return result
+
+
+func _test_ritual_compensation_and_unique() -> void:
+	PlayerData._apply_profile(Codec.starter_profile())
+	var inventory := InventoryModel.from_dict(PlayerData.inventory_dict())
+	for stone in StoneLoader.get_all_stones():
+		var stone_id := str(stone.get("id", ""))
+		if StoneLoader.stone_level(stone_id) != 1 or StoneLoader.stone_affinity(stone_id) != "neutral":
+			continue
+		var lineage_id := StoneLoader.stone_lineage(stone_id)
+		inventory.cards[lineage_id] = {
+			"unlocked_level": StoneLoader.lineage_max_level(lineage_id), "copies": 0}
+	inventory.candles = 100
+	_check(PlayerData.commit_inventory(inventory) == OK,
+		"Rituels : préparation atomique d'une collection neutre maximale")
+	var service := Rituals.new()
+	var souls_before := PlayerData.souls()
+	var compensated := service.purchase("small", 410_001)
+	var opening: Dictionary = compensated.get("opening", {})
+	var compensation_total := 0
+	var all_maxed := true
+	for reward in opening.get("rewards", []):
+		if str(reward.get("type", "")) == "card":
+			all_maxed = all_maxed and bool(reward.get("maxed", false))
+			compensation_total += int(reward.get("compensation_souls", 0))
+	_check(bool(compensated.get("ok", false)) and all_maxed and compensation_total > 0
+		and PlayerData.souls() > souls_before + compensation_total,
+		"Rituels : chaque lot maximal devient une compensation arrondie en faveur du joueur")
+	PlayerData._apply_profile(Codec.starter_profile())
+	inventory = _inventory_with_only_missing("porte_fievre")
+	inventory.candles = 200
+	PlayerData.commit_inventory(inventory)
+	var unique_locked := service.purchase("unique", 510_001)
+	var locked_rewards: Array = unique_locked.get("opening", {}).get("rewards", [])
+	var locked_card: Dictionary = locked_rewards[0] if not locked_rewards.is_empty() else {}
+	_check(bool(unique_locked.get("ok", false)) and locked_rewards.size() == 1
+		and bool(locked_card.get("deferred", false))
+		and int(PlayerData.inventory_dict().get("pending_card_rewards", {}).get("porte_fievre", 0)) == 1,
+		"Rituels : une carte d'un dieu verrouillé rejoint immédiatement le coffre")
+	var state := service.state()
+	var completed_unique: Dictionary = (state.get("rituals", []) as Array)[3]
+	_check(not bool(completed_unique.get("available", true)),
+		"Rituels : l'invocation unique se bloque quand chaque lignée est possédée ou au coffre")
+	PlayerData._apply_profile(Codec.starter_profile())
+	inventory = _inventory_with_only_missing("avortons_des_caves")
+	inventory.candles = 100
+	PlayerData.commit_inventory(inventory)
+	var unique_neutral := service.purchase("unique", 510_002)
+	var neutral_rewards: Array = unique_neutral.get("opening", {}).get("rewards", [])
+	var neutral_card: Dictionary = neutral_rewards[0] if not neutral_rewards.is_empty() else {}
+	_check(bool(unique_neutral.get("ok", false))
+		and PlayerData.owns_stone("avortons_des_caves_n1")
+		and not bool(neutral_card.get("deferred", false)),
+		"Rituels : l'invocation unique peut débloquer directement une carte neutre")
+
+
+func _inventory_with_only_missing(missing_lineage: String) -> PlayerInventory:
+	var inventory := InventoryModel.from_dict(Codec.starter_profile().get("inventory", {}))
+	inventory.cards.clear()
+	inventory.pending_card_rewards.clear()
+	var seen := {}
+	for stone in StoneLoader.get_all_stones():
+		var stone_id := str(stone.get("id", ""))
+		var lineage_id := StoneLoader.stone_lineage(stone_id)
+		if lineage_id == "" or seen.has(lineage_id):
+			continue
+		seen[lineage_id] = true
+		if lineage_id == missing_lineage:
+			continue
+		if StoneLoader.stone_affinity(stone_id) == "neutral":
+			inventory.cards[lineage_id] = {"unlocked_level": 1, "copies": 0}
+		else:
+			inventory.pending_card_rewards[lineage_id] = 1
+	return inventory
+
+
 func _test_shop_screen() -> void:
 	var scene := load("res://scenes/menus/ShopScreen.tscn") as PackedScene
 	var page := scene.instantiate()
 	add_child(page)
 	await get_tree().process_frame
 	await get_tree().process_frame
-	_check(page.offers_grid.get_child_count() == 4 and page.gods_grid.get_child_count() == 6
-		and page.offers_grid.columns == 2 and page.gods_grid.columns == 2
-		and page.soul_balance.amount_label.text == UIFormat.integer(PlayerData.souls()),
-		"boutique : l'écran affiche deux fiches par ligne, les six dieux et le solde")
+	_check(page.offers_grid.get_child_count() == 4 and page.rituals_grid.get_child_count() == 4
+		and page.gods_grid.get_child_count() == 6 and page.offers_grid.columns == 2
+		and page.rituals_grid.columns == 2 and page.gods_grid.columns == 2
+		and page.soul_balance.amount_label.text == UIFormat.integer(PlayerData.souls())
+		and page.candle_balance.amount_label.text == UIFormat.integer(PlayerData.candles())
+		and page.rituals_grid.get_child(0) is BaseButton
+		and page.gods_grid.get_child(0) is BaseButton,
+		"boutique : cartes, Rituels et dieux restent en deux colonnes avec leurs deux soldes")
+	var ritual_card: Control = page.rituals_grid.get_child(0)
+	var god_card: Control = page.gods_grid.get_child(0)
+	var ritual_price := ritual_card.find_child("Price", true, false)
+	var god_price := god_card.find_child("Price", true, false)
+	_check(ritual_price != null and god_price != null
+		and ritual_price.get_node("Amount").text == "15"
+		and god_price.get_node("Amount").text == UIFormat.integer(page._economy.god_price())
+		and not _tree_contains_text(ritual_card, "invocations")
+		and not _tree_contains_text(ritual_card, "% exceptionnel"),
+		"boutique : les prix restent visibles sur les fiches et les statistiques détaillées restent dans la modale")
+	page._show_ritual_offer("small")
+	_check(page.purchase_modal.visible and page.purchase_modal._kind == "ritual"
+		and page.purchase_modal.confirm_button.text == "15"
+		and "Invocations" in page.purchase_modal.details_label.text,
+		"boutique : toucher un Rituel ouvre sa confirmation sans acheter")
+	page.purchase_modal.close()
+	page._show_god_offer("veskar")
+	_check(page.purchase_modal.visible and page.purchase_modal._kind == "god"
+		and page.purchase_modal.confirm_button.text == UIFormat.integer(page._economy.god_price()),
+		"boutique : toucher un dieu ouvre son portrait et sa confirmation")
 	page.queue_free()
 	await get_tree().process_frame
+
+
+func _test_ritual_opening_screen() -> void:
+	PlayerData._apply_profile(Codec.starter_profile())
+	var inventory := _inventory_with_only_missing("avortons_des_caves")
+	inventory.candles = 100
+	PlayerData.commit_inventory(inventory)
+	var purchase := Rituals.new().purchase("unique", 710_001)
+	RitualOpeningContext.begin(purchase.get("opening", {}))
+	var page := (load("res://scenes/menus/RitualOpening.tscn") as PackedScene).instantiate()
+	add_child(page)
+	await get_tree().process_frame
+	_check(not page._opening.is_empty() and page.sigil_button.visible
+		and page.title_label.text == "RITUEL UNIQUE"
+		and page.get_node_or_null("Margin/Page/Header/BackButton") == null,
+		"Rituels : l'ouverture transitoire commence sur un sceau fixe sans bouton Retour")
+	var sigil_position: Vector2 = page.sigil.position
+	var sigil_scale: Vector2 = page.sigil.scale
+	await page._on_sigil_pressed()
+	_check(page.reward_button.visible and page.prompt_label.text == "Touchez pour révéler",
+		"Rituels : l'embrasement plein écran produit la première invocation face cachée")
+	_check(page.sigil.visible and page.sigil.position == sigil_position and page.sigil.scale == sigil_scale,
+		"Rituels : le sceau reste immobile derrière toute l'ouverture")
+	await page._on_reward_pressed()
+	_check(page.prompt_label.text == "Touchez pour poursuivre"
+		and not PlayerData.inventory_dict().has("pending_ritual_opening"),
+		"Rituels : le retournement révèle une récompense déjà acquise sans persister l'animation")
+	page.flames.ignite_minor()
+	await page.flames.finished
+	_check(not page.flames._full_screen,
+		"Rituels : les transitions suivantes utilisent seulement les petites flammes")
+	await page._on_reward_pressed()
+	var summary_tile: Control = page.summary_grid.get_child(0)
+	_check(page.summary.visible and page.finish_button.visible
+		and page.summary_grid.columns == 2 and summary_tile.custom_minimum_size.x >= 320.0,
+		"Rituels : la dernière carte conduit à un récapitulatif agrandi")
+	page.queue_free()
+	RitualOpeningContext.clear()
+	await get_tree().process_frame
+	_check(RitualOpeningContext.current().is_empty(),
+		"Rituels : fermer l'ouverture abandonne sa présentation sans file de reprise")
 
 
 func _test_result_reward_ui() -> void:
@@ -336,6 +570,7 @@ func _test_result_reward_ui() -> void:
 	BattleContext.last_score_ai = 9
 	BattleContext.last_reward = {
 		"souls": 11,
+		"candles": 2,
 		"cards": [{"lineage_id": "avortons_des_caves", "copies": 2}],
 		"deferred_cards": [{"lineage_id": "porte_fievre", "copies": 1,
 			"god_id": "nerava"}],
@@ -345,6 +580,7 @@ func _test_result_reward_ui() -> void:
 	await get_tree().process_frame
 	_check(page.rewards.visible and page.reward_divider.visible
 		and page.reward_soul_amount.text == "×11"
+		and page.reward_candle_row.visible and page.reward_candle_amount.text == "×2"
 		and page.reward_cards.get_child_count() == 2
 		and (page.reward_cards.get_child(1) as VBoxContainer).get_child_count() == 3
 		and ((page.reward_cards.get_child(1) as VBoxContainer).get_child(2) as Label).text \
@@ -361,3 +597,12 @@ func _test_result_reward_ui() -> void:
 	BattleContext.last_score_human = int(saved["human"])
 	BattleContext.last_score_ai = int(saved["ai"])
 	BattleContext.last_reward = saved["reward"]
+
+
+func _tree_contains_text(root: Node, needle: String) -> bool:
+	if root is Label and needle.to_lower() in (root as Label).text.to_lower():
+		return true
+	for child in root.get_children():
+		if _tree_contains_text(child, needle):
+			return true
+	return false

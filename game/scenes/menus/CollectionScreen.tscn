@@ -8,7 +8,7 @@
 [ext_resource type="Script" path="res://scripts/ui/input/TouchScrollContainer.gd" id="6_touch_scroll"]
 [ext_resource type="Script" path="res://scripts/ui/input/TouchButton.gd" id="7_touch_button"]
 [ext_resource type="Script" path="res://scripts/ui/GodPortrait.gd" id="8_god_portrait"]
-[ext_resource type="PackedScene" path="res://scenes/ui/SoulBalance.tscn" id="9_souls"]
+[ext_resource type="PackedScene" path="res://scenes/ui/CurrencyBalances.tscn" id="9_currency"]
 [ext_resource type="PackedScene" path="res://scenes/ui/PendingRewardsVault.tscn" id="10_vault"]
 [ext_resource type="Texture2D" path="res://assets/ui/vault.svg" id="11_vault_icon"]
 
@@ -63,7 +63,7 @@ theme_override_font_sizes/font_size = 66
 text = "MON BESTIAIRE"
 vertical_alignment = 1
 
-[node name="SoulBalance" parent="Content/Header" instance=ExtResource("9_souls")]
+[node name="CurrencyBalances" parent="Content/Header" instance=ExtResource("9_currency")]
 
 [node name="StatusLabel" type="Label" parent="Content"]
 visible = false

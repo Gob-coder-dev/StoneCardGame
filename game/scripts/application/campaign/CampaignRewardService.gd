@@ -1,4 +1,4 @@
-## Récompenses de campagne : montants déterministes par tentative, cartes de
+## Récompenses de campagne : âmes déterministes, bougies par chapitre, cartes de
 ## première victoire et protection idempotente via l'inventaire du profil.
 class_name CampaignRewardService
 extends RefCounted
@@ -19,6 +19,7 @@ static func apply_victory(service: CampaignService, node_id: String) -> Dictiona
 	var minimum := maxi(0, int(reward.get("souls_min", 0)))
 	var maximum := maxi(minimum, int(reward.get("souls_max", minimum)))
 	var souls := _deterministic_amount(transaction_id, minimum, maximum)
+	var candles := _candles_for_chapter(node.chapter)
 	if not first_victory:
 		souls = int(round(float(souls) * float(Config.get_config().get("repeat_reward_multiplier", 0.25))))
 	var cards: Array = []
@@ -34,10 +35,18 @@ static func apply_victory(service: CampaignService, node_id: String) -> Dictiona
 			# Les trois premières complètent automatiquement le deck ; la quatrième
 			# reste dans la collection pour faire découvrir l'éditeur de deck.
 			starter_cards = (reward.get("card_rewards", []) as Array).slice(0, 3)
-	var result := Economy.new().grant_reward(transaction_id, souls, cards, starter_cards)
+	var result := Economy.new().grant_reward(transaction_id, souls, cards,
+		starter_cards, candles)
 	result["first_victory"] = first_victory
 	result["transaction_id"] = transaction_id
 	return result
+
+
+static func _candles_for_chapter(chapter: String) -> int:
+	var values: Variant = Config.get_config().get("campaign_candles_by_chapter", {})
+	if not values is Dictionary:
+		return 1
+	return maxi(1, int(values.get(chapter, 1)))
 
 
 static func _deterministic_amount(key: String, minimum: int, maximum: int) -> int:

@@ -1,5 +1,5 @@
 ## EconomyService.gd
-## Point d'entrée transactionnel pour les âmes, copies, améliorations et dieux.
+## Point d'entrée transactionnel pour les monnaies, copies, améliorations et dieux.
 ## Il prépare une copie de l'inventaire et PlayerData ne la publie qu'après une
 ## sauvegarde réussie.
 class_name EconomyService
@@ -11,15 +11,17 @@ const ConfigModel := preload("res://scripts/data/economy/EconomyConfig.gd")
 
 
 func grant_reward(transaction_id: String, souls: int, cards: Array = [],
-		starter_deck_cards: Array = []) -> Dictionary:
+		starter_deck_cards: Array = [], candles: int = 0) -> Dictionary:
 	if transaction_id == "":
 		return _fail("Identifiant de récompense absent.")
 	if souls < 0:
 		return _fail("Montant d'âmes invalide.")
+	if candles < 0:
+		return _fail("Montant de bougies invalide.")
 	var next := InventoryModel.from_dict(PlayerData.inventory_dict())
 	if next.has_transaction(transaction_id):
 		return {"ok": true, "reason": "", "already_applied": true,
-			"souls": 0, "cards": [], "deferred_cards": []}
+			"souls": 0, "candles": 0, "cards": [], "deferred_cards": []}
 	var normalized: Array = []
 	for raw in cards:
 		if not raw is Dictionary:
@@ -30,6 +32,7 @@ func grant_reward(transaction_id: String, souls: int, cards: Array = [],
 			return _fail("Récompense inconnue : %s." % lineage_id)
 		normalized.append({"lineage_id": lineage_id, "copies": amount})
 	next.souls += souls
+	next.candles += candles
 	var granted: Array = []
 	var deferred: Array = []
 	for reward in normalized:
@@ -61,7 +64,7 @@ func grant_reward(transaction_id: String, souls: int, cards: Array = [],
 	if error != OK:
 		return _save_fail(error)
 	return {"ok": true, "reason": "", "already_applied": false,
-		"souls": souls, "cards": granted, "deferred_cards": deferred}
+		"souls": souls, "candles": candles, "cards": granted, "deferred_cards": deferred}
 
 
 func upgrade_card(lineage_id: String) -> Dictionary:
@@ -123,6 +126,14 @@ func grant_development_souls(amount: int) -> Error:
 		return ERR_INVALID_PARAMETER
 	var next := InventoryModel.from_dict(PlayerData.inventory_dict())
 	next.souls += amount
+	return PlayerData.commit_inventory(next)
+
+
+func grant_development_candles(amount: int) -> Error:
+	if amount <= 0:
+		return ERR_INVALID_PARAMETER
+	var next := InventoryModel.from_dict(PlayerData.inventory_dict())
+	next.candles += amount
 	return PlayerData.commit_inventory(next)
 
 

@@ -1,0 +1,18 @@
+<svg width="96" height="96" viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="wax" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff1bd"/>
+      <stop offset="0.48" stop-color="#e7a952"/>
+      <stop offset="1" stop-color="#8b3d35"/>
+    </linearGradient>
+    <radialGradient id="flame" cx="50%" cy="70%" r="70%">
+      <stop offset="0" stop-color="#fff6b7"/>
+      <stop offset="0.48" stop-color="#ff8b3d"/>
+      <stop offset="1" stop-color="#d92746"/>
+    </radialGradient>
+  </defs>
+  <path d="M48 5C59 18 61 29 48 39C35 29 37 18 48 5Z" fill="url(#flame)" stroke="#ffd978" stroke-width="3"/>
+  <path d="M32 35C40 31 56 31 64 35V80C64 88 58 92 48 92C38 92 32 88 32 80V35Z" fill="url(#wax)" stroke="#f0c66c" stroke-width="4"/>
+  <path d="M38 37V52L44 47L50 55L56 45L62 49V36" fill="#fff0be" opacity=".62"/>
+  <path d="M48 36V27" stroke="#3c2525" stroke-width="4" stroke-linecap="round"/>
+</svg>

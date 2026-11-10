@@ -1,0 +1,78 @@
+{
+  "rituals": [
+    {
+      "id": "small",
+      "name": "Petit rituel",
+      "price_candles": 15,
+      "souls_min": 10,
+      "souls_max": 20,
+      "sigil": "triangle",
+      "blood_color": "#6f3327",
+      "candle_colors": ["#d9a46d"],
+      "normal": [
+        {"rarity": "common", "slots": 2, "min_copies": 3, "max_copies": 5},
+        {"rarity": "rare", "slots": 1, "min_copies": 1, "max_copies": 2}
+      ],
+      "lucky_chance": 0.10,
+      "lucky": [
+        {"rarity": "common", "slots": 1, "min_copies": 3, "max_copies": 5},
+        {"rarity": "rare", "slots": 1, "min_copies": 1, "max_copies": 2},
+        {"rarity": "epic", "slots": 1, "min_copies": 1, "max_copies": 1}
+      ]
+    },
+    {
+      "id": "basic",
+      "name": "Rituel basique",
+      "price_candles": 30,
+      "souls_min": 30,
+      "souls_max": 50,
+      "sigil": "pentagram",
+      "blood_color": "#a62f35",
+      "candle_colors": ["#59a7ff"],
+      "normal": [
+        {"rarity": "common", "slots": 1, "min_copies": 4, "max_copies": 7},
+        {"rarity": "rare", "slots": 2, "min_copies": 3, "max_copies": 5},
+        {"rarity": "epic", "slots": 1, "min_copies": 2, "max_copies": 3}
+      ],
+      "lucky_chance": 0.10,
+      "lucky": [
+        {"rarity": "common", "slots": 1, "min_copies": 4, "max_copies": 7},
+        {"rarity": "rare", "slots": 1, "min_copies": 3, "max_copies": 5},
+        {"rarity": "epic", "slots": 1, "min_copies": 2, "max_copies": 3},
+        {"rarity": "legendary", "slots": 1, "min_copies": 1, "max_copies": 1}
+      ]
+    },
+    {
+      "id": "grand",
+      "name": "Grand rituel",
+      "price_candles": 70,
+      "souls_min": 100,
+      "souls_max": 200,
+      "sigil": "heptagram",
+      "blood_color": "#df2536",
+      "candle_colors": ["#b26cff"],
+      "normal": [
+        {"rarity": "common", "slots": 1, "min_copies": 8, "max_copies": 12},
+        {"rarity": "rare", "slots": 2, "min_copies": 5, "max_copies": 8},
+        {"rarity": "epic", "slots": 2, "min_copies": 3, "max_copies": 5},
+        {"rarity": "legendary", "slots": 1, "min_copies": 1, "max_copies": 1}
+      ],
+      "lucky_chance": 0.0,
+      "lucky": []
+    },
+    {
+      "id": "unique",
+      "name": "Rituel unique",
+      "price_candles": 100,
+      "souls_min": 0,
+      "souls_max": 0,
+      "sigil": "demon_heptagram",
+      "blood_color": "#f12b3b",
+      "candle_colors": ["#55c8ff", "#dc64ff", "#ffcf58", "#65e58f", "#ff6f69", "#f0f0ff", "#ff8bd8"],
+      "unique_missing": true,
+      "normal": [],
+      "lucky_chance": 0.0,
+      "lucky": []
+    }
+  ]
+}

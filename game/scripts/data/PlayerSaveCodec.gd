@@ -1,6 +1,6 @@
 ## Format de sauvegarde et migration des profils, sans lecture/écriture disque.
 extends RefCounted
-const VERSION := 6
+const VERSION := 8
 const DeckMigration := preload("res://scripts/data/DeckCatalogueMigration.gd")
 const EconomyConfigModel := preload("res://scripts/data/economy/EconomyConfig.gd")
 const InventoryModel := preload("res://scripts/domain/economy/PlayerInventory.gd")
@@ -82,6 +82,7 @@ static func starter_profile() -> Dictionary:
 	var selections := _empty_selections(decks)
 	var inventory := InventoryModel.new()
 	inventory.souls = maxi(0, int(starter.get("souls", 0)))
+	inventory.candles = maxi(0, int(starter.get("candles", 0)))
 	for stone_id in deck:
 		inventory.add_copies(StoneLoader.stone_lineage(str(stone_id)), 1)
 	return encode(decks, selections, "", "Joueur", default_stats(), inventory.to_dict())

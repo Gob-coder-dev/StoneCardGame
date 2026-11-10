@@ -51,6 +51,13 @@ static func problems(config: Dictionary = {}) -> Array[String]:
 					or StoneLoader.stone_rarity(str(stone_id)) != "common" \
 					or StoneLoader.stone_level(str(stone_id)) != 1:
 				result.append("La carte de départ '%s' doit être une commune neutre N1." % stone_id)
+	var candle_rewards: Variant = value.get("campaign_candles_by_chapter", {})
+	if not candle_rewards is Dictionary or candle_rewards.is_empty():
+		result.append("La progression des bougies de campagne est absente.")
+	else:
+		for chapter in candle_rewards:
+			if int(candle_rewards[chapter]) <= 0:
+				result.append("Récompense de bougies invalide pour '%s'." % chapter)
 	var gifts: Variant = value.get("god_gifts", {})
 	if not gifts is Dictionary:
 		result.append("Les cadeaux des dieux sont absents.")
