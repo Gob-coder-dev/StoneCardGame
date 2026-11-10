@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/collection/StoneInfoSheet.gd" id="1_info"]
 [ext_resource type="Script" path="res://scripts/ui/input/TouchButton.gd" id="2_touch_button"]
 [ext_resource type="Script" path="res://scripts/ui/input/TouchScrollContainer.gd" id="3_scroll"]
+[ext_resource type="Script" path="res://scripts/ui/collection/UpgradePriceButton.gd" id="4_upgrade_button"]
 
 [node name="StoneInfoSheet" type="Control"]
 visible = false
@@ -122,7 +123,12 @@ autowrap_mode = 2
 [node name="UseButton" type="Button" parent="InfoPanel/InfoContent"]
 theme_type_variation = &"PrimaryButton"
 layout_mode = 2
-script = ExtResource("2_touch_button")
-custom_minimum_size = Vector2(0, 108)
+script = ExtResource("4_upgrade_button")
+custom_minimum_size = Vector2(0, 128)
+theme_override_colors/font_color = Color(0, 0, 0, 0)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 0)
+theme_override_colors/font_pressed_color = Color(0, 0, 0, 0)
+theme_override_colors/font_hover_pressed_color = Color(0, 0, 0, 0)
+theme_override_colors/font_disabled_color = Color(0, 0, 0, 0)
 theme_override_font_sizes/font_size = 40
 text = "UTILISER"

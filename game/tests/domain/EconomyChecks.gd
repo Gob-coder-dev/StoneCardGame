@@ -25,7 +25,7 @@ func run() -> void:
 	await _test_deferred_god_reward()
 	PlayerData._apply_profile(Codec.starter_profile())
 	_test_three_by_three_state()
-	_test_rewards_and_upgrade()
+	await _test_rewards_and_upgrade()
 	_test_god_purchase()
 	_test_shop()
 	_test_ritual_config_and_transactions()
@@ -72,9 +72,13 @@ func _test_locked_level_ui() -> void:
 	page.info_sheet._select_level(2)
 	var preview: StoneCard = page.info_sheet.card_container.get_child(0)
 	_check(page.info_sheet.use_button.disabled
-		and page.info_sheet.use_button.text == "NIVEAU VERROUILLÉ"
+		and page.info_sheet.use_button.text == "AMÉLIORER"
+		and page.info_sheet.use_button.theme_type_variation == &"UpgradeButton"
+		and page.info_sheet.upgrade_price_row.visible
+		and page.info_sheet.upgrade_soul_icon.texture != null
+		and page.info_sheet.upgrade_price.text == "200"
 		and preview.modulate.a < 1.0,
-		"collection : un niveau supérieur verrouillé reste visible, grisé et inutilisable")
+		"collection : le prochain niveau grisé affiche son action et son prix")
 	# L'appel direct protège aussi le domaine contre un signal fabriqué ou une
 	# future régression de l'état disabled du bouton.
 	page.info_sheet.use_button.pressed.emit()
@@ -177,11 +181,46 @@ func _test_rewards_and_upgrade() -> void:
 		and PlayerData.candles() == 2
 		and int(PlayerData.card_entry(lineage)["copies"]) == 50,
 		"économie : une récompense est atomique et idempotente")
-	var upgraded := service.upgrade_card(lineage)
-	_check(bool(upgraded.get("ok", false)) and PlayerData.souls() == 0
+	var page := (load("res://scenes/menus/CollectionScreen.tscn") as PackedScene).instantiate()
+	add_child(page)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	var wrapper: VBoxContainer = page._collection_grid._wrappers[lineage]
+	page._open_card_actions("gueule_de_travers_n1", wrapper,
+		CardActionDrawer.Source.COLLECTION)
+	for _frame in range(4):
+		await get_tree().process_frame
+	page._action_drawer.upgrade_button.pressed.emit()
+	var preview: StoneCard = page.info_sheet.card_container.get_child(0)
+	_check(page.info_sheet.visible
+		and page.info_sheet._shown_variant == "gueule_de_travers_n2"
+		and page.info_sheet.use_button.text == "AMÉLIORER"
+		and page.info_sheet.use_button.theme_type_variation == &"UpgradeButton"
+		and page.info_sheet.upgrade_price_row.visible
+		and page.info_sheet.upgrade_price.text == "200"
+		and not page.info_sheet.use_button.disabled
+		and preview.modulate.a < 1.0
+		and int(PlayerData.card_entry(lineage)["unlocked_level"]) == 1,
+		"collection : le tiroir ouvre le prochain niveau grisé sans l'améliorer")
+	page.info_sheet._select_level(1)
+	var previous_level_is_available: bool = \
+		page.info_sheet.use_button.text == "UTILISER" \
+		and page.info_sheet.use_button.theme_type_variation == &"PrimaryButton" \
+		and not page.info_sheet.upgrade_price_row.visible
+	page.info_sheet._select_level(2)
+	page.info_sheet.use_button.pressed.emit()
+	_check(previous_level_is_available and page.info_sheet.visible
+		and page.info_sheet._shown_variant == "gueule_de_travers_n2"
+		and page.info_sheet.use_button.text == "UTILISER"
+		and page.info_sheet.use_button.theme_type_variation == &"PrimaryButton"
+		and not page.info_sheet.upgrade_price_row.visible
+		and preview.modulate == Color.WHITE
+		and PlayerData.souls() == 0
 		and int(PlayerData.card_entry(lineage)["unlocked_level"]) == 2
 		and int(PlayerData.card_entry(lineage)["copies"]) == 0,
-		"économie : améliorer une commune consomme 50 copies et 200 âmes")
+		"collection : améliorer depuis la fiche débloque la carte sans fermer l'aperçu")
+	page.queue_free()
+	await get_tree().process_frame
 
 
 func _test_first_tutorial_reward() -> void:
@@ -242,6 +281,21 @@ func _test_deferred_god_reward() -> void:
 	]
 	var positions_before: Array = collection_wrappers.map(func(wrapper: Control):
 		return wrapper.position)
+	var lateral_alignment_valid := true
+	for raw_wrapper in collection_wrappers:
+		var tested_wrapper := raw_wrapper as VBoxContainer
+		var tested_card := tested_wrapper.get_child(0) as StoneCard
+		page._open_card_actions(tested_card.get_stone_id(), tested_wrapper,
+			CardActionDrawer.Source.COLLECTION)
+		for _frame in range(4):
+			await get_tree().process_frame
+		var target_rect := tested_wrapper.get_global_rect()
+		var drawer_rect: Rect2 = page._action_drawer.get_global_rect()
+		lateral_alignment_valid = lateral_alignment_valid \
+			and absf(drawer_rect.position.x - target_rect.position.x) < 1.0 \
+			and absf(drawer_rect.size.x - target_rect.size.x) < 1.0
+	_check(lateral_alignment_valid,
+		"collection : le tiroir reste aligné sur les cartes gauche, centrale et droite")
 	var selected_wrapper := collection_wrappers[1] as VBoxContainer
 	var selected_card := selected_wrapper.get_child(0) as StoneCard
 	var card_size_before := selected_card.size

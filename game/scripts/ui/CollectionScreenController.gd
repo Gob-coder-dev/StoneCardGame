@@ -103,6 +103,7 @@ func _ready() -> void:
 	_level_selector.refresh(_preview_level)
 	level_button.pressed.connect(_toggle_level_menu)
 	info_sheet.use_requested.connect(_request_use)
+	info_sheet.upgrade_requested.connect(_upgrade_card)
 	_setup_sort()
 	sort_button.pressed.connect(_toggle_sort_menu)
 	replacement_panel.replacement_requested.connect(_on_replacement_requested)
@@ -481,7 +482,7 @@ func _open_card_actions(stone_id: String, wrapper: VBoxContainer, source: int) -
 	_action_drawer.setup(stone_id, source)
 	_action_drawer.info_requested.connect(_on_info_requested)
 	_action_drawer.primary_requested.connect(_on_primary_requested)
-	_action_drawer.upgrade_requested.connect(_upgrade_card)
+	_action_drawer.upgrade_requested.connect(_open_upgrade_preview)
 	_action_drawer.visible = false
 	StoryService.register_anchor("collection.action.primary", _action_drawer.primary_button)
 	StoryService.register_anchor("collection.action.info", _action_drawer.info_button)
@@ -521,20 +522,19 @@ func _position_action_drawer() -> void:
 	if not is_instance_valid(_action_drawer) or not is_instance_valid(_action_wrapper):
 		return
 	var target_rect := _action_wrapper.get_global_rect()
-	var visible_rect := scroll.get_global_rect()
 	var minimum := _action_drawer.get_combined_minimum_size()
 	# La largeur suit exactement l'emplacement de la carte. Le tiroir ne peut
 	# ainsi paraître plus gros que la carte, ni élargir une colonne.
-	var drawer_size := Vector2(maxf(target_rect.size.x, minimum.x), minimum.y)
+	var layer_inverse := action_drawer_layer.get_global_transform_with_canvas().affine_inverse()
+	var local_top_left := layer_inverse * target_rect.position
+	var local_bottom_right := layer_inverse * target_rect.end
+	var target_size := local_bottom_right - local_top_left
+	var drawer_size := Vector2(maxf(target_size.x, minimum.x), minimum.y)
 	_action_drawer.custom_minimum_size = drawer_size
 	_action_drawer.size = drawer_size
-	var global_x := target_rect.get_center().x - drawer_size.x * 0.5
-	global_x = clampf(global_x, visible_rect.position.x + ACTION_DRAWER_MARGIN,
-		visible_rect.end.x - drawer_size.x - ACTION_DRAWER_MARGIN)
 	# Le tiroir appartient visuellement à la carte : il reste toujours dessous.
-	var global_y := target_rect.end.y + ACTION_DRAWER_GAP
-	var layer_origin := action_drawer_layer.get_global_transform_with_canvas().origin
-	_action_drawer.position = Vector2(global_x, global_y) - layer_origin
+	_action_drawer.position = Vector2(local_top_left.x,
+		local_bottom_right.y + ACTION_DRAWER_GAP)
 
 
 func _on_scroll_value_changed(_value: float) -> void:
@@ -563,6 +563,18 @@ func _close_action_drawer() -> void:
 func _on_info_requested(stone_id: String) -> void:
 	_close_action_drawer()
 	info_sheet.open_for(stone_id, _current_deck)
+
+
+## Le tiroir conduit vers l'aperçu grisé du prochain niveau. La transaction
+## reste exclusivement déclenchée depuis la fiche détaillée.
+func _open_upgrade_preview(lineage_id: String) -> void:
+	var unlocked_level := int(PlayerData.card_entry(lineage_id).get("unlocked_level", 0))
+	var next_id := StoneLoader.variant_id(lineage_id, unlocked_level + 1)
+	if next_id == "":
+		_show_error("Cette carte est déjà au niveau maximal.")
+		return
+	_close_action_drawer()
+	info_sheet.open_for(next_id, _current_deck)
 
 
 func _on_primary_requested(stone_id: String, source: CardActionDrawer.Source) -> void:
@@ -661,6 +673,7 @@ func _upgrade_card(lineage_id: String) -> void:
 	_clear_status()
 	_populate_collection()
 	_refresh_deck()
+	info_sheet.refresh_inventory_state()
 
 
 func _show_error(message: String) -> void:

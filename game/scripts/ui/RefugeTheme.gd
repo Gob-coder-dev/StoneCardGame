@@ -24,6 +24,8 @@ func _init() -> void:
 	_buttons("Button", false)
 	set_type_variation("PrimaryButton", "Button")
 	_buttons("PrimaryButton", true)
+	set_type_variation("UpgradeButton", "Button")
+	_upgrade_button()
 	set_type_variation("DangerButton", "Button")
 	var danger := UITheme.button_style()
 	danger.bg_color = UITheme.COL_DANGER
@@ -90,6 +92,34 @@ func _buttons(type: String, primary: bool) -> void:
 	var focus := UITheme.panel_style(Color.TRANSPARENT, UITheme.COL_NEON_PINK, 3, 14)
 	focus.shadow_size = 0
 	set_stylebox("focus", type, focus)
+
+
+## L'amélioration est une dépense, pas l'action principale de navigation : son
+## violet minéral et son liseré doré la distinguent du bouton orange UTILISER.
+func _upgrade_button() -> void:
+	set_font_size("font_size", "UpgradeButton", UITheme.FONT_BODY)
+	for state in ["font_color", "font_hover_color", "font_pressed_color",
+			"font_hover_pressed_color"]:
+		set_color(state, "UpgradeButton", Color.TRANSPARENT)
+	set_color("font_disabled_color", "UpgradeButton", Color.TRANSPARENT)
+	var normal := UITheme.button_style()
+	normal.bg_color = UITheme.COL_SELECTED
+	normal.border_color = UITheme.COL_WARNING
+	set_stylebox("normal", "UpgradeButton", normal)
+	var hover := normal.duplicate() as StyleBoxFlat
+	hover.bg_color = UITheme.COL_SELECTED.lightened(0.10)
+	set_stylebox("hover", "UpgradeButton", hover)
+	var pressed := normal.duplicate() as StyleBoxFlat
+	pressed.bg_color = UITheme.COL_SELECTED.darkened(0.16)
+	pressed.border_width_bottom = 3
+	set_stylebox("pressed", "UpgradeButton", pressed)
+	set_stylebox("hover_pressed", "UpgradeButton", pressed)
+	var disabled := UITheme.panel_style(
+		UITheme.COL_TAB_IDLE, UITheme.COL_WARNING.darkened(0.48), 2, 14)
+	set_stylebox("disabled", "UpgradeButton", disabled)
+	var focus := UITheme.panel_style(Color.TRANSPARENT, UITheme.COL_WARNING, 3, 14)
+	focus.shadow_size = 0
+	set_stylebox("focus", "UpgradeButton", focus)
 
 
 ## Les OptionButton ouvrent un PopupMenu dans une fenêtre séparée : les deux

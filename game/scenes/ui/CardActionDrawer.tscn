@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/ui/collection/CardActionDrawer.gd" id="1_drawer"]
 [ext_resource type="Script" path="res://scripts/ui/input/TouchButton.gd" id="2_touch_button"]
-[ext_resource type="Texture2D" path="res://assets/ui/soul-placeholder.svg" id="3_soul"]
+[ext_resource type="Script" path="res://scripts/ui/collection/UpgradePriceButton.gd" id="3_upgrade_button"]
 
 [sub_resource type="StyleBoxFlat" id="DrawerPanel"]
 content_margin_left = 10.0
@@ -43,48 +43,14 @@ text = "UTILISER"
 
 [node name="UpgradeButton" type="Button" parent="Actions"]
 layout_mode = 2
-script = ExtResource("2_touch_button")
+script = ExtResource("3_upgrade_button")
 custom_minimum_size = Vector2(0, 108)
-
-[node name="Content" type="VBoxContainer" parent="Actions/UpgradeButton"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 8.0
-offset_top = 5.0
-offset_right = -8.0
-offset_bottom = -5.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-theme_override_constants/separation = 0
-
-[node name="Title" type="Label" parent="Actions/UpgradeButton/Content"]
-layout_mode = 2
-mouse_filter = 2
-theme_override_font_sizes/font_size = 23
-text = "AMÉLIORER"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Price" type="HBoxContainer" parent="Actions/UpgradeButton/Content"]
-layout_mode = 2
-mouse_filter = 2
-theme_override_constants/separation = 8
-alignment = 1
-
-[node name="SoulIcon" type="TextureRect" parent="Actions/UpgradeButton/Content/Price"]
-custom_minimum_size = Vector2(34, 34)
-layout_mode = 2
-mouse_filter = 2
-texture = ExtResource("3_soul")
-expand_mode = 3
-stretch_mode = 5
-
-[node name="Amount" type="Label" parent="Actions/UpgradeButton/Content/Price"]
-layout_mode = 2
-mouse_filter = 2
-theme_override_font_sizes/font_size = 24
-text = "200"
-vertical_alignment = 1
+theme_type_variation = &"UpgradeButton"
+theme_override_colors/font_color = Color(0, 0, 0, 0)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 0)
+theme_override_colors/font_pressed_color = Color(0, 0, 0, 0)
+theme_override_colors/font_hover_pressed_color = Color(0, 0, 0, 0)
+theme_override_colors/font_disabled_color = Color(0, 0, 0, 0)
+title_font_size = 23
+price_font_size = 24
+soul_icon_size = 34.0

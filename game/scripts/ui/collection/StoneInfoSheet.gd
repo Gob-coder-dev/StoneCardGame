@@ -2,6 +2,7 @@
 class_name StoneInfoSheet
 extends Control
 signal use_requested(stone_id: String)
+signal upgrade_requested(lineage_id: String)
 const NumberedSelector := preload("res://scripts/ui/collection/NumberedSelector.gd")
 const PowerBadge := preload("res://scripts/ui/PowerBadge.gd")
 const Symbols := preload("res://scripts/ui/StoneSymbols.gd")
@@ -15,7 +16,7 @@ const Symbols := preload("res://scripts/ui/StoneSymbols.gd")
 @onready var stats_label: Label = $InfoPanel/InfoContent/Scroll/Page/Stats
 @onready var card_container: MarginContainer = $InfoPanel/InfoContent/Scroll/Page/Card
 @onready var close_button: Button = $InfoPanel/InfoContent/Header/CloseButton
-@onready var use_button: Button = $InfoPanel/InfoContent/UseButton
+@onready var use_button: UpgradePriceButton = $InfoPanel/InfoContent/UseButton
 @onready var error_label: Label = $InfoPanel/InfoContent/Error
 
 const Gesture := preload("res://scripts/ui/input/TapGesture.gd")
@@ -30,9 +31,7 @@ var _deck: Array = []
 func _ready() -> void:
 	close_button.pressed.connect(close_sheet)
 	$Backdrop.gui_input.connect(_on_backdrop_input)
-	use_button.pressed.connect(func():
-		if _shown_variant != "":
-			use_requested.emit(_shown_variant))
+	use_button.pressed.connect(_on_primary_pressed)
 	_card = StoneCard.new()
 	_card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_card.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -81,9 +80,18 @@ func _refresh_form(stone_id: String) -> void:
 	var stone := StoneLoader.get_stone(stone_id)
 	var level := StoneLoader.stone_level(stone_id)
 	var owned := PlayerData.owns_stone(stone_id)
+	var unlocked_level := int(PlayerData.card_entry(_lineage).get("unlocked_level", 0))
+	var is_next_level := not owned and level == unlocked_level + 1
 	_selector.refresh(level)
-	use_button.disabled = not owned or _deck.has(stone_id)
-	use_button.text = "NIVEAU VERROUILLÉ" if not owned else "UTILISER"
+	if owned:
+		_set_action_state("UTILISER", _deck.has(stone_id), false)
+	elif is_next_level:
+		var requirement := CardProgressionRules.requirement(
+			_lineage, unlocked_level, EconomyConfig.get_config())
+		_set_action_state("AMÉLIORER", not PlayerData.can_upgrade_card(_lineage),
+			true, int(requirement.get("souls", 0)))
+	else:
+		_set_action_state("NIVEAU VERROUILLÉ", true, false)
 	error_label.visible = false
 	title_label.text = stone.get("name", stone_id)
 	var god := StoneLoader.get_god(str(stone.get("god_id", "neutral")))
@@ -105,6 +113,39 @@ func _refresh_form(stone_id: String) -> void:
 	]
 	_card.setup(stone, StoneCard.OWNER_NONE)
 	_card.modulate = Color.WHITE if owned else Color(0.38, 0.38, 0.43, 0.72)
+
+
+func _set_action_state(title: String, disabled: bool, upgrading: bool,
+		price: int = 0) -> void:
+	# Le texte natif reste renseigné pour l'accessibilité et les contrôles, mais
+	# son rendu est transparent : la composition sur deux lignes vit au-dessus.
+	use_button.text = title
+	use_button.disabled = disabled
+	use_button.theme_type_variation = &"UpgradeButton" if upgrading else &"PrimaryButton"
+	var title_color := UITheme.COL_WARNING if upgrading else (
+		UITheme.COL_TEXT_DIM if disabled else UITheme.COL_INK)
+	use_button.set_content(title, upgrading, price, title_color)
+
+
+func _on_primary_pressed() -> void:
+	if _shown_variant == "":
+		return
+	if PlayerData.owns_stone(_shown_variant):
+		use_requested.emit(_shown_variant)
+		return
+	var shown_level := StoneLoader.stone_level(_shown_variant)
+	var unlocked_level := int(PlayerData.card_entry(_lineage).get("unlocked_level", 0))
+	if shown_level == unlocked_level + 1 and PlayerData.can_upgrade_card(_lineage):
+		upgrade_requested.emit(_lineage)
+
+
+## Conserve le niveau consulté après la transaction et actualise son état.
+func refresh_inventory_state() -> void:
+	if _shown_variant == "" or _selector == null:
+		return
+	_selector.show_unlocked_through(
+		int(PlayerData.card_entry(_lineage).get("unlocked_level", 0)))
+	_refresh_form(_shown_variant)
 
 
 ## Réutilise exactement les pictogrammes des cartes et des règles. Les cartes
