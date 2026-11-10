@@ -561,6 +561,7 @@ func _close_action_drawer() -> void:
 
 
 func _on_info_requested(stone_id: String) -> void:
+	_close_action_drawer()
 	info_sheet.open_for(stone_id, _current_deck)
 
 
