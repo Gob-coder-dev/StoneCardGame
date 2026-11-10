@@ -1,0 +1,12 @@
+{
+  "catalogue_version": 1,
+  "families": [
+    { "id": "neutral", "path": "res://data/stones/neutral.json" },
+    { "id": "veskar", "path": "res://data/stones/veskar.json" },
+    { "id": "nerava", "path": "res://data/stones/nerava.json" },
+    { "id": "kharun", "path": "res://data/stones/kharun.json" },
+    { "id": "ilyr", "path": "res://data/stones/ilyr.json" },
+    { "id": "sylkha", "path": "res://data/stones/sylkha.json" },
+    { "id": "enigma", "path": "res://data/stones/enigma.json" }
+  ]
+}

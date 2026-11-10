@@ -138,13 +138,5 @@
       ],
       "god_id": "enigma"
     }
-  ],
-  "legacy_ids": {
-    "hiro": "disciple_muraille",
-    "mei": "porteuse_fievre",
-    "tetsuo": "croupier_ricanant",
-    "yuki": "tisseuse_racines",
-    "raiko": "guetteur_lointain",
-    "kaguya": "maitre_carcasses"
-  }
+  ]
 }

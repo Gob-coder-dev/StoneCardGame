@@ -29,7 +29,7 @@ static func from_dict(raw: Variant) -> PlayerInventory:
 	var gods: Variant = raw.get("unlocked_god_ids", [])
 	if gods is Array:
 		for value in gods:
-			var god_id := StoneLoader.resolve_saved_god_id(str(value))
+			var god_id := str(value)
 			if not StoneLoader.get_god(god_id).is_empty():
 				result.unlocked_gods[god_id] = true
 	var raw_cards: Variant = raw.get("cards", {})

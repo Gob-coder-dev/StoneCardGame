@@ -1,6 +1,6 @@
-extends Button
 ## Conserve les boutons natifs (souris, clavier, manette, tactile), mais
 ## annule définitivement leur appui dès que le doigt ou la souris glisse.
+extends Button
 
 const Gesture := preload("res://scripts/ui/input/TapGesture.gd")
 var _tap := Gesture.new()

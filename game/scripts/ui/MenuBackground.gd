@@ -1,3 +1,5 @@
+## Décors procéduraux partagés par les menus. Le composant ne décide jamais
+## de la navigation ; il adapte seulement une salle et ses couleurs au viewport.
 @tool
 class_name MenuBackground
 extends Control

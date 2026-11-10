@@ -407,6 +407,9 @@ func _test_liveness_timeout() -> void:
 		and LanProtocol.START_AGREEMENT_TIMEOUT_SECONDS > 0.0,
 		"un pair silencieux interrompt le match au lieu de bloquer le tour indéfiniment")
 	driver.shutdown()
+	# Ce driver isolé n'entre volontairement pas dans l'arbre : il doit donc
+	# être libéré immédiatement, contrairement aux fixtures ajoutées par add_child().
+	driver.free()
 
 
 func _test_results() -> void:

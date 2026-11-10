@@ -1,9 +1,8 @@
 # Direction artistique — Bestiaire d'horreur
 
-Ce document est la référence visuelle active de **SamStone**. L’univers japonais
-d’origine a été remplacé par un bestiaire horrifique organisé autour de six dieux,
-de leurs familles de cartes et de monstres neutres. Le [bestiaire](BESTIAIRE.md)
-décrit les créatures individuelles.
+Ce document est la référence visuelle active de **SamStone**. Son bestiaire
+horrifique est organisé autour de six dieux, de leurs familles de cartes et de
+monstres neutres. Le [bestiaire](BESTIAIRE.md) décrit les créatures individuelles.
 
 L’objectif est un jeu inquiétant mais lisible et accueillant sur mobile. L’horreur
 vient des silhouettes, des matières, des expressions et des détails narratifs ;
@@ -158,7 +157,7 @@ Avant d'intégrer une illustration, vérifier :
 
 Les portraits de dieux sont enregistrés dans le dossier assets/gods. Les cartes
 sont dans assets/cards, et leur association au jeu se fait par le champ asset de
-data/stones.json. Une image de niveau peut remplacer l'illustration commune de sa
+`data/stones/`. Une image de niveau peut remplacer l'illustration commune de sa
 lignée sans changer ses statistiques, ses identifiants ou les sauvegardes.
 
 Le jeu contient actuellement 275 PNG de cartes : 96 N1, 81 N2, 65 N3 et 33 N4.

@@ -37,6 +37,11 @@ export_credentials.cfg
 *.ipa
 
 # Python et entraînement RL.
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 /rl/.venv/
 /rl/.venv*/
 /rl/**/__pycache__/
@@ -55,6 +60,11 @@ export_credentials.cfg
 /rl/logs/
 /rl/wandb/
 /rl/artifacts/
+
+# Métadonnées locales des assistants et outils de travail.
+/.freebuff/
+/.agents/
+/.codex/
 
 [Cc][Ll][Aa][Uu][Dd][Ee].[Mm][Dd]
 

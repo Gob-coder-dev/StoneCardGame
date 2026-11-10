@@ -64,9 +64,11 @@ communes fixes du dieu, choisies pour présenter des mécaniques différentes.
 ## Rituels
 
 Les Rituels sont achetables sans limite de rotation tant que le joueur possède
-assez de bougies. Les quatre fiches sont affichées deux par ligne. Un achat
-produit des lignées distinctes, uniquement parmi les cartes neutres et celles
-des dieux déjà débloqués.
+assez de bougies. Les quatre fiches sont affichées deux par ligne. Les trois
+Rituels à lots produisent des lignées distinctes parmi les cartes neutres et
+celles des dieux déjà débloqués. Le Rituel unique constitue l'exception : il
+peut tirer une carte de tout le catalogue et place une carte divine dans le
+coffre si son dieu est encore verrouillé.
 
 | Rituel | Bougies | Âmes | Invocations normales |
 | --- | ---: | ---: | --- |

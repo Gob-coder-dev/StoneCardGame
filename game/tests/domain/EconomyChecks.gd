@@ -74,9 +74,9 @@ func _test_locked_level_ui() -> void:
 	_check(page.info_sheet.use_button.disabled
 		and page.info_sheet.use_button.text == "AMÉLIORER"
 		and page.info_sheet.use_button.theme_type_variation == &"UpgradeButton"
-		and page.info_sheet.upgrade_price_row.visible
-		and page.info_sheet.upgrade_soul_icon.texture != null
-		and page.info_sheet.upgrade_price.text == "200"
+		and page.info_sheet.use_button.is_price_visible()
+		and page.info_sheet.use_button.soul_icon_texture() != null
+		and page.info_sheet.use_button.displayed_price() == 200
 		and preview.modulate.a < 1.0,
 		"collection : le prochain niveau grisé affiche son action et son prix")
 	# L'appel direct protège aussi le domaine contre un signal fabriqué ou une
@@ -126,9 +126,9 @@ func _test_collection_economy_ui() -> void:
 		await get_tree().process_frame
 	var drawer: CardActionDrawer = page._action_drawer
 	_check(drawer != null and drawer.upgrade_button.visible
-		and drawer.upgrade_soul_icon.texture != null
-		and drawer.upgrade_title.text == "AMÉLIORER"
-		and not drawer.upgrade_price.text.to_upper().contains("ÂME"),
+		and drawer.upgrade_button.soul_icon_texture() != null
+		and drawer.upgrade_button.text == "AMÉLIORER"
+		and drawer.upgrade_button.is_price_visible(),
 		"collection : Améliorer est dans le tiroir et son prix utilise le pictogramme")
 	_check(drawer.get_parent() == page.action_drawer_layer
 		and deck_card.size == deck_card_size and first_slot.size == deck_wrapper_size
@@ -196,8 +196,8 @@ func _test_rewards_and_upgrade() -> void:
 		and page.info_sheet._shown_variant == "gueule_de_travers_n2"
 		and page.info_sheet.use_button.text == "AMÉLIORER"
 		and page.info_sheet.use_button.theme_type_variation == &"UpgradeButton"
-		and page.info_sheet.upgrade_price_row.visible
-		and page.info_sheet.upgrade_price.text == "200"
+		and page.info_sheet.use_button.is_price_visible()
+		and page.info_sheet.use_button.displayed_price() == 200
 		and not page.info_sheet.use_button.disabled
 		and preview.modulate.a < 1.0
 		and int(PlayerData.card_entry(lineage)["unlocked_level"]) == 1,
@@ -206,14 +206,14 @@ func _test_rewards_and_upgrade() -> void:
 	var previous_level_is_available: bool = \
 		page.info_sheet.use_button.text == "UTILISER" \
 		and page.info_sheet.use_button.theme_type_variation == &"PrimaryButton" \
-		and not page.info_sheet.upgrade_price_row.visible
+		and not page.info_sheet.use_button.is_price_visible()
 	page.info_sheet._select_level(2)
 	page.info_sheet.use_button.pressed.emit()
 	_check(previous_level_is_available and page.info_sheet.visible
 		and page.info_sheet._shown_variant == "gueule_de_travers_n2"
 		and page.info_sheet.use_button.text == "UTILISER"
 		and page.info_sheet.use_button.theme_type_variation == &"PrimaryButton"
-		and not page.info_sheet.upgrade_price_row.visible
+		and not page.info_sheet.use_button.is_price_visible()
 		and preview.modulate == Color.WHITE
 		and PlayerData.souls() == 0
 		and int(PlayerData.card_entry(lineage)["unlocked_level"]) == 2

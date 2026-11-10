@@ -1,5 +1,5 @@
 ## StoneLoader.gd
-## Charge et met en cache les données des pierres depuis stones.json.
+## Charge et met en cache les données des pierres depuis le manifeste de familles.
 ## Utilisé comme Autoload (singleton) dans le projet.
 ## NB : pas de class_name ici — le nom "StoneLoader" est défini dans project.godot
 ##      comme AutoLoad, ce qui le rend accessible globalement sans class_name.
@@ -10,7 +10,7 @@ extends Node
 const ContentChecks := preload("res://scripts/data/ContentValidator.gd")
 const OpponentCatalogModel := preload("res://scripts/data/OpponentCatalog.gd")
 
-const STONES_PATH: String = "res://data/stones.json"
+const STONES_MANIFEST_PATH: String = "res://data/stones/manifest.json"
 const NPCS_PATH: String = "res://data/npcs.json"
 const GODS_PATH: String = "res://data/gods.json"
 
@@ -21,17 +21,14 @@ var _stones: Dictionary = {}
 var _stones_list: Array = []
 ## Une lignée contient ses identifiants de formes dans l'ordre des niveaux.
 var _lineages: Dictionary = {}
-var _legacy_ids: Dictionary = {}
 
 ## Dictionnaire indexé par npc_id -> dict complet du NPC
 var _npcs: Dictionary = {}
-var _legacy_npc_ids: Dictionary = {}
 
 ## Dieux jouables et ordre d'affichage.
 var _gods: Dictionary = {}
 var _gods_list: Array = []
 var _default_god_id: String = ""
-var _legacy_god_ids: Dictionary = {}
 
 
 func _ready() -> void:
@@ -47,23 +44,51 @@ func _ready() -> void:
 ## ─── Chargement ───────────────────────────────────────────────────────────────
 
 func _load_stones() -> void:
-	var file := FileAccess.open(STONES_PATH, FileAccess.READ)
-	if file == null:
-		push_error("StoneLoader: impossible d'ouvrir %s" % STONES_PATH)
+	var manifest := _read_json_dictionary(STONES_MANIFEST_PATH)
+	var families: Variant = manifest.get("families")
+	if not families is Array:
+		push_error("StoneLoader: manifeste invalide dans %s" % STONES_MANIFEST_PATH)
 		return
-	var content := file.get_as_text()
-	file.close()
-
-	var parsed = JSON.parse_string(content)
-	if not parsed is Dictionary or not parsed.get("lineages") is Array:
-		push_error("StoneLoader: format JSON invalide dans %s" % STONES_PATH)
-		return
-
-	for lineage in parsed.get("lineages", []):
-		_index_lineage(lineage)
-	_legacy_ids = parsed.get("legacy_ids", {}).duplicate()
+	var seen_families := {}
+	for entry in families:
+		_load_stone_family(entry, seen_families)
 
 	print("StoneLoader: %d pierres chargées." % _stones_list.size())
+
+
+func _load_stone_family(entry: Variant, seen_families: Dictionary) -> void:
+	if not entry is Dictionary:
+		push_error("StoneLoader: entrée de famille invalide dans le manifeste.")
+		return
+	var family_id := str(entry.get("id", ""))
+	var path := str(entry.get("path", ""))
+	if family_id.is_empty() or path.is_empty() or seen_families.has(family_id):
+		push_error("StoneLoader: famille de pierres invalide '%s'." % family_id)
+		return
+	seen_families[family_id] = true
+	var parsed := _read_json_dictionary(path)
+	var lineages: Variant = parsed.get("lineages")
+	if not lineages is Array or str(parsed.get("family_id", "")) != family_id:
+		push_error("StoneLoader: fichier de famille invalide dans %s" % path)
+		return
+	for lineage in lineages:
+		if not lineage is Dictionary or str(lineage.get("god_id", "neutral")) != family_id:
+			push_error("StoneLoader: lignée hors de la famille '%s' dans %s." % [family_id, path])
+			continue
+		_index_lineage(lineage)
+
+
+func _read_json_dictionary(path: String) -> Dictionary:
+	var file := FileAccess.open(path, FileAccess.READ)
+	if file == null:
+		push_error("StoneLoader: impossible d'ouvrir %s" % path)
+		return {}
+	var parsed: Variant = JSON.parse_string(file.get_as_text())
+	file.close()
+	if not parsed is Dictionary:
+		push_error("StoneLoader: format JSON invalide dans %s" % path)
+		return {}
+	return parsed
 
 
 func _index_stone(definition: Dictionary, lineage: String, level: int, maximum: int) -> void:
@@ -114,7 +139,6 @@ func _load_npcs() -> void:
 
 	for npc in parsed["npcs"]:
 		_npcs[npc["id"]] = npc
-	_legacy_npc_ids = parsed.get("legacy_ids", {}).duplicate()
 
 	print("StoneLoader: %d NPCs chargés." % _npcs.size())
 
@@ -132,7 +156,6 @@ func _load_gods() -> void:
 	for god in parsed["gods"]:
 		_gods[str(god["id"])] = god
 		_gods_list.append(god)
-	_legacy_god_ids = parsed.get("legacy_ids", {}).duplicate()
 
 
 ## ─── Accès aux pierres ────────────────────────────────────────────────────────
@@ -178,10 +201,6 @@ func variant_ids(lineage_id: String) -> Array:
 func preview_variant(stone_id: String, requested: int) -> String:
 	var lineage := stone_lineage(stone_id)
 	return variant_id(lineage, StoneEvolutionRules.preview_level(requested, lineage_max_level(lineage)))
-
-
-func resolve_saved_id(stone_id: String) -> String:
-	return stone_id if has_stone(stone_id) else str(_legacy_ids.get(stone_id, stone_id))
 
 
 func has_effect(stone_id: String, effect: String) -> bool:
@@ -233,13 +252,7 @@ func build_hand(stone_ids: Array) -> Array:
 ## ─── Accès aux NPCs ───────────────────────────────────────────────────────────
 
 func get_npc(npc_id: String) -> Dictionary:
-	return _npcs.get(resolve_saved_npc_id(npc_id), {}).duplicate(true)
-
-
-## Les identifiants historiques ne servent qu'au chargement des sauvegardes.
-## Le jeu et les nouvelles sauvegardes utilisent exclusivement les IDs actuels.
-func resolve_saved_npc_id(npc_id: String) -> String:
-	return npc_id if _npcs.has(npc_id) else str(_legacy_npc_ids.get(npc_id, npc_id))
+	return _npcs.get(npc_id, {}).duplicate(true)
 
 
 ## Retourne la liste des NPCs triée par difficulté (easy → hard)
@@ -255,13 +268,7 @@ func get_npcs_ordered() -> Array:
 ## ─── Accès aux dieux et aux familles ────────────────────────────────────────
 
 func get_god(god_id: String) -> Dictionary:
-	return _gods.get(resolve_saved_god_id(god_id), {}).duplicate(true)
-
-
-## Les identifiants historiques ne servent qu'au chargement des sauvegardes.
-## Le jeu et les nouvelles sauvegardes utilisent exclusivement les IDs actuels.
-func resolve_saved_god_id(god_id: String) -> String:
-	return god_id if _gods.has(god_id) else str(_legacy_god_ids.get(god_id, god_id))
+	return _gods.get(god_id, {}).duplicate(true)
 
 
 func get_all_gods() -> Array:
@@ -275,11 +282,10 @@ func default_god_id() -> String:
 
 
 func is_stone_available_to_god(stone_id: String, god_id: String) -> bool:
-	var resolved_god := resolve_saved_god_id(god_id)
-	if not _gods.has(resolved_god):
+	if not _gods.has(god_id):
 		return false
 	var affinity := stone_affinity(stone_id)
-	return affinity != "" and (affinity == "neutral" or affinity == resolved_god)
+	return affinity != "" and (affinity == "neutral" or affinity == god_id)
 
 
 ## Lecture du catalogue sans copie : famille de la pierre, ou "" si inconnue.

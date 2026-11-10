@@ -2,9 +2,6 @@
 class_name CardProgressBar
 extends ProgressBar
 
-const ProgressionRules := preload("res://scripts/domain/economy/CardProgressionRules.gd")
-const ConfigModel := preload("res://scripts/data/economy/EconomyConfig.gd")
-
 var lineage_id := ""
 var count_label: Label
 
@@ -34,10 +31,10 @@ func _init() -> void:
 
 func setup(card_lineage_id: String) -> void:
 	lineage_id = card_lineage_id
-	var entry := PlayerData.card_entry(lineage_id)
+	var upgrade := PlayerData.card_upgrade_state(lineage_id)
+	var entry: Dictionary = upgrade.get("entry", {})
 	var unlocked := int(entry.get("unlocked_level", 0))
-	var requirement := ProgressionRules.requirement(lineage_id, unlocked,
-		ConfigModel.get_config())
+	var requirement: Dictionary = upgrade.get("requirement", {})
 	visible = unlocked > 0 and not requirement.is_empty()
 	if not visible:
 		return

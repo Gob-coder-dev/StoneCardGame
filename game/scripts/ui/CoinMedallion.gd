@@ -1,3 +1,5 @@
+## Médaillon procédural du pile ou face. Ce composant ne porte aucun état de
+## match : il dessine uniquement le jeton dans le rectangle fourni par la scène.
 extends Panel
 
 

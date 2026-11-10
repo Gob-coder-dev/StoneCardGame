@@ -1,0 +1,661 @@
+﻿{
+    "family_id":  "kharun",
+    "lineages":  [
+                     {
+                         "id":  "eclat_cuirasse",
+                         "name":  "Ã‰clat cuirassÃ©",
+                         "rarity":  "common",
+                         "god_id":  "kharun",
+                         "description":  "Flancs dÃ©fensifs sans attaque ; haut/bas gagnent leurs lames.",
+                         "body_color":  "#83a6ad",
+                         "asset":  "res://assets/cards/r/r01_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "power_text":  "Les boucliers renforcent la dÃ©fense sans augmenter lâ€™attaque.",
+                         "levels":  [
+                                        {
+                                            "id":  "eclat_cuirasse_n1",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  1,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       },
+                                            "shields":  {
+                                                            "left":  1,
+                                                            "right":  1
+                                                        }
+                                        },
+                                        {
+                                            "id":  "eclat_cuirasse_n2",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  1,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       },
+                                            "shields":  {
+                                                            "left":  2,
+                                                            "right":  2
+                                                        },
+                                            "asset":  "res://assets/cards/r/r01_n2.png"
+                                        },
+                                        {
+                                            "id":  "eclat_cuirasse_n3",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  2,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       },
+                                            "shields":  {
+                                                            "left":  2,
+                                                            "right":  2
+                                                        },
+                                            "asset":  "res://assets/cards/r/r01_n3.png"
+                                        },
+                                        {
+                                            "id":  "eclat_cuirasse_n4",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  2,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       },
+                                            "shields":  {
+                                                            "left":  3,
+                                                            "right":  3
+                                                        },
+                                            "asset":  "res://assets/cards/r/r01_n4.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "heaume_errant",
+                         "name":  "Heaume errant",
+                         "rarity":  "common",
+                         "god_id":  "kharun",
+                         "description":  "Face haute trÃ¨s dÃ©fensive, attaque gauche secondaire ; droite toujours vide.",
+                         "body_color":  "#83a6ad",
+                         "asset":  "res://assets/cards/r/r02_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "power_text":  "Les boucliers renforcent la dÃ©fense sans augmenter lâ€™attaque.",
+                         "levels":  [
+                                        {
+                                            "id":  "heaume_errant_n1",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       },
+                                            "shields":  {
+                                                            "top":  1
+                                                        }
+                                        },
+                                        {
+                                            "id":  "heaume_errant_n2",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  0,
+                                                           "left":  1,
+                                                           "right":  0
+                                                       },
+                                            "shields":  {
+                                                            "top":  1
+                                                        },
+                                            "asset":  "res://assets/cards/r/r02_n2.png"
+                                        },
+                                        {
+                                            "id":  "heaume_errant_n3",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  0,
+                                                           "left":  2,
+                                                           "right":  0
+                                                       },
+                                            "shields":  {
+                                                            "top":  2
+                                                        },
+                                            "asset":  "res://assets/cards/r/r02_n3.png"
+                                        },
+                                        {
+                                            "id":  "heaume_errant_n4",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  1,
+                                                           "left":  3,
+                                                           "right":  0
+                                                       },
+                                            "shields":  {
+                                                            "top":  2
+                                                        },
+                                            "asset":  "res://assets/cards/r/r02_n4.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "carapace_vide",
+                         "name":  "Carapace vide",
+                         "rarity":  "common",
+                         "god_id":  "kharun",
+                         "description":  "DÃ©fenseur pur : aucune tentative de capture, mÃªme au dernier niveau.",
+                         "body_color":  "#83a6ad",
+                         "asset":  "res://assets/cards/r/r03_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "power_text":  "Les boucliers renforcent la dÃ©fense sans augmenter lâ€™attaque.",
+                         "levels":  [
+                                        {
+                                            "id":  "carapace_vide_n1",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       },
+                                            "shields":  {
+                                                            "top":  1,
+                                                            "bottom":  2,
+                                                            "left":  1,
+                                                            "right":  2
+                                                        }
+                                        },
+                                        {
+                                            "id":  "carapace_vide_n2",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       },
+                                            "shields":  {
+                                                            "top":  2,
+                                                            "bottom":  2,
+                                                            "left":  2,
+                                                            "right":  2
+                                                        },
+                                            "asset":  "res://assets/cards/r/r03_n2.png"
+                                        },
+                                        {
+                                            "id":  "carapace_vide_n3",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       },
+                                            "shields":  {
+                                                            "top":  2,
+                                                            "bottom":  3,
+                                                            "left":  2,
+                                                            "right":  3
+                                                        },
+                                            "asset":  "res://assets/cards/r/r03_n3.png"
+                                        },
+                                        {
+                                            "id":  "carapace_vide_n4",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       },
+                                            "shields":  {
+                                                            "top":  3,
+                                                            "bottom":  4,
+                                                            "left":  3,
+                                                            "right":  4
+                                                        },
+                                            "asset":  "res://assets/cards/r/r03_n4.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "osselet_blinde",
+                         "name":  "Osselet blindÃ©",
+                         "rarity":  "common",
+                         "god_id":  "kharun",
+                         "description":  "Bas protÃ©gÃ© et droite offensive ; couverture gauche tardive.",
+                         "body_color":  "#83a6ad",
+                         "asset":  "res://assets/cards/r/r04_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "power_text":  "Les boucliers renforcent la dÃ©fense sans augmenter lâ€™attaque.",
+                         "levels":  [
+                                        {
+                                            "id":  "osselet_blinde_n1",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  1,
+                                                           "left":  0,
+                                                           "right":  1
+                                                       },
+                                            "shields":  {
+                                                            "bottom":  1
+                                                        }
+                                        },
+                                        {
+                                            "id":  "osselet_blinde_n2",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  2,
+                                                           "left":  0,
+                                                           "right":  2
+                                                       },
+                                            "shields":  {
+                                                            "bottom":  1
+                                                        },
+                                            "asset":  "res://assets/cards/r/r04_n2.png"
+                                        },
+                                        {
+                                            "id":  "osselet_blinde_n3",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  2,
+                                                           "left":  0,
+                                                           "right":  3
+                                                       },
+                                            "shields":  {
+                                                            "bottom":  2
+                                                        },
+                                            "asset":  "res://assets/cards/r/r04_n3.png"
+                                        },
+                                        {
+                                            "id":  "osselet_blinde_n4",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  2,
+                                                           "left":  0,
+                                                           "right":  3
+                                                       },
+                                            "shields":  {
+                                                            "bottom":  2,
+                                                            "left":  1,
+                                                            "right":  1
+                                                        },
+                                            "asset":  "res://assets/cards/r/r04_n4.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "chevalier_sans_visage",
+                         "name":  "Chevalier sans visage",
+                         "rarity":  "rare",
+                         "god_id":  "kharun",
+                         "description":  "Haut/gauche attaquent et dÃ©fendent ; autres cÃ´tÃ©s plus lÃ©gers.",
+                         "body_color":  "#83a6ad",
+                         "asset":  "res://assets/cards/r/r05_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "power_text":  "Les boucliers renforcent la dÃ©fense sans augmenter lâ€™attaque.",
+                         "levels":  [
+                                        {
+                                            "id":  "chevalier_sans_visage_n1",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  0,
+                                                           "left":  1,
+                                                           "right":  0
+                                                       },
+                                            "shields":  {
+                                                            "top":  1,
+                                                            "left":  1
+                                                        }
+                                        },
+                                        {
+                                            "id":  "chevalier_sans_visage_n2",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  1,
+                                                           "left":  2,
+                                                           "right":  0
+                                                       },
+                                            "shields":  {
+                                                            "top":  1,
+                                                            "left":  1
+                                                        },
+                                            "asset":  "res://assets/cards/r/r05_n2.png"
+                                        },
+                                        {
+                                            "id":  "chevalier_sans_visage_n3",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  1,
+                                                           "left":  2,
+                                                           "right":  1
+                                                       },
+                                            "shields":  {
+                                                            "top":  2,
+                                                            "left":  2
+                                                        },
+                                            "asset":  "res://assets/cards/r/r05_n3.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "golem_de_faience",
+                         "name":  "Golem de faÃ¯ence",
+                         "rarity":  "rare",
+                         "god_id":  "kharun",
+                         "description":  "DÃ©fense basse pure et flancs capables de capturer.",
+                         "body_color":  "#83a6ad",
+                         "asset":  "res://assets/cards/r/r06_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "power_text":  "Les boucliers renforcent la dÃ©fense sans augmenter lâ€™attaque.",
+                         "levels":  [
+                                        {
+                                            "id":  "golem_de_faience_n1",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  0,
+                                                           "left":  1,
+                                                           "right":  1
+                                                       },
+                                            "shields":  {
+                                                            "bottom":  2,
+                                                            "left":  1,
+                                                            "right":  1
+                                                        }
+                                        },
+                                        {
+                                            "id":  "golem_de_faience_n2",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  0,
+                                                           "left":  2,
+                                                           "right":  1
+                                                       },
+                                            "shields":  {
+                                                            "bottom":  3,
+                                                            "left":  1,
+                                                            "right":  1
+                                                        },
+                                            "asset":  "res://assets/cards/r/r06_n2.png"
+                                        },
+                                        {
+                                            "id":  "golem_de_faience_n3",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  0,
+                                                           "left":  2,
+                                                           "right":  2
+                                                       },
+                                            "shields":  {
+                                                            "bottom":  3,
+                                                            "left":  2,
+                                                            "right":  1
+                                                        },
+                                            "asset":  "res://assets/cards/r/r06_n3.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "portail_dos",
+                         "name":  "Portail dâ€™os",
+                         "rarity":  "rare",
+                         "god_id":  "kharun",
+                         "description":  "Axe haut/bas fortifiÃ© ; deux faces secondaires modestes.",
+                         "body_color":  "#83a6ad",
+                         "asset":  "res://assets/cards/r/r07_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "power_text":  "Les boucliers renforcent la dÃ©fense sans augmenter lâ€™attaque.",
+                         "levels":  [
+                                        {
+                                            "id":  "portail_dos_n1",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  1,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       },
+                                            "shields":  {
+                                                            "top":  1,
+                                                            "bottom":  1
+                                                        }
+                                        },
+                                        {
+                                            "id":  "portail_dos_n2",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  2,
+                                                           "left":  1,
+                                                           "right":  0
+                                                       },
+                                            "shields":  {
+                                                            "top":  1,
+                                                            "bottom":  1
+                                                        },
+                                            "asset":  "res://assets/cards/r/r07_n2.png"
+                                        },
+                                        {
+                                            "id":  "portail_dos_n3",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  2,
+                                                           "left":  1,
+                                                           "right":  1
+                                                       },
+                                            "shields":  {
+                                                            "top":  2,
+                                                            "bottom":  2
+                                                        },
+                                            "asset":  "res://assets/cards/r/r07_n3.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "colosse_rivete",
+                         "name":  "Colosse rivetÃ©",
+                         "rarity":  "rare",
+                         "god_id":  "kharun",
+                         "description":  "Haut offensif, gauche de protection, droite mixte ; bas faible.",
+                         "body_color":  "#83a6ad",
+                         "asset":  "res://assets/cards/r/r08_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "power_text":  "Les boucliers renforcent la dÃ©fense sans augmenter lâ€™attaque.",
+                         "levels":  [
+                                        {
+                                            "id":  "colosse_rivete_n1",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  2,
+                                                           "left":  0,
+                                                           "right":  1
+                                                       },
+                                            "shields":  {
+                                                            "left":  1,
+                                                            "right":  1
+                                                        }
+                                        },
+                                        {
+                                            "id":  "colosse_rivete_n2",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  3,
+                                                           "left":  0,
+                                                           "right":  2
+                                                       },
+                                            "shields":  {
+                                                            "left":  2,
+                                                            "right":  1
+                                                        },
+                                            "asset":  "res://assets/cards/r/r08_n2.png"
+                                        },
+                                        {
+                                            "id":  "colosse_rivete_n3",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  4,
+                                                           "left":  0,
+                                                           "right":  2
+                                                       },
+                                            "shields":  {
+                                                            "left":  3,
+                                                            "right":  1,
+                                                            "top":  2
+                                                        },
+                                            "asset":  "res://assets/cards/r/r08_n3.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "le_reliquaire_ambulant",
+                         "name":  "Le Reliquaire ambulant",
+                         "rarity":  "epic",
+                         "god_id":  "kharun",
+                         "description":  "Trois cÃ´tÃ©s trÃ¨s protecteurs et une droite qui reste accessible.",
+                         "body_color":  "#83a6ad",
+                         "asset":  "res://assets/cards/r/r09_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "power_text":  "Les boucliers renforcent la dÃ©fense sans augmenter lâ€™attaque.",
+                         "levels":  [
+                                        {
+                                            "id":  "le_reliquaire_ambulant_n1",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  1
+                                                       },
+                                            "shields":  {
+                                                            "top":  2,
+                                                            "bottom":  3,
+                                                            "right":  1
+                                                        }
+                                        },
+                                        {
+                                            "id":  "le_reliquaire_ambulant_n2",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  0,
+                                                           "left":  1,
+                                                           "right":  2
+                                                       },
+                                            "shields":  {
+                                                            "top":  3,
+                                                            "bottom":  3,
+                                                            "right":  2
+                                                        },
+                                            "asset":  "res://assets/cards/r/r09_n2.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "le_bastion_fendu",
+                         "name":  "Le Bastion fendu",
+                         "rarity":  "epic",
+                         "god_id":  "kharun",
+                         "description":  "Haut/gauche offensifs ; dÃ©fense droite sans attaque et faiblesse basse.",
+                         "body_color":  "#83a6ad",
+                         "asset":  "res://assets/cards/r/r10_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "power_text":  "Les boucliers renforcent la dÃ©fense sans augmenter lâ€™attaque.",
+                         "levels":  [
+                                        {
+                                            "id":  "le_bastion_fendu_n1",
+                                            "blades":  {
+                                                           "top":  3,
+                                                           "bottom":  0,
+                                                           "left":  3,
+                                                           "right":  0
+                                                       },
+                                            "shields":  {
+                                                            "top":  1,
+                                                            "right":  1
+                                                        }
+                                        },
+                                        {
+                                            "id":  "le_bastion_fendu_n2",
+                                            "blades":  {
+                                                           "top":  3,
+                                                           "bottom":  1,
+                                                           "left":  3,
+                                                           "right":  0
+                                                       },
+                                            "shields":  {
+                                                            "top":  1,
+                                                            "left":  1,
+                                                            "right":  2
+                                                        },
+                                            "asset":  "res://assets/cards/r/r10_n2.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "le_sarcophage_debout",
+                         "name":  "Le Sarcophage debout",
+                         "rarity":  "legendary",
+                         "god_id":  "kharun",
+                         "description":  "Quatre cÃ´tÃ©s protÃ©gÃ©s, mais peu dâ€™attaque ; capture possible sur les dÃ©fenses Ã  trois.",
+                         "body_color":  "#83a6ad",
+                         "asset":  "res://assets/cards/r/r11_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "power_text":  "Les boucliers renforcent la dÃ©fense sans augmenter lâ€™attaque.",
+                         "levels":  [
+                                        {
+                                            "id":  "le_sarcophage_debout_n1",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  1,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       },
+                                            "shields":  {
+                                                            "top":  2,
+                                                            "bottom":  2,
+                                                            "left":  3,
+                                                            "right":  3
+                                                        }
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "le_gardien_des_decombres",
+                         "name":  "Le Gardien des dÃ©combres",
+                         "rarity":  "legendary",
+                         "god_id":  "kharun",
+                         "description":  "Deux faces trÃ¨s solides, gauche secondaire, droite entiÃ¨rement vulnÃ©rable.",
+                         "body_color":  "#83a6ad",
+                         "asset":  "res://assets/cards/r/r12_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "power_text":  "Les boucliers renforcent la dÃ©fense sans augmenter lâ€™attaque.",
+                         "levels":  [
+                                        {
+                                            "id":  "le_gardien_des_decombres_n1",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  2,
+                                                           "left":  3,
+                                                           "right":  0
+                                                       },
+                                            "shields":  {
+                                                            "top":  1,
+                                                            "bottom":  2,
+                                                            "left":  1
+                                                        }
+                                        }
+                                    ]
+                     }
+                 ]
+}

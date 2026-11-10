@@ -190,7 +190,7 @@ func _on_series_round_ready(config: Dictionary) -> void:
 		_series_flow.rules() if _series_flow != null else PvpMatchContext.match_rules)
 	_close_return()
 	_detach_match()
-	_go_route(Routes.PRE_BATTLE)
+	Routes.go_with_override(get_tree(), scene_changer, Routes.PRE_BATTLE)
 
 
 func _on_series_finished(state: Dictionary) -> void:
@@ -208,7 +208,7 @@ func _open_preparation() -> void:
 	PvpMatchContext.set_presence(LanPvpPresence.PREPARATION)
 	_close_return()
 	_detach_match()
-	_go_route(Routes.PVP_PREPARATION)
+	Routes.go_with_override(get_tree(), scene_changer, Routes.PVP_PREPARATION)
 
 
 ## ─── Action principale ──────────────────────────────────────────────────────
@@ -308,7 +308,7 @@ func _on_match_ready(config: Dictionary) -> void:
 		PvpMatchContext.lobby_local_profile(), PvpMatchContext.lobby_remote_profile(), false,
 		PvpMatchContext.match_rules)
 	_detach_match()
-	_go_route(Routes.PRE_BATTLE)
+	Routes.go_with_override(get_tree(), scene_changer, Routes.PRE_BATTLE)
 
 
 ## ─── Retour individuel au salon ─────────────────────────────────────────────
@@ -406,7 +406,7 @@ func _finish_return_to_lobby() -> void:
 		"rules": rules,
 	})
 	LanSession.enter_lobby()
-	_go_route(Routes.PVP_LOBBY)
+	Routes.go_with_override(get_tree(), scene_changer, Routes.PVP_LOBBY)
 
 
 func _on_session_state(session_state: int) -> void:
@@ -435,7 +435,7 @@ func _quit() -> void:
 		_link = null
 	PvpMatchContext.clear()
 	LanSession.leave_with_notice("Partie PVP quittée. Créez ou rejoignez un salon.")
-	_go_route(Routes.PVP_LOBBY)
+	Routes.go_with_override(get_tree(), scene_changer, Routes.PVP_LOBBY)
 
 
 func _close_series() -> void:
@@ -461,13 +461,6 @@ func _set_actions_enabled(enabled: bool) -> void:
 	primary_button.disabled = not enabled or _remote_in_lobby
 	return_button.disabled = not enabled or not _return_available
 	quit_button.disabled = false
-
-
-func _go_route(path: String) -> void:
-	if scene_changer.is_valid():
-		scene_changer.call(path)
-		return
-	Routes.go(get_tree(), path)
 
 
 func _stop_timers() -> void:

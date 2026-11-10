@@ -131,7 +131,7 @@ func _on_mode_pressed(mode: String) -> void:
 	if not _deck_is_ready(mode):
 		_show_deck_warning()
 		return
-	_go_to(str(MODE_SCENES[mode]))
+	Routes.go_with_override(get_tree(), scene_changer, str(MODE_SCENES[mode]))
 
 
 func _show_deck_warning() -> void:
@@ -150,20 +150,13 @@ func _close_deck_warning() -> void:
 
 func _open_collection() -> void:
 	deck_warning_overlay.visible = false
-	_go_to(Routes.COLLECTION)
+	Routes.go_with_override(get_tree(), scene_changer, Routes.COLLECTION)
 
 
 func _unhandled_input(event: InputEvent) -> void:
 	if deck_warning_overlay.visible and event.is_action_pressed("ui_cancel"):
 		_close_deck_warning()
 		get_viewport().set_input_as_handled()
-
-
-func _go_to(path: String) -> void:
-	if scene_changer.is_valid():
-		scene_changer.call(path)
-		return
-	Routes.go(get_tree(), path)
 
 
 func _on_art_warmup_progress(god_id: String, loaded: int, total: int) -> void:

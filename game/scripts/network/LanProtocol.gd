@@ -110,7 +110,7 @@ static func catalogue_fingerprint() -> String:
 	if _catalogue_fingerprint != "":
 		return _catalogue_fingerprint
 	var text := ""
-	for path in ["res://data/stones.json", "res://data/gods.json"]:
+	for path in _catalogue_paths():
 		var file := FileAccess.open(path, FileAccess.READ)
 		if file == null:
 			continue
@@ -118,6 +118,23 @@ static func catalogue_fingerprint() -> String:
 		file.close()
 	_catalogue_fingerprint = text.sha256_text()
 	return _catalogue_fingerprint
+
+
+static func _catalogue_paths() -> Array[String]:
+	var paths: Array[String] = ["res://data/stones/manifest.json", "res://data/gods.json"]
+	var file := FileAccess.open(paths[0], FileAccess.READ)
+	if file == null:
+		return paths
+	var manifest: Variant = JSON.parse_string(file.get_as_text())
+	file.close()
+	if not manifest is Dictionary or not manifest.get("families") is Array:
+		return paths
+	for entry in manifest["families"]:
+		if entry is Dictionary:
+			var path := str(entry.get("path", ""))
+			if not path.is_empty():
+				paths.append(path)
+	return paths
 
 
 ## Raison d'incompatibilité, ou chaîne vide si les versions sont compatibles.

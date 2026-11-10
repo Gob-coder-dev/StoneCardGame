@@ -121,7 +121,7 @@ illustrés. Les Avortons des caves ont leurs quatre illustrations propres, avec
 3, 6, 9 puis 12 individus. Toutes les lignées évolutives disposent désormais
 d'une image propre pour chacun de leurs niveaux.
 Les définitions de jeu
-restent dans `data/stones.json` : modifier une image ne modifie donc ni les
+restent dans `data/stones/` : modifier une image ne modifie donc ni les
 statistiques ni les sauvegardes.
 
 Au lancement, `CardArtCache` préchauffe en arrière-plan les illustrations du
@@ -133,8 +133,10 @@ les 275 illustrations de cartes dans son cache applicatif.
 
 ## Menus et lecture visuelle
 
-La navigation inférieure donne accès à **Cartes**, **Jouer** et **Règles**. La
-page Cartes comporte :
+La navigation inférieure donne accès à **Boutique**, **Decks**, **Accueil** et
+**Règles**. Les soldes d'âmes et de bougies restent visibles dans les menus
+concernés, mais disparaissent pendant un combat, la campagne et le PVP. La page
+Decks comporte :
 
 - les six dieux, représentés par leurs portraits ;
 - trois decks sauvegardés automatiquement pour chaque dieu ;
@@ -235,8 +237,8 @@ historiques et la compatibilité, mais le bouton **CAMPAGNE** ouvre désormais l
 carte unifiée. Les paliers tiennent compte de la rareté sans modifier le niveau
 réel des formes : les épiques commencent au palier 3 et les légendaires au
 palier 4. Le deck ne dépend que du nœud et du palier ; l'IA règle séparément sa
-précision continue de 0 à 100 % (49 valeurs distinctes dans la campagne, dont
-131 non multiples de 25) et son anticipation.
+précision continue de 0 à 100 % (57 valeurs distinctes dans la campagne, dont
+142 profils non multiples de 25) et son anticipation.
 
 Pour le détail de la campagne, du format JSON et de la migration, voir
 [CAMPAIGN.md](docs/CAMPAIGN.md). Pour le détail des responsabilités, des signaux
@@ -256,7 +258,8 @@ dont le bestiaire et la direction artistique.
 
 Les données de contenu sont validées au démarrage :
 
-- `data/stones.json` : lignées, formes, coûts, symboles et pouvoirs ;
+- `data/stones/manifest.json` et ses sept familles : lignées, formes, coûts,
+  symboles et pouvoirs ;
 - `data/gods.json` : dieux, familles, couleurs, descriptions et portraits ;
 - `data/npcs.json` : six adversaires historiques, conservés pour les tests et
   les anciennes références ;
@@ -276,7 +279,7 @@ construction hors exécution : elle fournit les 87 decks fixes uniques validés
 dans la campagne.
 
 Le profil local est enregistré dans `user://savegame.json`. Le format actuel est
-la version 8 : il conserve le pseudo, les statistiques, les trois decks de chaque
+la version 9 : il conserve le pseudo, les statistiques, les trois decks de chaque
 dieu et de la banque neutre, le deck sélectionné, les âmes, les bougies, les
 dieux débloqués, les copies et niveaux de cartes, les achats de la rotation et
 les récompenses divines conservées au coffre. Les
@@ -292,15 +295,9 @@ dieu ne sont converties que lorsqu'elles désignent un seul nœud sans ambiguït
 les autres sont archivées et les statistiques du profil restent intactes. Voir
 [CAMPAIGN.md](docs/CAMPAIGN.md).
 
-Les anciennes sauvegardes sont migrées automatiquement. Avant la première écriture
-d'un ancien profil converti, la version d'origine est conservée dans
-`user://savegame.json.before_monsters`.
-
 Les IDs de contenu sont descriptifs et stables : une carte utilise par exemple
 `avortons_des_caves_n2`, et les dieux utilisent `veskar`, `nerava`, `kharun`,
-`ilyr`, `sylkha` et `enigma`. Les anciens IDs ne servent qu'à migrer les
-sauvegardes ; ils ne doivent pas être employés dans du nouveau code ou de
-nouveaux decks.
+`ilyr`, `sylkha` et `enigma`. Les sauvegardes ne contiennent que ces IDs actifs.
 
 ## Ouvrir le projet
 

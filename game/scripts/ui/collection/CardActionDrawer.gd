@@ -35,12 +35,11 @@ func _refresh() -> void:
 	primary_button.text = "RETIRER" if _source == Source.DECK else "UTILISER"
 	primary_button.theme_type_variation = &"DangerButton" if _source == Source.DECK else &"PrimaryButton"
 	var lineage_id := StoneLoader.stone_lineage(_stone_id)
-	var entry := PlayerData.card_entry(lineage_id)
-	var requirement := CardProgressionRules.requirement(lineage_id,
-		int(entry.get("unlocked_level", 0)), EconomyConfig.get_config())
+	var upgrade := PlayerData.card_upgrade_state(lineage_id)
+	var requirement: Dictionary = upgrade.get("requirement", {})
 	upgrade_button.visible = not requirement.is_empty()
 	if upgrade_button.visible:
-		upgrade_button.disabled = not PlayerData.can_upgrade_card(lineage_id)
+		upgrade_button.disabled = not bool(upgrade.get("can_upgrade", false))
 		upgrade_button.set_content("AMÉLIORER", true,
 			int(requirement.get("souls", 0)), UITheme.COL_WARNING)
 

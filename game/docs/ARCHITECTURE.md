@@ -140,7 +140,7 @@ d'ENet lorsqu'un pair reste connecté mais cesse de poursuivre le protocole.
 
 | Fichier | Fonction principale | Responsabilité |
 | --- | --- | --- |
-| `data/stones.json` | — | Définition complète de chaque carte, pouvoirs compris |
+| `data/stones/manifest.json` + familles | — | Définition complète de chaque carte, regroupée par famille et chargée au démarrage |
 | `data/gods.json` | — | Dieux, familles, couleurs et descriptions |
 | `data/npcs.json` | — | Six adversaires historiques, leurs decks et profils d'IA |
 | `data/campaign/campaign_v2.json` | `CampaignContentLoader` | Définition consolidée du graphe : 162 nœuds, rencontres, positions et arêtes |
@@ -178,8 +178,7 @@ d'ENet lorsqu'un pair reste connecté mais cesse de poursuivre le protocole.
 | `RitualRewardGenerator`, `RitualService` | `generate`, `purchase` | Tirage pur, compensation et attribution atomique avant animation |
 | `RitualOpeningContext` | `begin`, `current`, `clear` | Présentation éphémère d’un Rituel, volontairement absente de la sauvegarde |
 | `PlayerData` | `get_active_deck`, `get_deck`, `set_player_deck`, `commit_economy`, `load_save`, `save` | Propriétaire du profil, des banques et de l’inventaire ; une seule écriture atomique |
-| `PlayerSaveCodec` | `encode`, `decode` | Format et migration du profil sans accès disque |
-| `DeckCatalogueMigration` | `requires_conversion`, `convert` | Remplace les anciennes cartes par des formes compatibles, distinctes et dans le budget |
+| `PlayerSaveCodec` | `encode`, `decode` | Format et évolution du profil sans accès disque |
 | `CardArtCache` | `activate_god`, `texture`, `progress_for_god` | Préchauffe les illustrations utiles hors du thread principal et borne les références conservées |
 | `PlayerSaveStorage` | `write`, `read` | Écriture sûre du profil sur le disque |
 | `BattleContext` | `enter_campaign_node`, `select_opponent`, `begin_mode`, `prepare_result`, `persist_result` | Rencontre, loadouts temporaires de campagne, nœud actif, premier joueur et résultat |
@@ -248,11 +247,12 @@ par l'écran des règles. Moteur, interface et validation désignent les pouvoir
 les constantes de `StoneEffects`, y compris les valeurs numériques affichées
 dans les légendes : celles-ci ne chargent pas les systèmes du moteur.
 `ContentValidator` signale tout pouvoir ou axe
-de pile ou face inconnu dans `stones.json`.
+de pile ou face inconnu dans les catalogues de pierres.
 
 ### Lignées et formes
 
-`stones.json` contient 96 lignées de monstres et 275 formes, sans ancien tableau
+Les sept fichiers déclarés par `data/stones/manifest.json` contiennent 96 lignées
+de monstres et 275 formes, sans ancien tableau
 `stones`. Le tableau `lineages` décrit les lignées : identité commune et tableau
 `levels` de définitions explicites. Les quatre raretés modernes imposent 4/3/2/1
 formes. Chaque forme peut fournir ses statistiques, son nom, son texte et son
@@ -282,29 +282,18 @@ collection, fiche, main et plateau.
 `stone_lineage`, `stone_level`, `lineage_max_level`, `variant_id` et `variant_ids`
 fournissent des lectures de l'index ; `get_lineages_for_god` fournit une entrée
 par monstre pour la collection. Une forme demandée hors limites est refusée ;
-seul `preview_variant` sature le niveau demandé. Le dictionnaire facultatif
-`legacy_ids` décrit les correspondances explicites d'anciens identifiants.
-Les identifiants décrivent maintenant le contenu : `avortons_des_caves` désigne
-une lignée, `avortons_des_caves_n2` sa deuxième forme. Les 406 identifiants de
-cartes historiques ne sont plus indexés comme cartes jouables ;
-`resolve_saved_id` les résout seulement pour les sauvegardes. Les mêmes règles
-s'appliquent aux IDs de dieux et de PNJ via `resolve_saved_god_id` et
-`resolve_saved_npc_id`. Les champs historiques `catalogue_ref` et `kind` ont
-été retirés : ils étaient redondants et aucun système de jeu ne les lisait.
+seul `preview_variant` sature le niveau demandé. Les identifiants décrivent
+maintenant le contenu : `avortons_des_caves` désigne
+une lignée, `avortons_des_caves_n2` sa deuxième forme. Seuls ces identifiants
+actifs sont acceptés par le catalogue et les sauvegardes. Les champs historiques
+`catalogue_ref` et `kind` ont été retirés : ils étaient redondants et aucun
+système de jeu ne les lisait.
 
-La version 8 lit les profils antérieurs. `PlayerSaveCodec` confie les tableaux
-contenant des alias à `DeckCatalogueMigration`. Cette conversion déterministe
-cherche des formes proches de la correspondance déclarée, protège les lignées
-actuelles et réserve un budget pour les cartes restantes. Elle utilise
-`DeckRules` pour les ajouts effectifs. Les identifiants internes des six dieux
-et des six adversaires historiques restent stables pour préserver banques et
-statistiques.
-
-`PlayerData.load_save` conserve en mémoire le JSON d'origine à convertir, sans
-écriture. À la première sauvegarde, `PlayerSaveStorage` l'enregistre dans
-`savegame.json.before_monsters` avant le profil version 8. Une copie existante
-est conservée ; si sa création échoue, la modification est annulée. Les tests
-utilisent un chemin distinct et isolent aussi cette copie en attente.
+La version 9 conserve les profils structurés par banques de decks. Les très
+anciens profils à deck unique peuvent toujours être lus si leurs cartes et leur
+dieu utilisent les identifiants actifs ; `PlayerSaveCodec` choisit alors la
+famille qui contient le plus de cartes valides. Aucune table d'alias de contenu
+n'est conservée dans le jeu.
 
 Les decks restent des tableaux d'identifiants de formes. `DeckRules.lineage_index`
 centralise la recherche d'une lignée ; les validations et les opérations de
@@ -660,7 +649,7 @@ les cinq difficultés affrontent les mêmes cartes. L'identifiant
 | Très difficile | 1 | oui | 1,2 s |
 
 Cette table décrit les cinq profils historiques d'`OpponentCatalog`. La campagne
-unifiée utilise en plus des profils à précision continue, avec 49 valeurs
+unifiée utilise en plus des profils à précision continue, avec 57 valeurs
 distinctes réparties entre 0 et 1 selon la profondeur et le rôle du nœud.
 
 Avec la probabilité `precision`, l'IA joue le meilleur coup évalué, au hasard
@@ -738,7 +727,7 @@ appel à `step()`.
 
 ## Ajouter un pouvoir
 
-1. Définir ses données dans la carte de `stones.json`.
+1. Définir ses données dans le fichier de famille déclaré par `data/stones/manifest.json`.
 2. Placer son calcul dans `engine/effects/` selon son déclenchement.
 3. L'appeler depuis `PlacementEffectResolver` ou `PostAttackEffectResolver`.
 4. Décrire son résultat dans `CombatEvents` sans données d'affichage.

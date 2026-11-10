@@ -5,6 +5,7 @@ Pour lancer le jeu et ses tests, consulter le [README du projet](../README.md).
 | Document | Rôle |
 | --- | --- |
 | [Architecture](ARCHITECTURE.md) | Organisation du code, données, IA, interface et vérifications. |
+| [Qualité et livraison](QUALITY.md) | Frontières, conventions, performance, Git et checklist de validation. |
 | [Campagne unifiée](CAMPAIGN.md) | 162 niveaux, graphe, format JSON, modes, initiations miroir, mini-boss, progression, migration et ajout de contenu. |
 | [Économie et boutique](ECONOMY.md) | Âmes, bougies, Rituels, copies, améliorations, rotations, achats, récompenses et persistance. |
 | [Direction artistique](DIRECTION_ARTISTIQUE_MONSTRES.md) | Univers horrifique, pixel art, couleurs, familles et règles de cohérence. |
@@ -13,6 +14,6 @@ Pour lancer le jeu et ses tests, consulter le [README du projet](../README.md).
 | [Identité visuelle des menus](IDENTITE_VISUELLE_MENUS.md) | Palette de l’interface, composants, cartes et plateau. |
 | [PVP local](PVP_LOCAL.md) | Hôte et client, ports, découverte, protocole, déterminisme, permissions Android et dépannage. |
 
-Les règles de jeu et les statistiques font référence aux fichiers data/stones.json
+Les règles de jeu et les statistiques font référence aux fichiers data/stones/
 et data/gods.json. Les illustrations sont stockées dans assets/cards/ et
 assets/gods/ ; leurs conventions techniques sont documentées près des assets.

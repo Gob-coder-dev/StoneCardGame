@@ -1,4 +1,4 @@
-## Identifiants des pouvoirs déclarés dans le champ "effects" de stones.json.
+## Identifiants des pouvoirs déclarés dans le champ "effects" des catalogues de pierres.
 ## Moteur, interface et validation lisent ces constantes au lieu de recopier
 ## les textes ; ContentValidator signale tout identifiant absent de ALL.
 extends RefCounted

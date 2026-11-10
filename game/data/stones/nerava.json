@@ -1,0 +1,513 @@
+﻿{
+    "family_id":  "nerava",
+    "lineages":  [
+                     {
+                         "id":  "porte_fievre",
+                         "name":  "Porte-fiÃ¨vre",
+                         "rarity":  "common",
+                         "god_id":  "nerava",
+                         "description":  "Petit support dâ€™aura ; les quatre faces sâ€™Ã©toffent lentement.",
+                         "body_color":  "#9671aa",
+                         "asset":  "res://assets/cards/d/d01_n1.png",
+                         "effects":  [
+                                         "weaken_adjacent"
+                                     ],
+                         "power_text":  "Miasme : aprÃ¨s les captures, chaque voisine adverse perd 1 force par face tant que lâ€™aura est active.",
+                         "levels":  [
+                                        {
+                                            "id":  "porte_fievre_n1",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  1
+                                                       }
+                                        },
+                                        {
+                                            "id":  "porte_fievre_n2",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  1,
+                                                           "left":  0,
+                                                           "right":  2
+                                                       },
+                                            "asset":  "res://assets/cards/d/d01_n2.png"
+                                        },
+                                        {
+                                            "id":  "porte_fievre_n3",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  2,
+                                                           "left":  1,
+                                                           "right":  3
+                                                       },
+                                            "asset":  "res://assets/cards/d/d01_n3.png"
+                                        },
+                                        {
+                                            "id":  "porte_fievre_n4",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  3,
+                                                           "left":  2,
+                                                           "right":  1
+                                                       },
+                                            "asset":  "res://assets/cards/d/d01_n4.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "crache_cendre",
+                         "name":  "Crache-cendre",
+                         "rarity":  "common",
+                         "god_id":  "nerava",
+                         "description":  "Attaque basse qui prÃ©pare une cible rÃ©sistante pour un prochain coup.",
+                         "body_color":  "#9671aa",
+                         "asset":  "res://assets/cards/d/d02_n1.png",
+                         "effects":  [
+                                         "weaken_on_failed_attack"
+                                     ],
+                         "power_text":  "Ã‰chec corrosif : les adversaires qui rÃ©sistent Ã  une attaque perdent 2 force par face jusquâ€™Ã  la fin du prochain coup du lanceur.",
+                         "levels":  [
+                                        {
+                                            "id":  "crache_cendre_n1",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  1,
+                                                           "left":  0,
+                                                           "right":  1
+                                                       }
+                                        },
+                                        {
+                                            "id":  "crache_cendre_n2",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  2,
+                                                           "left":  1,
+                                                           "right":  1
+                                                       },
+                                            "asset":  "res://assets/cards/d/d02_n2.png"
+                                        },
+                                        {
+                                            "id":  "crache_cendre_n3",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  3,
+                                                           "left":  1,
+                                                           "right":  1
+                                                       },
+                                            "asset":  "res://assets/cards/d/d02_n3.png"
+                                        },
+                                        {
+                                            "id":  "crache_cendre_n4",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  4,
+                                                           "left":  1,
+                                                           "right":  2
+                                                       },
+                                            "asset":  "res://assets/cards/d/d02_n4.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "clochelet_malade",
+                         "name":  "Clochelet malade",
+                         "rarity":  "common",
+                         "god_id":  "nerava",
+                         "description":  "Aura de proximitÃ© avec haut toujours ouvert ; renforce surtout sa protection basse.",
+                         "body_color":  "#9671aa",
+                         "asset":  "res://assets/cards/d/d03_n1.png",
+                         "effects":  [
+                                         "weaken_adjacent"
+                                     ],
+                         "power_text":  "Miasme : aprÃ¨s les captures, chaque voisine adverse perd 1 force par face tant que lâ€™aura est active.",
+                         "levels":  [
+                                        {
+                                            "id":  "clochelet_malade_n1",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  0,
+                                                           "left":  1,
+                                                           "right":  1
+                                                       }
+                                        },
+                                        {
+                                            "id":  "clochelet_malade_n2",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  1,
+                                                           "left":  1,
+                                                           "right":  1
+                                                       },
+                                            "asset":  "res://assets/cards/d/d03_n2.png"
+                                        },
+                                        {
+                                            "id":  "clochelet_malade_n3",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  2,
+                                                           "left":  2,
+                                                           "right":  1
+                                                       },
+                                            "asset":  "res://assets/cards/d/d03_n3.png"
+                                        },
+                                        {
+                                            "id":  "clochelet_malade_n4",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  3,
+                                                           "left":  2,
+                                                           "right":  2
+                                                       },
+                                            "asset":  "res://assets/cards/d/d03_n4.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "machoire_moisie",
+                         "name":  "MÃ¢choire moisie",
+                         "rarity":  "common",
+                         "god_id":  "nerava",
+                         "description":  "Deux directions dâ€™Ã©chec possibles, haut/gauche ; Ã©largissement tardif vers la droite.",
+                         "body_color":  "#9671aa",
+                         "asset":  "res://assets/cards/d/d04_n1.png",
+                         "effects":  [
+                                         "weaken_on_failed_attack"
+                                     ],
+                         "power_text":  "Ã‰chec corrosif : les adversaires qui rÃ©sistent Ã  une attaque perdent 2 force par face jusquâ€™Ã  la fin du prochain coup du lanceur.",
+                         "levels":  [
+                                        {
+                                            "id":  "machoire_moisie_n1",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  0,
+                                                           "left":  1,
+                                                           "right":  0
+                                                       }
+                                        },
+                                        {
+                                            "id":  "machoire_moisie_n2",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  0,
+                                                           "left":  1,
+                                                           "right":  0
+                                                       },
+                                            "asset":  "res://assets/cards/d/d04_n2.png"
+                                        },
+                                        {
+                                            "id":  "machoire_moisie_n3",
+                                            "blades":  {
+                                                           "top":  3,
+                                                           "bottom":  0,
+                                                           "left":  2,
+                                                           "right":  0
+                                                       },
+                                            "asset":  "res://assets/cards/d/d04_n3.png"
+                                        },
+                                        {
+                                            "id":  "machoire_moisie_n4",
+                                            "blades":  {
+                                                           "top":  4,
+                                                           "bottom":  0,
+                                                           "left":  3,
+                                                           "right":  1
+                                                       },
+                                            "asset":  "res://assets/cards/d/d04_n4.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "veuve_des_spores",
+                         "name":  "Veuve des spores",
+                         "rarity":  "rare",
+                         "god_id":  "nerava",
+                         "description":  "Aura sur un corps orientÃ© bas/droite ; faible protection de lâ€™autre angle.",
+                         "body_color":  "#9671aa",
+                         "asset":  "res://assets/cards/d/d05_n1.png",
+                         "effects":  [
+                                         "weaken_adjacent"
+                                     ],
+                         "power_text":  "Miasme : aprÃ¨s les captures, chaque voisine adverse perd 1 force par face tant que lâ€™aura est active.",
+                         "levels":  [
+                                        {
+                                            "id":  "veuve_des_spores_n1",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  2,
+                                                           "left":  0,
+                                                           "right":  2
+                                                       }
+                                        },
+                                        {
+                                            "id":  "veuve_des_spores_n2",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  3,
+                                                           "left":  1,
+                                                           "right":  2
+                                                       },
+                                            "asset":  "res://assets/cards/d/d05_n2.png"
+                                        },
+                                        {
+                                            "id":  "veuve_des_spores_n3",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  3,
+                                                           "left":  1,
+                                                           "right":  3
+                                                       },
+                                            "asset":  "res://assets/cards/d/d05_n3.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "sonneur_pestifere",
+                         "name":  "Sonneur pestifÃ©rÃ©",
+                         "rarity":  "rare",
+                         "god_id":  "nerava",
+                         "description":  "Support assez polyvalent, avec faiblesse basse au dÃ©but.",
+                         "body_color":  "#9671aa",
+                         "asset":  "res://assets/cards/d/d06_n1.png",
+                         "effects":  [
+                                         "weaken_adjacent"
+                                     ],
+                         "power_text":  "Miasme : aprÃ¨s les captures, chaque voisine adverse perd 1 force par face tant que lâ€™aura est active.",
+                         "levels":  [
+                                        {
+                                            "id":  "sonneur_pestifere_n1",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  0,
+                                                           "left":  1,
+                                                           "right":  1
+                                                       }
+                                        },
+                                        {
+                                            "id":  "sonneur_pestifere_n2",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  1,
+                                                           "left":  2,
+                                                           "right":  1
+                                                       },
+                                            "asset":  "res://assets/cards/d/d06_n2.png"
+                                        },
+                                        {
+                                            "id":  "sonneur_pestifere_n3",
+                                            "blades":  {
+                                                           "top":  3,
+                                                           "bottom":  1,
+                                                           "left":  2,
+                                                           "right":  2
+                                                       },
+                                            "asset":  "res://assets/cards/d/d06_n3.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "griffe_septique",
+                         "name":  "Griffe septique",
+                         "rarity":  "rare",
+                         "god_id":  "nerava",
+                         "description":  "Gauche forte, autres attaques secondaires pour contaminer plusieurs cibles rÃ©sistantes.",
+                         "body_color":  "#9671aa",
+                         "asset":  "res://assets/cards/d/d07_n1.png",
+                         "effects":  [
+                                         "weaken_on_failed_attack"
+                                     ],
+                         "power_text":  "Ã‰chec corrosif : les adversaires qui rÃ©sistent Ã  une attaque perdent 2 force par face jusquâ€™Ã  la fin du prochain coup du lanceur.",
+                         "levels":  [
+                                        {
+                                            "id":  "griffe_septique_n1",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  1,
+                                                           "left":  2,
+                                                           "right":  0
+                                                       }
+                                        },
+                                        {
+                                            "id":  "griffe_septique_n2",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  1,
+                                                           "left":  3,
+                                                           "right":  1
+                                                       },
+                                            "asset":  "res://assets/cards/d/d07_n2.png"
+                                        },
+                                        {
+                                            "id":  "griffe_septique_n3",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  2,
+                                                           "left":  4,
+                                                           "right":  1
+                                                       },
+                                            "asset":  "res://assets/cards/d/d07_n3.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "ronge_chair",
+                         "name":  "Ronge-chair",
+                         "rarity":  "rare",
+                         "god_id":  "nerava",
+                         "description":  "Quatre faces modestes ; peut appliquer la corrosion sur plusieurs attaques ratÃ©es.",
+                         "body_color":  "#9671aa",
+                         "asset":  "res://assets/cards/d/d08_n1.png",
+                         "effects":  [
+                                         "weaken_on_failed_attack"
+                                     ],
+                         "power_text":  "Ã‰chec corrosif : les adversaires qui rÃ©sistent Ã  une attaque perdent 2 force par face jusquâ€™Ã  la fin du prochain coup du lanceur.",
+                         "levels":  [
+                                        {
+                                            "id":  "ronge_chair_n1",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  1,
+                                                           "left":  1,
+                                                           "right":  1
+                                                       }
+                                        },
+                                        {
+                                            "id":  "ronge_chair_n2",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  1,
+                                                           "left":  2,
+                                                           "right":  1
+                                                       },
+                                            "asset":  "res://assets/cards/d/d08_n2.png"
+                                        },
+                                        {
+                                            "id":  "ronge_chair_n3",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  2,
+                                                           "left":  2,
+                                                           "right":  2
+                                                       },
+                                            "asset":  "res://assets/cards/d/d08_n3.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "le_porte_cercueil",
+                         "name":  "Le Porte-cercueil",
+                         "rarity":  "epic",
+                         "god_id":  "nerava",
+                         "description":  "Aura sur une base rÃ©sistante en bas, avec gauche dâ€™abord ouverte.",
+                         "body_color":  "#9671aa",
+                         "asset":  "res://assets/cards/d/d09_n1.png",
+                         "effects":  [
+                                         "weaken_adjacent"
+                                     ],
+                         "power_text":  "Miasme : aprÃ¨s les captures, chaque voisine adverse perd 1 force par face tant que lâ€™aura est active.",
+                         "levels":  [
+                                        {
+                                            "id":  "le_porte_cercueil_n1",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  3,
+                                                           "left":  0,
+                                                           "right":  2
+                                                       }
+                                        },
+                                        {
+                                            "id":  "le_porte_cercueil_n2",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  4,
+                                                           "left":  1,
+                                                           "right":  2
+                                                       },
+                                            "asset":  "res://assets/cards/d/d09_n2.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "le_precheur_des_fievres",
+                         "name":  "Le PrÃªcheur des fiÃ¨vres",
+                         "rarity":  "epic",
+                         "god_id":  "nerava",
+                         "description":  "Haut et gauche offensifs ; corrosion sur les cibles quâ€™il ne capture pas.",
+                         "body_color":  "#9671aa",
+                         "asset":  "res://assets/cards/d/d10_n1.png",
+                         "effects":  [
+                                         "weaken_on_failed_attack"
+                                     ],
+                         "power_text":  "Ã‰chec corrosif : les adversaires qui rÃ©sistent Ã  une attaque perdent 2 force par face jusquâ€™Ã  la fin du prochain coup du lanceur.",
+                         "levels":  [
+                                        {
+                                            "id":  "le_precheur_des_fievres_n1",
+                                            "blades":  {
+                                                           "top":  3,
+                                                           "bottom":  0,
+                                                           "left":  2,
+                                                           "right":  1
+                                                       }
+                                        },
+                                        {
+                                            "id":  "le_precheur_des_fievres_n2",
+                                            "blades":  {
+                                                           "top":  4,
+                                                           "bottom":  1,
+                                                           "left":  3,
+                                                           "right":  1
+                                                       },
+                                            "asset":  "res://assets/cards/d/d10_n2.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "la_cathedrale_malade",
+                         "name":  "La CathÃ©drale malade",
+                         "rarity":  "legendary",
+                         "god_id":  "nerava",
+                         "description":  "Aura sur un profil Ã  trois faces moyennes et une face faible.",
+                         "body_color":  "#9671aa",
+                         "asset":  "res://assets/cards/d/d11_n1.png",
+                         "effects":  [
+                                         "weaken_adjacent"
+                                     ],
+                         "power_text":  "Miasme : aprÃ¨s les captures, chaque voisine adverse perd 1 force par face tant que lâ€™aura est active.",
+                         "levels":  [
+                                        {
+                                            "id":  "la_cathedrale_malade_n1",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  3,
+                                                           "left":  3,
+                                                           "right":  1
+                                                       }
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "le_dernier_souffle",
+                         "name":  "Le Dernier Souffle",
+                         "rarity":  "legendary",
+                         "god_id":  "nerava",
+                         "description":  "Gauche maximale, haut fort, bas faible ; attaque ou prÃ©paration dâ€™une dÃ©fense difficile.",
+                         "body_color":  "#9671aa",
+                         "asset":  "res://assets/cards/d/d12_n1.png",
+                         "effects":  [
+                                         "weaken_on_failed_attack"
+                                     ],
+                         "power_text":  "Ã‰chec corrosif : les adversaires qui rÃ©sistent Ã  une attaque perdent 2 force par face jusquâ€™Ã  la fin du prochain coup du lanceur.",
+                         "levels":  [
+                                        {
+                                            "id":  "le_dernier_souffle_n1",
+                                            "blades":  {
+                                                           "top":  3,
+                                                           "bottom":  1,
+                                                           "left":  4,
+                                                           "right":  2
+                                                       }
+                                        }
+                                    ]
+                     }
+                 ]
+}

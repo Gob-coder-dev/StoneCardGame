@@ -1,0 +1,539 @@
+﻿{
+    "family_id":  "veskar",
+    "lineages":  [
+                     {
+                         "id":  "devoracle",
+                         "name":  "DÃ©voracle",
+                         "rarity":  "common",
+                         "god_id":  "veskar",
+                         "description":  "Hasard pur et trÃ¨s bon marchÃ© ; aucune direction garantie avant la pose.",
+                         "body_color":  "#c9659e",
+                         "asset":  "res://assets/cards/f/f01_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "power_text":  "Fortune : les lames roses sont rÃ©parties au hasard Ã  la pose.",
+                         "levels":  [
+                                        {
+                                            "id":  "devoracle_n1",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       },
+                                            "random_blades":  4
+                                        },
+                                        {
+                                            "id":  "devoracle_n2",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       },
+                                            "random_blades":  6,
+                                            "asset":  "res://assets/cards/f/f01_n2.png"
+                                        },
+                                        {
+                                            "id":  "devoracle_n3",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       },
+                                            "random_blades":  8,
+                                            "asset":  "res://assets/cards/f/f01_n3.png"
+                                        },
+                                        {
+                                            "id":  "devoracle_n4",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       },
+                                            "random_blades":  10,
+                                            "asset":  "res://assets/cards/f/f01_n4.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "griffe_a_jetons",
+                         "name":  "Griffe Ã  jetons",
+                         "rarity":  "common",
+                         "god_id":  "veskar",
+                         "description":  "Droite garantie, autres renforts alÃ©atoires ; le cÃ´tÃ© droit finit saturÃ©.",
+                         "body_color":  "#c9659e",
+                         "asset":  "res://assets/cards/f/f02_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "power_text":  "Fortune : les lames roses sont rÃ©parties au hasard Ã  la pose.",
+                         "levels":  [
+                                        {
+                                            "id":  "griffe_a_jetons_n1",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  1
+                                                       },
+                                            "random_blades":  2
+                                        },
+                                        {
+                                            "id":  "griffe_a_jetons_n2",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  2
+                                                       },
+                                            "random_blades":  3,
+                                            "asset":  "res://assets/cards/f/f02_n2.png"
+                                        },
+                                        {
+                                            "id":  "griffe_a_jetons_n3",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  3
+                                                       },
+                                            "random_blades":  5,
+                                            "asset":  "res://assets/cards/f/f02_n3.png"
+                                        },
+                                        {
+                                            "id":  "griffe_a_jetons_n4",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  4
+                                                       },
+                                            "random_blades":  6,
+                                            "asset":  "res://assets/cards/f/f02_n4.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "de_boiteux",
+                         "name":  "DÃ© boiteux",
+                         "rarity":  "common",
+                         "god_id":  "veskar",
+                         "description":  "Haut garanti et rÃ©serve alÃ©atoire croissante ; trois autres faces ouvertes au tirage.",
+                         "body_color":  "#c9659e",
+                         "asset":  "res://assets/cards/f/f03_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "power_text":  "Fortune : les lames roses sont rÃ©parties au hasard Ã  la pose.",
+                         "levels":  [
+                                        {
+                                            "id":  "de_boiteux_n1",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       },
+                                            "random_blades":  2
+                                        },
+                                        {
+                                            "id":  "de_boiteux_n2",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       },
+                                            "random_blades":  3,
+                                            "asset":  "res://assets/cards/f/f03_n2.png"
+                                        },
+                                        {
+                                            "id":  "de_boiteux_n3",
+                                            "blades":  {
+                                                           "top":  3,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       },
+                                            "random_blades":  5,
+                                            "asset":  "res://assets/cards/f/f03_n3.png"
+                                        },
+                                        {
+                                            "id":  "de_boiteux_n4",
+                                            "blades":  {
+                                                           "top":  4,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       },
+                                            "random_blades":  6,
+                                            "asset":  "res://assets/cards/f/f03_n4.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "sou_ricanant",
+                         "name":  "Sou ricanant",
+                         "rarity":  "common",
+                         "god_id":  "veskar",
+                         "description":  "Pile ou face vertical ; lâ€™attaque principale peut basculer du haut vers le bas.",
+                         "body_color":  "#c9659e",
+                         "asset":  "res://assets/cards/f/f04_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "power_text":  "Pile ou face vertical : une chance sur deux dâ€™Ã©changer le haut et le bas.",
+                         "coin_flip":  "vertical",
+                         "levels":  [
+                                        {
+                                            "id":  "sou_ricanant_n1",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       }
+                                        },
+                                        {
+                                            "id":  "sou_ricanant_n2",
+                                            "blades":  {
+                                                           "top":  3,
+                                                           "bottom":  0,
+                                                           "left":  1,
+                                                           "right":  0
+                                                       },
+                                            "asset":  "res://assets/cards/f/f04_n2.png"
+                                        },
+                                        {
+                                            "id":  "sou_ricanant_n3",
+                                            "blades":  {
+                                                           "top":  4,
+                                                           "bottom":  0,
+                                                           "left":  1,
+                                                           "right":  1
+                                                       },
+                                            "asset":  "res://assets/cards/f/f04_n3.png"
+                                        },
+                                        {
+                                            "id":  "sou_ricanant_n4",
+                                            "blades":  {
+                                                           "top":  4,
+                                                           "bottom":  1,
+                                                           "left":  2,
+                                                           "right":  1
+                                                       },
+                                            "asset":  "res://assets/cards/f/f04_n4.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "croupier_manchot",
+                         "name":  "Croupier manchot",
+                         "rarity":  "rare",
+                         "god_id":  "veskar",
+                         "description":  "Gauche/droite fiables ; au maximum les lames roses ne peuvent aller quâ€™en haut/bas.",
+                         "body_color":  "#c9659e",
+                         "asset":  "res://assets/cards/f/f05_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "power_text":  "Fortune : les lames roses sont rÃ©parties au hasard Ã  la pose.",
+                         "levels":  [
+                                        {
+                                            "id":  "croupier_manchot_n1",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  0,
+                                                           "left":  2,
+                                                           "right":  2
+                                                       },
+                                            "random_blades":  2
+                                        },
+                                        {
+                                            "id":  "croupier_manchot_n2",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  0,
+                                                           "left":  3,
+                                                           "right":  3
+                                                       },
+                                            "random_blades":  3,
+                                            "asset":  "res://assets/cards/f/f05_n2.png"
+                                        },
+                                        {
+                                            "id":  "croupier_manchot_n3",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  0,
+                                                           "left":  4,
+                                                           "right":  4
+                                                       },
+                                            "random_blades":  4,
+                                            "asset":  "res://assets/cards/f/f05_n3.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "roulette_vorace",
+                         "name":  "Roulette vorace",
+                         "rarity":  "rare",
+                         "god_id":  "veskar",
+                         "description":  "Base Ã©quilibrÃ©e, renforts incertains ; le tirage ne remplit jamais tous les emplacements.",
+                         "body_color":  "#c9659e",
+                         "asset":  "res://assets/cards/f/f06_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "power_text":  "Fortune : les lames roses sont rÃ©parties au hasard Ã  la pose.",
+                         "levels":  [
+                                        {
+                                            "id":  "roulette_vorace_n1",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  1,
+                                                           "left":  1,
+                                                           "right":  1
+                                                       },
+                                            "random_blades":  2
+                                        },
+                                        {
+                                            "id":  "roulette_vorace_n2",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  2,
+                                                           "left":  2,
+                                                           "right":  2
+                                                       },
+                                            "random_blades":  3,
+                                            "asset":  "res://assets/cards/f/f06_n2.png"
+                                        },
+                                        {
+                                            "id":  "roulette_vorace_n3",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  3,
+                                                           "left":  3,
+                                                           "right":  2
+                                                       },
+                                            "random_blades":  4,
+                                            "asset":  "res://assets/cards/f/f06_n3.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "jumeau_de_cuivre",
+                         "name":  "Jumeau de cuivre",
+                         "rarity":  "rare",
+                         "god_id":  "veskar",
+                         "description":  "Pile ou face horizontal ; gros Ã©cart entre gauche et droite.",
+                         "body_color":  "#c9659e",
+                         "asset":  "res://assets/cards/f/f07_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "power_text":  "Pile ou face horizontal : une chance sur deux dâ€™Ã©changer la gauche et la droite.",
+                         "coin_flip":  "horizontal",
+                         "levels":  [
+                                        {
+                                            "id":  "jumeau_de_cuivre_n1",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  1,
+                                                           "left":  3,
+                                                           "right":  0
+                                                       }
+                                        },
+                                        {
+                                            "id":  "jumeau_de_cuivre_n2",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  1,
+                                                           "left":  4,
+                                                           "right":  0
+                                                       },
+                                            "asset":  "res://assets/cards/f/f07_n2.png"
+                                        },
+                                        {
+                                            "id":  "jumeau_de_cuivre_n3",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  2,
+                                                           "left":  4,
+                                                           "right":  1
+                                                       },
+                                            "asset":  "res://assets/cards/f/f07_n3.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "valet_a_lenvers",
+                         "name":  "Valet Ã  lâ€™envers",
+                         "rarity":  "rare",
+                         "god_id":  "veskar",
+                         "description":  "Pile ou face vertical ; dÃ©part avec une forte face basse et un haut vide.",
+                         "body_color":  "#c9659e",
+                         "asset":  "res://assets/cards/f/f08_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "power_text":  "Pile ou face vertical : une chance sur deux dâ€™Ã©changer le haut et le bas.",
+                         "coin_flip":  "vertical",
+                         "levels":  [
+                                        {
+                                            "id":  "valet_a_lenvers_n1",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  3,
+                                                           "left":  1,
+                                                           "right":  1
+                                                       }
+                                        },
+                                        {
+                                            "id":  "valet_a_lenvers_n2",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  4,
+                                                           "left":  2,
+                                                           "right":  1
+                                                       },
+                                            "asset":  "res://assets/cards/f/f08_n2.png"
+                                        },
+                                        {
+                                            "id":  "valet_a_lenvers_n3",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  4,
+                                                           "left":  3,
+                                                           "right":  2
+                                                       },
+                                            "asset":  "res://assets/cards/f/f08_n3.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "la_machine_a_malchance",
+                         "name":  "La Machine Ã  malchance",
+                         "rarity":  "epic",
+                         "god_id":  "veskar",
+                         "description":  "Haut toujours maximal, renforts roses ailleurs ; casino organique plutÃ´t que robot de Pillage.",
+                         "body_color":  "#c9659e",
+                         "asset":  "res://assets/cards/f/f09_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "power_text":  "Fortune : les lames roses sont rÃ©parties au hasard Ã  la pose.",
+                         "levels":  [
+                                        {
+                                            "id":  "la_machine_a_malchance_n1",
+                                            "blades":  {
+                                                           "top":  4,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  1
+                                                       },
+                                            "random_blades":  3
+                                        },
+                                        {
+                                            "id":  "la_machine_a_malchance_n2",
+                                            "blades":  {
+                                                           "top":  4,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  2
+                                                       },
+                                            "random_blades":  5,
+                                            "asset":  "res://assets/cards/f/f09_n2.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "la_dame_aux_deux_visages",
+                         "name":  "La Dame aux deux visages",
+                         "rarity":  "epic",
+                         "god_id":  "veskar",
+                         "description":  "Pile ou face horizontal ; bas solide, une attaque latÃ©rale forte mais incertaine.",
+                         "body_color":  "#c9659e",
+                         "asset":  "res://assets/cards/f/f10_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "power_text":  "Pile ou face horizontal : une chance sur deux dâ€™Ã©changer la gauche et la droite.",
+                         "coin_flip":  "horizontal",
+                         "levels":  [
+                                        {
+                                            "id":  "la_dame_aux_deux_visages_n1",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  3,
+                                                           "left":  4,
+                                                           "right":  0
+                                                       }
+                                        },
+                                        {
+                                            "id":  "la_dame_aux_deux_visages_n2",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  4,
+                                                           "left":  4,
+                                                           "right":  1
+                                                       },
+                                            "asset":  "res://assets/cards/f/f10_n2.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "la_banque_vivante",
+                         "name":  "La Banque vivante",
+                         "rarity":  "legendary",
+                         "god_id":  "veskar",
+                         "description":  "Haut/bas fixes au maximum ; six lames roses se rÃ©partissent uniquement entre gauche et droite.",
+                         "body_color":  "#c9659e",
+                         "asset":  "res://assets/cards/f/f11_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "power_text":  "Fortune : les lames roses sont rÃ©parties au hasard Ã  la pose.",
+                         "levels":  [
+                                        {
+                                            "id":  "la_banque_vivante_n1",
+                                            "blades":  {
+                                                           "top":  3,
+                                                           "bottom":  3,
+                                                           "left":  1,
+                                                           "right":  1
+                                                       },
+                                            "random_blades":  5
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "le_dernier_pari",
+                         "name":  "Le Dernier Pari",
+                         "rarity":  "legendary",
+                         "god_id":  "veskar",
+                         "description":  "Profil complet et asymÃ©trique ; le haut fort et le bas faible peuvent sâ€™inverser.",
+                         "body_color":  "#c9659e",
+                         "asset":  "res://assets/cards/f/f12_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "power_text":  "Pile ou face vertical : une chance sur deux dâ€™Ã©changer le haut et le bas.",
+                         "coin_flip":  "vertical",
+                         "levels":  [
+                                        {
+                                            "id":  "le_dernier_pari_n1",
+                                            "blades":  {
+                                                           "top":  4,
+                                                           "bottom":  2,
+                                                           "left":  3,
+                                                           "right":  2
+                                                       }
+                                        }
+                                    ]
+                     }
+                 ]
+}

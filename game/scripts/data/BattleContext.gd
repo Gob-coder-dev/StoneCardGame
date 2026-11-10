@@ -10,7 +10,7 @@ var selected_npc_id: String = ""
 ## de revenir au bon serpentin depuis l'avant-combat et le résultat.
 var selected_source_id: String = ""
 ## Adversaire complet de la rencontre en cours (deck, dieu et profil d'IA).
-## Les adversaires historiques de npcs.json restent disponibles : la lecture
+## Les adversaires définis dans npcs.json restent accessibles : la lecture
 ## choisit la source qui correspond à selected_npc_id.
 var selected_opponent: Dictionary = {}
 var forced_first_player: int = 0

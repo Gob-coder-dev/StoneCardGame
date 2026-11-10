@@ -81,7 +81,7 @@ func _test_catalog_and_decks() -> void:
 	_check(StoneLoader.is_stone_available_to_god("de_boiteux_n1", "veskar"), "Dé boiteux est disponible pour Véskar")
 	_check(not StoneLoader.is_stone_available_to_god("de_boiteux_n1", "kharun"), "Dé boiteux est exclusif à Fortune")
 	_check(StoneLoader.is_stone_available_to_god("le_nud_hurlant_n2", "kharun"), "une carte neutre reste disponible")
-	_check(is_equal_approx(StoneLoader.stone_cost("de_boiteux_n1"), 4.0), "les lames aléatoires coûtent 0,5 et leur pouvoir coûte 1")
+	_check(is_equal_approx(StoneLoader.stone_cost("de_boiteux_n1"), 3.0), "les lames aléatoires coûtent 0,5 et leur pouvoir coûte 1")
 	_check(is_equal_approx(StoneLoader.stone_cost("chevalier_sans_visage_n1"), 4.0), "les boucliers coûtent 0,5 et leur pouvoir coûte 1")
 	_check(is_equal_approx(StoneLoader.stone_cost("echassier_des_brumes_n1"), 5.5), "les lames longues coûtent 1,25 et leur pouvoir coûte 1")
 	_check(is_equal_approx(StoneLoader.stone_cost("sou_ricanant_n1"), 1.0)
@@ -107,12 +107,10 @@ func _test_catalog_and_decks() -> void:
 	_check(catalog_respects_slots, "tout le catalogue respecte quatre symboles communs par face")
 	_check(StoneLoader.get_all_stones().size() == 275 and StoneLoader.get_lineages_for_god("veskar").size() == 36,
 		"le catalogue contient 275 formes et chaque dieu voit 24 neutres et ses 12 lignées")
-	_check(not StoneLoader.has_stone("kappa") and StoneLoader.has_stone(StoneLoader.resolve_saved_id("kappa")),
-		"les anciennes cartes japonaises restent hors du catalogue actif et gardent une correspondance")
 	_check(StoneLoader.get_stone("le_voyeur_n1")["name"] == "Le Voyeur"
-		and StoneLoader.get_stone("devoracle_n1")["random_blades"] == 5
-		and StoneLoader.get_stone("devoracle_n2")["random_blades"] == 7
-		and StoneLoader.stone_cost("devoracle_n1") == 3.5 and StoneLoader.stone_cost("eclat_cuirasse_n2") == 5.0,
+		and StoneLoader.get_stone("devoracle_n1")["random_blades"] == 4
+		and StoneLoader.get_stone("devoracle_n2")["random_blades"] == 6
+		and StoneLoader.stone_cost("devoracle_n1") == 3.0 and StoneLoader.stone_cost("eclat_cuirasse_n2") == 5.0,
 		"les modifications de l'utilisateur sont intégrées avec les coûts calculés")
 	var veskar_deck := ["de_boiteux_n1", "jumeau_de_cuivre_n1", "valet_a_lenvers_n1", "ogre_a_deux_bouches_n1", "le_nud_hurlant_n2", "croupier_manchot_n1", "griffe_a_jetons_n2", "devoracle_n2"]
 	_check(DeckRules.is_deck_valid(veskar_deck, "veskar"), "un deck dieu + neutres est valide")
@@ -124,7 +122,7 @@ func _test_catalog_and_decks() -> void:
 	_check(npc_decks_valid, "chaque adversaire a huit lignées compatibles, dans le budget de 80 points")
 	_check(PlayerSaveCodec.best_god_for_deck(
 		["porte_greffes_n1", "le_demonteur_n2", "la_machine_aux_mille_depouilles_n1", "de_boiteux_n1", "le_nud_hurlant_n2"]) == "enigma",
-		"la migration choisit le dieu qui conserve le plus de cartes")
+		"un ancien profil à deck unique retrouve la famille qui contient le plus de ses cartes")
 
 
 func _test_immutable_catalog() -> void:

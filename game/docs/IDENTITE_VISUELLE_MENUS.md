@@ -159,7 +159,8 @@ Les six portraits sont fournis dans `assets/gods/`. Le champ `asset` de
   partie : l'action principale attend que les deux téléphones la demandent.
   Même règle avant le premier coup : après le pile ou face, `COMMENCER` attend
   l'accord des deux appareils.
-- Navigation : trois onglets avec icônes SVG au-dessus des libellés. Les
+- Navigation : quatre onglets — Boutique, Decks, Accueil et Règles — avec icônes
+  SVG au-dessus des libellés. Les
   enfants décoratifs ignorent la souris et le tactile ; les boutons d'origine
   conservent les connexions et la gestion des glissements.
 

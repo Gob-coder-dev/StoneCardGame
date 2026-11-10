@@ -51,9 +51,7 @@ func run() -> void:
 
 func _cleanup() -> void:
 	for path in [PATH, PATH + ".tmp", PATH + ".unreadable",
-			SWAP_PATH, SWAP_PATH + ".tmp", SWAP_PATH + ".unreadable",
-			SWAP_PATH + PlayerData.CATALOGUE_BACKUP_SUFFIX,
-			SWAP_PATH + PlayerData.CATALOGUE_BACKUP_SUFFIX + ".tmp"]:
+			SWAP_PATH, SWAP_PATH + ".tmp", SWAP_PATH + ".unreadable"]:
 		if FileAccess.file_exists(path):
 			DirAccess.remove_absolute(path)
 

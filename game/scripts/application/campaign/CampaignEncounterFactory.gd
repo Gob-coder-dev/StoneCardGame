@@ -17,100 +17,13 @@ static func build(node: CampaignNode, campaign_version: int, player_god_id: Stri
 	var mode := node.game_mode()
 	var tier := node.max_power_tier()
 	var seed := node.resolved_seed(campaign_version, attempt)
-	var opponent_god := ""
-	var opponent_deck: Array = []
-	var display_name := ""
-	var description := ""
-	var portrait := ""
-	var god_policy := node.opponent_god_policy()
-	var deck_policy := node.opponent_deck_policy()
-
-	match mode:
-		GameModeRulesModel.MODE_RANDOM:
-			var random_god := node.generator_god_id()
-			if random_god != "":
-				display_name = _god_name(random_god)
-				description = "Deux decks de %s tirés au hasard, sans carte neutre." % _god_name(random_god)
-				portrait = str(StoneLoader.get_god(random_god).get("asset", ""))
-			else:
-				display_name = "Adversaire"
-				description = "Dieux et decks tirés selon les règles du mode Aléatoire."
-		GameModeRulesModel.MODE_MIRROR:
-			var mirror_god := node.generator_god_id()
-			if not node.mirror_fixed_deck().is_empty() and mirror_god != "":
-				display_name = _god_name(mirror_god)
-				description = "Un deck miroir fixe de %s, copié pour les deux camps." % _god_name(mirror_god)
-				portrait = str(StoneLoader.get_god(mirror_god).get("asset", ""))
-			else:
-				display_name = "Reflet"
-				description = "Un seul loadout généré, copié pour les deux camps."
-		GameModeRulesModel.MODE_DRAFT:
-			opponent_god = player_god_id if god_policy == CampaignNode.GOD_PROFILE \
-				else node.fixed_god_id()
-			if opponent_god == "":
-				return _failure("Le niveau Sélection n'a pas de dieu adverse.")
-		GameModeRulesModel.MODE_CLASSIC:
-			opponent_god = player_god_id if god_policy == CampaignNode.GOD_PROFILE \
-				else node.fixed_god_id()
-			if opponent_god == "" and deck_policy != CampaignNode.DECK_FIXED:
-				return _failure("Le niveau Classique n'a pas de dieu adverse.")
-			match deck_policy:
-				CampaignNode.DECK_FIXED:
-					opponent_deck = node.fixed_deck()
-				CampaignNode.DECK_GENERATED:
-					if opponent_god == "":
-						return _failure("Un deck généré exige un dieu adverse.")
-					var generated := GeneratorModel.new().generate_for_god(
-						seed, opponent_god, tier)
-					if not bool(generated.get("ok", false)):
-						return _failure(str(generated.get("reason", "Deck généré impossible.")))
-					opponent_deck = (generated.get("deck", []) as Array).duplicate()
-				CampaignNode.DECK_MIRRORED:
-					opponent_deck = player_deck.duplicate()
-				_:
-					return _failure("Politique de deck inconnue.")
-
-		_:
-			return _failure("Mode de campagne inconnu.")
-
-	if display_name == "":
-		display_name = OpponentCatalogModel.NEUTRAL_BOT_NAME
-	if opponent_god != "":
-		var god := StoneLoader.get_god(opponent_god)
-		if god.is_empty():
-			return _failure("Dieu adverse introuvable : %s." % opponent_god)
-		display_name = str(god.get("name", opponent_god))
-		description = str(god.get("description", ""))
-		portrait = str(god.get("asset", ""))
-	# Tout adversaire IA sans dieu est Pr.Stone, y compris les modes Reflet et
-	# Aléatoire qui n'ont pas de dieu fixe.
-	if portrait == "":
-		portrait = str(OpponentCatalogModel.neutral_source().get("asset", ""))
-
-	var opponent := {
-		"id": "campaign_%s" % node.id,
-		# Le nom du combattant reste court dans le HUD, le pile ou face et le
-		# résultat. Le titre narratif appartient à la fiche de campagne.
-		"name": display_name,
-		"combatant_name": display_name,
-		"encounter_name": node.name,
-		"mode_label": GameModeRulesModel.mode_label(mode),
-		"god_id": opponent_god,
-		"description": description,
-		"quote": "",
-		"difficulty": "campaign",
-		"difficulty_label": node.type_label(),
-		"difficulty_stars_text": "",
-		"bracket_id": "tier%d" % tier,
-		"bracket_label": "Palier %d" % tier,
-		"ai": node.ai_profile(),
-		"deck": opponent_deck,
-		"portrait": portrait,
-		"campaign_node_id": node.id,
-		"series": node.series_format(),
-		"match_setup": node.match_setup(),
-		"rewards": node.reward_definition(),
-	}
+	var resolved := _resolve_mode(node, player_god_id, player_deck, seed, tier)
+	if not bool(resolved.get("ok", false)):
+		return _failure(str(resolved.get("reason", "Rencontre invalide.")))
+	resolved = _resolve_identity(resolved)
+	if not bool(resolved.get("ok", false)):
+		return _failure(str(resolved.get("reason", "Adversaire invalide.")))
+	var opponent := _opponent(node, mode, tier, resolved)
 	return {
 		"ok": true,
 		"reason": "",
@@ -128,6 +41,118 @@ static func build(node: CampaignNode, campaign_version: int, player_god_id: Stri
 		"needs_series_session": node.needs_series_session(),
 		"match_setup": node.match_setup(),
 	}
+
+
+static func _resolve_mode(node: CampaignNode, player_god_id: String,
+		player_deck: Array, seed: int, tier: int) -> Dictionary:
+	var result := {
+		"ok": true, "reason": "", "god_id": "", "deck": [],
+		"name": "", "description": "", "portrait": "",
+	}
+	var god_policy := node.opponent_god_policy()
+	var deck_policy := node.opponent_deck_policy()
+	match node.game_mode():
+		GameModeRulesModel.MODE_RANDOM:
+			var random_god := node.generator_god_id()
+			if random_god != "":
+				result.name = _god_name(random_god)
+				result.description = "Deux decks de %s tirés au hasard, sans carte neutre." % result.name
+				result.portrait = str(StoneLoader.get_god(random_god).get("asset", ""))
+			else:
+				result.name = "Adversaire"
+				result.description = "Dieux et decks tirés selon les règles du mode Aléatoire."
+		GameModeRulesModel.MODE_MIRROR:
+			var mirror_god := node.generator_god_id()
+			if not node.mirror_fixed_deck().is_empty() and mirror_god != "":
+				result.name = _god_name(mirror_god)
+				result.description = "Un deck miroir fixe de %s, copié pour les deux camps." % result.name
+				result.portrait = str(StoneLoader.get_god(mirror_god).get("asset", ""))
+			else:
+				result.name = "Reflet"
+				result.description = "Un seul loadout généré, copié pour les deux camps."
+		GameModeRulesModel.MODE_DRAFT:
+			result.god_id = player_god_id if god_policy == CampaignNode.GOD_PROFILE \
+				else node.fixed_god_id()
+			if result.god_id == "":
+				return _mode_failure("Le niveau Sélection n'a pas de dieu adverse.")
+		GameModeRulesModel.MODE_CLASSIC:
+			result.god_id = player_god_id if god_policy == CampaignNode.GOD_PROFILE \
+				else node.fixed_god_id()
+			if result.god_id == "" and deck_policy != CampaignNode.DECK_FIXED:
+				return _mode_failure("Le niveau Classique n'a pas de dieu adverse.")
+			var deck_result := _classic_deck(node, player_deck, seed, tier, result.god_id)
+			if not bool(deck_result.get("ok", false)):
+				return deck_result
+			result.deck = deck_result.get("deck", [])
+		_:
+			return _mode_failure("Mode de campagne inconnu.")
+	return result
+
+
+static func _classic_deck(node: CampaignNode, player_deck: Array,
+		seed: int, tier: int, god_id: String) -> Dictionary:
+	match node.opponent_deck_policy():
+		CampaignNode.DECK_FIXED:
+			return {"ok": true, "deck": node.fixed_deck()}
+		CampaignNode.DECK_GENERATED:
+			if god_id == "":
+				return _mode_failure("Un deck généré exige un dieu adverse.")
+			var generated := GeneratorModel.new().generate_for_god(seed, god_id, tier)
+			if not bool(generated.get("ok", false)):
+				return _mode_failure(str(generated.get("reason", "Deck généré impossible.")))
+			return {"ok": true, "deck": (generated.get("deck", []) as Array).duplicate()}
+		CampaignNode.DECK_MIRRORED:
+			return {"ok": true, "deck": player_deck.duplicate()}
+	return _mode_failure("Politique de deck inconnue.")
+
+
+static func _resolve_identity(resolved: Dictionary) -> Dictionary:
+	var god_id := str(resolved.get("god_id", ""))
+	if god_id != "":
+		var god := StoneLoader.get_god(god_id)
+		if god.is_empty():
+			return _mode_failure("Dieu adverse introuvable : %s." % god_id)
+		resolved.name = str(god.get("name", god_id))
+		resolved.description = str(god.get("description", ""))
+		resolved.portrait = str(god.get("asset", ""))
+	if str(resolved.get("name", "")) == "":
+		resolved.name = OpponentCatalogModel.NEUTRAL_BOT_NAME
+	# Tout adversaire IA sans portrait utilise Pr.Stone, y compris Reflet et Aléatoire.
+	if str(resolved.get("portrait", "")) == "":
+		resolved.portrait = str(OpponentCatalogModel.neutral_source().get("asset", ""))
+	return resolved
+
+
+static func _opponent(node: CampaignNode, mode: String, tier: int,
+		resolved: Dictionary) -> Dictionary:
+	return {
+		"id": "campaign_%s" % node.id,
+		# Le nom du combattant reste court dans le HUD, le pile ou face et le
+		# résultat. Le titre narratif appartient à la fiche de campagne.
+		"name": str(resolved.get("name", "")),
+		"combatant_name": str(resolved.get("name", "")),
+		"encounter_name": node.name,
+		"mode_label": GameModeRulesModel.mode_label(mode),
+		"god_id": str(resolved.get("god_id", "")),
+		"description": str(resolved.get("description", "")),
+		"quote": "",
+		"difficulty": "campaign",
+		"difficulty_label": node.type_label(),
+		"difficulty_stars_text": "",
+		"bracket_id": "tier%d" % tier,
+		"bracket_label": "Palier %d" % tier,
+		"ai": node.ai_profile(),
+		"deck": (resolved.get("deck", []) as Array).duplicate(),
+		"portrait": str(resolved.get("portrait", "")),
+		"campaign_node_id": node.id,
+		"series": node.series_format(),
+		"match_setup": node.match_setup(),
+		"rewards": node.reward_definition(),
+	}
+
+
+static func _mode_failure(reason: String) -> Dictionary:
+	return {"ok": false, "reason": reason}
 
 
 ## Identifiant historique d'une rencontre générée. Une victoire ancienne ne

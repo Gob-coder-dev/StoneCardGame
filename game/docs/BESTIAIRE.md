@@ -1,6 +1,6 @@
 # Bestiaire de SamStone
 
-Ce document décrit les dieux et les lignées de monstres du jeu. Les règles, les statistiques et les niveaux jouables sont définis dans `data/stones.json`.
+Ce document décrit les dieux et les lignées de monstres du jeu. Les règles, les statistiques et les niveaux jouables sont définis dans `data/stones/`.
 
 ## Dieux
 

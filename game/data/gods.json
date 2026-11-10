@@ -55,13 +55,5 @@
       "title": "la Machine Première",
       "asset": "res://assets/gods/enigma.png"
     }
-  ],
-  "legacy_ids": {
-    "inari": "veskar",
-    "izanami": "nerava",
-    "hachiman": "kharun",
-    "tsukuyomi": "ilyr",
-    "okuninushi": "sylkha",
-    "susanoo": "enigma"
-  }
+  ]
 }

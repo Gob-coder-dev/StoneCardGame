@@ -1,0 +1,628 @@
+﻿{
+    "family_id":  "ilyr",
+    "lineages":  [
+                     {
+                         "id":  "longuepine",
+                         "name":  "LonguÃ©pine",
+                         "rarity":  "common",
+                         "god_id":  "ilyr",
+                         "description":  "Ligne droite principale ; les autres faces gagnent des lames de contact.",
+                         "body_color":  "#6c93c4",
+                         "asset":  "res://assets/cards/h/h01_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "power_text":  "Les lames bleues attaquent Ã  distance, traversent les alliÃ©es et les ennemies capturÃ©es ; une rÃ©sistance ou une case bloquÃ©e arrÃªte le tir.",
+                         "levels":  [
+                                        {
+                                            "id":  "longuepine_n1",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       },
+                                            "long_blades":  {
+                                                                "right":  2
+                                                            }
+                                        },
+                                        {
+                                            "id":  "longuepine_n2",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  1,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       },
+                                            "long_blades":  {
+                                                                "right":  3
+                                                            },
+                                            "asset":  "res://assets/cards/h/h01_n2.png"
+                                        },
+                                        {
+                                            "id":  "longuepine_n3",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  2,
+                                                           "left":  1,
+                                                           "right":  0
+                                                       },
+                                            "long_blades":  {
+                                                                "right":  4
+                                                            },
+                                            "asset":  "res://assets/cards/h/h01_n3.png"
+                                        },
+                                        {
+                                            "id":  "longuepine_n4",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  3,
+                                                           "left":  2,
+                                                           "right":  0
+                                                       },
+                                            "long_blades":  {
+                                                                "right":  4
+                                                            },
+                                            "asset":  "res://assets/cards/h/h01_n4.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "pique_en_haut",
+                         "name":  "Pique-en-haut",
+                         "rarity":  "common",
+                         "god_id":  "ilyr",
+                         "description":  "Ligne haute principale ; base tournÃ©e vers le haut du plateau.",
+                         "body_color":  "#6c93c4",
+                         "asset":  "res://assets/cards/h/h02_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "power_text":  "Les lames bleues attaquent Ã  distance, traversent les alliÃ©es et les ennemies capturÃ©es ; une rÃ©sistance ou une case bloquÃ©e arrÃªte le tir.",
+                         "levels":  [
+                                        {
+                                            "id":  "pique_en_haut_n1",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       },
+                                            "long_blades":  {
+                                                                "top":  2
+                                                            }
+                                        },
+                                        {
+                                            "id":  "pique_en_haut_n2",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  0,
+                                                           "left":  1,
+                                                           "right":  0
+                                                       },
+                                            "long_blades":  {
+                                                                "top":  3
+                                                            },
+                                            "asset":  "res://assets/cards/h/h02_n2.png"
+                                        },
+                                        {
+                                            "id":  "pique_en_haut_n3",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  1,
+                                                           "left":  2,
+                                                           "right":  0
+                                                       },
+                                            "long_blades":  {
+                                                                "top":  4
+                                                            },
+                                            "asset":  "res://assets/cards/h/h02_n3.png"
+                                        },
+                                        {
+                                            "id":  "pique_en_haut_n4",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  2,
+                                                           "left":  3,
+                                                           "right":  1
+                                                       },
+                                            "long_blades":  {
+                                                                "top":  4
+                                                            },
+                                            "asset":  "res://assets/cards/h/h02_n4.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "fauche_fond",
+                         "name":  "Fauche-fond",
+                         "rarity":  "common",
+                         "god_id":  "ilyr",
+                         "description":  "Ligne basse principale, appui gauche et faible protection Ã  droite.",
+                         "body_color":  "#6c93c4",
+                         "asset":  "res://assets/cards/h/h03_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "power_text":  "Les lames bleues attaquent Ã  distance, traversent les alliÃ©es et les ennemies capturÃ©es ; une rÃ©sistance ou une case bloquÃ©e arrÃªte le tir.",
+                         "levels":  [
+                                        {
+                                            "id":  "fauche_fond_n1",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  0,
+                                                           "left":  1,
+                                                           "right":  0
+                                                       },
+                                            "long_blades":  {
+                                                                "bottom":  2
+                                                            }
+                                        },
+                                        {
+                                            "id":  "fauche_fond_n2",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  0,
+                                                           "left":  1,
+                                                           "right":  0
+                                                       },
+                                            "long_blades":  {
+                                                                "bottom":  3
+                                                            },
+                                            "asset":  "res://assets/cards/h/h03_n2.png"
+                                        },
+                                        {
+                                            "id":  "fauche_fond_n3",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  0,
+                                                           "left":  2,
+                                                           "right":  0
+                                                       },
+                                            "long_blades":  {
+                                                                "bottom":  4
+                                                            },
+                                            "asset":  "res://assets/cards/h/h03_n3.png"
+                                        },
+                                        {
+                                            "id":  "fauche_fond_n4",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  0,
+                                                           "left":  3,
+                                                           "right":  1
+                                                       },
+                                            "long_blades":  {
+                                                                "bottom":  4
+                                                            },
+                                            "asset":  "res://assets/cards/h/h03_n4.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "bouche_arbalete",
+                         "name":  "Bouche-arbalÃ¨te",
+                         "rarity":  "common",
+                         "god_id":  "ilyr",
+                         "description":  "Ligne gauche principale ; les lames normales couvrent les autres directions.",
+                         "body_color":  "#6c93c4",
+                         "asset":  "res://assets/cards/h/h04_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "power_text":  "Les lames bleues attaquent Ã  distance, traversent les alliÃ©es et les ennemies capturÃ©es ; une rÃ©sistance ou une case bloquÃ©e arrÃªte le tir.",
+                         "levels":  [
+                                        {
+                                            "id":  "bouche_arbalete_n1",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  1,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       },
+                                            "long_blades":  {
+                                                                "left":  2
+                                                            }
+                                        },
+                                        {
+                                            "id":  "bouche_arbalete_n2",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  1,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       },
+                                            "long_blades":  {
+                                                                "left":  3
+                                                            },
+                                            "asset":  "res://assets/cards/h/h04_n2.png"
+                                        },
+                                        {
+                                            "id":  "bouche_arbalete_n3",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  1,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       },
+                                            "long_blades":  {
+                                                                "left":  4
+                                                            },
+                                            "asset":  "res://assets/cards/h/h04_n3.png"
+                                        },
+                                        {
+                                            "id":  "bouche_arbalete_n4",
+                                            "blades":  {
+                                                           "top":  3,
+                                                           "bottom":  2,
+                                                           "left":  0,
+                                                           "right":  1
+                                                       },
+                                            "long_blades":  {
+                                                                "left":  4
+                                                            },
+                                            "asset":  "res://assets/cards/h/h04_n4.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "echassier_des_brumes",
+                         "name":  "Ã‰chassier des brumes",
+                         "rarity":  "rare",
+                         "god_id":  "ilyr",
+                         "description":  "Droite mixte : plus fort au contact quâ€™Ã  distance.",
+                         "body_color":  "#6c93c4",
+                         "asset":  "res://assets/cards/h/h05_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "power_text":  "Les lames bleues attaquent Ã  distance, traversent les alliÃ©es et les ennemies capturÃ©es ; une rÃ©sistance ou une case bloquÃ©e arrÃªte le tir.",
+                         "levels":  [
+                                        {
+                                            "id":  "echassier_des_brumes_n1",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  1,
+                                                           "left":  0,
+                                                           "right":  1
+                                                       },
+                                            "long_blades":  {
+                                                                "right":  2
+                                                            }
+                                        },
+                                        {
+                                            "id":  "echassier_des_brumes_n2",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  2,
+                                                           "left":  1,
+                                                           "right":  1
+                                                       },
+                                            "long_blades":  {
+                                                                "right":  3
+                                                            },
+                                            "asset":  "res://assets/cards/h/h05_n2.png"
+                                        },
+                                        {
+                                            "id":  "echassier_des_brumes_n3",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  3,
+                                                           "left":  2,
+                                                           "right":  1
+                                                       },
+                                            "long_blades":  {
+                                                                "right":  3
+                                                            },
+                                            "asset":  "res://assets/cards/h/h05_n3.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "veilleur_bifurque",
+                         "name":  "Veilleur bifurquÃ©",
+                         "rarity":  "rare",
+                         "god_id":  "ilyr",
+                         "description":  "Deux directions de tir opposÃ©es, avec prioritÃ© gauche.",
+                         "body_color":  "#6c93c4",
+                         "asset":  "res://assets/cards/h/h06_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "power_text":  "Les lames bleues attaquent Ã  distance, traversent les alliÃ©es et les ennemies capturÃ©es ; une rÃ©sistance ou une case bloquÃ©e arrÃªte le tir.",
+                         "levels":  [
+                                        {
+                                            "id":  "veilleur_bifurque_n1",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       },
+                                            "long_blades":  {
+                                                                "left":  2,
+                                                                "right":  1
+                                                            }
+                                        },
+                                        {
+                                            "id":  "veilleur_bifurque_n2",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       },
+                                            "long_blades":  {
+                                                                "left":  3,
+                                                                "right":  2
+                                                            },
+                                            "asset":  "res://assets/cards/h/h06_n2.png"
+                                        },
+                                        {
+                                            "id":  "veilleur_bifurque_n3",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  1,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       },
+                                            "long_blades":  {
+                                                                "left":  4,
+                                                                "right":  3
+                                                            },
+                                            "asset":  "res://assets/cards/h/h06_n3.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "perce_voute",
+                         "name":  "Perce-voÃ»te",
+                         "rarity":  "rare",
+                         "god_id":  "ilyr",
+                         "description":  "Haut longue portÃ©e et protection basse de contact.",
+                         "body_color":  "#6c93c4",
+                         "asset":  "res://assets/cards/h/h07_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "power_text":  "Les lames bleues attaquent Ã  distance, traversent les alliÃ©es et les ennemies capturÃ©es ; une rÃ©sistance ou une case bloquÃ©e arrÃªte le tir.",
+                         "levels":  [
+                                        {
+                                            "id":  "perce_voute_n1",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  1,
+                                                           "left":  1,
+                                                           "right":  0
+                                                       },
+                                            "long_blades":  {
+                                                                "top":  2
+                                                            }
+                                        },
+                                        {
+                                            "id":  "perce_voute_n2",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  2,
+                                                           "left":  1,
+                                                           "right":  1
+                                                       },
+                                            "long_blades":  {
+                                                                "top":  3
+                                                            },
+                                            "asset":  "res://assets/cards/h/h07_n2.png"
+                                        },
+                                        {
+                                            "id":  "perce_voute_n3",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  3,
+                                                           "left":  2,
+                                                           "right":  1
+                                                       },
+                                            "long_blades":  {
+                                                                "top":  4
+                                                            },
+                                            "asset":  "res://assets/cards/h/h07_n3.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "dard_de_traverse",
+                         "name":  "Dard de traverse",
+                         "rarity":  "rare",
+                         "god_id":  "ilyr",
+                         "description":  "Gauche longue portÃ©e, puis mÃ©lange normal/long au dernier niveau.",
+                         "body_color":  "#6c93c4",
+                         "asset":  "res://assets/cards/h/h08_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "power_text":  "Les lames bleues attaquent Ã  distance, traversent les alliÃ©es et les ennemies capturÃ©es ; une rÃ©sistance ou une case bloquÃ©e arrÃªte le tir.",
+                         "levels":  [
+                                        {
+                                            "id":  "dard_de_traverse_n1",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  1
+                                                       },
+                                            "long_blades":  {
+                                                                "left":  2
+                                                            }
+                                        },
+                                        {
+                                            "id":  "dard_de_traverse_n2",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  1,
+                                                           "left":  0,
+                                                           "right":  1
+                                                       },
+                                            "long_blades":  {
+                                                                "left":  3
+                                                            },
+                                            "asset":  "res://assets/cards/h/h08_n2.png"
+                                        },
+                                        {
+                                            "id":  "dard_de_traverse_n3",
+                                            "blades":  {
+                                                           "top":  3,
+                                                           "bottom":  2,
+                                                           "left":  1,
+                                                           "right":  2
+                                                       },
+                                            "long_blades":  {
+                                                                "left":  3
+                                                            },
+                                            "asset":  "res://assets/cards/h/h08_n3.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "lil_empale",
+                         "name":  "Lâ€™Å’il empalÃ©",
+                         "rarity":  "epic",
+                         "god_id":  "ilyr",
+                         "description":  "Deux lignes de tir perpendiculaires haut/droite ; angle bas/gauche faible.",
+                         "body_color":  "#6c93c4",
+                         "asset":  "res://assets/cards/h/h09_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "power_text":  "Les lames bleues attaquent Ã  distance, traversent les alliÃ©es et les ennemies capturÃ©es ; une rÃ©sistance ou une case bloquÃ©e arrÃªte le tir.",
+                         "levels":  [
+                                        {
+                                            "id":  "lil_empale_n1",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       },
+                                            "long_blades":  {
+                                                                "top":  3,
+                                                                "right":  2
+                                                            }
+                                        },
+                                        {
+                                            "id":  "lil_empale_n2",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  1,
+                                                           "left":  1,
+                                                           "right":  0
+                                                       },
+                                            "long_blades":  {
+                                                                "top":  4,
+                                                                "right":  3
+                                                            },
+                                            "asset":  "res://assets/cards/h/h09_n2.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "le_guetteur_trifide",
+                         "name":  "Le Guetteur trifide",
+                         "rarity":  "epic",
+                         "god_id":  "ilyr",
+                         "description":  "Trois lignes de tir ; la face basse reste une attaque de contact.",
+                         "body_color":  "#6c93c4",
+                         "asset":  "res://assets/cards/h/h10_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "power_text":  "Les lames bleues attaquent Ã  distance, traversent les alliÃ©es et les ennemies capturÃ©es ; une rÃ©sistance ou une case bloquÃ©e arrÃªte le tir.",
+                         "levels":  [
+                                        {
+                                            "id":  "le_guetteur_trifide_n1",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  1,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       },
+                                            "long_blades":  {
+                                                                "top":  2,
+                                                                "left":  1,
+                                                                "right":  1
+                                                            }
+                                        },
+                                        {
+                                            "id":  "le_guetteur_trifide_n2",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  2,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       },
+                                            "long_blades":  {
+                                                                "top":  3,
+                                                                "left":  2,
+                                                                "right":  2
+                                                            },
+                                            "asset":  "res://assets/cards/h/h10_n2.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "le_traverse_nuit",
+                         "name":  "Le Traverse-nuit",
+                         "rarity":  "legendary",
+                         "god_id":  "ilyr",
+                         "description":  "Haut maximal et gauche longue portÃ©e ; bas ouvert, droite de contact.",
+                         "body_color":  "#6c93c4",
+                         "asset":  "res://assets/cards/h/h11_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "power_text":  "Les lames bleues attaquent Ã  distance, traversent les alliÃ©es et les ennemies capturÃ©es ; une rÃ©sistance ou une case bloquÃ©e arrÃªte le tir.",
+                         "levels":  [
+                                        {
+                                            "id":  "le_traverse_nuit_n1",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  2
+                                                       },
+                                            "long_blades":  {
+                                                                "top":  4,
+                                                                "left":  3
+                                                            }
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "la_croisee_des_regards",
+                         "name":  "La CroisÃ©e des regards",
+                         "rarity":  "legendary",
+                         "god_id":  "ilyr",
+                         "description":  "Tirs dans les quatre directions, mais aucune face Ã  quatre lames longues.",
+                         "body_color":  "#6c93c4",
+                         "asset":  "res://assets/cards/h/h12_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "power_text":  "Les lames bleues attaquent Ã  distance, traversent les alliÃ©es et les ennemies capturÃ©es ; une rÃ©sistance ou une case bloquÃ©e arrÃªte le tir.",
+                         "levels":  [
+                                        {
+                                            "id":  "la_croisee_des_regards_n1",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       },
+                                            "long_blades":  {
+                                                                "top":  2,
+                                                                "bottom":  3,
+                                                                "left":  2,
+                                                                "right":  3
+                                                            }
+                                        }
+                                    ]
+                     }
+                 ]
+}

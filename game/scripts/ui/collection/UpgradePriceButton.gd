@@ -27,6 +27,20 @@ func set_content(title: String, show_price: bool, price: int,
 	queue_redraw()
 
 
+## État sémantique exposé aux contrôleurs et aux tests sans révéler la
+## composition graphique interne du bouton.
+func is_price_visible() -> bool:
+	return _show_price
+
+
+func displayed_price() -> int:
+	return _price
+
+
+func soul_icon_texture() -> Texture2D:
+	return SoulIcon
+
+
 func _draw() -> void:
 	var font := ThemeDB.fallback_font
 	var alpha := 0.52 if disabled else 1.0

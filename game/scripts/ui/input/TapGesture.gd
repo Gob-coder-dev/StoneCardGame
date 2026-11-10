@@ -1,7 +1,7 @@
-class_name TapGesture
-extends RefCounted
 ## Reconnaît un appui au relâchement, sans confondre déplacement et clic.
 ## Les positions sont mesurées dans le canevas, même si le contenu défile.
+class_name TapGesture
+extends RefCounted
 
 enum Result { NONE, TAP, CANCELED }
 

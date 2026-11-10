@@ -106,9 +106,7 @@ func npc_record(npc_id: String) -> Dictionary:
 ## ─── Persistance ─────────────────────────────────────────────────────────────
 
 const SAVE_PATH: String = "user://savegame.json"
-const CATALOGUE_BACKUP_SUFFIX := ".before_monsters"
 var _save_path: String
-var _pending_catalogue_backup: Dictionary = {}
 
 
 ## Le chemin peut être fourni à une instance isolée pour les tests.
@@ -122,28 +120,18 @@ func get_profile() -> Dictionary:
 
 
 func save() -> Error:
-	if not _pending_catalogue_backup.is_empty() and not FileAccess.file_exists(_save_path + CATALOGUE_BACKUP_SUFFIX):
-		var backup_error := SaveStorage.write(_save_path + CATALOGUE_BACKUP_SUFFIX, _pending_catalogue_backup)
-		if backup_error != OK:
-			push_error("PlayerData: sauvegarde d'origine non conservée (%s)." % error_string(backup_error))
-			return backup_error
 	var error := SaveStorage.write(_save_path, get_profile())
 	if error != OK:
 		push_error("PlayerData: profil non enregistré (%s)." % error_string(error))
-	else:
-		_pending_catalogue_backup.clear()
 	return error
 
 
 func load_save() -> void:
 	var raw := SaveStorage.read(_save_path)
 	_apply_profile(SaveCodec.decode(raw))
-	if SaveCodec.needs_catalogue_migration(raw):
-		_pending_catalogue_backup = raw.duplicate(true)
 
 
 func _apply_profile(profile: Dictionary) -> void:
-	_pending_catalogue_backup = {}
 	_decks_by_god = profile["decks_by_god"].duplicate(true)
 	_selected_deck_by_god = profile["selected_deck_by_god"].duplicate()
 	player_god_id = profile["player_god_id"]
@@ -290,9 +278,23 @@ func owns_stone(stone_id: String) -> bool:
 
 
 func can_upgrade_card(lineage_id: String) -> bool:
+	return bool(card_upgrade_state(lineage_id).get("can_upgrade", false))
+
+
+## Projection unique consommée par les jauges, tiroirs et fiches. Les vues ne
+## relisent ainsi ni la configuration ni la même entrée d'inventaire deux fois.
+func card_upgrade_state(lineage_id: String) -> Dictionary:
 	_ensure_inventory()
-	return ProgressionRules.can_upgrade(lineage_id, _inventory.entry(lineage_id),
-		_inventory.souls, EconomyConfigModel.get_config())
+	var entry := _inventory.entry(lineage_id)
+	var config := EconomyConfigModel.get_config()
+	var requirement := ProgressionRules.requirement(
+		lineage_id, int(entry.get("unlocked_level", 0)), config)
+	return {
+		"entry": entry,
+		"requirement": requirement,
+		"can_upgrade": not requirement.is_empty() and ProgressionRules.can_upgrade(
+			lineage_id, entry, _inventory.souls, config),
+	}
 
 
 ## Publie une copie économique seulement après l'écriture de tout le profil.

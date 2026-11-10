@@ -1,6 +1,6 @@
 # Guide Fooocus — dieux et monstres de SamStone
 
-Ce guide transforme le [bestiaire](BESTIAIRE.md) et [`stones.json`](../data/stones.json) en prompts directement utilisables dans Fooocus.
+Ce guide transforme le [bestiaire](BESTIAIRE.md) et le [catalogue de pierres](../data/stones/manifest.json) en prompts directement utilisables dans Fooocus.
 
 **Un seul champ Fooocus, un seul prompt positif complet par image.** Copier un bloc à la fois ; ne pas ajouter de prompt négatif, ne pas assembler des blocs séparés et ne pas compter sur la mémoire d’une image précédente. Les six dieux et les 222 cartes à refaire ont chacun leur prompt individuel. Les 53 illustrations validées sont à conserver.
 

@@ -33,3 +33,13 @@ static func go(tree: SceneTree, scene_path: String) -> Error:
 		push_error("GameRoutes: ouverture impossible de '%s' (%s)." % [
 			scene_path, error_string(error)])
 	return error
+
+
+## Point d'entrée commun aux contrôleurs testables. Une suite peut injecter un
+## changement de scène sans que chaque écran recopie ce branchement.
+static func go_with_override(tree: SceneTree, override: Callable,
+		scene_path: String) -> Error:
+	if override.is_valid():
+		override.call(scene_path)
+		return OK
+	return go(tree, scene_path)

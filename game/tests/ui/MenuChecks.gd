@@ -1206,7 +1206,7 @@ func _pvp_config(starting_player: int, blocked_cells: Array,
 func _test_hud_game_over() -> void:
 	var hud := BattleHUD.new()
 	add_child(hud)
-	hud.set_names("Joueur", "Hiro")
+	hud.set_names("Joueur", "Adversaire")
 	hud.set_gods(StoneLoader.get_god("veskar"), StoneLoader.get_god("kharun"))
 	hud.set_active_player(GameState.PLAYER_HUMAN)
 	hud.set_game_over()
@@ -1249,20 +1249,20 @@ func _test_collection_incremental_refresh() -> void:
 	expected.sort()
 	_check(cards.size() == StoneLoader.get_lineages_for_god("veskar").size() and shown_sorted == expected,
 		"la collection n'affiche pas les cartes déjà dans le deck")
-	# Tri FAMILLE par défaut : la première carte est la moins chère d'Inari.
+	# Tri FAMILLE par défaut : la première carte est la moins chère de Véskar.
 	_check(page._sort_mode == 0 and page.sort_button.text.begins_with("TRIER : FAMILLE")
 		and str(StoneLoader.get_stone(shown[0])["god_id"]) == "veskar" and _is_family_order(shown, "veskar"),
 		"par défaut, les cartes du dieu passent avant les neutres, chaque groupe par coût puis par nom")
 	var de_boiteux_n3: StoneCard = cards["de_boiteux_n1"]
 	var identity := de_boiteux_n3.get_instance_id()
-	var without_kappa: Array = PlayerData.get_active_deck()
-	without_kappa.erase("de_boiteux_n1")
-	page._current_deck = without_kappa
+	var without_de_boiteux: Array = PlayerData.get_active_deck()
+	without_de_boiteux.erase("de_boiteux_n1")
+	page._current_deck = without_de_boiteux
 	page._refresh_all()
 	await get_tree().process_frame
 	var grid: GridContainer = page.collection_rows.get_child(0)
 	shown = _shown_collection_ids(page)
-	# Kappa revient à la place que lui donnent son coût et son nom.
+	# Dé boiteux revient à la place que lui donnent son coût et son nom.
 	_check(shown.has("de_boiteux_n1") and _is_family_order(shown, "veskar")
 		and is_instance_valid(de_boiteux_n3) and de_boiteux_n3.get_instance_id() == identity and not de_boiteux_n3._selected,
 		"une carte retirée du deck revient à sa place dans la collection, sans recréer de carte")
@@ -1276,14 +1276,14 @@ func _test_collection_incremental_refresh() -> void:
 	page._select_sort(0)
 	await get_tree().process_frame
 	grid = page.collection_rows.get_child(0)
-	page._current_deck = without_kappa + ["avortons_des_caves_n4"]
+	page._current_deck = without_de_boiteux + ["avortons_des_caves_n4"]
 	page._refresh_all()
 	await get_tree().process_frame
 	var visible_wrappers: Array = []
 	for wrapper in grid.get_children():
 		if wrapper.visible:
 			visible_wrappers.append(wrapper)
-	# Izanagi masqué, les cartes visibles restent alignées sur trois colonnes.
+	# Avortons des caves masqué, les cartes visibles restent alignées sur trois colonnes.
 	_check(not _shown_collection_ids(page).has("avortons_des_caves_n1") and visible_wrappers.size() == expected.size()
 		and is_equal_approx(visible_wrappers[3].position.x, visible_wrappers[0].position.x)
 		and visible_wrappers[3].position.y > visible_wrappers[0].position.y,

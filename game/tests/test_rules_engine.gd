@@ -2,7 +2,7 @@
 ## Exécutée par GodSystemChecks avec les assertions locales.
 ##
 ## Les fixtures installent des pierres isolées dans le catalogue de test pour
-## des lames connues et des tests indépendants de stones.json. Les pierres
+## des lames connues et des tests indépendants des catalogues de pierres. Les pierres
 ## posées sont de vraies instances de combat, comme dans une partie.
 extends "res://tests/support/CombatTestSuite.gd"
 

@@ -46,7 +46,7 @@ static func _node_problems(node: CampaignNode, version: int,
 		if minimum > 0 and god_id != "":
 			for key in ["loadout_one", "loadout_two"]:
 				var loadout: GameLoadout = prepared.get(key) as GameLoadout
-				if loadout == null or _god_card_count(loadout.deck, god_id) < minimum:
+				if loadout == null or DeckRules.affinity_count(loadout.deck, god_id) < minimum:
 					result.append("génération de '%s' : minimum de %d cartes '%s' non respecté." % [
 						node.id, minimum, god_id])
 					return
@@ -84,11 +84,3 @@ static func _node_problems(node: CampaignNode, version: int,
 				result.append("deck généré impossible sur '%s' pour '%s'." % [
 					node.id, str(god.get("id", ""))])
 				return
-
-
-static func _god_card_count(deck: Array, god_id: String) -> int:
-	var count := 0
-	for stone_id in deck:
-		if StoneLoader.stone_affinity(str(stone_id)) == god_id:
-			count += 1
-	return count

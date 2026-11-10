@@ -10,7 +10,6 @@ const TIME_LIMIT := 300.0
 ## Chargées à l'exécution : une suite cassée est signalée sans bloquer les autres.
 const SUITES: Array[String] = [
 	"res://tests/combat/PlayerDataChecks.gd",
-	"res://tests/combat/MonsterMigrationChecks.gd",
 	"res://tests/combat/EvolutionChecks.gd",
 	"res://tests/test_rules_engine.gd",
 	"res://tests/test_deck_rules.gd",

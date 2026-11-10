@@ -1,0 +1,513 @@
+﻿{
+    "family_id":  "enigma",
+    "lineages":  [
+                     {
+                         "id":  "collecteur_de_dents",
+                         "name":  "Collecteur de dents",
+                         "rarity":  "common",
+                         "god_id":  "enigma",
+                         "description":  "Haut offensif et autres faces disponibles pour les boucliers volÃ©s.",
+                         "body_color":  "#bf8b58",
+                         "asset":  "res://assets/cards/p/p01_n1.png",
+                         "effects":  [
+                                         "shield_theft"
+                                     ],
+                         "power_text":  "Pillage : les symboles actifs de la face vaincue deviennent des boucliers rÃ©partis sur les autres faces, selon la place restante.",
+                         "levels":  [
+                                        {
+                                            "id":  "collecteur_de_dents_n1",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       }
+                                        },
+                                        {
+                                            "id":  "collecteur_de_dents_n2",
+                                            "blades":  {
+                                                           "top":  3,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       },
+                                            "asset":  "res://assets/cards/p/p01_n2.png"
+                                        },
+                                        {
+                                            "id":  "collecteur_de_dents_n3",
+                                            "blades":  {
+                                                           "top":  4,
+                                                           "bottom":  0,
+                                                           "left":  1,
+                                                           "right":  0
+                                                       },
+                                            "asset":  "res://assets/cards/p/p01_n3.png"
+                                        },
+                                        {
+                                            "id":  "collecteur_de_dents_n4",
+                                            "blades":  {
+                                                           "top":  4,
+                                                           "bottom":  1,
+                                                           "left":  2,
+                                                           "right":  0
+                                                       },
+                                            "asset":  "res://assets/cards/p/p01_n4.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "scie_boiteuse",
+                         "name":  "Scie boiteuse",
+                         "rarity":  "common",
+                         "god_id":  "enigma",
+                         "description":  "Droite offensive ; gauche vide pour accueillir les dÃ©fenses acquises.",
+                         "body_color":  "#bf8b58",
+                         "asset":  "res://assets/cards/p/p02_n1.png",
+                         "effects":  [
+                                         "shield_theft"
+                                     ],
+                         "power_text":  "Pillage : les symboles actifs de la face vaincue deviennent des boucliers rÃ©partis sur les autres faces, selon la place restante.",
+                         "levels":  [
+                                        {
+                                            "id":  "scie_boiteuse_n1",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  2
+                                                       }
+                                        },
+                                        {
+                                            "id":  "scie_boiteuse_n2",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  3
+                                                       },
+                                            "asset":  "res://assets/cards/p/p02_n2.png"
+                                        },
+                                        {
+                                            "id":  "scie_boiteuse_n3",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  1,
+                                                           "left":  0,
+                                                           "right":  4
+                                                       },
+                                            "asset":  "res://assets/cards/p/p02_n3.png"
+                                        },
+                                        {
+                                            "id":  "scie_boiteuse_n4",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  2,
+                                                           "left":  0,
+                                                           "right":  4
+                                                       },
+                                            "asset":  "res://assets/cards/p/p02_n4.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "pince_carcasse",
+                         "name":  "Pince-carcasse",
+                         "rarity":  "common",
+                         "god_id":  "enigma",
+                         "description":  "Bas/gauche de contact ; renforce progressivement ses cÃ´tÃ©s faibles par capture.",
+                         "body_color":  "#bf8b58",
+                         "asset":  "res://assets/cards/p/p03_n1.png",
+                         "effects":  [
+                                         "shield_theft"
+                                     ],
+                         "power_text":  "Pillage : les symboles actifs de la face vaincue deviennent des boucliers rÃ©partis sur les autres faces, selon la place restante.",
+                         "levels":  [
+                                        {
+                                            "id":  "pince_carcasse_n1",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  1,
+                                                           "left":  1,
+                                                           "right":  0
+                                                       }
+                                        },
+                                        {
+                                            "id":  "pince_carcasse_n2",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  2,
+                                                           "left":  2,
+                                                           "right":  0
+                                                       },
+                                            "asset":  "res://assets/cards/p/p03_n2.png"
+                                        },
+                                        {
+                                            "id":  "pince_carcasse_n3",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  3,
+                                                           "left":  2,
+                                                           "right":  1
+                                                       },
+                                            "asset":  "res://assets/cards/p/p03_n3.png"
+                                        },
+                                        {
+                                            "id":  "pince_carcasse_n4",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  4,
+                                                           "left":  2,
+                                                           "right":  1
+                                                       },
+                                            "asset":  "res://assets/cards/p/p03_n4.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "depeceur_rampant",
+                         "name":  "DÃ©peceur rampant",
+                         "rarity":  "common",
+                         "god_id":  "enigma",
+                         "description":  "Haut/gauche puissants, droite toujours ouverte aux boucliers gagnÃ©s.",
+                         "body_color":  "#bf8b58",
+                         "asset":  "res://assets/cards/p/p04_n1.png",
+                         "effects":  [
+                                         "shield_theft"
+                                     ],
+                         "power_text":  "Pillage : les symboles actifs de la face vaincue deviennent des boucliers rÃ©partis sur les autres faces, selon la place restante.",
+                         "levels":  [
+                                        {
+                                            "id":  "depeceur_rampant_n1",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  0,
+                                                           "left":  1,
+                                                           "right":  0
+                                                       }
+                                        },
+                                        {
+                                            "id":  "depeceur_rampant_n2",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  0,
+                                                           "left":  1,
+                                                           "right":  0
+                                                       },
+                                            "asset":  "res://assets/cards/p/p04_n2.png"
+                                        },
+                                        {
+                                            "id":  "depeceur_rampant_n3",
+                                            "blades":  {
+                                                           "top":  3,
+                                                           "bottom":  1,
+                                                           "left":  2,
+                                                           "right":  0
+                                                       },
+                                            "asset":  "res://assets/cards/p/p04_n3.png"
+                                        },
+                                        {
+                                            "id":  "depeceur_rampant_n4",
+                                            "blades":  {
+                                                           "top":  4,
+                                                           "bottom":  1,
+                                                           "left":  3,
+                                                           "right":  0
+                                                       },
+                                            "asset":  "res://assets/cards/p/p04_n4.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "recycleur_thoracique",
+                         "name":  "Recycleur thoracique",
+                         "rarity":  "rare",
+                         "god_id":  "enigma",
+                         "description":  "Haut/gauche forts ; bas et droite rÃ©servent les logements de protection.",
+                         "body_color":  "#bf8b58",
+                         "asset":  "res://assets/cards/p/p05_n1.png",
+                         "effects":  [
+                                         "shield_theft"
+                                     ],
+                         "power_text":  "Pillage : les symboles actifs de la face vaincue deviennent des boucliers rÃ©partis sur les autres faces, selon la place restante.",
+                         "levels":  [
+                                        {
+                                            "id":  "recycleur_thoracique_n1",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  0,
+                                                           "left":  2,
+                                                           "right":  0
+                                                       }
+                                        },
+                                        {
+                                            "id":  "recycleur_thoracique_n2",
+                                            "blades":  {
+                                                           "top":  3,
+                                                           "bottom":  0,
+                                                           "left":  3,
+                                                           "right":  0
+                                                       },
+                                            "asset":  "res://assets/cards/p/p05_n2.png"
+                                        },
+                                        {
+                                            "id":  "recycleur_thoracique_n3",
+                                            "blades":  {
+                                                           "top":  4,
+                                                           "bottom":  0,
+                                                           "left":  4,
+                                                           "right":  1
+                                                       },
+                                            "asset":  "res://assets/cards/p/p05_n3.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "preleveur_de_plaques",
+                         "name":  "PrÃ©leveur de plaques",
+                         "rarity":  "rare",
+                         "god_id":  "enigma",
+                         "description":  "Bas/droite offensifs ; haut/gauche de soutien.",
+                         "body_color":  "#bf8b58",
+                         "asset":  "res://assets/cards/p/p06_n1.png",
+                         "effects":  [
+                                         "shield_theft"
+                                     ],
+                         "power_text":  "Pillage : les symboles actifs de la face vaincue deviennent des boucliers rÃ©partis sur les autres faces, selon la place restante.",
+                         "levels":  [
+                                        {
+                                            "id":  "preleveur_de_plaques_n1",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  2,
+                                                           "left":  0,
+                                                           "right":  2
+                                                       }
+                                        },
+                                        {
+                                            "id":  "preleveur_de_plaques_n2",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  3,
+                                                           "left":  0,
+                                                           "right":  3
+                                                       },
+                                            "asset":  "res://assets/cards/p/p06_n2.png"
+                                        },
+                                        {
+                                            "id":  "preleveur_de_plaques_n3",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  4,
+                                                           "left":  1,
+                                                           "right":  3
+                                                       },
+                                            "asset":  "res://assets/cards/p/p06_n3.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "chirurgien_dacier",
+                         "name":  "Chirurgien dâ€™acier",
+                         "rarity":  "rare",
+                         "god_id":  "enigma",
+                         "description":  "Attaque haute trÃ¨s spÃ©cialisÃ©e, puis gauche secondaire.",
+                         "body_color":  "#bf8b58",
+                         "asset":  "res://assets/cards/p/p07_n1.png",
+                         "effects":  [
+                                         "shield_theft"
+                                     ],
+                         "power_text":  "Pillage : les symboles actifs de la face vaincue deviennent des boucliers rÃ©partis sur les autres faces, selon la place restante.",
+                         "levels":  [
+                                        {
+                                            "id":  "chirurgien_dacier_n1",
+                                            "blades":  {
+                                                           "top":  3,
+                                                           "bottom":  0,
+                                                           "left":  1,
+                                                           "right":  0
+                                                       }
+                                        },
+                                        {
+                                            "id":  "chirurgien_dacier_n2",
+                                            "blades":  {
+                                                           "top":  4,
+                                                           "bottom":  0,
+                                                           "left":  2,
+                                                           "right":  0
+                                                       },
+                                            "asset":  "res://assets/cards/p/p07_n2.png"
+                                        },
+                                        {
+                                            "id":  "chirurgien_dacier_n3",
+                                            "blades":  {
+                                                           "top":  4,
+                                                           "bottom":  1,
+                                                           "left":  3,
+                                                           "right":  1
+                                                       },
+                                            "asset":  "res://assets/cards/p/p07_n3.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "porte_greffes",
+                         "name":  "Porte-greffes",
+                         "rarity":  "rare",
+                         "god_id":  "enigma",
+                         "description":  "Profil plus polyvalent, avec faiblesse persistante Ã  droite.",
+                         "body_color":  "#bf8b58",
+                         "asset":  "res://assets/cards/p/p08_n1.png",
+                         "effects":  [
+                                         "shield_theft"
+                                     ],
+                         "power_text":  "Pillage : les symboles actifs de la face vaincue deviennent des boucliers rÃ©partis sur les autres faces, selon la place restante.",
+                         "levels":  [
+                                        {
+                                            "id":  "porte_greffes_n1",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  1,
+                                                           "left":  1,
+                                                           "right":  1
+                                                       }
+                                        },
+                                        {
+                                            "id":  "porte_greffes_n2",
+                                            "blades":  {
+                                                           "top":  3,
+                                                           "bottom":  1,
+                                                           "left":  2,
+                                                           "right":  1
+                                                       },
+                                            "asset":  "res://assets/cards/p/p08_n2.png"
+                                        },
+                                        {
+                                            "id":  "porte_greffes_n3",
+                                            "blades":  {
+                                                           "top":  3,
+                                                           "bottom":  2,
+                                                           "left":  3,
+                                                           "right":  1
+                                                       },
+                                            "asset":  "res://assets/cards/p/p08_n3.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "le_demonteur",
+                         "name":  "Le DÃ©monteur",
+                         "rarity":  "epic",
+                         "god_id":  "enigma",
+                         "description":  "Deux directions de capture majeures, haut/gauche ; deux faces pour stocker les dÃ©fenses.",
+                         "body_color":  "#bf8b58",
+                         "asset":  "res://assets/cards/p/p09_n1.png",
+                         "effects":  [
+                                         "shield_theft"
+                                     ],
+                         "power_text":  "Pillage : les symboles actifs de la face vaincue deviennent des boucliers rÃ©partis sur les autres faces, selon la place restante.",
+                         "levels":  [
+                                        {
+                                            "id":  "le_demonteur_n1",
+                                            "blades":  {
+                                                           "top":  3,
+                                                           "bottom":  0,
+                                                           "left":  3,
+                                                           "right":  1
+                                                       }
+                                        },
+                                        {
+                                            "id":  "le_demonteur_n2",
+                                            "blades":  {
+                                                           "top":  4,
+                                                           "bottom":  1,
+                                                           "left":  4,
+                                                           "right":  1
+                                                       },
+                                            "asset":  "res://assets/cards/p/p09_n2.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "la_broyeuse_dempreintes",
+                         "name":  "La Broyeuse dâ€™empreintes",
+                         "rarity":  "epic",
+                         "god_id":  "enigma",
+                         "description":  "Bas trÃ¨s fort, gauche secondaire ; renforts rÃ©cupÃ©rÃ©s utiles sur les deux autres faces.",
+                         "body_color":  "#bf8b58",
+                         "asset":  "res://assets/cards/p/p10_n1.png",
+                         "effects":  [
+                                         "shield_theft"
+                                     ],
+                         "power_text":  "Pillage : les symboles actifs de la face vaincue deviennent des boucliers rÃ©partis sur les autres faces, selon la place restante.",
+                         "levels":  [
+                                        {
+                                            "id":  "la_broyeuse_dempreintes_n1",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  3,
+                                                           "left":  2,
+                                                           "right":  1
+                                                       }
+                                        },
+                                        {
+                                            "id":  "la_broyeuse_dempreintes_n2",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  4,
+                                                           "left":  3,
+                                                           "right":  1
+                                                       },
+                                            "asset":  "res://assets/cards/p/p10_n2.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "le_collecteur_zero",
+                         "name":  "Le Collecteur ZÃ©ro",
+                         "rarity":  "legendary",
+                         "god_id":  "enigma",
+                         "description":  "Haut maximal, bas ouvert et deux flancs inÃ©gaux ; sept logements encore libres.",
+                         "body_color":  "#bf8b58",
+                         "asset":  "res://assets/cards/p/p11_n1.png",
+                         "effects":  [
+                                         "shield_theft"
+                                     ],
+                         "power_text":  "Pillage : les symboles actifs de la face vaincue deviennent des boucliers rÃ©partis sur les autres faces, selon la place restante.",
+                         "levels":  [
+                                        {
+                                            "id":  "le_collecteur_zero_n1",
+                                            "blades":  {
+                                                           "top":  4,
+                                                           "bottom":  0,
+                                                           "left":  3,
+                                                           "right":  2
+                                                       }
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "la_machine_aux_mille_depouilles",
+                         "name":  "La Machine aux mille dÃ©pouilles",
+                         "rarity":  "legendary",
+                         "god_id":  "enigma",
+                         "description":  "Trois faces de contact fortes et une faiblesse basse ; cinq places libres pour les prises.",
+                         "body_color":  "#bf8b58",
+                         "asset":  "res://assets/cards/p/p12_n1.png",
+                         "effects":  [
+                                         "shield_theft"
+                                     ],
+                         "power_text":  "Pillage : les symboles actifs de la face vaincue deviennent des boucliers rÃ©partis sur les autres faces, selon la place restante.",
+                         "levels":  [
+                                        {
+                                            "id":  "la_machine_aux_mille_depouilles_n1",
+                                            "blades":  {
+                                                           "top":  3,
+                                                           "bottom":  1,
+                                                           "left":  4,
+                                                           "right":  3
+                                                       }
+                                        }
+                                    ]
+                     }
+                 ]
+}

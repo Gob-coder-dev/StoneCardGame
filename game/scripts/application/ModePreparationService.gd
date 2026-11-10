@@ -101,7 +101,7 @@ func _mirror(seed: int, max_tier: int, constraints: Dictionary = {}) -> Dictiona
 		var one := GameLoadout.create(god_id, fixed_deck, seed)
 		if not one.is_valid():
 			return {"ok": false, "reason": "Le deck miroir imposé est invalide."}
-		if _god_card_count(fixed_deck, god_id) < min_god_cards:
+		if DeckRules.affinity_count(fixed_deck, god_id) < min_god_cards:
 			return {"ok": false, "reason": "Le deck miroir imposé ne respecte pas le minimum de cartes du dieu."}
 		return _success(one, one.copy())
 	var generator := _generator
@@ -140,14 +140,6 @@ static func _generation_constraint_problem(god_id: String,
 	if god_id != "" and StoneLoader.get_god(god_id).is_empty():
 		return "Le dieu imposé est inconnu : %s." % god_id
 	return ""
-
-
-static func _god_card_count(deck: Array, god_id: String) -> int:
-	var count := 0
-	for stone_id in deck:
-		if StoneLoader.stone_affinity(str(stone_id)) == god_id:
-			count += 1
-	return count
 
 
 static func _success(one: GameLoadout, two: GameLoadout) -> Dictionary:

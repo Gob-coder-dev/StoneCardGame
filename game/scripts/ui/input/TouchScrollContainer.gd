@@ -1,5 +1,5 @@
-extends ScrollContainer
 ## Garde le défilement/inertie natifs et partage le seuil avec les appuis.
+extends ScrollContainer
 
 var _scrolling: bool = false
 var _stopping_inertia: bool = false

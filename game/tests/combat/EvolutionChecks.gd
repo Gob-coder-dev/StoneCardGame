@@ -9,7 +9,7 @@ func run() -> void:
 	_test_catalogue()
 	_test_form_assets()
 	_test_deck_levels()
-	_test_migration()
+	_test_profile_decode()
 	_test_grouped_probabilities()
 	_test_grouped_search()
 
@@ -31,10 +31,8 @@ func _test_catalogue() -> void:
 		and StoneLoader.preview_variant("le_porte_cercueil_n1", 4) == "le_porte_cercueil_n2"
 		and StoneLoader.preview_variant("le_collecteur_zero_n1", 4) == "le_collecteur_zero_n1",
 		"l'aperçu niveau quatre conserve les rares, épiques et légendaires à leur vrai maximum")
-	_check(not StoneLoader.has_stone("kappa") and StoneLoader.has_stone(StoneLoader.resolve_saved_id("kappa")),
-		"une ancienne carte possède une correspondance sans rester dans le catalogue actif")
 	_check(StoneLoader.stone_cost("avortons_des_caves_n1") == 4.0 and StoneLoader.stone_cost("avortons_des_caves_n4") == 16.0
-		and StoneLoader.stone_cost("devoracle_n1") == 3.5 and StoneLoader.stone_cost("echassier_des_brumes_n1") == 5.5,
+		and StoneLoader.stone_cost("devoracle_n1") == 3.0 and StoneLoader.stone_cost("echassier_des_brumes_n1") == 5.5,
 		"chaque coût provient des symboles et d'un point fixe pour un pouvoir")
 	var copy := StoneLoader.get_stone("avortons_des_caves_n4")
 	copy["blades"]["top"] = 0
@@ -91,7 +89,7 @@ func _test_form_assets() -> void:
 	StoneLoader._lineages = saved_lineages
 
 
-func _test_migration() -> void:
+func _test_profile_decode() -> void:
 	var raw := Codec.decode({"player_god_id": "veskar", "player_deck": ["le_nud_hurlant_n2", "de_boiteux_n1"]})
 	for god in raw["decks_by_god"]:
 		for slot in range(3):
@@ -101,12 +99,6 @@ func _test_migration() -> void:
 	var decoded := Codec.decode(JSON.parse_string(JSON.stringify(raw)))
 	_check(decoded["decks_by_god"] == raw["decks_by_god"] and decoded["player_name"] == "Évolutions"
 		and decoded["stats"]["wins"] == 9, "le format quatre conserve les niveaux distincts des dix-huit decks, le pseudo et les statistiques")
-	var previous := StoneLoader._legacy_ids.duplicate()
-	StoneLoader._legacy_ids["old_test_form"] = "avortons_des_caves_n2"
-	var migrated := Codec.decode({"player_god_id": "veskar", "player_deck": ["old_test_form", "le_nud_hurlant_n2"]})
-	_check(migrated["decks_by_god"]["veskar"][0] == ["avortons_des_caves_n2", "le_nud_hurlant_n2"],
-		"une correspondance explicite migre un ancien identifiant vers sa forme exacte")
-	StoneLoader._legacy_ids = previous
 
 
 func _test_grouped_probabilities() -> void:

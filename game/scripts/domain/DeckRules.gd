@@ -35,6 +35,16 @@ static func deck_quarters(stone_ids: Array) -> int:
 	return total
 
 
+## Nombre de pierres appartenant réellement au dieu. Les neutres ne comptent
+## pas : cette règle sert aux loadouts qui imposent une affinité minimale.
+static func affinity_count(stone_ids: Array, god_id: String) -> int:
+	var count := 0
+	for stone_id in stone_ids:
+		if StoneLoader.stone_affinity(str(stone_id)) == god_id:
+			count += 1
+	return count
+
+
 static func budget_quarters() -> int:
 	return DECK_BUDGET * StoneCostRules.COST_SCALE
 
@@ -44,7 +54,7 @@ static func budget_quarters() -> int:
 static func sanitize_deck(stone_ids: Array, god_id: String = "") -> Array:
 	var clean: Array = []
 	for raw_id in stone_ids:
-		var stone_id := StoneLoader.resolve_saved_id(str(raw_id))
+		var stone_id := str(raw_id)
 		if not StoneLoader.has_stone(stone_id) or lineage_index(clean, StoneLoader.stone_lineage(stone_id)) >= 0:
 			continue
 		if god_id != "" and not StoneLoader.is_stone_available_to_god(stone_id, god_id):

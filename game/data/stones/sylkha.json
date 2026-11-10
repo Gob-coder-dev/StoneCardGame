@@ -1,0 +1,513 @@
+﻿{
+    "family_id":  "sylkha",
+    "lineages":  [
+                     {
+                         "id":  "nud_vivant",
+                         "name":  "NÅ“ud vivant",
+                         "rarity":  "common",
+                         "god_id":  "sylkha",
+                         "description":  "Petit membre de liaison, avec beaucoup de place pour recevoir lâ€™aura.",
+                         "body_color":  "#7d9f53",
+                         "asset":  "res://assets/cards/e/e01_n1.png",
+                         "effects":  [
+                                         "swarm"
+                                     ],
+                         "power_text":  "Essaim : +2 lames dâ€™aura par autre membre connectÃ©, jusquâ€™Ã  +4 par carte et dans la place disponible.",
+                         "levels":  [
+                                        {
+                                            "id":  "nud_vivant_n1",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       }
+                                        },
+                                        {
+                                            "id":  "nud_vivant_n2",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  1,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       },
+                                            "asset":  "res://assets/cards/e/e01_n2.png"
+                                        },
+                                        {
+                                            "id":  "nud_vivant_n3",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  1,
+                                                           "left":  1,
+                                                           "right":  0
+                                                       },
+                                            "asset":  "res://assets/cards/e/e01_n3.png"
+                                        },
+                                        {
+                                            "id":  "nud_vivant_n4",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  2,
+                                                           "left":  1,
+                                                           "right":  1
+                                                       },
+                                            "asset":  "res://assets/cards/e/e01_n4.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "larve_dancrage",
+                         "name":  "Larve dâ€™ancrage",
+                         "rarity":  "common",
+                         "god_id":  "sylkha",
+                         "description":  "Bas fort, autres faces ouvertes aux renforts du groupe.",
+                         "body_color":  "#7d9f53",
+                         "asset":  "res://assets/cards/e/e02_n1.png",
+                         "effects":  [
+                                         "swarm"
+                                     ],
+                         "power_text":  "Essaim : +2 lames dâ€™aura par autre membre connectÃ©, jusquâ€™Ã  +4 par carte et dans la place disponible.",
+                         "levels":  [
+                                        {
+                                            "id":  "larve_dancrage_n1",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  1,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       }
+                                        },
+                                        {
+                                            "id":  "larve_dancrage_n2",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  2,
+                                                           "left":  0,
+                                                           "right":  1
+                                                       },
+                                            "asset":  "res://assets/cards/e/e02_n2.png"
+                                        },
+                                        {
+                                            "id":  "larve_dancrage_n3",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  3,
+                                                           "left":  1,
+                                                           "right":  1
+                                                       },
+                                            "asset":  "res://assets/cards/e/e02_n3.png"
+                                        },
+                                        {
+                                            "id":  "larve_dancrage_n4",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  4,
+                                                           "left":  1,
+                                                           "right":  1
+                                                       },
+                                            "asset":  "res://assets/cards/e/e02_n4.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "tisse_griffe",
+                         "name":  "Tisse-griffe",
+                         "rarity":  "common",
+                         "god_id":  "sylkha",
+                         "description":  "Flancs dâ€™abord actifs, puis prioritÃ© gauche ; bonne rÃ©serve de croissance.",
+                         "body_color":  "#7d9f53",
+                         "asset":  "res://assets/cards/e/e03_n1.png",
+                         "effects":  [
+                                         "swarm"
+                                     ],
+                         "power_text":  "Essaim : +2 lames dâ€™aura par autre membre connectÃ©, jusquâ€™Ã  +4 par carte et dans la place disponible.",
+                         "levels":  [
+                                        {
+                                            "id":  "tisse_griffe_n1",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  0,
+                                                           "left":  1,
+                                                           "right":  1
+                                                       }
+                                        },
+                                        {
+                                            "id":  "tisse_griffe_n2",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  0,
+                                                           "left":  2,
+                                                           "right":  2
+                                                       },
+                                            "asset":  "res://assets/cards/e/e03_n2.png"
+                                        },
+                                        {
+                                            "id":  "tisse_griffe_n3",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  0,
+                                                           "left":  3,
+                                                           "right":  2
+                                                       },
+                                            "asset":  "res://assets/cards/e/e03_n3.png"
+                                        },
+                                        {
+                                            "id":  "tisse_griffe_n4",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  1,
+                                                           "left":  4,
+                                                           "right":  2
+                                                       },
+                                            "asset":  "res://assets/cards/e/e03_n4.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "bourgeon_mordant",
+                         "name":  "Bourgeon mordant",
+                         "rarity":  "common",
+                         "god_id":  "sylkha",
+                         "description":  "Haut/gauche offensifs, droite laissÃ©e aux lames dâ€™aura.",
+                         "body_color":  "#7d9f53",
+                         "asset":  "res://assets/cards/e/e04_n1.png",
+                         "effects":  [
+                                         "swarm"
+                                     ],
+                         "power_text":  "Essaim : +2 lames dâ€™aura par autre membre connectÃ©, jusquâ€™Ã  +4 par carte et dans la place disponible.",
+                         "levels":  [
+                                        {
+                                            "id":  "bourgeon_mordant_n1",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  0,
+                                                           "left":  1,
+                                                           "right":  0
+                                                       }
+                                        },
+                                        {
+                                            "id":  "bourgeon_mordant_n2",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  0,
+                                                           "left":  1,
+                                                           "right":  0
+                                                       },
+                                            "asset":  "res://assets/cards/e/e04_n2.png"
+                                        },
+                                        {
+                                            "id":  "bourgeon_mordant_n3",
+                                            "blades":  {
+                                                           "top":  3,
+                                                           "bottom":  0,
+                                                           "left":  2,
+                                                           "right":  0
+                                                       },
+                                            "asset":  "res://assets/cards/e/e04_n3.png"
+                                        },
+                                        {
+                                            "id":  "bourgeon_mordant_n4",
+                                            "blades":  {
+                                                           "top":  4,
+                                                           "bottom":  1,
+                                                           "left":  2,
+                                                           "right":  0
+                                                       },
+                                            "asset":  "res://assets/cards/e/e04_n4.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "mante_des_racines",
+                         "name":  "Mante des racines",
+                         "rarity":  "rare",
+                         "god_id":  "sylkha",
+                         "description":  "Deux faces haut/gauche trÃ¨s fortes ; six emplacements encore libres au maximum.",
+                         "body_color":  "#7d9f53",
+                         "asset":  "res://assets/cards/e/e05_n1.png",
+                         "effects":  [
+                                         "swarm"
+                                     ],
+                         "power_text":  "Essaim : +2 lames dâ€™aura par autre membre connectÃ©, jusquâ€™Ã  +4 par carte et dans la place disponible.",
+                         "levels":  [
+                                        {
+                                            "id":  "mante_des_racines_n1",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  0,
+                                                           "left":  2,
+                                                           "right":  0
+                                                       }
+                                        },
+                                        {
+                                            "id":  "mante_des_racines_n2",
+                                            "blades":  {
+                                                           "top":  3,
+                                                           "bottom":  0,
+                                                           "left":  3,
+                                                           "right":  0
+                                                       },
+                                            "asset":  "res://assets/cards/e/e05_n2.png"
+                                        },
+                                        {
+                                            "id":  "mante_des_racines_n3",
+                                            "blades":  {
+                                                           "top":  4,
+                                                           "bottom":  1,
+                                                           "left":  4,
+                                                           "right":  1
+                                                       },
+                                            "asset":  "res://assets/cards/e/e05_n3.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "porte_nid",
+                         "name":  "Porte-nid",
+                         "rarity":  "rare",
+                         "god_id":  "sylkha",
+                         "description":  "Membre polyvalent et assez symÃ©trique, apte Ã  recevoir lâ€™aura sur toutes ses faces.",
+                         "body_color":  "#7d9f53",
+                         "asset":  "res://assets/cards/e/e06_n1.png",
+                         "effects":  [
+                                         "swarm"
+                                     ],
+                         "power_text":  "Essaim : +2 lames dâ€™aura par autre membre connectÃ©, jusquâ€™Ã  +4 par carte et dans la place disponible.",
+                         "levels":  [
+                                        {
+                                            "id":  "porte_nid_n1",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  1,
+                                                           "left":  1,
+                                                           "right":  1
+                                                       }
+                                        },
+                                        {
+                                            "id":  "porte_nid_n2",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  1,
+                                                           "left":  2,
+                                                           "right":  1
+                                                       },
+                                            "asset":  "res://assets/cards/e/e06_n2.png"
+                                        },
+                                        {
+                                            "id":  "porte_nid_n3",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  2,
+                                                           "left":  2,
+                                                           "right":  2
+                                                       },
+                                            "asset":  "res://assets/cards/e/e06_n3.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "fourmilion_des_nerfs",
+                         "name":  "Fourmilion des nerfs",
+                         "rarity":  "rare",
+                         "god_id":  "sylkha",
+                         "description":  "Bas/droite forts ; haut dâ€™abord ouvert pour les renforts.",
+                         "body_color":  "#7d9f53",
+                         "asset":  "res://assets/cards/e/e07_n1.png",
+                         "effects":  [
+                                         "swarm"
+                                     ],
+                         "power_text":  "Essaim : +2 lames dâ€™aura par autre membre connectÃ©, jusquâ€™Ã  +4 par carte et dans la place disponible.",
+                         "levels":  [
+                                        {
+                                            "id":  "fourmilion_des_nerfs_n1",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  2,
+                                                           "left":  1,
+                                                           "right":  2
+                                                       }
+                                        },
+                                        {
+                                            "id":  "fourmilion_des_nerfs_n2",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  3,
+                                                           "left":  2,
+                                                           "right":  2
+                                                       },
+                                            "asset":  "res://assets/cards/e/e07_n2.png"
+                                        },
+                                        {
+                                            "id":  "fourmilion_des_nerfs_n3",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  4,
+                                                           "left":  2,
+                                                           "right":  3
+                                                       },
+                                            "asset":  "res://assets/cards/e/e07_n3.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "ronce_rampante",
+                         "name":  "Ronce rampante",
+                         "rarity":  "rare",
+                         "god_id":  "sylkha",
+                         "description":  "Haut/bas orientÃ©s, gauche faiblement dÃ©veloppÃ©e.",
+                         "body_color":  "#7d9f53",
+                         "asset":  "res://assets/cards/e/e08_n1.png",
+                         "effects":  [
+                                         "swarm"
+                                     ],
+                         "power_text":  "Essaim : +2 lames dâ€™aura par autre membre connectÃ©, jusquâ€™Ã  +4 par carte et dans la place disponible.",
+                         "levels":  [
+                                        {
+                                            "id":  "ronce_rampante_n1",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  1,
+                                                           "left":  0,
+                                                           "right":  1
+                                                       }
+                                        },
+                                        {
+                                            "id":  "ronce_rampante_n2",
+                                            "blades":  {
+                                                           "top":  3,
+                                                           "bottom":  2,
+                                                           "left":  0,
+                                                           "right":  1
+                                                       },
+                                            "asset":  "res://assets/cards/e/e08_n2.png"
+                                        },
+                                        {
+                                            "id":  "ronce_rampante_n3",
+                                            "blades":  {
+                                                           "top":  4,
+                                                           "bottom":  3,
+                                                           "left":  1,
+                                                           "right":  1
+                                                       },
+                                            "asset":  "res://assets/cards/e/e08_n3.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "la_nourrice_nouee",
+                         "name":  "La Nourrice nouÃ©e",
+                         "rarity":  "epic",
+                         "god_id":  "sylkha",
+                         "description":  "Trois faces de base solides ; rÃ©serve Ã  gauche pour la pousse.",
+                         "body_color":  "#7d9f53",
+                         "asset":  "res://assets/cards/e/e09_n1.png",
+                         "effects":  [
+                                         "swarm"
+                                     ],
+                         "power_text":  "Essaim : +2 lames dâ€™aura par autre membre connectÃ©, jusquâ€™Ã  +4 par carte et dans la place disponible.",
+                         "levels":  [
+                                        {
+                                            "id":  "la_nourrice_nouee_n1",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  2,
+                                                           "left":  0,
+                                                           "right":  2
+                                                       }
+                                        },
+                                        {
+                                            "id":  "la_nourrice_nouee_n2",
+                                            "blades":  {
+                                                           "top":  3,
+                                                           "bottom":  3,
+                                                           "left":  1,
+                                                           "right":  3
+                                                       },
+                                            "asset":  "res://assets/cards/e/e09_n2.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "le_tisseur_de_meutes",
+                         "name":  "Le Tisseur de meutes",
+                         "rarity":  "epic",
+                         "god_id":  "sylkha",
+                         "description":  "Bas/gauche offensifs ; haut et droite reÃ§oivent facilement lâ€™aura.",
+                         "body_color":  "#7d9f53",
+                         "asset":  "res://assets/cards/e/e10_n1.png",
+                         "effects":  [
+                                         "swarm"
+                                     ],
+                         "power_text":  "Essaim : +2 lames dâ€™aura par autre membre connectÃ©, jusquâ€™Ã  +4 par carte et dans la place disponible.",
+                         "levels":  [
+                                        {
+                                            "id":  "le_tisseur_de_meutes_n1",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  3,
+                                                           "left":  2,
+                                                           "right":  0
+                                                       }
+                                        },
+                                        {
+                                            "id":  "le_tisseur_de_meutes_n2",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  4,
+                                                           "left":  3,
+                                                           "right":  1
+                                                       },
+                                            "asset":  "res://assets/cards/e/e10_n2.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "le_cur_de_la_colonie",
+                         "name":  "Le CÅ“ur de la colonie",
+                         "rarity":  "legendary",
+                         "god_id":  "sylkha",
+                         "description":  "Quatre faces actives et six places libres avant lâ€™aura.",
+                         "body_color":  "#7d9f53",
+                         "asset":  "res://assets/cards/e/e11_n1.png",
+                         "effects":  [
+                                         "swarm"
+                                     ],
+                         "power_text":  "Essaim : +2 lames dâ€™aura par autre membre connectÃ©, jusquâ€™Ã  +4 par carte et dans la place disponible.",
+                         "levels":  [
+                                        {
+                                            "id":  "le_cur_de_la_colonie_n1",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  3,
+                                                           "left":  3,
+                                                           "right":  2
+                                                       }
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "la_mante_cathedrale",
+                         "name":  "La Mante-cathÃ©drale",
+                         "rarity":  "legendary",
+                         "god_id":  "sylkha",
+                         "description":  "Haut/gauche maximaux ; bas trÃ¨s vulnÃ©rable avant les renforts.",
+                         "body_color":  "#7d9f53",
+                         "asset":  "res://assets/cards/e/e12_n1.png",
+                         "effects":  [
+                                         "swarm"
+                                     ],
+                         "power_text":  "Essaim : +2 lames dâ€™aura par autre membre connectÃ©, jusquâ€™Ã  +4 par carte et dans la place disponible.",
+                         "levels":  [
+                                        {
+                                            "id":  "la_mante_cathedrale_n1",
+                                            "blades":  {
+                                                           "top":  4,
+                                                           "bottom":  0,
+                                                           "left":  4,
+                                                           "right":  2
+                                                       }
+                                        }
+                                    ]
+                     }
+                 ]
+}

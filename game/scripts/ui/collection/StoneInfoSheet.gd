@@ -86,9 +86,9 @@ func _refresh_form(stone_id: String) -> void:
 	if owned:
 		_set_action_state("UTILISER", _deck.has(stone_id), false)
 	elif is_next_level:
-		var requirement := CardProgressionRules.requirement(
-			_lineage, unlocked_level, EconomyConfig.get_config())
-		_set_action_state("AMÉLIORER", not PlayerData.can_upgrade_card(_lineage),
+		var upgrade := PlayerData.card_upgrade_state(_lineage)
+		var requirement: Dictionary = upgrade.get("requirement", {})
+		_set_action_state("AMÉLIORER", not bool(upgrade.get("can_upgrade", false)),
 			true, int(requirement.get("souls", 0)))
 	else:
 		_set_action_state("NIVEAU VERROUILLÉ", true, false)
@@ -135,7 +135,8 @@ func _on_primary_pressed() -> void:
 		return
 	var shown_level := StoneLoader.stone_level(_shown_variant)
 	var unlocked_level := int(PlayerData.card_entry(_lineage).get("unlocked_level", 0))
-	if shown_level == unlocked_level + 1 and PlayerData.can_upgrade_card(_lineage):
+	if shown_level == unlocked_level + 1 \
+			and bool(PlayerData.card_upgrade_state(_lineage).get("can_upgrade", false)):
 		upgrade_requested.emit(_lineage)
 
 

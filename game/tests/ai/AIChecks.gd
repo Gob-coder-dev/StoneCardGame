@@ -79,7 +79,7 @@ func _test_profiles() -> void:
 	var levels_match := true
 	for npc in StoneLoader.get_npcs_ordered():
 		levels_match = levels_match and npc.get("ai") == expected.get(npc.get("difficulty"))
-	_check(levels_match, "Hiro et Mei jouent au hasard, Tetsuo et Yuki à mi-précision, Raiko et Kaguya anticipent")
+	_check(levels_match, "les adversaires faciles jouent au hasard, les moyens à mi-précision et les difficiles anticipent")
 
 
 func _test_ai_moves() -> void:

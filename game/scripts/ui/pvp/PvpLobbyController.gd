@@ -296,7 +296,7 @@ func _go_back() -> void:
 	if _mode == MODE_NONE and _lobby == null:
 		_leaving = true
 		_reset_session()
-		_go_route(Routes.MAIN_MENU)
+		Routes.go_with_override(get_tree(), scene_changer, Routes.MAIN_MENU)
 		return
 	_reset_session()
 	_refresh_status()
@@ -364,7 +364,7 @@ func _on_match_started(config: Dictionary) -> void:
 		PvpMatchContext.set_series(series_flow.public_state())
 		PvpMatchContext.keep_series(series_flow, kept_link)
 	LanSession.enter_match()
-	_go_route(Routes.PRE_BATTLE)
+	Routes.go_with_override(get_tree(), scene_changer, Routes.PRE_BATTLE)
 
 
 ## ─── Préparation de série ───────────────────────────────────────────────────
@@ -394,14 +394,7 @@ func _on_series_ready(_rules: Dictionary) -> void:
 	_leaving = true
 	_flow.stop_discovery()
 	LanSession.enter_match()
-	_go_route(Routes.PVP_PREPARATION)
-
-
-func _go_route(path: String) -> void:
-	if scene_changer.is_valid():
-		scene_changer.call(path)
-		return
-	Routes.go(get_tree(), path)
+	Routes.go_with_override(get_tree(), scene_changer, Routes.PVP_PREPARATION)
 
 
 func _first_peer() -> int:

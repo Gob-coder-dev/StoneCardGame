@@ -1,0 +1,1029 @@
+﻿{
+    "family_id":  "neutral",
+    "lineages":  [
+                     {
+                         "id":  "avortons_des_caves",
+                         "name":  "Avortons des caves",
+                         "rarity":  "common",
+                         "god_id":  "neutral",
+                         "description":  "Profil Ã©quilibrÃ© ; rÃ©fÃ©rence simple pour comparer les coÃ»ts.",
+                         "body_color":  "#8c8172",
+                         "asset":  "res://assets/cards/n/n01_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "levels":  [
+                                        {
+                                            "id":  "avortons_des_caves_n1",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  1,
+                                                           "left":  1,
+                                                           "right":  1
+                                                       }
+                                        },
+                                        {
+                                            "id":  "avortons_des_caves_n2",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  2,
+                                                           "left":  2,
+                                                           "right":  2
+                                                       },
+                                            "asset":  "res://assets/cards/n/n01_n2.png"
+                                        },
+                                        {
+                                            "id":  "avortons_des_caves_n3",
+                                            "blades":  {
+                                                           "top":  3,
+                                                           "bottom":  3,
+                                                           "left":  3,
+                                                           "right":  3
+                                                       },
+                                            "asset":  "res://assets/cards/n/n01_n3.png"
+                                        },
+                                        {
+                                            "id":  "avortons_des_caves_n4",
+                                            "asset":  "res://assets/cards/n/n01_n4.png",
+                                            "blades":  {
+                                                           "top":  4,
+                                                           "bottom":  4,
+                                                           "left":  4,
+                                                           "right":  4
+                                                       }
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "mordeur_des_combles",
+                         "name":  "Mordeur des combles",
+                         "rarity":  "common",
+                         "god_id":  "neutral",
+                         "description":  "Attaque vers le haut Ã  trÃ¨s petit budget ; trois faces ouvertes.",
+                         "body_color":  "#8c8172",
+                         "asset":  "res://assets/cards/n/n02_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "levels":  [
+                                        {
+                                            "id":  "mordeur_des_combles_n1",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       }
+                                        },
+                                        {
+                                            "id":  "mordeur_des_combles_n2",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       },
+                                            "asset":  "res://assets/cards/n/n02_n2.png"
+                                        },
+                                        {
+                                            "id":  "mordeur_des_combles_n3",
+                                            "blades":  {
+                                                           "top":  3,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       },
+                                            "asset":  "res://assets/cards/n/n02_n3.png"
+                                        },
+                                        {
+                                            "id":  "mordeur_des_combles_n4",
+                                            "blades":  {
+                                                           "top":  4,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       },
+                                            "asset":  "res://assets/cards/n/n02_n4.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "rampant_des_fosses",
+                         "name":  "Rampant des fosses",
+                         "rarity":  "common",
+                         "god_id":  "neutral",
+                         "description":  "Attaque vers le bas ; complÃ©ment directionnel de N02.",
+                         "body_color":  "#8c8172",
+                         "asset":  "res://assets/cards/n/n03_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "levels":  [
+                                        {
+                                            "id":  "rampant_des_fosses_n1",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  1,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       }
+                                        },
+                                        {
+                                            "id":  "rampant_des_fosses_n2",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  2,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       },
+                                            "asset":  "res://assets/cards/n/n03_n2.png"
+                                        },
+                                        {
+                                            "id":  "rampant_des_fosses_n3",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  3,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       },
+                                            "asset":  "res://assets/cards/n/n03_n3.png"
+                                        },
+                                        {
+                                            "id":  "rampant_des_fosses_n4",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  4,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       },
+                                            "asset":  "res://assets/cards/n/n03_n4.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "gueule_de_travers",
+                         "name":  "Gueule-de-travers",
+                         "rarity":  "common",
+                         "god_id":  "neutral",
+                         "description":  "Attaque Ã  droite ; flancs trÃ¨s exposÃ©s.",
+                         "body_color":  "#8c8172",
+                         "asset":  "res://assets/cards/n/n04_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "levels":  [
+                                        {
+                                            "id":  "gueule_de_travers_n1",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  1
+                                                       }
+                                        },
+                                        {
+                                            "id":  "gueule_de_travers_n2",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  2
+                                                       },
+                                            "asset":  "res://assets/cards/n/n04_n2.png"
+                                        },
+                                        {
+                                            "id":  "gueule_de_travers_n3",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  3
+                                                       },
+                                            "asset":  "res://assets/cards/n/n04_n3.png"
+                                        },
+                                        {
+                                            "id":  "gueule_de_travers_n4",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  4
+                                                       },
+                                            "asset":  "res://assets/cards/n/n04_n4.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "ogre_droitier",
+                         "name":  "Ogre droitier",
+                         "rarity":  "common",
+                         "god_id":  "neutral",
+                         "description":  "Attaque Ã  gauche ; pendant de N04 sans rotation manuelle.",
+                         "body_color":  "#8c8172",
+                         "asset":  "res://assets/cards/n/n05_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "levels":  [
+                                        {
+                                            "id":  "ogre_droitier_n1",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  0,
+                                                           "left":  1,
+                                                           "right":  0
+                                                       }
+                                        },
+                                        {
+                                            "id":  "ogre_droitier_n2",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  0,
+                                                           "left":  2,
+                                                           "right":  0
+                                                       },
+                                            "asset":  "res://assets/cards/n/n05_n2.png"
+                                        },
+                                        {
+                                            "id":  "ogre_droitier_n3",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  0,
+                                                           "left":  3,
+                                                           "right":  0
+                                                       },
+                                            "asset":  "res://assets/cards/n/n05_n3.png"
+                                        },
+                                        {
+                                            "id":  "ogre_droitier_n4",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  0,
+                                                           "left":  4,
+                                                           "right":  0
+                                                       },
+                                            "asset":  "res://assets/cards/n/n05_n4.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "le_drape_du_seuil",
+                         "name":  "Le DrapÃ© du seuil",
+                         "rarity":  "common",
+                         "god_id":  "neutral",
+                         "description":  "Deux faces opposÃ©es haut/bas ; contrÃ´le dâ€™un axe.",
+                         "body_color":  "#8c8172",
+                         "asset":  "res://assets/cards/n/n06_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "levels":  [
+                                        {
+                                            "id":  "le_drape_du_seuil_n1",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  1,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       }
+                                        },
+                                        {
+                                            "id":  "le_drape_du_seuil_n2",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  2,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       },
+                                            "asset":  "res://assets/cards/n/n06_n2.png"
+                                        },
+                                        {
+                                            "id":  "le_drape_du_seuil_n3",
+                                            "blades":  {
+                                                           "top":  3,
+                                                           "bottom":  3,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       },
+                                            "asset":  "res://assets/cards/n/n06_n3.png"
+                                        },
+                                        {
+                                            "id":  "le_drape_du_seuil_n4",
+                                            "blades":  {
+                                                           "top":  4,
+                                                           "bottom":  4,
+                                                           "left":  0,
+                                                           "right":  0
+                                                       },
+                                            "asset":  "res://assets/cards/n/n06_n4.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "mache_mur",
+                         "name":  "MÃ¢che-mur",
+                         "rarity":  "common",
+                         "god_id":  "neutral",
+                         "description":  "Deux faces opposÃ©es gauche/droite ; deux directions de capture.",
+                         "body_color":  "#8c8172",
+                         "asset":  "res://assets/cards/n/n07_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "levels":  [
+                                        {
+                                            "id":  "mache_mur_n1",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  0,
+                                                           "left":  1,
+                                                           "right":  1
+                                                       }
+                                        },
+                                        {
+                                            "id":  "mache_mur_n2",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  0,
+                                                           "left":  2,
+                                                           "right":  2
+                                                       },
+                                            "asset":  "res://assets/cards/n/n07_n2.png"
+                                        },
+                                        {
+                                            "id":  "mache_mur_n3",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  0,
+                                                           "left":  3,
+                                                           "right":  3
+                                                       },
+                                            "asset":  "res://assets/cards/n/n07_n3.png"
+                                        },
+                                        {
+                                            "id":  "mache_mur_n4",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  0,
+                                                           "left":  4,
+                                                           "right":  4
+                                                       },
+                                            "asset":  "res://assets/cards/n/n07_n4.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "ecorche_angle",
+                         "name":  "Ã‰corche-angle",
+                         "rarity":  "common",
+                         "god_id":  "neutral",
+                         "description":  "Deux faces adjacentes haut/droite ; bon placement en angle.",
+                         "body_color":  "#8c8172",
+                         "asset":  "res://assets/cards/n/n08_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "levels":  [
+                                        {
+                                            "id":  "ecorche_angle_n1",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  1
+                                                       },
+                                            "asset":  "res://assets/cards/n/n08_n1.png"
+                                        },
+                                        {
+                                            "id":  "ecorche_angle_n2",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  2
+                                                       },
+                                            "asset":  "res://assets/cards/n/n08_n2.png"
+                                        },
+                                        {
+                                            "id":  "ecorche_angle_n3",
+                                            "blades":  {
+                                                           "top":  3,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  3
+                                                       },
+                                            "asset":  "res://assets/cards/n/n08_n3.png"
+                                        },
+                                        {
+                                            "id":  "ecorche_angle_n4",
+                                            "blades":  {
+                                                           "top":  4,
+                                                           "bottom":  0,
+                                                           "left":  0,
+                                                           "right":  4
+                                                       },
+                                            "asset":  "res://assets/cards/n/n08_n4.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "le_sac_a_murmures",
+                         "name":  "Le Sac Ã  murmures",
+                         "rarity":  "common",
+                         "god_id":  "neutral",
+                         "description":  "Trois faces asymÃ©triques, saturation progressive Ã  quatre, haut toujours ouvert.",
+                         "body_color":  "#8c8172",
+                         "asset":  "res://assets/cards/n/n24_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "levels":  [
+                                        {
+                                            "id":  "le_sac_a_murmures_n1",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  1,
+                                                           "left":  2,
+                                                           "right":  1
+                                                       }
+                                        },
+                                        {
+                                            "id":  "le_sac_a_murmures_n2",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  2,
+                                                           "left":  3,
+                                                           "right":  2
+                                                       },
+                                            "asset":  "res://assets/cards/n/n24_n2.png"
+                                        },
+                                        {
+                                            "id":  "le_sac_a_murmures_n3",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  3,
+                                                           "left":  4,
+                                                           "right":  3
+                                                       },
+                                            "asset":  "res://assets/cards/n/n24_n3.png"
+                                        },
+                                        {
+                                            "id":  "le_sac_a_murmures_n4",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  4,
+                                                           "left":  4,
+                                                           "right":  4
+                                                       },
+                                            "asset":  "res://assets/cards/n/n24_n4.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "charognard_courbe",
+                         "name":  "Charognard courbe",
+                         "rarity":  "rare",
+                         "god_id":  "neutral",
+                         "description":  "Angle bas/gauche ; protÃ¨ge deux directions Ã  faible coÃ»t.",
+                         "body_color":  "#8c8172",
+                         "asset":  "res://assets/cards/n/n09_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "levels":  [
+                                        {
+                                            "id":  "charognard_courbe_n1",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  2,
+                                                           "left":  2,
+                                                           "right":  0
+                                                       }
+                                        },
+                                        {
+                                            "id":  "charognard_courbe_n2",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  3,
+                                                           "left":  3,
+                                                           "right":  0
+                                                       },
+                                            "asset":  "res://assets/cards/n/n09_n2.png"
+                                        },
+                                        {
+                                            "id":  "charognard_courbe_n3",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  4,
+                                                           "left":  4,
+                                                           "right":  0
+                                                       },
+                                            "asset":  "res://assets/cards/n/n09_n3.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "tricorne_errant",
+                         "name":  "Tricorne errant",
+                         "rarity":  "rare",
+                         "god_id":  "neutral",
+                         "description":  "Trois faces actives, faiblesse conservÃ©e en bas.",
+                         "body_color":  "#8c8172",
+                         "asset":  "res://assets/cards/n/n10_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "levels":  [
+                                        {
+                                            "id":  "tricorne_errant_n1",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  0,
+                                                           "left":  1,
+                                                           "right":  1
+                                                       },
+                                            "asset":  "res://assets/cards/n/n10_n1.png"
+                                        },
+                                        {
+                                            "id":  "tricorne_errant_n2",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  0,
+                                                           "left":  2,
+                                                           "right":  2
+                                                       },
+                                            "asset":  "res://assets/cards/n/n10_n2.png"
+                                        },
+                                        {
+                                            "id":  "tricorne_errant_n3",
+                                            "blades":  {
+                                                           "top":  3,
+                                                           "bottom":  0,
+                                                           "left":  3,
+                                                           "right":  3
+                                                       },
+                                            "asset":  "res://assets/cards/n/n10_n3.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "dos_fendu",
+                         "name":  "Dos-fendu",
+                         "rarity":  "rare",
+                         "god_id":  "neutral",
+                         "description":  "Trois faces actives, faiblesse conservÃ©e en haut.",
+                         "body_color":  "#8c8172",
+                         "asset":  "res://assets/cards/n/n11_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "levels":  [
+                                        {
+                                            "id":  "dos_fendu_n1",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  1,
+                                                           "left":  1,
+                                                           "right":  1
+                                                       }
+                                        },
+                                        {
+                                            "id":  "dos_fendu_n2",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  2,
+                                                           "left":  2,
+                                                           "right":  2
+                                                       },
+                                            "asset":  "res://assets/cards/n/n11_n2.png"
+                                        },
+                                        {
+                                            "id":  "dos_fendu_n3",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  3,
+                                                           "left":  3,
+                                                           "right":  3
+                                                       },
+                                            "asset":  "res://assets/cards/n/n11_n3.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "le_nud_hurlant",
+                         "name":  "Le NÅ“ud hurlant",
+                         "rarity":  "rare",
+                         "god_id":  "neutral",
+                         "description":  "Haut dominant, flancs secondaires, bas Ã  zÃ©ro.",
+                         "body_color":  "#8c8172",
+                         "asset":  "res://assets/cards/n/n12_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "levels":  [
+                                        {
+                                            "id":  "le_nud_hurlant_n1",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  0,
+                                                           "left":  1,
+                                                           "right":  1
+                                                       }
+                                        },
+                                        {
+                                            "id":  "le_nud_hurlant_n2",
+                                            "blades":  {
+                                                           "top":  3,
+                                                           "bottom":  0,
+                                                           "left":  2,
+                                                           "right":  2
+                                                       },
+                                            "asset":  "res://assets/cards/n/n12_n2.png"
+                                        },
+                                        {
+                                            "id":  "le_nud_hurlant_n3",
+                                            "blades":  {
+                                                           "top":  4,
+                                                           "bottom":  0,
+                                                           "left":  3,
+                                                           "right":  3
+                                                       },
+                                            "asset":  "res://assets/cards/n/n12_n3.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "la_veuve_suspendue",
+                         "name":  "La Veuve suspendue",
+                         "rarity":  "rare",
+                         "god_id":  "neutral",
+                         "description":  "Bas dominant, gauche Ã  zÃ©ro ; trois forces diffÃ©rentes.",
+                         "body_color":  "#8c8172",
+                         "asset":  "res://assets/cards/n/n13_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "levels":  [
+                                        {
+                                            "id":  "la_veuve_suspendue_n1",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  2,
+                                                           "left":  0,
+                                                           "right":  1
+                                                       }
+                                        },
+                                        {
+                                            "id":  "la_veuve_suspendue_n2",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  3,
+                                                           "left":  0,
+                                                           "right":  2
+                                                       },
+                                            "asset":  "res://assets/cards/n/n13_n2.png"
+                                        },
+                                        {
+                                            "id":  "la_veuve_suspendue_n3",
+                                            "blades":  {
+                                                           "top":  3,
+                                                           "bottom":  4,
+                                                           "left":  0,
+                                                           "right":  3
+                                                       },
+                                            "asset":  "res://assets/cards/n/n13_n3.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "ogre_a_deux_bouches",
+                         "name":  "Ogre Ã  deux bouches",
+                         "rarity":  "rare",
+                         "god_id":  "neutral",
+                         "description":  "Gauche dominante, haut/bas secondaires, droite ouverte.",
+                         "body_color":  "#8c8172",
+                         "asset":  "res://assets/cards/n/n14_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "levels":  [
+                                        {
+                                            "id":  "ogre_a_deux_bouches_n1",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  1,
+                                                           "left":  2,
+                                                           "right":  0
+                                                       }
+                                        },
+                                        {
+                                            "id":  "ogre_a_deux_bouches_n2",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  2,
+                                                           "left":  3,
+                                                           "right":  0
+                                                       },
+                                            "asset":  "res://assets/cards/n/n14_n2.png"
+                                        },
+                                        {
+                                            "id":  "ogre_a_deux_bouches_n3",
+                                            "blades":  {
+                                                           "top":  3,
+                                                           "bottom":  3,
+                                                           "left":  4,
+                                                           "right":  0
+                                                       },
+                                            "asset":  "res://assets/cards/n/n14_n3.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "fouisseur_aveugle",
+                         "name":  "Fouisseur aveugle",
+                         "rarity":  "rare",
+                         "god_id":  "neutral",
+                         "description":  "Flancs puissants ; attaque secondaire en bas et aucune en haut.",
+                         "body_color":  "#8c8172",
+                         "asset":  "res://assets/cards/n/n15_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "levels":  [
+                                        {
+                                            "id":  "fouisseur_aveugle_n1",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  1,
+                                                           "left":  2,
+                                                           "right":  2
+                                                       }
+                                        },
+                                        {
+                                            "id":  "fouisseur_aveugle_n2",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  2,
+                                                           "left":  3,
+                                                           "right":  3
+                                                       },
+                                            "asset":  "res://assets/cards/n/n15_n2.png"
+                                        },
+                                        {
+                                            "id":  "fouisseur_aveugle_n3",
+                                            "blades":  {
+                                                           "top":  0,
+                                                           "bottom":  3,
+                                                           "left":  4,
+                                                           "right":  4
+                                                       },
+                                            "asset":  "res://assets/cards/n/n15_n3.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "devoreur_de_lanternes",
+                         "name":  "DÃ©voreur de lanternes",
+                         "rarity":  "rare",
+                         "god_id":  "neutral",
+                         "description":  "Quatre faces actives, avec prioritÃ© bas/droite.",
+                         "body_color":  "#8c8172",
+                         "asset":  "res://assets/cards/n/n16_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "levels":  [
+                                        {
+                                            "id":  "devoreur_de_lanternes_n1",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  2,
+                                                           "left":  1,
+                                                           "right":  2
+                                                       }
+                                        },
+                                        {
+                                            "id":  "devoreur_de_lanternes_n2",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  3,
+                                                           "left":  2,
+                                                           "right":  3
+                                                       },
+                                            "asset":  "res://assets/cards/n/n16_n2.png"
+                                        },
+                                        {
+                                            "id":  "devoreur_de_lanternes_n3",
+                                            "blades":  {
+                                                           "top":  3,
+                                                           "bottom":  4,
+                                                           "left":  3,
+                                                           "right":  4
+                                                       },
+                                            "asset":  "res://assets/cards/n/n16_n3.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "mille_gueules",
+                         "name":  "Mille-gueules",
+                         "rarity":  "epic",
+                         "god_id":  "neutral",
+                         "description":  "Gauche dominante et haut secondaire ; bas Ã  zÃ©ro.",
+                         "body_color":  "#8c8172",
+                         "asset":  "res://assets/cards/n/n17_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "levels":  [
+                                        {
+                                            "id":  "mille_gueules_n1",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  0,
+                                                           "left":  3,
+                                                           "right":  1
+                                                       }
+                                        },
+                                        {
+                                            "id":  "mille_gueules_n2",
+                                            "blades":  {
+                                                           "top":  3,
+                                                           "bottom":  0,
+                                                           "left":  4,
+                                                           "right":  2
+                                                       },
+                                            "asset":  "res://assets/cards/n/n17_n2.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "laffame_du_puits",
+                         "name":  "Lâ€™AffamÃ© du puits",
+                         "rarity":  "epic",
+                         "god_id":  "neutral",
+                         "description":  "Haut trÃ¨s fort et flanc gauche de soutien ; droite ouverte.",
+                         "body_color":  "#8c8172",
+                         "asset":  "res://assets/cards/n/n18_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "levels":  [
+                                        {
+                                            "id":  "laffame_du_puits_n1",
+                                            "blades":  {
+                                                           "top":  3,
+                                                           "bottom":  1,
+                                                           "left":  1,
+                                                           "right":  0
+                                                       }
+                                        },
+                                        {
+                                            "id":  "laffame_du_puits_n2",
+                                            "blades":  {
+                                                           "top":  4,
+                                                           "bottom":  2,
+                                                           "left":  2,
+                                                           "right":  0
+                                                       },
+                                            "asset":  "res://assets/cards/n/n18_n2.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "le_porte_visages",
+                         "name":  "Le Porte-visages",
+                         "rarity":  "epic",
+                         "god_id":  "neutral",
+                         "description":  "Bas trÃ¨s fort, droite secondaire ; gauche ouverte.",
+                         "body_color":  "#8c8172",
+                         "asset":  "res://assets/cards/n/n19_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "levels":  [
+                                        {
+                                            "id":  "le_porte_visages_n1",
+                                            "blades":  {
+                                                           "top":  1,
+                                                           "bottom":  3,
+                                                           "left":  0,
+                                                           "right":  2
+                                                       }
+                                        },
+                                        {
+                                            "id":  "le_porte_visages_n2",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  4,
+                                                           "left":  0,
+                                                           "right":  3
+                                                       },
+                                            "asset":  "res://assets/cards/n/n19_n2.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "le_replie",
+                         "name":  "Le RepliÃ©",
+                         "rarity":  "epic",
+                         "god_id":  "neutral",
+                         "description":  "Droite trÃ¨s forte et haut/gauche secondaires ; bas Ã  zÃ©ro.",
+                         "body_color":  "#8c8172",
+                         "asset":  "res://assets/cards/n/n20_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "levels":  [
+                                        {
+                                            "id":  "le_replie_n1",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  0,
+                                                           "left":  2,
+                                                           "right":  3
+                                                       }
+                                        },
+                                        {
+                                            "id":  "le_replie_n2",
+                                            "blades":  {
+                                                           "top":  3,
+                                                           "bottom":  0,
+                                                           "left":  3,
+                                                           "right":  4
+                                                       },
+                                            "asset":  "res://assets/cards/n/n20_n2.png"
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "le_voyeur",
+                         "name":  "Le Voyeur",
+                         "rarity":  "legendary",
+                         "god_id":  "neutral",
+                         "description":  "Profil 3/4/2/1 complet et asymÃ©trique ; aucune face sans dÃ©fense.",
+                         "body_color":  "#8c8172",
+                         "asset":  "res://assets/cards/n/n21_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "levels":  [
+                                        {
+                                            "id":  "le_voyeur_n1",
+                                            "blades":  {
+                                                           "top":  3,
+                                                           "bottom":  4,
+                                                           "left":  2,
+                                                           "right":  1
+                                                       }
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "la_gueule_sous_le_lit",
+                         "name":  "La Gueule sous le lit",
+                         "rarity":  "legendary",
+                         "god_id":  "neutral",
+                         "description":  "Haut maximal, deux flancs inÃ©gaux, bas totalement ouvert.",
+                         "body_color":  "#8c8172",
+                         "asset":  "res://assets/cards/n/n22_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "levels":  [
+                                        {
+                                            "id":  "la_gueule_sous_le_lit_n1",
+                                            "blades":  {
+                                                           "top":  4,
+                                                           "bottom":  0,
+                                                           "left":  3,
+                                                           "right":  2
+                                                       }
+                                        }
+                                    ]
+                     },
+                     {
+                         "id":  "le_roi_des_oubliettes",
+                         "name":  "Le Roi des oubliettes",
+                         "rarity":  "legendary",
+                         "god_id":  "neutral",
+                         "description":  "Bas et gauche au maximum ; droite faible.",
+                         "body_color":  "#8c8172",
+                         "asset":  "res://assets/cards/n/n23_n1.png",
+                         "effects":  [
+
+                                     ],
+                         "levels":  [
+                                        {
+                                            "id":  "le_roi_des_oubliettes_n1",
+                                            "blades":  {
+                                                           "top":  2,
+                                                           "bottom":  4,
+                                                           "left":  4,
+                                                           "right":  1
+                                                       }
+                                        }
+                                    ]
+                     }
+                 ]
+}

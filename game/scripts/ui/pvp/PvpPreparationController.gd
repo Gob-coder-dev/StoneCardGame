@@ -1,3 +1,5 @@
+## Contrôleur de l'écran de préparation PVP : il projette l'état autoritaire
+## de la série dans les vues et relaie uniquement les intentions du joueur.
 extends Control
 
 const RulesModel := preload("res://scripts/domain/MatchRules.gd")
@@ -350,7 +352,7 @@ func _on_round_ready(config: Dictionary) -> void:
 		PvpMatchContext.lobby_local_profile(), PvpMatchContext.lobby_remote_profile(), true,
 		_flow.rules())
 	_disconnect_flow()
-	_go_route(Routes.PRE_BATTLE)
+	Routes.go_with_override(get_tree(), scene_changer, Routes.PRE_BATTLE)
 
 
 func _on_series_finished(state: Dictionary) -> void:
@@ -404,14 +406,7 @@ func _leave_session() -> void:
 		"rules": rules,
 	})
 	LanSession.enter_lobby()
-	_go_route(Routes.PVP_LOBBY)
-
-
-func _go_route(path: String) -> void:
-	if scene_changer.is_valid():
-		scene_changer.call(path)
-		return
-	Routes.go(get_tree(), path)
+	Routes.go_with_override(get_tree(), scene_changer, Routes.PVP_LOBBY)
 
 
 func _remote_peer() -> int:
