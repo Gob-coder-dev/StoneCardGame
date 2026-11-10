@@ -221,6 +221,10 @@ static func _validate_match(chapter_id: String, setup: Dictionary,
 				problems.append("Tutoriels : '%s' invalide dans '%s'." % [
 					hand_key, chapter_id])
 	for deck_key in ["player_deck", "opponent_deck"]:
+		## Un chapitre peut ne préciser que la géométrie du plateau ; les decks
+		## restent alors ceux de la campagne.
+		if not setup.has(deck_key):
+			continue
 		var deck: Variant = setup.get(deck_key, [])
 		if not deck is Array or (deck as Array).is_empty():
 			problems.append("Tutoriels : '%s' du chapitre '%s' est vide ou invalide." % [
@@ -243,6 +247,12 @@ static func _validate_match(chapter_id: String, setup: Dictionary,
 		var owner := int(stone.get("owner", 2))
 		if owner != 1 and owner != 2:
 			problems.append("Tutoriels : propriétaire initial invalide dans '%s'." % chapter_id)
+	for pos in setup.get("blocked_cells", []):
+		if not pos is Array or (pos as Array).size() < 2:
+			problems.append("Tutoriels : case bloquée invalide dans '%s'." % chapter_id)
+			continue
+		if int((pos as Array)[0]) < 0 or int((pos as Array)[1]) < 0:
+			problems.append("Tutoriels : case bloquée invalide dans '%s'." % chapter_id)
 	for move in setup.get("opponent_plan", []):
 		if not move is Dictionary or str(move.get("stone_id", "")) == "":
 			problems.append("Tutoriels : coup du bot invalide dans '%s'." % chapter_id)

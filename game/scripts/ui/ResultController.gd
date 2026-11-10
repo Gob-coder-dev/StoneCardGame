@@ -92,6 +92,9 @@ func _refresh_reward() -> void:
 	reward_divider.visible = true
 	rewards.visible = true
 	reward_cards.visible = reward_cards.get_child_count() > 0
+	## Le parcours de Pr. Stone met ces récompenses en surbrillance : le bloc
+	## entier devient une ancre réelle dès qu'il est visible.
+	StoryService.register_anchor("result.rewards", rewards)
 
 
 func _add_reward_card(card_reward: Dictionary, deferred: bool) -> void:

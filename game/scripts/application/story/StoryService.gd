@@ -293,9 +293,33 @@ func _build_context() -> Dictionary:
 		"color": str(player_god.get("color", "#8b5e3c")),
 		"side": "left",
 	}
+	## Le dieu du nœud de campagne parle lui-même dans les réflexions : la
+	## politique `theme_god` devient une identité réelle au moment du dialogue.
+	var theme_god := _theme_god_character()
+	if not theme_god.is_empty():
+		characters["theme_god"] = theme_god
 	return {
 		"characters": characters,
 		"player_name": PlayerData.player_name,
+	}
+
+
+## Le dieu de thème du nœud actif. Vide hors campagne ou si le nœud n'en a
+## pas : la politique de locuteur reste alors simplement non résolue.
+func _theme_god_character() -> Dictionary:
+	if BattleContext.campaign_node_id == "" or BattleContext.campaign_service == null:
+		return {}
+	var node = BattleContext.campaign_service.node(BattleContext.campaign_node_id)
+	if node == null:
+		return {}
+	var god := StoneLoader.get_god(str(node.theme_god_id))
+	if god.is_empty():
+		return {}
+	return {
+		"name": str(god.get("name", "")),
+		"asset": str(god.get("asset", "")),
+		"color": str(god.get("color", "#bdb4ab")),
+		"side": "right",
 	}
 
 

@@ -192,8 +192,9 @@ func _test_board_guidance(service: CampaignService) -> void:
 		"guidage : la Gueule de travers est la carte mise en surbrillance")
 	var state: GameState = board.turn_manager.get_state()
 	_check(state.current_player == GameState.PLAYER_HUMAN
-		and state.get_cell(0, 1)["owner"] == GameState.PLAYER_AI,
-		"guidage : le joueur commence face au Mordeur préparé")
+		and state.empty_playable_cells == 9
+		and state.get_cell(0, 1)["owner"] == GameState.PLAYER_NONE,
+		"guidage : le plateau du tutoriel démarre entièrement vide")
 	if card_ready:
 		board._on_card_selected("gueule_de_travers_n1")
 		var place_step := await _wait_until(func() -> bool:
@@ -208,12 +209,13 @@ func _test_board_guidance(service: CampaignService) -> void:
 			"guidage : la case (0,0) est la seule cible de pose")
 		if placement_ready:
 			board._on_cell_pressed(0, 0)
-	var captured := await _wait_until(func() -> bool:
-		return state.get_cell(0, 1)["owner"] == GameState.PLAYER_HUMAN, 300)
-	_check(captured, "guidage : la pose capture réellement le Mordeur")
+	var placed := await _wait_until(func() -> bool:
+		return state.get_cell(0, 0)["owner"] == GameState.PLAYER_HUMAN, 120)
+	_check(placed and state.get_cell(0, 1)["owner"] == GameState.PLAYER_NONE,
+		"guidage : la première pose ne capture encore rien")
 	var bot_played := await _wait_until(func() -> bool:
-		return state.get_cell(1, 2)["owner"] == GameState.PLAYER_AI and str(state.get_cell(1, 2)["stone_id"]) == "le_drape_du_seuil_n1", 420)
-	_check(bot_played, "guidage : le bot joue le Drap préparé, sans hasard")
+		return state.get_cell(2, 2)["owner"] == GameState.PLAYER_AI and str(state.get_cell(2, 2)["stone_id"]) == "le_drape_du_seuil_n1", 420)
+	_check(bot_played, "guidage : le bot pose le Drap dans le coin opposé, sans hasard")
 	StoryService.stop_tutorial()
 	board.queue_free()
 	await get_tree().process_frame

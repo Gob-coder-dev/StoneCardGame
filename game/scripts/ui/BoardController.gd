@@ -38,6 +38,10 @@ var _finished_pvp := false
 
 func _ready() -> void:
 	_connect_signals()
+	## Un chapitre de niveau doit être actif avant le driver : c'est lui qui
+	## fournit la géométrie du plateau et ses cases bloquées.
+	if BattleContext.campaign_node_id != "":
+		StoryService.start_tutorial_for_node(BattleContext.campaign_node_id)
 	_driver = (LanDriver.new() if PvpMatchContext.is_active() else CampaignDriver.new()) as MatchDriver
 	add_child(_driver)
 	_driver.setup(turn_manager)

@@ -66,7 +66,7 @@
         },
         {
           "speaker": "pr_stone",
-          "text": "Touche le niveau, puis lance l'affrontement."
+          "text": "Touche le niveau, puis lance l'affrontement. Le tirage décidera qui ouvre le duel."
         }
       ]
     },
@@ -75,11 +75,15 @@
       "lines": [
         {
           "speaker": "pr_stone",
-          "text": "Ta Gueule de travers est entourée. Touche-la."
+          "text": "Le terrain est vide. Chacun pose une carte à son tour, puis elle frappe dans ses directions."
         },
         {
           "speaker": "pr_stone",
-          "text": "Sa face droite vaut 1. Le Mordeur n'a aucune défense à gauche."
+          "text": "Prends la Gueule de travers. Sa face droite vaut 1, ses trois autres faces sont nues."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Commence par la poser dans le coin, en haut à gauche."
         }
       ]
     },
@@ -88,42 +92,75 @@
       "lines": [
         {
           "speaker": "pr_stone",
-          "text": "Pose-la sur la case entourée. Tu vas voir ce qu'est une capture."
+          "text": "Pose-la en haut à gauche. Une carte posée reste sur le plateau : elle ne revient jamais dans ta main."
         }
       ]
     },
     "journey_second_move": {
-      "title": "La Muraille",
+      "title": "Le Drap du seuil",
       "lines": [
         {
           "speaker": "pr_stone",
-          "text": "Bien joué. La Muraille avance : un Drap se dresse devant toi."
+          "text": "Ton adversaire a posé un Drap du seuil dans le coin opposé, en bas à droite."
         },
         {
           "speaker": "pr_stone",
-          "text": "Prends l'Écorché d'angle. Sa face droite brisera sa défense."
+          "text": "Regarde ses flancs : à gauche et à droite, aucune lame. Sa défense y est de 0."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Ton Écorché d'angle frappe à droite avec 1. Pose-le juste à gauche du Drap : 1 contre 0, c'est une capture."
         }
       ]
     },
     "journey_third_move": {
-      "title": "Le Mordeur",
+      "title": "La riposte du Mordeur",
       "lines": [
         {
           "speaker": "pr_stone",
-          "text": "Le Mordeur arrive. L'Ogre droitier l'attend de flanc."
+          "text": "Bien joué, le Drap est à toi. Mais regarde : le Mordeur vient de prendre ta Gueule de travers."
         },
         {
           "speaker": "pr_stone",
-          "text": "Pose-le à sa gauche : sa face droite frappera son flanc nu."
+          "text": "Il frappe vers le haut avec 1, et ta Gueule n'avait aucune défense en bas. Son flanc nu était une invitation."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Retiens la leçon : surveille les faces à 0, les tiennes comme les siennes."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "À toi de punir. L'Ogre droitier frappe à gauche avec 1 : pose-le en (1,1), à droite du Mordeur."
         }
       ]
     },
     "journey_fourth_move": {
+      "title": "Le terrain compte",
+      "lines": [
+        {
+          "speaker": "pr_stone",
+          "text": "Le Mordeur est revenu dans ton camp. 1 contre 0, la capture est nette."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "L'Avortons des caves arrive avec 1 sur ses quatre faces. Inutile de l'attaquer de front : tes petites cartes n'y arriveraient pas."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Prends le Rampant des fosses et occupe le terrain. Chaque pierre encore debout comptera à la fin."
+        }
+      ]
+    },
+    "journey_fifth_move": {
       "title": "La dernière case",
       "lines": [
         {
           "speaker": "pr_stone",
-          "text": "Une dernière case. Le Rampant des fosses la prendra."
+          "text": "Dernière carte, dernière case : le Drap du seuil, en (2,0)."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Une fois le plateau plein, on compte les pierres. Celles de ton camp restent à toi."
         }
       ]
     },
@@ -132,15 +169,15 @@
       "lines": [
         {
           "speaker": "pr_stone",
-          "text": "Victoire. Tu as lu le plateau comme un livre ouvert."
+          "text": "Victoire, {player_name} ! Six pierres contre trois : tu as lu le plateau comme un livre ouvert."
         },
         {
           "speaker": "pr_stone",
-          "text": "Ces cartes sont à toi. Trois rejoignent ton deck ; la quatrième t'attend au cabinet."
+          "text": "Et tu ne repars pas les mains vides : regarde tes récompenses, juste en dessous."
         },
         {
           "speaker": "pr_stone",
-          "text": "Quitte la partie et retourne au deck : il est temps d'apprendre à l'échanger."
+          "text": "Des âmes, et de nouvelles cartes. Trois rejoignent ton deck ; la quatrième t'attend au cabinet."
         }
       ]
     },
@@ -169,7 +206,210 @@
           "text": "Le reste du Refuge est à toi. Explore, combats, et invente tes propres combinaisons."
         }
       ]
+    },
+    "tuto_02_intro": {
+      "title": "Un plateau plus large",
+      "lines": [
+        {
+          "speaker": "pr_stone",
+          "text": "Bienvenue sur un vrai terrain de campagne, {player_name}. Regarde : quatre cases de côté, au lieu de trois."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Plus d'espace, plus de lignes d'attaque et plus de flancs à surveiller. Ton deck ne change pas : c'est le plateau qui grandit."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Repère les bords et le centre. Une carte au bord n'a qu'un côté ouvert ; au centre, on peut la prendre des quatre côtés."
+        }
+      ]
+    },
+    "tuto_03_intro": {
+      "title": "Le terrain se brise",
+      "lines": [
+        {
+          "speaker": "pr_stone",
+          "text": "Ici, le terrain se brise. Ces cases sombres sont bloquées."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Aucune carte ne peut s'y poser, et aucun coup ne les traverse : ni lame, ni projectile."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Elles dessinent des couloirs. Un couloir protège un flanc… ou t'enferme. Lis le plateau avant de poser."
+        }
+      ]
+    },
+    "mirror_veskar": {
+      "title": "Le Reflet des Aléators",
+      "lines": [
+        {
+          "speaker": "theme_god",
+          "text": "Je suis Véskar, le Manipulateur. Mes lames roses coûtent à moitié prix, et mes pierres jouent leur orientation à pile ou face."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Ton premier reflet : un deck miroir de Véskar, copié pour vous deux. Vous jouez exactement les mêmes cartes."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Ses pierres retournent leurs faces quand tu t'y attends le moins. Ne mise pas tout sur une seule direction."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Attaque-le de deux côtés à la fois : quel que soit le tirage, l'un de ses flancs restera ouvert."
+        }
+      ]
+    },
+    "mirror_nerava": {
+      "title": "Le Reflet des Fièvres",
+      "lines": [
+        {
+          "speaker": "theme_god",
+          "text": "Nérava, la Mère des Fièvres. Mon Miasme affaiblit de 1 les pierres adverses qui m'entourent."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Un deck miroir de Nérava : le même venin dans les deux camps. Ici, l'air lui-même émousse tes lames."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Ne colle pas tes pierres à ses Miasmes : chaque voisine perd 1 d'attaque, et une lame affaiblie ne capture plus."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Frappe son aura avant qu'elle ne s'installe, ou prends-la de flanc. Ses Échecs corrosifs rongent même ceux qui résistent."
+        }
+      ]
+    },
+    "mirror_kharun": {
+      "title": "Le Reflet des Remparts",
+      "lines": [
+        {
+          "speaker": "theme_god",
+          "text": "Kharûn, la Muraille. Mes boucliers ne frappent jamais : ils tiennent."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Un deck miroir des Remparts. Chaque bouclier ajoute un point de défense, jamais un point d'attaque."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Ne l'attaque pas là où il s'est blindé : cherche la face qui n'a pas de bouclier."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Et souviens-toi qu'il capture mal : ses lames restent courtes. Prends le terrain pendant qu'il se fortifie."
+        }
+      ]
+    },
+    "mirror_ilyr": {
+      "title": "Le Reflet des Veilleurs",
+      "lines": [
+        {
+          "speaker": "theme_god",
+          "text": "Ilyr, le Guetteur Éternel. Mes lames bleues traversent les cases vides et les alliés, et frappent au loin."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Un deck miroir des Veilleurs. Ses lignes portent loin : la distance ne te protège plus."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Une pierre qui résiste arrête son projectile. Place un mur dans la ligne, ou sors de ses quatre axes."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Et souviens-toi : une lame ne frappe que dans sa direction. Un pas de côté suffit souvent."
+        }
+      ]
+    },
+    "mirror_sylkha": {
+      "title": "Le Reflet de l'Essaim",
+      "lines": [
+        {
+          "speaker": "theme_god",
+          "text": "Sylkha, la Mère-Ruche. Mes pierres liées se renforcent tant qu'elles restent ensemble."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Un deck miroir de l'Essaim. Chaque pierre connectée gagne en force : leur réseau est leur armure."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Brise le lien : prends une pierre du réseau et ses voisines s'affaiblissent aussitôt."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Ne les laisse pas s'aligner. Sépare-les avant que l'essaim ne se referme."
+        }
+      ]
+    },
+    "mirror_enigma": {
+      "title": "Le Reflet des Assimilateurs",
+      "lines": [
+        {
+          "speaker": "theme_god",
+          "text": "Énigma, la Machine Première. Chaque force que j'arrache devient un bouclier sur mes autres faces."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Un deck miroir des Assimilateurs. Plus tu lui offres de captures faciles, plus il se cuirasse."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Ne lui donne pas de proie gratuite : n'attaque que lorsque la capture est certaine."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Ses boucliers vont sur les faces qu'il n'utilise pas. Frappe celle qu'il vient de montrer."
+        }
+      ]
     }
   },
-  "triggers": []
+  "triggers": [
+    {
+      "id": "mirror_veskar_start",
+      "node_id": "init_veskar",
+      "event": "level_start",
+      "sequence": "mirror_veskar",
+      "once": true
+    },
+    {
+      "id": "mirror_nerava_start",
+      "node_id": "init_nerava",
+      "event": "level_start",
+      "sequence": "mirror_nerava",
+      "once": true
+    },
+    {
+      "id": "mirror_kharun_start",
+      "node_id": "init_kharun",
+      "event": "level_start",
+      "sequence": "mirror_kharun",
+      "once": true
+    },
+    {
+      "id": "mirror_ilyr_start",
+      "node_id": "init_ilyr",
+      "event": "level_start",
+      "sequence": "mirror_ilyr",
+      "once": true
+    },
+    {
+      "id": "mirror_sylkha_start",
+      "node_id": "init_sylkha",
+      "event": "level_start",
+      "sequence": "mirror_sylkha",
+      "once": true
+    },
+    {
+      "id": "mirror_enigma_start",
+      "node_id": "init_enigma",
+      "event": "level_start",
+      "sequence": "mirror_enigma",
+      "once": true
+    }
+  ]
 }

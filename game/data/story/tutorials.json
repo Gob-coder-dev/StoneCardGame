@@ -22,34 +22,26 @@
           "mordeur_des_combles_n1",
           "ecorche_angle_n1"
         ],
-        "initial_stones": [
-          {
-            "row": 0,
-            "col": 1,
-            "stone_id": "mordeur_des_combles_n1",
-            "owner": 2
-          }
-        ],
         "first_player": 1,
         "blocked_cells": [],
         "opponent_plan": [
           {
-            "row": 1,
+            "row": 2,
             "col": 2,
             "stone_id": "le_drape_du_seuil_n1"
           },
           {
-            "row": 2,
-            "col": 1,
+            "row": 1,
+            "col": 0,
             "stone_id": "mordeur_des_combles_n1"
           },
           {
-            "row": 2,
+            "row": 0,
             "col": 2,
             "stone_id": "avortons_des_caves_n1"
           },
           {
-            "row": 0,
+            "row": 1,
             "col": 2,
             "stone_id": "ecorche_angle_n1"
           }
@@ -128,10 +120,20 @@
           "timeout": 30.0
         },
         {
+          "id": "prebattle_flip",
+          "scene": "res://scenes/menus/PreBattle.tscn",
+          "spotlight": false,
+          "wait_for": "prebattle_ready",
+          "expect": {
+            "player_starts": true
+          },
+          "timeout": 20.0
+        },
+        {
           "id": "start_match",
           "scene": "res://scenes/menus/PreBattle.tscn",
           "anchor": "prebattle.start",
-          "prompt": "Touche COMMENCER.",
+          "prompt": "Le tirage t'a donné le premier coup : touche COMMENCER.",
           "wait_for": "screen_opened",
           "expect": {
             "scene": "res://scenes/game/Board.tscn"
@@ -190,11 +192,11 @@
         {
           "id": "place_second",
           "scene": "res://scenes/game/Board.tscn",
-          "anchor": "board.cell.1.1",
-          "prompt": "Pose-le en (1,1) : sa face droite brise le Drap.",
+          "anchor": "board.cell.2.1",
+          "prompt": "Pose-le juste à gauche du Drap.",
           "wait_for": "stone_placed",
           "expect": {
-            "row": 1,
+            "row": 2,
             "col": 1,
             "stone_id": "ecorche_angle_n1",
             "owner": 1
@@ -226,12 +228,12 @@
         {
           "id": "place_third",
           "scene": "res://scenes/game/Board.tscn",
-          "anchor": "board.cell.2.0",
-          "prompt": "Pose-le en (2,0) : sa face droite frappe le Mordeur de flanc.",
+          "anchor": "board.cell.1.1",
+          "prompt": "Pose-le à droite du Mordeur.",
           "wait_for": "stone_placed",
           "expect": {
-            "row": 2,
-            "col": 0,
+            "row": 1,
+            "col": 1,
             "stone_id": "ogre_droitier_n1",
             "owner": 1
           },
@@ -262,13 +264,49 @@
         {
           "id": "place_fourth",
           "scene": "res://scenes/game/Board.tscn",
-          "anchor": "board.cell.1.0",
-          "prompt": "Occupe la dernière case.",
+          "anchor": "board.cell.0.1",
+          "prompt": "Pose-le en (0,1) : il ne frappe personne, mais il tient le terrain.",
           "wait_for": "stone_placed",
           "expect": {
-            "row": 1,
-            "col": 0,
+            "row": 0,
+            "col": 1,
             "stone_id": "rampant_des_fosses_n1",
+            "owner": 1
+          },
+          "timeout": 30.0
+        },
+        {
+          "id": "wait_bot_4",
+          "scene": "res://scenes/game/Board.tscn",
+          "spotlight": false,
+          "wait_for": "turn_started",
+          "expect": {
+            "player": 1
+          },
+          "timeout": 30.0
+        },
+        {
+          "id": "fifth_card",
+          "scene": "res://scenes/game/Board.tscn",
+          "anchor": "board.hand.card.le_drape_du_seuil_n1",
+          "dialogue": "journey_fifth_move",
+          "prompt": "Touche le Drap du seuil entouré.",
+          "wait_for": "card_selected",
+          "expect": {
+            "stone_id": "le_drape_du_seuil_n1"
+          },
+          "timeout": 30.0
+        },
+        {
+          "id": "place_fifth",
+          "scene": "res://scenes/game/Board.tscn",
+          "anchor": "board.cell.2.0",
+          "prompt": "Pose-le en (2,0) : la dernière case est à toi.",
+          "wait_for": "stone_placed",
+          "expect": {
+            "row": 2,
+            "col": 0,
+            "stone_id": "le_drape_du_seuil_n1",
             "owner": 1
           },
           "timeout": 30.0
@@ -287,6 +325,14 @@
           "id": "victory",
           "scene": "res://scenes/menus/Result.tscn",
           "dialogue": "journey_victory"
+        },
+        {
+          "id": "rewards",
+          "scene": "res://scenes/menus/Result.tscn",
+          "anchor": "result.rewards",
+          "prompt": "Voilà tes récompenses : les âmes et les cartes gagnées.",
+          "wait_for": "tutorial_advance",
+          "timeout": 30.0
         },
         {
           "id": "leave_result",
@@ -348,6 +394,43 @@
           "id": "swap_done",
           "scene": "res://scenes/menus/CollectionScreen.tscn",
           "dialogue": "journey_deck_swap_done"
+        }
+      ]
+    },
+    "tuto_02": {
+      "title": "Le plateau s'agrandit",
+      "entry_node_id": "tuto_02",
+      "steps": [
+        {
+          "id": "bigger_board",
+          "scene": "res://scenes/game/Board.tscn",
+          "anchor": "board.cell.3.3",
+          "dialogue": "tuto_02_intro",
+          "prompt": "Le plateau s'étend sur quatre cases de côté.",
+          "wait_for": "tutorial_advance",
+          "timeout": 30.0
+        }
+      ]
+    },
+    "tuto_03": {
+      "title": "Les cases bloquées",
+      "entry_node_id": "tuto_03",
+      "match": {
+        "board_size": 4,
+        "blocked_cells": [
+          [1, 1],
+          [2, 2]
+        ]
+      },
+      "steps": [
+        {
+          "id": "blocked_cells",
+          "scene": "res://scenes/game/Board.tscn",
+          "anchor": "board.cell.1.1",
+          "dialogue": "tuto_03_intro",
+          "prompt": "Case bloquée : ni pose, ni attaque à travers.",
+          "wait_for": "tutorial_advance",
+          "timeout": 30.0
         }
       ]
     }
