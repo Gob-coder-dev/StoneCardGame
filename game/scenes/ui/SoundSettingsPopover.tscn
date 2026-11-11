@@ -1,0 +1,158 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/settings/SoundSettingsPopover.gd" id="1_controller"]
+[ext_resource type="Script" path="res://scripts/ui/input/TouchButton.gd" id="2_touch"]
+[ext_resource type="Texture2D" path="res://assets/ui/sound.svg" id="3_sound"]
+[ext_resource type="Texture2D" path="res://assets/ui/sound-slider-knob.svg" id="4_knob"]
+
+[sub_resource type="StyleBoxFlat" id="SliderTrack"]
+content_margin_top = 9.0
+content_margin_bottom = 9.0
+bg_color = Color(0.2039, 0.1412, 0.2196, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.3176, 0.2745, 0.3255, 1)
+corner_radius_top_left = 9
+corner_radius_top_right = 9
+corner_radius_bottom_right = 9
+corner_radius_bottom_left = 9
+
+[sub_resource type="StyleBoxFlat" id="SliderFill"]
+content_margin_top = 9.0
+content_margin_bottom = 9.0
+bg_color = Color(0.8667, 0.4078, 0.2784, 1)
+corner_radius_top_left = 9
+corner_radius_top_right = 9
+corner_radius_bottom_right = 9
+corner_radius_bottom_left = 9
+
+[sub_resource type="StyleBoxEmpty" id="EmptyButton"]
+
+[node name="SoundSettingsPopover" type="Control"]
+z_index = 80
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_controller")
+
+[node name="DismissButton" type="Button" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+focus_mode = 0
+mouse_filter = 0
+theme_override_styles/normal = SubResource("EmptyButton")
+theme_override_styles/hover = SubResource("EmptyButton")
+theme_override_styles/pressed = SubResource("EmptyButton")
+theme_override_styles/focus = SubResource("EmptyButton")
+
+[node name="ToggleButton" type="Button" parent="."]
+custom_minimum_size = Vector2(92, 92)
+layout_mode = 0
+offset_right = 92.0
+offset_bottom = 92.0
+tooltip_text = "Réglages du son"
+toggle_mode = true
+icon = ExtResource("3_sound")
+expand_icon = true
+icon_max_width = 54
+script = ExtResource("2_touch")
+
+[node name="Panel" type="PanelContainer" parent="."]
+visible = false
+custom_minimum_size = Vector2(560, 316)
+layout_mode = 0
+offset_right = 560.0
+offset_bottom = 316.0
+mouse_filter = 0
+theme_type_variation = &"DeckPanel"
+
+[node name="Content" type="VBoxContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="Panel/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.678, 0.49, 1)
+theme_override_font_sizes/font_size = 40
+text = "RÉGLAGES DU SON"
+horizontal_alignment = 1
+
+[node name="MusicHeader" type="HBoxContainer" parent="Panel/Content"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Panel/Content/MusicHeader"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "MUSIQUE"
+
+[node name="Spacer" type="Control" parent="Panel/Content/MusicHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Value" type="Label" parent="Panel/Content/MusicHeader"]
+custom_minimum_size = Vector2(96, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.902, 0.7373, 0.4706, 1)
+theme_override_font_sizes/font_size = 30
+text = "70 %"
+horizontal_alignment = 2
+
+[node name="MusicSlider" type="HSlider" parent="Panel/Content"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+mouse_default_cursor_shape = 2
+theme_override_icons/grabber = ExtResource("4_knob")
+theme_override_icons/grabber_highlight = ExtResource("4_knob")
+theme_override_styles/slider = SubResource("SliderTrack")
+theme_override_styles/grabber_area = SubResource("SliderFill")
+theme_override_styles/grabber_area_highlight = SubResource("SliderFill")
+max_value = 100.0
+step = 1.0
+value = 70.0
+scrollable = false
+
+[node name="SfxHeader" type="HBoxContainer" parent="Panel/Content"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Panel/Content/SfxHeader"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "EFFETS SONORES"
+
+[node name="Spacer" type="Control" parent="Panel/Content/SfxHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Value" type="Label" parent="Panel/Content/SfxHeader"]
+custom_minimum_size = Vector2(96, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.902, 0.7373, 0.4706, 1)
+theme_override_font_sizes/font_size = 30
+text = "70 %"
+horizontal_alignment = 2
+
+[node name="SfxSlider" type="HSlider" parent="Panel/Content"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+mouse_default_cursor_shape = 2
+theme_override_icons/grabber = ExtResource("4_knob")
+theme_override_icons/grabber_highlight = ExtResource("4_knob")
+theme_override_styles/slider = SubResource("SliderTrack")
+theme_override_styles/grabber_area = SubResource("SliderFill")
+theme_override_styles/grabber_area_highlight = SubResource("SliderFill")
+max_value = 100.0
+step = 1.0
+value = 70.0
+scrollable = false
+

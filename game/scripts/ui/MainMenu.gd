@@ -35,6 +35,7 @@ const DECK_WARNING: String = "VEUILLEZ COMPLÉTER VOTRE DECK"
 @onready var close_warning_button: Button = \
 	$DeckWarningOverlay/Center/Panel/Content/Actions/CloseButton
 @onready var bottom_nav: Control = $BottomNav
+@onready var sound_settings: SoundSettingsPopover = $SoundSettings
 
 ## Navigation injectable : les tests vérifient la destination réelle sans
 ## changer de scène. Vide en jeu, la scène est alors ouverte normalement.
@@ -53,6 +54,7 @@ func _ready() -> void:
 	identity_panel.offset_top = -UITheme.HOME_IDENTITY_HEIGHT - UITheme.HOME_IDENTITY_LIFT
 	identity_panel.offset_bottom = -UITheme.HOME_IDENTITY_LIFT
 	portrait_area.resized.connect(_fit_portrait)
+	sound_settings.anchor_below(profile_button)
 	_fit_portrait.call_deferred()
 	_refresh()
 	CardArtCache.preload_god_portraits()
@@ -135,6 +137,7 @@ func _on_mode_pressed(mode: String) -> void:
 
 
 func _show_deck_warning() -> void:
+	sound_settings.close()
 	var deck := PlayerData.get_active_deck()
 	deck_warning_message.text = "%s\n\nVotre deck contient %d carte%s sur %d. Complétez-le avant de lancer une campagne ou une partie PVP." % [
 		DECK_WARNING, deck.size(), "s" if deck.size() > 1 else "", DeckRules.DECK_SIZE
@@ -154,6 +157,10 @@ func _open_collection() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if sound_settings.is_open() and event.is_action_pressed("ui_cancel"):
+		sound_settings.close()
+		get_viewport().set_input_as_handled()
+		return
 	if deck_warning_overlay.visible and event.is_action_pressed("ui_cancel"):
 		_close_deck_warning()
 		get_viewport().set_input_as_handled()
@@ -177,6 +184,9 @@ func _notification(what: int) -> void:
 	# Le retour Android quitte l'application depuis l'accueil ; les autres
 	# écrans l'interceptent avant d'arriver ici.
 	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
+		if is_instance_valid(sound_settings) and sound_settings.is_open():
+			sound_settings.close()
+			return
 		get_tree().quit()
 
 

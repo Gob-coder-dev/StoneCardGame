@@ -8,10 +8,18 @@
 ## La musique suit la scène courante sans qu'aucun écran n'ait à l'annoncer.
 extends Node
 
+signal volume_changed(bus_name: StringName, percent: float)
+
 const Catalog := preload("res://scripts/application/audio/AudioCatalog.gd")
 
 const SFX_POOL_SIZE := 10
 const META_BOUND := "_audio_bound"
+const SETTINGS_PATH := "user://audio_settings.cfg"
+const SETTINGS_SECTION := "audio"
+const DEFAULT_VOLUME_PERCENT := 70.0
+const SETTINGS_SAVE_DELAY := 0.25
+const MUSIC_BUS := &"Music"
+const SFX_BUS := &"SFX"
 
 var _sfx_players: Array[AudioStreamPlayer] = []
 var _sfx_next := 0
@@ -22,10 +30,18 @@ var _jingle_scene: Node = null
 var _streams: Dictionary = {}
 var _warned_paths: Dictionary = {}
 var _current_scene: Node = null
+var _volume_percent: Dictionary = {
+	MUSIC_BUS: DEFAULT_VOLUME_PERCENT,
+	SFX_BUS: DEFAULT_VOLUME_PERCENT,
+}
+var _settings_save_timer: Timer = null
 
 
 func _ready() -> void:
 	_ensure_buses()
+	_create_settings_save_timer()
+	_load_volume_settings()
+	_apply_all_bus_volumes()
 	_create_sfx_pool()
 	_create_music_player()
 	_create_jingle_player()
@@ -49,17 +65,115 @@ func _process(_delta: float) -> void:
 ## ─── Bus ─────────────────────────────────────────────────────────────────────
 
 func _ensure_buses() -> void:
-	_ensure_bus("Music", "Master")
-	_ensure_bus("SFX", "Master")
+	_ensure_bus(MUSIC_BUS, &"Master")
+	_ensure_bus(SFX_BUS, &"Master")
 
 
-func _ensure_bus(bus_name: String, send: String) -> void:
+func _ensure_bus(bus_name: StringName, send: StringName) -> void:
 	var index := AudioServer.get_bus_index(bus_name)
 	if index == -1:
 		index = AudioServer.bus_count
 		AudioServer.add_bus(index)
 		AudioServer.set_bus_name(index, bus_name)
 	AudioServer.set_bus_send(index, send)
+
+
+## ─── Préférences de volume ───────────────────────────────────────────────
+
+func music_volume_percent() -> float:
+	return volume_percent(MUSIC_BUS)
+
+
+func sfx_volume_percent() -> float:
+	return volume_percent(SFX_BUS)
+
+
+func volume_percent(bus_name: StringName) -> float:
+	return float(_volume_percent.get(bus_name, DEFAULT_VOLUME_PERCENT))
+
+
+func set_music_volume_percent(percent: float, persist: bool = true) -> void:
+	_set_volume_percent(MUSIC_BUS, percent, persist)
+
+
+func set_sfx_volume_percent(percent: float, persist: bool = true) -> void:
+	_set_volume_percent(SFX_BUS, percent, persist)
+
+
+func _set_volume_percent(bus_name: StringName, percent: float,
+		persist: bool) -> void:
+	var normalized := clampf(roundf(percent), 0.0, 100.0)
+	if is_equal_approx(volume_percent(bus_name), normalized):
+		return
+	_volume_percent[bus_name] = normalized
+	_apply_bus_volume(bus_name)
+	volume_changed.emit(bus_name, normalized)
+	if persist:
+		_schedule_settings_save()
+
+
+## Le bus est réellement muet à zéro. Aux autres valeurs, une conversion en
+## décibels conserve une progression perceptive naturelle pour l'oreille.
+func _apply_bus_volume(bus_name: StringName) -> void:
+	var index := AudioServer.get_bus_index(bus_name)
+	if index < 0:
+		return
+	var percent := volume_percent(bus_name)
+	AudioServer.set_bus_mute(index, is_zero_approx(percent))
+	if percent > 0.0:
+		AudioServer.set_bus_volume_db(index, linear_to_db(percent / 100.0))
+
+
+func _apply_all_bus_volumes() -> void:
+	_apply_bus_volume(MUSIC_BUS)
+	_apply_bus_volume(SFX_BUS)
+
+
+func _load_volume_settings() -> void:
+	var config := ConfigFile.new()
+	var error := config.load(SETTINGS_PATH)
+	if error != OK:
+		if error != ERR_FILE_NOT_FOUND:
+			push_warning("Audio: réglages illisibles (%s), valeurs par défaut utilisées." % error)
+		return
+	_volume_percent[MUSIC_BUS] = _stored_percent(config, "music")
+	_volume_percent[SFX_BUS] = _stored_percent(config, "sfx")
+
+
+func _stored_percent(config: ConfigFile, key: String) -> float:
+	return clampf(roundf(float(config.get_value(
+		SETTINGS_SECTION, key, DEFAULT_VOLUME_PERCENT))), 0.0, 100.0)
+
+
+func _create_settings_save_timer() -> void:
+	_settings_save_timer = Timer.new()
+	_settings_save_timer.name = "SettingsSaveTimer"
+	_settings_save_timer.one_shot = true
+	_settings_save_timer.wait_time = SETTINGS_SAVE_DELAY
+	_settings_save_timer.timeout.connect(_save_volume_settings)
+	add_child(_settings_save_timer)
+
+
+## Le curseur peut émettre plusieurs dizaines de valeurs pendant un glissement.
+## Le délai regroupe ces changements en une seule écriture sur le stockage.
+func _schedule_settings_save() -> void:
+	_settings_save_timer.start()
+
+
+func flush_volume_settings() -> void:
+	if _settings_save_timer == null or _settings_save_timer.is_stopped():
+		return
+	_settings_save_timer.stop()
+	_save_volume_settings()
+
+
+func _save_volume_settings() -> void:
+	var config := ConfigFile.new()
+	config.set_value(SETTINGS_SECTION, "music", music_volume_percent())
+	config.set_value(SETTINGS_SECTION, "sfx", sfx_volume_percent())
+	var error := config.save(SETTINGS_PATH)
+	if error != OK:
+		push_warning("Audio: impossible d'enregistrer les réglages (%s)." % error)
 
 
 ## ─── Effets sonores ──────────────────────────────────────────────────────────

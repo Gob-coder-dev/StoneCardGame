@@ -1,10 +1,11 @@
-[gd_scene load_steps=6 format=3 uid="uid://b8hjkpj0hmjtc"]
+[gd_scene load_steps=7 format=3 uid="uid://b8hjkpj0hmjtc"]
 
 [ext_resource type="Script" uid="uid://c620obhplo3k1" path="res://scripts/ui/MainMenu.gd" id="1_mainmenu"]
 [ext_resource type="Script" uid="uid://cms1p5lxyjnml" path="res://scripts/ui/MenuBackground.gd" id="2_parchment"]
 [ext_resource type="PackedScene" path="res://scenes/ui/BottomNav.tscn" id="3_nav"]
 [ext_resource type="Script" uid="uid://153ulybbb0hg" path="res://scripts/ui/input/TouchButton.gd" id="4_touch_button"]
 [ext_resource type="PackedScene" path="res://scenes/ui/CurrencyBalances.tscn" id="5_currency"]
+[ext_resource type="PackedScene" path="res://scenes/ui/SoundSettingsPopover.tscn" id="6_sound_settings"]
 
 [node name="MainMenu" type="Control" unique_id=1585933656]
 layout_mode = 3
@@ -186,6 +187,8 @@ script = ExtResource("4_touch_button")
 
 [node name="BottomNav" parent="." unique_id=2090898695 instance=ExtResource("3_nav")]
 grow_horizontal = 2
+
+[node name="SoundSettings" parent="." instance=ExtResource("6_sound_settings")]
 
 [node name="DeckWarningOverlay" type="Control" parent="." unique_id=885755630]
 visible = false

@@ -181,9 +181,10 @@ jamais sa musique : le service suit la scène courante.
 
 `res://default_bus_layout.tres` déclare `Master`, `Music` et `SFX`. Le lecteur
 de musique envoie sur `Music`, le pool d'effets et le lecteur de jingle sur
-`SFX`. Chaque bus peut être réglé séparément sans toucher au code : `Music` est
-volontairement plus bas que `SFX` (`-13 dB` contre `0 dB`) pour rester en fond
-sonore.
+`SFX`. Les deux bus démarrent à 70 % (`-3,10 dB`) et la carte audio de l'accueil
+permet de les régler séparément de 0 à 100. `AudioService` applique la
+conversion en décibels, coupe réellement un bus à zéro et mémorise les choix
+dans `user://audio_settings.cfg`, hors de la sauvegarde de progression.
 
 ### Effets sonores
 

@@ -366,6 +366,12 @@ func _check_main_menu() -> void:
 		"accueil : FERMER referme la modale au toucher")
 	PlayerData._decks_by_god[god_id][slot] = original
 	menu._refresh()
+	await _tap(_center(menu.sound_settings.toggle_button))
+	_check(menu.sound_settings.is_open(),
+		"accueil : le bouton son ouvre ses deux réglages au toucher")
+	await _tap(Vector2(menu.size.x - 40.0, menu.size.y * 0.5))
+	_check(not menu.sound_settings.is_open(),
+		"accueil : toucher hors de la carte referme les réglages sans navigation")
 	for path in ["Content/Header/ProfileButton", "Content/Hero/Identity/ModeButtons/CampaignButton",
 			"Content/Hero/Identity/ModeButtons/PvpButton"]:
 		var button: Button = menu.get_node(path)

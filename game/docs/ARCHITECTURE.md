@@ -143,14 +143,20 @@ L'audio est une couche applicative isolée, branchée sur l'autoload `Audio`.
 | Fichier | Responsabilité |
 | --- | --- |
 | `scripts/application/audio/AudioCatalog.gd` | données pures : identifiants, chemins des 26 SFX et 4 musiques, clés de métadonnées, correspondance nom de scène → musique |
-| `scripts/application/audio/AudioService.gd` (autoload `Audio`) | bus `Music`/`SFX`, pool de 10 lecteurs courts, lecteur de musique à coupure franche, lecteur de jingle qui suspend la musique, cache de flux et branchement automatique des boutons |
-| `default_bus_layout.tres` | bus `Master`, `Music` et `SFX` réglables séparément ; `Music` à `-13 dB` |
+| `scripts/application/audio/AudioService.gd` (autoload `Audio`) | bus `Music`/`SFX`, préférences persistantes, pool de 10 lecteurs courts, lecteur de musique à coupure franche, lecteur de jingle qui suspend la musique, cache de flux et branchement automatique des boutons |
+| `scenes/ui/SoundSettingsPopover.tscn` | carte de réglage de l'accueil : curseurs indépendants pour la musique et les effets |
+| `default_bus_layout.tres` | bus `Master`, `Music` et `SFX` réglables séparément, initialisés à 70 % |
 
 Les écrans n'appellent jamais `AudioServer` : ils utilisent
 `Audio.play_sfx(AudioCatalog.SFX_…)` ou posent une métadonnée sur un
 `BaseButton` (`Audio.set_button_sfx`, `Audio.set_button_silent`). Tout bouton
 ajouté à l'arbre reçoit `button` par défaut, y compris les boutons créés par les
 contrôleurs.
+
+Les volumes sont exprimés de 0 à 100 dans l'interface, puis convertis en
+décibels par `AudioService`. Une valeur nulle coupe réellement le bus. Les deux
+catégories démarrent à 70 % et sont mémorisées dans
+`user://audio_settings.cfg`, indépendamment de la progression du joueur.
 
 La musique suit `get_tree().current_scene` : `main_theme` pour les menus et les
 résultats, `map` pour la campagne et l'avant-combat, `battle` pour `Board.tscn`,

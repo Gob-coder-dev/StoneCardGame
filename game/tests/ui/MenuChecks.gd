@@ -13,6 +13,7 @@ func run() -> void:
 	await _test_god_selector_ui()
 	await _test_deck_slots()
 	await _test_home_portraits()
+	await _test_sound_settings()
 	await _test_menu_modes()
 	await _test_preview_layout()
 	await _test_rules_legends()
@@ -234,6 +235,39 @@ func _test_home_portraits() -> void:
 	menu._refresh()
 	menu.queue_free()
 	await get_tree().process_frame
+
+
+func _test_sound_settings() -> void:
+	var original_music := Audio.music_volume_percent()
+	var original_sfx := Audio.sfx_volume_percent()
+	Audio.set_music_volume_percent(35.0, false)
+	Audio.set_sfx_volume_percent(0.0, false)
+	var menu: Control = (load("res://scenes/menus/MainMenu.tscn") as PackedScene).instantiate()
+	add_child(menu)
+	for frame in range(3):
+		await get_tree().process_frame
+	var settings: SoundSettingsPopover = menu.sound_settings
+	settings.open()
+	await get_tree().process_frame
+	var music_bus := AudioServer.get_bus_index(Audio.MUSIC_BUS)
+	var sfx_bus := AudioServer.get_bus_index(Audio.SFX_BUS)
+	_check(settings.is_open() and settings.dismiss_button.visible
+		and settings.toggle_button.get_global_rect().position.y
+		>= menu.profile_button.get_global_rect().end.y - 1.0,
+		"accueil : le bouton son reste sous le profil et ouvre une carte bloquante")
+	_check(is_equal_approx(settings.music_slider.value, 35.0)
+		and is_equal_approx(settings.sfx_slider.value, 0.0)
+		and is_equal_approx(Audio.DEFAULT_VOLUME_PERCENT, 70.0)
+		and is_equal_approx(AudioServer.get_bus_volume_db(music_bus), linear_to_db(0.35))
+		and AudioServer.is_bus_mute(sfx_bus),
+		"audio : les deux curseurs reflètent leurs bus et zéro coupe réellement les SFX")
+	settings.close()
+	_check(not settings.is_open() and not settings.dismiss_button.visible,
+		"accueil : fermer les réglages libère immédiatement le reste du menu")
+	menu.queue_free()
+	await get_tree().process_frame
+	Audio.set_music_volume_percent(original_music, false)
+	Audio.set_sfx_volume_percent(original_sfx, false)
 
 ## Les deux modes partagent une ligne de largeur égale, gardent leur libellé et
 ## n'ouvrent leur destination qu'avec un deck valide.
