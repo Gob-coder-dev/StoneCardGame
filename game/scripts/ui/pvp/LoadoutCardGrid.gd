@@ -116,6 +116,7 @@ func _on_card_pressed(stone_id: String) -> void:
 		return
 	if not _cards.any(func(card: StoneCard) -> bool: return card.get_stone_id() == stone_id):
 		return
+	Audio.play_sfx(AudioCatalog.SFX_BUTTON)
 	_selectable = false
 	_selected_id = stone_id
 	for card in _cards:

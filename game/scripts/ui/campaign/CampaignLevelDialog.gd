@@ -31,6 +31,8 @@ var _replay_sequence_id: String = ""
 
 
 func _ready() -> void:
+	Audio.set_button_sfx(launch_button, AudioCatalog.SFX_BUTTON_2)
+	Audio.set_button_sfx(replay_button, AudioCatalog.SFX_BUTTON_2)
 	backdrop.pressed.connect(close)
 	close_button.pressed.connect(close)
 	launch_button.pressed.connect(_on_launch)

@@ -188,6 +188,7 @@ func _quest_card(entry: Dictionary, daily: bool) -> PanelContainer:
 	action.add_theme_constant_override("separation", 8)
 	row.add_child(action)
 	var button := TouchButtonScript.new() as Button
+	Audio.set_button_sfx(button, AudioCatalog.SFX_BUTTON_2)
 	button.custom_minimum_size = Vector2(240, 92)
 	button.add_theme_font_size_override("font_size", 30)
 	if bool(entry["claimable"]):

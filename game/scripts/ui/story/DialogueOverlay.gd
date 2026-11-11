@@ -272,6 +272,7 @@ func _finish_typing() -> void:
 func _advance() -> void:
 	if not visible or _lines.is_empty():
 		return
+	Audio.play_sfx(AudioCatalog.SFX_BUTTON)
 	if _typing:
 		_finish_typing()
 		return

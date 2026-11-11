@@ -463,6 +463,7 @@ func _open_card_actions(stone_id: String, wrapper: VBoxContainer, source: int) -
 	if not PlayerData.owns_stone(stone_id):
 		_show_error("Cette carte ou ce niveau n'est pas encore débloqué.")
 		return
+	Audio.play_sfx(AudioCatalog.SFX_BUTTON)
 	if _action_stone_id == stone_id and _action_source == source and is_instance_valid(_action_drawer):
 		_close_action_drawer()
 		return

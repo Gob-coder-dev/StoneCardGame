@@ -42,6 +42,7 @@ var _start_timeout: Timer = null
 
 
 func _ready() -> void:
+	Audio.set_button_sfx(start_button, AudioCatalog.SFX_BUTTON_2)
 	start_button.pressed.connect(_on_start)
 	if _is_pvp():
 		_setup_pvp()
@@ -184,6 +185,7 @@ func _local_side() -> int:
 ## alterne les faces, puis s'arrête sur le résultat tiré par le moteur.
 func _animate_coin_flip() -> void:
 	var player_starts := _starting_player() == _local_side()
+	Audio.play_sfx(AudioCatalog.SFX_COIN_FLIP_START_BATTLE)
 
 	coin.pivot_offset = coin.size * 0.5
 

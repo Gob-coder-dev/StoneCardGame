@@ -97,6 +97,7 @@ func animate_capture(row: int, col: int, new_owner: int) -> void:
 	_board.reveal_cell_owner(row, col, new_owner)
 	if card.get_combat_owner() == new_owner:
 		return
+	Audio.play_sfx(AudioCatalog.SFX_CAPTURED)
 	card.pivot_offset = card.size * 0.5
 	var tween := _create_tracked_tween()
 	tween.tween_property(card, "modulate", Color(1.6, 1.6, 1.2), 0.12)
@@ -134,6 +135,7 @@ func animate_attacks(row: int, col: int, attacks: Array, owner: int, duration: f
 	if card == null or attacks.is_empty():
 		return
 	var paths := _geometry.attack_paths(card, attacks)
+	Audio.play_sfx(AudioCatalog.SFX_ATTACK)
 	var animation := AttackReveal.new()
 	animation.name = "AttackReveal"
 	add_child(animation)
@@ -145,6 +147,8 @@ func animate_attacks(row: int, col: int, attacks: Array, owner: int, duration: f
 func _on_attack_hit(row: int, col: int, success: bool, owner: int) -> void:
 	if success:
 		animate_capture(row, col, owner)
+	else:
+		Audio.play_sfx(AudioCatalog.SFX_ATTACK_MISS)
 
 
 func animate_effects(events: Array, duration: float = 0.0) -> void:
@@ -166,6 +170,7 @@ func animate_effects(events: Array, duration: float = 0.0) -> void:
 		if card == null:
 			continue
 		if event_type == CombatEvents.SHIELD_THEFT:
+			Audio.play_sfx(AudioCatalog.SFX_PILLAGE)
 			var animation := PillageReveal.new()
 			animation.name = "PillageReveal"
 			add_child(animation)
@@ -174,6 +179,7 @@ func animate_effects(events: Array, duration: float = 0.0) -> void:
 			continue
 		push_warning("Événement visuel inconnu : " + event_type)
 	if not weakening_events.is_empty():
+		Audio.play_sfx(AudioCatalog.SFX_WEAKNESS)
 		_animate_weakening(weakening_events, duration)
 	if not repair_events.is_empty():
 		var weakened_now := {}
@@ -184,6 +190,7 @@ func animate_effects(events: Array, duration: float = 0.0) -> void:
 			if not weakened_now.has("%d:%d" % [event["row"], event["col"]]):
 				visible_repairs.append(event)
 		if not visible_repairs.is_empty():
+			Audio.play_sfx(AudioCatalog.SFX_REPAIR)
 			_animate_weakness_repair(visible_repairs, duration)
 
 
@@ -217,6 +224,7 @@ func animate_swarm(events: Array, duration: float, delay: float = 0.0) -> void:
 	var data := _geometry.swarm_data(event)
 	if data.is_empty():
 		return
+	Audio.play_sfx(AudioCatalog.SFX_SWARM)
 	var members: Array = data["members"]
 	var links_before: Array = data["links_before"]
 	var links_after: Array = data["links_after"]
@@ -259,6 +267,7 @@ func animate_preparation(row: int, col: int, events: Array, duration: float) -> 
 		_track(animation)
 		animation.play(card, events[0], duration)
 	else:
+		Audio.play_sfx(AudioCatalog.SFX_RANDOM_BLADE)
 		animation = RandomReveal.new()
 		animation.name = "RandomReveal"
 		add_child(animation)

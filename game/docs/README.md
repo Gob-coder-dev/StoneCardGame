@@ -13,6 +13,7 @@ Pour lancer le jeu et ses tests, consulter le [README du projet](../README.md).
 | [Bestiaire](BESTIAIRE.md) | Description des six dieux et des 96 lignées de monstres. |
 | [Identité visuelle des menus](IDENTITE_VISUELLE_MENUS.md) | Palette de l’interface, composants, cartes et plateau. |
 | [PVP local](PVP_LOCAL.md) | Hôte et client, ports, découverte, protocole, déterminisme, permissions Android et dépannage. |
+| [Audio](../data/audio/README.md) | Banque de sons, musiques, déclencheurs, architecture et règles d'extension. |
 
 Les règles de jeu et les statistiques font référence aux fichiers data/stones/
 et data/gods.json. Les illustrations sont stockées dans assets/cards/ et

@@ -4,9 +4,11 @@ const COIN_RESULT := 0.62
 const COIN_REVEAL := 0.76
 var _axis: String = ""
 var _flipped: bool = false
+var _outcome_played: bool = false
 
 func play(card: StoneCard, event: Dictionary, duration: float) -> void:
 	_prepare(card)
+	Audio.play_sfx(AudioCatalog.SFX_COIN_FLIP)
 	_axis = event["axis"]
 	_flipped = event["flipped"]
 	var preview: BattleStoneModel = card.get_battle_stone().clone()
@@ -17,6 +19,10 @@ func play(card: StoneCard, event: Dictionary, duration: float) -> void:
 	_start(duration)
 
 func _update_preview() -> void:
+	if not _outcome_played and progress >= COIN_REVEAL:
+		_outcome_played = true
+		Audio.play_sfx(AudioCatalog.SFX_COIN_FLIP_VALIDATE if _flipped
+			else AudioCatalog.SFX_COIN_FLIP_WRONG)
 	if is_instance_valid(_card) and progress >= COIN_REVEAL:
 		_card.set_combat_preview(null)
 

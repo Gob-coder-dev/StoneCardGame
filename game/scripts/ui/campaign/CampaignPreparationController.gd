@@ -27,6 +27,7 @@ var _layout_fit_pending := false
 
 
 func _ready() -> void:
+	Audio.set_button_sfx(confirm_button, AudioCatalog.SFX_BUTTON_2)
 	back_button.pressed.connect(_on_back)
 	confirm_button.pressed.connect(_on_confirm)
 	offers_grid.card_chosen.connect(_on_card_chosen)

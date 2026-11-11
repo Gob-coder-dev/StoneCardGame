@@ -29,6 +29,7 @@ var _selected_index := 0
 
 
 func _ready() -> void:
+	Audio.set_button_sfx(fight_button, AudioCatalog.SFX_BUTTON_2)
 	back_button.pressed.connect(_go_back)
 	fight_button.pressed.connect(_on_fight)
 	track.level_selected.connect(_select_level)

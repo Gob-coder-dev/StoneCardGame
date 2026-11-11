@@ -29,6 +29,11 @@ var _stage := Stage.BUSY
 
 
 func _ready() -> void:
+	## Le sceau et la carte ont déjà leur propre son : le clic générique serait
+	## un doublon. Le bouton de sortie reste une validation ordinaire.
+	Audio.set_button_silent(sigil_button)
+	Audio.set_button_silent(reward_button)
+	Audio.set_button_sfx(finish_button, AudioCatalog.SFX_BUTTON_2)
 	sigil_button.pressed.connect(_on_sigil_pressed)
 	reward_button.pressed.connect(_on_reward_pressed)
 	finish_button.pressed.connect(_finish)
@@ -64,6 +69,7 @@ func _on_sigil_pressed() -> void:
 		return
 	_stage = Stage.BUSY
 	sigil_button.disabled = true
+	Audio.play_sfx(AudioCatalog.SFX_BIG_FLAME)
 	flames.ignite_full()
 	await flames.covered
 	_show_reward_back()
@@ -105,6 +111,7 @@ func _reveal_current() -> void:
 	var close := create_tween()
 	close.tween_property(reward_button, "scale:x", 0.03, 0.18).set_trans(Tween.TRANS_QUAD)
 	await close.finished
+	Audio.play_sfx(AudioCatalog.SFX_REVEAL)
 	var reward: Dictionary = (_opening.get("rewards", []) as Array)[_index]
 	_build_reward_front(reward)
 	var open := create_tween()
@@ -120,6 +127,7 @@ func _advance() -> void:
 	var start_position := reward_button.position
 	var direction := 1.0 if _index % 2 == 0 else -1.0
 	var target_position := start_position + Vector2(size.x * 0.66 * direction, 0.0)
+	Audio.play_sfx(AudioCatalog.SFX_WOOSH)
 	var exit_tween := create_tween()
 	exit_tween.set_parallel(true)
 	exit_tween.tween_property(reward_button, "modulate:a", 0.0, 0.22)
@@ -131,6 +139,7 @@ func _advance() -> void:
 	if _index >= (_opening.get("rewards", []) as Array).size():
 		_show_summary()
 		return
+	Audio.play_sfx(AudioCatalog.SFX_LITTLE_FLAME)
 	flames.ignite_minor()
 	await flames.covered
 	_show_reward_back()

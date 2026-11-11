@@ -17,6 +17,7 @@ var _source: Source = Source.COLLECTION
 
 
 func _ready() -> void:
+	Audio.set_button_sfx(primary_button, AudioCatalog.SFX_BUTTON_2)
 	info_button.pressed.connect(_on_info_pressed)
 	primary_button.pressed.connect(_on_primary_pressed)
 	upgrade_button.pressed.connect(_on_upgrade_pressed)

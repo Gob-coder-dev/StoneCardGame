@@ -19,6 +19,7 @@ var _offer_id := ""
 
 
 func _ready() -> void:
+	Audio.set_button_sfx(confirm_button, AudioCatalog.SFX_PURCHASE)
 	cancel_button.pressed.connect(close)
 	confirm_button.pressed.connect(_confirm)
 

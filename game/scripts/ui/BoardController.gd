@@ -177,6 +177,7 @@ func _on_card_selected(stone_id: String) -> void:
 		return
 	_selected_stone_id = stone_id
 	hand_view.set_selected(stone_id)
+	Audio.play_sfx(AudioCatalog.SFX_BUTTON)
 	StoryService.notify_event("card_selected", {"stone_id": stone_id})
 
 
@@ -187,6 +188,7 @@ func _on_cell_pressed(row: int, col: int) -> void:
 			"stone_id": _selected_stone_id, "owner": _driver.local_side}):
 		return
 	StoryService.notify_event("cell_pressed", {"row": row, "col": col})
+	Audio.play_sfx(AudioCatalog.SFX_BUTTON)
 	if _driver.request_move(row, col, _selected_stone_id):
 		_selected_stone_id = ""
 		hand_view.clear_selection()
@@ -202,6 +204,7 @@ func _on_card_press_started(stone_id: String, card: StoneCard, pointer: int, can
 func _on_card_drag_started(_stone_id: String) -> void:
 	_selected_stone_id = ""
 	hand_view.clear_selection()
+	Audio.play_sfx(AudioCatalog.SFX_BUTTON)
 
 
 func _on_card_dropped(stone_id: String, row: int, col: int) -> void:
@@ -268,6 +271,8 @@ func _on_stone_placed(row: int, col: int, _stone_id: String, _owner: int) -> voi
 	hand_view.refresh(state.hand_of(_driver.local_side))
 	_register_story_anchors()
 	board_view.set_input_enabled(false)
+	Audio.play_sfx(AudioCatalog.SFX_STONE_PLACE_LOCAL if _owner == _driver.local_side
+		else AudioCatalog.SFX_STONE_PLACE_REMOTE)
 	StoryService.notify_event("stone_placed", {
 		"row": row, "col": col, "stone_id": _stone_id, "owner": _owner,
 	})

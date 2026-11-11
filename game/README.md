@@ -249,6 +249,8 @@ Les âmes, les bougies, les Rituels, les copies, les améliorations et la boutiq
 dans [ECONOMY.md](docs/ECONOMY.md).
 Le PVP local (rôles, ports, protocole, autorité de l'hôte, limites et dépannage)
 est décrit dans [PVP_LOCAL.md](docs/PVP_LOCAL.md).
+La banque de sons, ses déclencheurs et son arborescence sont décrits dans
+[data/audio/README.md](data/audio/README.md).
 L’univers, les familles et les dieux sont décrits dans la
 [direction artistique](docs/DIRECTION_ARTISTIQUE_MONSTRES.md).
 L’[index de la documentation](docs/README.md) regroupe les références du projet,

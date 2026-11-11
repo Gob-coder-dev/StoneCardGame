@@ -3,7 +3,7 @@
     "lineages":  [
                      {
                          "id":  "devoracle",
-                         "name":  "DÃ©voracle",
+                         "name":  "Dévoracle",
                          "rarity":  "common",
                          "god_id":  "veskar",
                          "description":  "Hasard pur et trÃ¨s bon marchÃ© ; aucune direction garantie avant la pose.",
@@ -61,7 +61,7 @@
                      },
                      {
                          "id":  "griffe_a_jetons",
-                         "name":  "Griffe Ã  jetons",
+                         "name":  "Griffe à jetons",
                          "rarity":  "common",
                          "god_id":  "veskar",
                          "description":  "Droite garantie, autres renforts alÃ©atoires ; le cÃ´tÃ© droit finit saturÃ©.",
@@ -119,7 +119,7 @@
                      },
                      {
                          "id":  "de_boiteux",
-                         "name":  "DÃ© boiteux",
+                         "name":  "Dé boiteux",
                          "rarity":  "common",
                          "god_id":  "veskar",
                          "description":  "Haut garanti et rÃ©serve alÃ©atoire croissante ; trois autres faces ouvertes au tirage.",
@@ -371,7 +371,7 @@
                      },
                      {
                          "id":  "valet_a_lenvers",
-                         "name":  "Valet Ã  lâ€™envers",
+                         "name":  "Valet à l’envers",
                          "rarity":  "rare",
                          "god_id":  "veskar",
                          "description":  "Pile ou face vertical ; dÃ©part avec une forte face basse et un haut vide.",
@@ -416,7 +416,7 @@
                      },
                      {
                          "id":  "la_machine_a_malchance",
-                         "name":  "La Machine Ã  malchance",
+                         "name":  "La Machine à malchance",
                          "rarity":  "epic",
                          "god_id":  "veskar",
                          "description":  "Haut toujours maximal, renforts roses ailleurs ; casino organique plutÃ´t que robot de Pillage.",

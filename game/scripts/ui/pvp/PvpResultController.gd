@@ -37,6 +37,8 @@ var _leaving := false
 var _pending_action := false
 var _primary_mode := "classic_rematch"
 var _action_timeout: Timer = null
+## `_apply_presentation` est appelé plusieurs fois pour le même verdict.
+var _result_sound_key := ""
 
 
 func _ready() -> void:
@@ -93,7 +95,27 @@ func _apply_presentation(view: Dictionary) -> void:
 	return_button.text = "RETOUR AU SALON"
 	quit_button.text = "QUITTER"
 	_apply_result_background(int(view["winner"]), bool(view["local_one"]))
+	_play_result_sound(view)
 	_set_actions_enabled(true)
+
+
+## Le présentateur renvoie le vainqueur de la série quand elle est finie, sinon
+## celui de la manche. Le son suit exactement cette distinction.
+func _play_result_sound(view: Dictionary) -> void:
+	var winner := int(view.get("winner", GameState.PLAYER_NONE))
+	var finished := PvpMatchContext.is_simple_result() or PvpMatchContext.series_finished()
+	var key := "%d:%s" % [winner, "final" if finished else "round"]
+	if key == _result_sound_key:
+		return
+	_result_sound_key = key
+	if winner == PvpMatchContext.local_side:
+		Audio.play_sfx(AudioCatalog.SFX_VICTORY if finished
+			else AudioCatalog.SFX_ROUND_WON)
+	elif winner != GameState.PLAYER_NONE:
+		Audio.play_sfx(AudioCatalog.SFX_DEFEAT if finished
+			else AudioCatalog.SFX_ROUND_DEFEAT)
+	else:
+		Audio.play_sfx(AudioCatalog.SFX_DRAW)
 
 
 func _apply_result_background(winner: int, local_one: bool) -> void:

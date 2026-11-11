@@ -97,6 +97,7 @@ func _offer_panel(offer: Dictionary) -> PanelContainer:
 	quantity.add_theme_font_size_override("font_size", 24)
 	box.add_child(quantity)
 	var button := TouchButtonScript.new() as Button
+	Audio.set_button_sfx(button, AudioCatalog.SFX_PURCHASE)
 	button.custom_minimum_size.y = 62
 	var purchased := bool(offer.get("purchased", false))
 	button.text = "ACHETÉ" if purchased else UIFormat.integer(int(offer["price"]))

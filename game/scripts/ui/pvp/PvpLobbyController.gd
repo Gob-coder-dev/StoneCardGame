@@ -136,6 +136,7 @@ var _displayed_connection_seconds: int:
 
 
 func _ready() -> void:
+	Audio.set_button_sfx(ready_button, AudioCatalog.SFX_BUTTON_2)
 	_flow.changed.connect(_refresh_status)
 	_flow.games_changed.connect(_on_games_changed)
 	_flow.notice_requested.connect(_show_notice)

@@ -136,6 +136,31 @@ Les accords de lancement et de revanche ainsi que la confirmation d'un tour
 sont bornés à 30 secondes. Ces délais applicatifs complètent la livraison fiable
 d'ENet lorsqu'un pair reste connecté mais cesse de poursuivre le protocole.
 
+## Audio
+
+L'audio est une couche applicative isolée, branchée sur l'autoload `Audio`.
+
+| Fichier | Responsabilité |
+| --- | --- |
+| `scripts/application/audio/AudioCatalog.gd` | données pures : identifiants, chemins des 26 SFX et 4 musiques, clés de métadonnées, correspondance nom de scène → musique |
+| `scripts/application/audio/AudioService.gd` (autoload `Audio`) | bus `Music`/`SFX`, pool de 10 lecteurs courts, deux lecteurs de musique avec fondu, cache de flux et branchement automatique des boutons |
+| `default_bus_layout.tres` | bus `Master`, `Music` et `SFX` réglables séparément |
+
+Les écrans n'appellent jamais `AudioServer` : ils utilisent
+`Audio.play_sfx(AudioCatalog.SFX_…)` ou posent une métadonnée sur un
+`BaseButton` (`Audio.set_button_sfx`, `Audio.set_button_silent`). Tout bouton
+ajouté à l'arbre reçoit `button` par défaut, y compris les boutons créés par les
+contrôleurs.
+
+La musique suit `get_tree().current_scene` : `main_theme` pour les menus et les
+résultats, `map` pour la campagne et l'avant-combat, `battle` pour `Board.tscn`,
+`ritual` pour `RitualOpening.tscn`, avec `main_theme` comme défaut. Une seule
+piste joue à la fois ; le changement se fait par fondu enchaîné de 0,8 s. Les
+quatre pistes bouclent, y compris `ritual.wav`.
+
+Les déclencheurs détaillés, les fichiers et les règles d'extension sont dans
+[data/audio/README.md](../data/audio/README.md).
+
 ## Données
 
 | Fichier | Fonction principale | Responsabilité |

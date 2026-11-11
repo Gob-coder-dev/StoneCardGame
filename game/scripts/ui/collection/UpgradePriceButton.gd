@@ -15,6 +15,12 @@ var _price := 0
 var _content_color := UITheme.COL_INK
 
 
+## Ce bouton valide toujours une action (utiliser, améliorer, confirmer) :
+## il ne prend pas le clic de sélection générique.
+func _ready() -> void:
+	Audio.set_button_sfx(self, AudioCatalog.SFX_BUTTON_2)
+
+
 func set_content(title: String, show_price: bool, price: int,
 		content_color: Color) -> void:
 	_display_title = title

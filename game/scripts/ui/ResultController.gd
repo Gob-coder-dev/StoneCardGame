@@ -45,6 +45,7 @@ func _ready() -> void:
 			result_label.text = "DÉFAITE..."
 		_:
 			result_label.text = "ÉGALITÉ"
+	_play_result_sound()
 
 	var npc := BattleContext.current_opponent()
 	if BattleContext.last_winner == GameState.PLAYER_HUMAN:
@@ -70,6 +71,27 @@ func _ready() -> void:
 	StoryService.register_anchor("result.home", menu_btn)
 	StoryService.register_anchor("result.replay", replay_btn)
 	StoryService.notify_screen(Routes.CAMPAIGN_RESULT)
+
+
+## Une manche intermédiaire de série ne doit jamais jouer le verdict final.
+func _play_result_sound() -> void:
+	var winner := BattleContext.last_winner
+	if _campaign and BattleContext.campaign_series_pending():
+		match winner:
+			GameState.PLAYER_HUMAN:
+				Audio.play_sfx(AudioCatalog.SFX_ROUND_WON)
+			GameState.PLAYER_AI:
+				Audio.play_sfx(AudioCatalog.SFX_ROUND_DEFEAT)
+			_:
+				Audio.play_sfx(AudioCatalog.SFX_DRAW)
+		return
+	match winner:
+		GameState.PLAYER_HUMAN:
+			Audio.play_sfx(AudioCatalog.SFX_VICTORY)
+		GameState.PLAYER_AI:
+			Audio.play_sfx(AudioCatalog.SFX_DEFEAT)
+		_:
+			Audio.play_sfx(AudioCatalog.SFX_DRAW)
 
 
 func _refresh_reward() -> void:

@@ -62,6 +62,7 @@ var _layout_fit_pending := false
 
 
 func _ready() -> void:
+	Audio.set_button_sfx(confirm_button, AudioCatalog.SFX_BUTTON_2)
 	if not PvpMatchContext.series_flow is LanSeriesCoordinator:
 		_show_waiting("Préparation indisponible. Revenez au salon.")
 		confirm_button.visible = false
