@@ -311,6 +311,16 @@ func _test_nodes_and_positions() -> void:
 		"validateur : une position hors de la carte est refusée")
 
 	definition = _minimal()
+	definition["nodes"][2]["position"]["x"] = 0
+	_check(_has(ValidatorModel.problems(definition), "marge visuelle"),
+		"validateur : un nœud dont l'empreinte serait coupée est refusé")
+
+	definition = _minimal()
+	definition["edges"][2]["to"] = "start"
+	_check(_has(ValidatorModel.problems(definition), "remonte"),
+		"validateur : un chemin qui repart vers le haut est refusé")
+
+	definition = _minimal()
 	definition["nodes"][3]["position"] = definition["nodes"][2]["position"].duplicate()
 	_check(_has(ValidatorModel.problems(definition), "trop proches"),
 		"validateur : deux nœuds trop proches sont refusés")

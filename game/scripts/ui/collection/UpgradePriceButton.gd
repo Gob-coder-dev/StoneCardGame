@@ -30,6 +30,16 @@ func set_content(title: String, show_price: bool, price: int,
 	# Conservé pour l'accessibilité, tandis que les couleurs transparentes du
 	# thème empêchent le libellé natif de se superposer au dessin.
 	text = title
+	update_minimum_size()
+	queue_redraw()
+
+
+## En disposition compacte, le libellé natif reste disponible pour
+## l'accessibilité mais peut être rogné : seul le dessin personnalisé est
+## visible et la largeur doit rester celle de la carte qui porte le tiroir.
+func set_compact_layout(compact: bool) -> void:
+	clip_text = compact
+	update_minimum_size()
 	queue_redraw()
 
 
@@ -45,6 +55,12 @@ func displayed_price() -> int:
 
 func soul_icon_texture() -> Texture2D:
 	return SoulIcon
+
+
+## La largeur vient de l'ancre du tiroir. Le texte natif, conservé pour
+## l'accessibilité, ne doit pas imposer une largeur invisible supérieure.
+func _get_minimum_size() -> Vector2:
+	return Vector2.ZERO
 
 
 func _draw() -> void:

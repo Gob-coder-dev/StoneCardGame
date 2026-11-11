@@ -324,6 +324,26 @@ func get_stone_id() -> String:
 	return _stone.get("id", _stone.get("stone_id", ""))
 
 
+## Limite basse réellement dessinée dans le repère local. Contrairement au
+## bord du Control, elle ne réserve pas de vide lorsqu'aucun symbole inférieur
+## n'existe, tout en tenant compte des lames et boucliers présents.
+func visual_content_bottom() -> float:
+	var square_side := minf(size.x, size.y)
+	var origin := (size - Vector2.ONE * square_side) * 0.5
+	var margin := square_side * _edge_margin_ratio
+	var frame_bottom := origin.y + square_side - margin
+	var displayed := displayed_stone()
+	if displayed == null:
+		displayed = _catalog_stone()
+	var depth_factor := 0.0
+	for marker in displayed.markers_for_side("bottom"):
+		match str(marker.get("kind", "")):
+			"long": depth_factor = maxf(depth_factor, 1.28)
+			"shield": depth_factor = maxf(depth_factor, 0.75)
+			_: depth_factor = maxf(depth_factor, 1.0)
+	return frame_bottom + margin * _marker_scale * 0.85 * depth_factor
+
+
 ## ─── Chargement texture optionnelle ───────────────────────────────────────────
 
 func _load_texture_if_any() -> void:

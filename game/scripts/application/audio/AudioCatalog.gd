@@ -39,6 +39,16 @@ const SFX_VICTORY := "victory"
 const SFX_DEFEAT := "defeat"
 const SFX_DRAW := "draw"
 
+## Effets de résultat qui sont en réalité des morceaux complets. Ils coupent la
+## musique de fond le temps de leur diffusion.
+const JINGLES := [
+	SFX_ROUND_WON,
+	SFX_ROUND_DEFEAT,
+	SFX_VICTORY,
+	SFX_DEFEAT,
+	SFX_DRAW,
+]
+
 const SFX_PATHS := {
 	SFX_BUTTON: "res://data/audio/sfx/ui/button.mp3",
 	SFX_BUTTON_2: "res://data/audio/sfx/ui/button_2.mp3",
@@ -56,7 +66,7 @@ const SFX_PATHS := {
 	SFX_COIN_FLIP: "res://data/audio/sfx/coin_flip/coin_flip.wav",
 	SFX_COIN_FLIP_START_BATTLE: "res://data/audio/sfx/coin_flip/coin_flip_start_battle.wav",
 	SFX_COIN_FLIP_VALIDATE: "res://data/audio/sfx/coin_flip/coin_flip_validate.mp3",
-	SFX_COIN_FLIP_WRONG: "res://data/audio/sfx/coin_flip/coin_flip_wrong.mp3",
+	SFX_COIN_FLIP_WRONG: "res://data/audio/sfx/coin_flip/coin_flip_wrong.wav",
 	SFX_BIG_FLAME: "res://data/audio/sfx/ritual/big_flame.wav",
 	SFX_LITTLE_FLAME: "res://data/audio/sfx/ritual/little_flame.wav",
 	SFX_REVEAL: "res://data/audio/sfx/ritual/reveal.wav",
@@ -110,6 +120,10 @@ static func sfx_path(id: String) -> String:
 
 static func music_path(id: String) -> String:
 	return str(MUSIC_PATHS.get(id, ""))
+
+
+static func is_jingle(id: String) -> bool:
+	return JINGLES.has(id)
 
 
 ## Choisit la musique à partir du chemin complet d'une scène.

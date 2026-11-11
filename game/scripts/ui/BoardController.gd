@@ -188,7 +188,6 @@ func _on_cell_pressed(row: int, col: int) -> void:
 			"stone_id": _selected_stone_id, "owner": _driver.local_side}):
 		return
 	StoryService.notify_event("cell_pressed", {"row": row, "col": col})
-	Audio.play_sfx(AudioCatalog.SFX_BUTTON)
 	if _driver.request_move(row, col, _selected_stone_id):
 		_selected_stone_id = ""
 		hand_view.clear_selection()

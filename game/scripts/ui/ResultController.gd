@@ -79,19 +79,19 @@ func _play_result_sound() -> void:
 	if _campaign and BattleContext.campaign_series_pending():
 		match winner:
 			GameState.PLAYER_HUMAN:
-				Audio.play_sfx(AudioCatalog.SFX_ROUND_WON)
+				Audio.play_jingle(AudioCatalog.SFX_ROUND_WON)
 			GameState.PLAYER_AI:
-				Audio.play_sfx(AudioCatalog.SFX_ROUND_DEFEAT)
+				Audio.play_jingle(AudioCatalog.SFX_ROUND_DEFEAT)
 			_:
-				Audio.play_sfx(AudioCatalog.SFX_DRAW)
+				Audio.play_jingle(AudioCatalog.SFX_DRAW)
 		return
 	match winner:
 		GameState.PLAYER_HUMAN:
-			Audio.play_sfx(AudioCatalog.SFX_VICTORY)
+			Audio.play_jingle(AudioCatalog.SFX_VICTORY)
 		GameState.PLAYER_AI:
-			Audio.play_sfx(AudioCatalog.SFX_DEFEAT)
+			Audio.play_jingle(AudioCatalog.SFX_DEFEAT)
 		_:
-			Audio.play_sfx(AudioCatalog.SFX_DRAW)
+			Audio.play_jingle(AudioCatalog.SFX_DRAW)
 
 
 func _refresh_reward() -> void:

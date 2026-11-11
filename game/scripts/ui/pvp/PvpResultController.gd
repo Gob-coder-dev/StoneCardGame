@@ -109,13 +109,13 @@ func _play_result_sound(view: Dictionary) -> void:
 		return
 	_result_sound_key = key
 	if winner == PvpMatchContext.local_side:
-		Audio.play_sfx(AudioCatalog.SFX_VICTORY if finished
+		Audio.play_jingle(AudioCatalog.SFX_VICTORY if finished
 			else AudioCatalog.SFX_ROUND_WON)
 	elif winner != GameState.PLAYER_NONE:
-		Audio.play_sfx(AudioCatalog.SFX_DEFEAT if finished
+		Audio.play_jingle(AudioCatalog.SFX_DEFEAT if finished
 			else AudioCatalog.SFX_ROUND_DEFEAT)
 	else:
-		Audio.play_sfx(AudioCatalog.SFX_DRAW)
+		Audio.play_jingle(AudioCatalog.SFX_DRAW)
 
 
 func _apply_result_background(winner: int, local_one: bool) -> void:

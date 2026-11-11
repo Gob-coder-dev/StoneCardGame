@@ -12,6 +12,7 @@ const DeckRulesModel := preload("res://scripts/domain/DeckRules.gd")
 const GameModeRulesModel := preload("res://scripts/domain/GameModeRules.gd")
 const SeriesRulesModel := preload("res://scripts/domain/SeriesRules.gd")
 const AIProfileModel := preload("res://scripts/ai/AIProfile.gd")
+const MapGeometryModel := preload("res://scripts/domain/campaign/CampaignMapGeometry.gd")
 
 ## Ces champs décriraient une route choisie ou une hiérarchie de difficulté :
 ## la campagne est un graphe où toutes les branches restent équivalentes.
@@ -92,9 +93,8 @@ static func problems(definition: Dictionary) -> Array[String]:
 			else:
 				var point := Vector2(float(x_value), float(y_value))
 				if not is_finite(point.x) or not is_finite(point.y) \
-						or point.x < 0.0 or point.y < 0.0 \
-						or point.x > map_size.x or point.y > map_size.y:
-					result.append("position hors de la carte sur '%s'." % node_id)
+						or not MapGeometryModel.contains_node_center(map_size, point):
+					result.append("position hors de la carte ou de la marge visuelle sur '%s'." % node_id)
 				else:
 					for other_id in seen_positions:
 						if point.distance_to(seen_positions[other_id]) < MIN_NODE_DISTANCE:
@@ -140,6 +140,9 @@ static func problems(definition: Dictionary) -> Array[String]:
 		if not seen_nodes.has(to_id):
 			result.append("arête '%s' vers un nœud absent '%s'." % [edge_id, to_id])
 		var pair := "%s→%s" % [from_id, to_id]
+		if seen_positions.has(from_id) and seen_positions.has(to_id) \
+				and (seen_positions[to_id] as Vector2).y < (seen_positions[from_id] as Vector2).y:
+			result.append("arête '%s' remonte sur la carte." % edge_id)
 		if seen_pairs.has(pair):
 			result.append("arête dupliquée '%s'." % pair)
 		seen_pairs[pair] = true

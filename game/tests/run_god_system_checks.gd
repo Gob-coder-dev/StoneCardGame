@@ -47,6 +47,7 @@ const SUITES: Array[String] = [
 	"res://tests/pvp/LanSeriesChecks.gd",
 	"res://tests/pvp/PvpPreparationChecks.gd",
 	"res://tests/ui/EvolutionMenuChecks.gd",
+	"res://tests/ui/CardActionPlacementChecks.gd",
 	"res://tests/ui/CardArtworkChecks.gd",
 	"res://tests/ui/PreparationAnimationChecks.gd",
 	"res://tests/ui/EffectAnimationChecks.gd",

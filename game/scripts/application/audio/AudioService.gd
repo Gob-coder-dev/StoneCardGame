@@ -1,9 +1,9 @@
 ## Service audio unique du jeu.
 ##
-## Il possède les bus, le pool de lectures courtes, les deux lecteurs de
-## musique et le branchement automatique des boutons. Les écrans ne parlent
-## jamais directement à AudioServer : ils demandent un identifiant du
-## catalogue, ou posent une métadonnée sur un bouton.
+## Il possède les bus, le pool de lectures courtes, le lecteur de musique et
+## le branchement automatique des boutons. Les écrans ne parlent jamais
+## directement à AudioServer : ils demandent un identifiant du catalogue, ou
+## posent une métadonnée sur un bouton.
 ##
 ## La musique suit la scène courante sans qu'aucun écran n'ait à l'annoncer.
 extends Node
@@ -11,26 +11,24 @@ extends Node
 const Catalog := preload("res://scripts/application/audio/AudioCatalog.gd")
 
 const SFX_POOL_SIZE := 10
-const MUSIC_FADE_SECONDS := 0.8
-const SILENT_DB := -80.0
 const META_BOUND := "_audio_bound"
 
 var _sfx_players: Array[AudioStreamPlayer] = []
 var _sfx_next := 0
-var _music_players: Array[AudioStreamPlayer] = []
-var _music_active := 0
+var _music_player: AudioStreamPlayer = null
 var _music_id := ""
-var _music_tween: Tween = null
+var _jingle_player: AudioStreamPlayer = null
+var _jingle_scene: Node = null
 var _streams: Dictionary = {}
 var _warned_paths: Dictionary = {}
 var _current_scene: Node = null
-var _last_scene_path := ""
 
 
 func _ready() -> void:
 	_ensure_buses()
 	_create_sfx_pool()
-	_create_music_players()
+	_create_music_player()
+	_create_jingle_player()
 	get_tree().node_added.connect(_on_node_added)
 	_bind_existing_buttons(get_tree().root)
 
@@ -67,6 +65,11 @@ func _ensure_bus(bus_name: String, send: String) -> void:
 ## ─── Effets sonores ──────────────────────────────────────────────────────────
 
 func play_sfx(id: String) -> void:
+	# Un jingle de résultat est un morceau complet : il passe par le lecteur
+	# dédié pour couper la musique, même si l'appelant utilise play_sfx.
+	if Catalog.is_jingle(id):
+		play_jingle(id)
+		return
 	var path := Catalog.sfx_path(id)
 	if path == "":
 		push_warning("Audio: effet sonore inconnu '%s'." % id)
@@ -113,39 +116,83 @@ func play_music(id: String) -> void:
 	if path == "":
 		push_warning("Audio: musique inconnue '%s'." % id)
 		return
-	if id == _music_id and not _music_players.is_empty() \
-			and _music_players[_music_active].playing:
+	# La musique reprend toujours la main : un jingle encore en cours est coupé.
+	_stop_jingle()
+	if id == _music_id and _music_player != null and _music_player.playing:
 		return
 	var stream := _load_stream(path, true)
 	if stream == null:
 		return
-	var next_index := 1 - _music_active
-	var next := _music_players[next_index]
-	var previous := _music_players[_music_active]
-	next.stream = stream
-	next.volume_db = SILENT_DB
-	next.play()
-	if _music_tween != null and _music_tween.is_valid():
-		_music_tween.kill()
-	_music_tween = create_tween()
-	_music_tween.set_parallel(true)
-	_music_tween.tween_property(next, "volume_db", 0.0, MUSIC_FADE_SECONDS)
-	if previous.playing:
-		_music_tween.tween_property(previous, "volume_db", SILENT_DB,
-			MUSIC_FADE_SECONDS)
-	_music_tween.set_parallel(false)
-	_music_tween.tween_callback(previous.stop)
-	_music_active = next_index
+	# Changement franc : l'ancienne piste s'arrête, la nouvelle démarre
+	# immédiatement. Aucun fondu ne vient chevaucher les deux morceaux.
+	_music_player.stop()
+	_music_player.stream = stream
+	_music_player.play()
 	_music_id = id
 
 
-func _create_music_players() -> void:
-	for index in range(2):
-		var player := AudioStreamPlayer.new()
-		player.name = "MusicPlayer%d" % index
-		player.bus = &"Music"
-		add_child(player)
-		_music_players.append(player)
+func _create_music_player() -> void:
+	_music_player = AudioStreamPlayer.new()
+	_music_player.name = "MusicPlayer"
+	_music_player.bus = &"Music"
+	add_child(_music_player)
+
+
+## Les sons de résultat (victoire, défaite, égalité, manche) sont des morceaux
+## complets. Ils prennent la place de la musique : la piste de fond s'arrête, le
+## jingle joue seul, puis la musique de l'écran reprend à la fin.
+func play_jingle(id: String) -> void:
+	var path := Catalog.sfx_path(id)
+	if path == "":
+		push_warning("Audio: jingle inconnu '%s'." % id)
+		return
+	var stream := _load_stream(path, false)
+	if stream == null:
+		return
+	_stop_jingle()
+	_jingle_scene = get_tree().current_scene
+	_jingle_player.stream = stream
+	_jingle_player.play()
+	_music_player.stop()
+
+
+func _create_jingle_player() -> void:
+	_jingle_player = AudioStreamPlayer.new()
+	_jingle_player.name = "JinglePlayer"
+	_jingle_player.bus = &"SFX"
+	add_child(_jingle_player)
+	_jingle_player.finished.connect(_on_jingle_finished)
+
+
+## Coupe le jingle en cours. La piste de fond n'est pas relancée ici : c'est
+## l'appelant qui décide de la suite (reprise de la scène ou nouvelle scène).
+func _stop_jingle() -> void:
+	# Vider la scène avant `stop()` évite qu'un `finished` synchrone ne
+	# relance la musique alors qu'on vient justement de couper le jingle.
+	_jingle_scene = null
+	if _jingle_player != null:
+		_jingle_player.stop()
+
+
+func _on_jingle_finished() -> void:
+	if _jingle_scene == null:
+		return
+	_jingle_scene = null
+	_resume_scene_music()
+
+
+## La musique de l'écran reprend après un jingle, même si c'est la même piste
+## que celle qui a été interrompue : elle redémarre du début.
+func _resume_scene_music() -> void:
+	var path := _current_scene_path()
+	if path == "":
+		return
+	play_music(Catalog.music_for_scene(path))
+
+
+func _current_scene_path() -> String:
+	var scene := get_tree().current_scene
+	return scene.scene_file_path if scene != null else ""
 
 
 func _sync_scene_music() -> void:
@@ -155,9 +202,12 @@ func _sync_scene_music() -> void:
 	var path := scene.scene_file_path
 	if path == "":
 		return
-	if path == _last_scene_path and _music_id != "":
-		return
-	_last_scene_path = path
+	# Un jingle lancé par cet écran garde la place de la musique. Si la scène a
+	# changé (même vers le même fichier), le jingle est coupé.
+	if _jingle_player.playing:
+		if is_instance_valid(_jingle_scene) and scene == _jingle_scene:
+			return
+		_stop_jingle()
 	play_music(Catalog.music_for_scene(path))
 
 

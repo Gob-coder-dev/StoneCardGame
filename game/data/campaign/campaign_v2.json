@@ -776,7 +776,7 @@
       "region": "Les Assimilateurs",
       "type": "mini_boss",
       "position": {
-        "x": 90.0,
+        "x": 100.0,
         "y": 3620.0
       },
       "dead_end": true,
@@ -3032,7 +3032,7 @@
       "region": "Les Échanges",
       "type": "normal",
       "position": {
-        "x": 860,
+        "x": 850,
         "y": 9300
       },
       "dead_end": false,
@@ -4337,7 +4337,7 @@
       "region": "Les Profondeurs",
       "type": "mini_boss",
       "position": {
-        "x": 80.0,
+        "x": 100.0,
         "y": 14640.0
       },
       "dead_end": true,
@@ -4389,7 +4389,7 @@
       "region": "Les Profondeurs",
       "type": "mini_boss",
       "position": {
-        "x": 1000.0,
+        "x": 980.0,
         "y": 14640.0
       },
       "dead_end": true,
@@ -5477,8 +5477,8 @@
       "region": "Les Cendres",
       "type": "mini_boss",
       "position": {
-        "x": 0.0,
-        "y": 15840.0
+        "x": 100.0,
+        "y": 17410.0
       },
       "dead_end": true,
       "mini_boss_kind": "optional",
@@ -6284,7 +6284,7 @@
       "region": "Les Assimilateurs",
       "type": "normal",
       "position": {
-        "x": 1000,
+        "x": 980,
         "y": 18300
       },
       "dead_end": false,
@@ -6388,7 +6388,7 @@
       "region": "Les Assimilateurs",
       "type": "normal",
       "position": {
-        "x": 1000,
+        "x": 980,
         "y": 18780
       },
       "dead_end": false,
@@ -6492,7 +6492,7 @@
       "region": "Les Assimilateurs",
       "type": "normal",
       "position": {
-        "x": 1000,
+        "x": 980,
         "y": 19260
       },
       "dead_end": false,
@@ -6544,7 +6544,7 @@
       "region": "Les Cendres",
       "type": "normal",
       "position": {
-        "x": 80,
+        "x": 100,
         "y": 16520
       },
       "dead_end": false,
@@ -6596,7 +6596,7 @@
       "region": "Les Cendres",
       "type": "normal",
       "position": {
-        "x": 80,
+        "x": 100,
         "y": 16760
       },
       "dead_end": false,
@@ -6648,7 +6648,7 @@
       "region": "Les Cendres",
       "type": "normal",
       "position": {
-        "x": 80,
+        "x": 100,
         "y": 17000
       },
       "dead_end": false,
@@ -6700,7 +6700,7 @@
       "region": "Les Cendres",
       "type": "normal",
       "position": {
-        "x": 0,
+        "x": 100,
         "y": 17240
       },
       "dead_end": false,
@@ -6752,7 +6752,7 @@
       "region": "Les Visages",
       "type": "normal",
       "position": {
-        "x": 1000,
+        "x": 980,
         "y": 14980
       },
       "dead_end": false,
@@ -6838,7 +6838,7 @@
       "region": "Les Visages",
       "type": "normal",
       "position": {
-        "x": 1000,
+        "x": 980,
         "y": 15460
       },
       "dead_end": false,
@@ -6924,7 +6924,7 @@
       "region": "Les Profondeurs",
       "type": "normal",
       "position": {
-        "x": 80,
+        "x": 100,
         "y": 13680
       },
       "dead_end": false,
@@ -7010,7 +7010,7 @@
       "region": "Les Profondeurs",
       "type": "normal",
       "position": {
-        "x": 80,
+        "x": 100,
         "y": 14160
       },
       "dead_end": false,
@@ -7096,7 +7096,7 @@
       "region": "Les Profondeurs",
       "type": "normal",
       "position": {
-        "x": 1000,
+        "x": 980,
         "y": 13680
       },
       "dead_end": false,
@@ -7182,7 +7182,7 @@
       "region": "Les Profondeurs",
       "type": "normal",
       "position": {
-        "x": 1000,
+        "x": 980,
         "y": 14160
       },
       "dead_end": false,
@@ -7268,7 +7268,7 @@
       "region": "Les Échanges",
       "type": "normal",
       "position": {
-        "x": 1000,
+        "x": 980,
         "y": 9180
       },
       "dead_end": false,
@@ -7311,7 +7311,7 @@
       "region": "Les Échanges",
       "type": "normal",
       "position": {
-        "x": 1000,
+        "x": 980,
         "y": 9420
       },
       "dead_end": false,
@@ -7397,7 +7397,7 @@
       "region": "Les Archives",
       "type": "normal",
       "position": {
-        "x": 80,
+        "x": 100,
         "y": 8000
       },
       "dead_end": false,
@@ -7483,7 +7483,7 @@
       "region": "Les Archives",
       "type": "normal",
       "position": {
-        "x": 80,
+        "x": 100,
         "y": 8480
       },
       "dead_end": false,
@@ -7526,7 +7526,7 @@
       "region": "Les Souffles",
       "type": "normal",
       "position": {
-        "x": 1000,
+        "x": 980,
         "y": 5980
       },
       "dead_end": false,
@@ -7630,7 +7630,7 @@
       "region": "Les Souffles",
       "type": "normal",
       "position": {
-        "x": 1000,
+        "x": 980,
         "y": 6460
       },
       "dead_end": false,
@@ -7682,7 +7682,7 @@
       "region": "Les Vœux Noyés",
       "type": "normal",
       "position": {
-        "x": 1000,
+        "x": 980,
         "y": 5160
       },
       "dead_end": false,
@@ -7768,7 +7768,7 @@
       "region": "Les Assimilateurs",
       "type": "normal",
       "position": {
-        "x": 80,
+        "x": 100,
         "y": 3140
       },
       "dead_end": false,
@@ -7820,7 +7820,7 @@
       "region": "Les Assimilateurs",
       "type": "normal",
       "position": {
-        "x": 80,
+        "x": 100,
         "y": 3380
       },
       "dead_end": false,

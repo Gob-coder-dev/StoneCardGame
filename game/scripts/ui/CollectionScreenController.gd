@@ -15,6 +15,7 @@ const DeckPanelView := preload("res://scripts/ui/collection/DeckPanel.gd")
 const CollectionGridView := preload("res://scripts/ui/collection/CollectionGrid.gd")
 const GodSelectorView := preload("res://scripts/ui/collection/GodSelector.gd")
 const NumberedSelector := preload("res://scripts/ui/collection/NumberedSelector.gd")
+const ActionPlacement := preload("res://scripts/ui/collection/CardActionPlacement.gd")
 const EconomyServiceModel := preload("res://scripts/application/economy/EconomyService.gd")
 const QuestModel := preload("res://scripts/application/quests/QuestService.gd")
 const ACTION_DRAWER_GAP := 10.0
@@ -494,19 +495,20 @@ func _open_card_actions(stone_id: String, wrapper: VBoxContainer, source: int) -
 
 func _position_action_drawer_deferred() -> void:
 	await get_tree().process_frame
-	if not is_instance_valid(_action_drawer) or not is_instance_valid(_action_wrapper):
+	if not _has_action_drawer_target():
 		return
 	var drawer_height := _action_drawer.get_combined_minimum_size().y
 	_adjusting_drawer_scroll = true
 	bottom_spacer.custom_minimum_size.y = maxf(BOTTOM_SPACER_DEFAULT,
 		drawer_height + ACTION_DRAWER_GAP + ACTION_DRAWER_MARGIN)
 	await get_tree().process_frame
-	if not is_instance_valid(_action_drawer) or not is_instance_valid(_action_wrapper):
+	if not _has_action_drawer_target():
 		_adjusting_drawer_scroll = false
 		return
-	var target_rect := _action_wrapper.get_global_rect()
-	var visible_rect := scroll.get_global_rect()
-	var overflow := target_rect.end.y + ACTION_DRAWER_GAP + drawer_height \
+	var placement := _action_drawer_placement()
+	var visible_rect := ActionPlacement.control_rect_in(action_drawer_layer, scroll)
+	var overflow := float(placement.get("bottom", 0.0)) \
+		+ ACTION_DRAWER_GAP + drawer_height \
 		- (visible_rect.end.y - ACTION_DRAWER_MARGIN)
 	if overflow > 0.0:
 		scroll.scroll_vertical += ceili(overflow)
@@ -521,22 +523,29 @@ func _position_action_drawer_deferred() -> void:
 ## Le tiroir vit dans une couche superposée : il ne participe jamais au calcul
 ## des colonnes et ne peut donc modifier ni la carte ni la grille.
 func _position_action_drawer() -> void:
-	if not is_instance_valid(_action_drawer) or not is_instance_valid(_action_wrapper):
+	if not _has_action_drawer_target():
 		return
-	var target_rect := _action_wrapper.get_global_rect()
+	var placement := _action_drawer_placement()
+	if placement.is_empty():
+		return
 	var minimum := _action_drawer.get_combined_minimum_size()
-	# La largeur suit exactement l'emplacement de la carte. Le tiroir ne peut
-	# ainsi paraître plus gros que la carte, ni élargir une colonne.
-	var layer_inverse := action_drawer_layer.get_global_transform_with_canvas().affine_inverse()
-	var local_top_left := layer_inverse * target_rect.position
-	var local_bottom_right := layer_inverse * target_rect.end
-	var target_size := local_bottom_right - local_top_left
-	var drawer_size := Vector2(maxf(target_size.x, minimum.x), minimum.y)
+	var drawer_size := Vector2(maxf(1.0, float(placement["width"])), minimum.y)
 	_action_drawer.custom_minimum_size = drawer_size
 	_action_drawer.size = drawer_size
-	# Le tiroir appartient visuellement à la carte : il reste toujours dessous.
-	_action_drawer.position = Vector2(local_top_left.x,
-		local_bottom_right.y + ACTION_DRAWER_GAP)
+	_action_drawer.position = Vector2(float(placement["x"]),
+		float(placement["bottom"]) + ACTION_DRAWER_GAP)
+
+
+func _has_action_drawer_target() -> bool:
+	return is_instance_valid(_action_drawer) and is_instance_valid(_action_wrapper) \
+		and is_instance_valid(_action_card)
+
+
+func _action_drawer_placement() -> Dictionary:
+	if not _has_action_drawer_target():
+		return {}
+	return ActionPlacement.resolve(action_drawer_layer, _action_wrapper, _action_card,
+		_action_source == CardActionDrawer.Source.COLLECTION)
 
 
 func _on_scroll_value_changed(_value: float) -> void:

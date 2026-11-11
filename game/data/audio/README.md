@@ -85,7 +85,7 @@ réel. Les `.gitkeep` inutiles ont également été retirés.
 | `res://data/audio/sfx/coin_flip/coin_flip.wav` | **Animation de pile ou face d'une carte Aléator.** Se joue pendant le lancer de la pièce, avant que le résultat soit révélé. |
 | `res://data/audio/sfx/coin_flip/coin_flip_start_battle.wav` | **Pile ou face du début de partie.** Tirage qui décide qui commence, sur l'écran d'avant-combat. |
 | `res://data/audio/sfx/coin_flip/coin_flip_validate.mp3` | **Pile ou face favorable.** Issue positive du pouvoir d'un Aléator : les faces sont échangées. |
-| `res://data/audio/sfx/coin_flip/coin_flip_wrong.mp3` | **Pile ou face défavorable.** Issue négative : les faces restent inchangées. |
+| `res://data/audio/sfx/coin_flip/coin_flip_wrong.wav` | **Pile ou face défavorable.** Issue négative : les faces restent inchangées. |
 
 ### `sfx/ritual/` — 4 fichiers
 
@@ -169,18 +169,21 @@ Deux fichiers seulement portent la technique :
   clés de métadonnées et la correspondance écran → musique. Aucun autre fichier
   ne recopie un chemin audio.
 - `res://scripts/application/audio/AudioService.gd` : autoload `Audio`. Il
-  possède les bus, le pool de lectures courtes, les deux lecteurs de musique et
-  le branchement automatique des boutons.
+  possède les bus, le pool de lectures courtes, le lecteur de musique, le
+  lecteur de jingle et le branchement automatique des boutons.
 
-Le reste du jeu ne fait que deux choses : `Audio.play_sfx(AudioCatalog.SFX_…)`
-ou poser une métadonnée sur un `BaseButton`. Un écran ne choisit jamais sa
-musique : le service suit la scène courante.
+Le reste du jeu ne fait que trois choses : `Audio.play_sfx(AudioCatalog.SFX_…)`
+pour un effet court, `Audio.play_jingle(AudioCatalog.SFX_…)` pour un son de
+résultat, ou poser une métadonnée sur un `BaseButton`. Un écran ne choisit
+jamais sa musique : le service suit la scène courante.
 
 ### Bus et mixage
 
-`res://default_bus_layout.tres` déclare `Master`, `Music` et `SFX`. Les deux
-lecteurs de musique envoient sur `Music`, le pool d'effets sur `SFX`. Chaque bus
-peut être réglé séparément sans toucher au code.
+`res://default_bus_layout.tres` déclare `Master`, `Music` et `SFX`. Le lecteur
+de musique envoie sur `Music`, le pool d'effets et le lecteur de jingle sur
+`SFX`. Chaque bus peut être réglé séparément sans toucher au code : `Music` est
+volontairement plus bas que `SFX` (`-13 dB` contre `0 dB`) pour rester en fond
+sonore.
 
 ### Effets sonores
 
@@ -193,8 +196,10 @@ peut être réglé séparément sans toucher au code.
 
 ### Musique
 
-- Deux lecteurs pour un fondu enchaîné de 0,8 s : l'ancienne piste descend
-  pendant que la nouvelle monte, puis s'arrête.
+- Un seul lecteur : le changement de piste est une coupure franche. L'ancienne
+  musique s'arrête et la nouvelle démarre au début, sans fondu ni
+  chevauchement. Deux scènes qui partagent la même musique ne la redémarrent
+  pas.
 - Les quatre musiques bouclent. Le bouclage est activé à l'import (OGG
   `loop=true` ; WAV en mode `Forward` avec une fin de boucle explicite en
   échantillons) et le service le réaffirme au chargement. Pour un WAV, l'import
@@ -210,6 +215,19 @@ peut être réglé séparément sans toucher au code.
 | `battle` | `Board` |
 | `ritual` | `RitualOpening` |
 
+### Jingles de résultat
+
+Les cinq sons de `sfx/result/` sont des morceaux complets, pas de simples
+effets. Ils ne doivent jamais se superposer à la musique :
+
+- `Audio.play_jingle(id)` arrête la musique, joue le jingle seul, puis relance
+  la musique de l'écran quand il se termine.
+- Quitter l'écran avant la fin coupe le jingle et démarre la musique du nouvel
+  écran. Rien ne continue à jouer par-dessus la navigation.
+- `Audio.play_sfx` redirige automatiquement ces cinq identifiants vers
+  `play_jingle`, pour qu'un appel distrait ne puisse pas recréer le
+  chevauchement.
+
 ### Boutons
 
 Tout `BaseButton` ajouté à l'arbre reçoit automatiquement `button` sur
@@ -224,7 +242,7 @@ métadonnées permettent de déroger à ce défaut :
 
 | Son | Code réel |
 | --- | --- |
-| `button` | Branchement automatique des `BaseButton`. Appels explicites pour les gestes qui ne sont pas des boutons : `BoardController._on_card_selected`, `_on_cell_pressed`, `_on_card_drag_started`, `CollectionScreenController._open_card_actions`, `LoadoutCardGrid._on_card_pressed`, `DialogueOverlay._advance`. |
+| `button` | Branchement automatique des `BaseButton`. Appels explicites pour les gestes qui ne sont pas des boutons : `BoardController._on_card_selected`, `_on_card_drag_started`, `CollectionScreenController._open_card_actions`, `LoadoutCardGrid._on_card_pressed`, `DialogueOverlay._advance`. Une case du plateau ne joue que le son de pose, jamais le clic générique. |
 | `button_2` | `UpgradePriceButton`, `CardActionDrawer.primary_button`, `PreBattleController.start_button`, `CampaignPreparationController.confirm_button`, `PvpPreparationController.confirm_button`, `PvpLobbyController.ready_button`, récolte de quête, `CampaignLevelDialog.launch_button` / `replay_button`, `EncounterPathController.fight_button`, `RitualOpeningController.finish_button`. |
 | `purchase` | `ShopPurchaseModal.confirm_button` et les boutons d'offre directe de `ShopScreenController`. |
 | `stone_place_1` / `stone_place_2` | `BoardController._on_stone_placed`, en comparant `owner` au camp local. |
@@ -243,8 +261,8 @@ métadonnées permettent de déroger à ce défaut :
 | `reveal` | `RitualOpeningController._reveal_current`, pendant le retournement. |
 | `woosh` | `RitualOpeningController._advance`, pendant la sortie de carte. |
 | `coin_flip_start_battle` | `PreBattleController._animate_coin_flip`. |
-| `round_won` / `round_defeat` | `ResultController._play_result_sound` et `PvpResultController._play_result_sound` quand la série continue. |
-| `victory` / `defeat` / `draw` | Mêmes méthodes quand la partie ou la série est terminée, ou en FT1. |
+| `round_won` / `round_defeat` | `ResultController._play_result_sound` et `PvpResultController._play_result_sound` quand la série continue, via `Audio.play_jingle`. |
+| `victory` / `defeat` / `draw` | Mêmes méthodes quand la partie ou la série est terminée, ou en FT1, via `Audio.play_jingle`. |
 
 ## Règles d'extension
 
@@ -256,7 +274,8 @@ métadonnées permettent de déroger à ce défaut :
   sur chaque appareil, la pose du joueur local utilise `stone_place_1` et celle
   de l'adversaire utilise `stone_place_2`.
 - Pour les résultats, lire l'état de la série avant de choisir le son : une
-  manche intermédiaire ne doit pas jouer `victory` / `defeat`.
+  manche intermédiaire ne doit pas jouer `victory` / `defeat`. Ces cinq sons
+  passent toujours par `Audio.play_jingle`, jamais par le pool d'effets courts.
 - Un bouton dont le geste a déjà un son propre doit être déclaré silencieux
   plutôt que de laisser le clic générique se superposer.
 
