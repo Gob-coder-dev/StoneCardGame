@@ -29,7 +29,6 @@ const RITUAL_ICONS := {
 var _service := QuestServiceModel.new()
 var _daily_subtitle: Label
 var _unique_subtitle: Label
-var _daily_badge: Label
 ## Vignettes en attente de leur illustration, par chemin d'asset.
 var _card_art: Dictionary = {}
 
@@ -83,24 +82,23 @@ func _section_style(accent: Color) -> StyleBoxFlat:
 	return style
 
 
-## Un seul constructeur pour les deux en-têtes : alignement, typographie et
-## pastille restent identiques, seule la couleur distingue les familles.
+## Un seul constructeur pour les deux en-têtes : alignement et typographie
+## restent identiques, seule la couleur distingue les familles.
 func _build_headers() -> void:
-	var daily := _make_header("QUÊTES QUOTIDIENNES", "3 PAR JOUR", UITheme.COL_ACCENT)
+	var daily := _make_header("QUÊTES QUOTIDIENNES", UITheme.COL_ACCENT)
 	var daily_root := daily["root"] as Control
 	content.add_child(daily_root)
 	content.move_child(daily_root, daily_panel.get_index())
 	_daily_subtitle = daily["subtitle"] as Label
-	_daily_badge = daily["badge"] as Label
 
-	var unique := _make_header("QUÊTES UNIQUES", "PERMANENT", UITheme.COL_NEON)
+	var unique := _make_header("QUÊTES UNIQUES", UITheme.COL_NEON)
 	var unique_root := unique["root"] as Control
 	content.add_child(unique_root)
 	content.move_child(unique_root, unique_panel.get_index())
 	_unique_subtitle = unique["subtitle"] as Label
 
 
-func _make_header(title: String, badge: String, accent: Color) -> Dictionary:
+func _make_header(title: String, accent: Color) -> Dictionary:
 	var root := VBoxContainer.new()
 	root.add_theme_constant_override("separation", 8)
 	var row := HBoxContainer.new()
@@ -113,14 +111,6 @@ func _make_header(title: String, badge: String, accent: Color) -> Dictionary:
 	label.add_theme_font_size_override("font_size", UITheme.FONT_SUBTITLE)
 	label.add_theme_color_override("font_color", accent)
 	row.add_child(label)
-	var badge_panel := PanelContainer.new()
-	badge_panel.add_theme_stylebox_override("panel", _badge_style(accent))
-	var badge_label := Label.new()
-	badge_label.text = badge
-	badge_label.add_theme_font_size_override("font_size", UITheme.FONT_SMALL - 8)
-	badge_label.add_theme_color_override("font_color", accent)
-	badge_panel.add_child(badge_label)
-	row.add_child(badge_panel)
 	var rule := ColorRect.new()
 	rule.color = Color(accent, 0.45)
 	rule.custom_minimum_size = Vector2(0, 2)
@@ -130,17 +120,7 @@ func _make_header(title: String, badge: String, accent: Color) -> Dictionary:
 	subtitle.add_theme_font_size_override("font_size", UITheme.FONT_SMALL - 6)
 	subtitle.add_theme_color_override("font_color", UITheme.COL_TEXT_DIM)
 	root.add_child(subtitle)
-	return {"root": root, "badge": badge_label, "subtitle": subtitle}
-
-
-func _badge_style(accent: Color) -> StyleBoxFlat:
-	var style := UITheme.panel_style(UITheme.COL_SURFACE, accent, 2, 14)
-	style.content_margin_left = 14
-	style.content_margin_right = 14
-	style.content_margin_top = 4
-	style.content_margin_bottom = 4
-	style.shadow_size = 0
-	return style
+	return {"root": root, "subtitle": subtitle}
 
 
 ## ─── Construction ────────────────────────────────────────────────────────────
@@ -162,7 +142,6 @@ func _build() -> void:
 		daily_list.add_child(_quest_card(entry, true))
 	for entry in unique:
 		unique_list.add_child(_quest_card(entry, false))
-	_daily_badge.text = "%d PAR JOUR" % daily.size()
 	var finished := 0
 	for entry in unique:
 		if bool(entry.get("finished", false)):

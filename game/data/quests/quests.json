@@ -369,6 +369,86 @@
       "description": "Remporter cinq séries FT3.",
       "metric": "series_ft3_wins",
       "tiers": [{"threshold": 5, "ritual": "grand"}]
+    },
+    {
+      "id": "rituals_god_wins",
+      "title": "Le sang des dieux",
+      "description": "Battre des adversaires divins en campagne.",
+      "metric": "god_wins",
+      "tiers": [
+        {"threshold": 10, "ritual": "small"},
+        {"threshold": 25, "ritual": "basic"},
+        {"threshold": 50, "ritual": "grand"}
+      ]
+    },
+    {
+      "id": "rituals_high_diff",
+      "title": "Les brèches du monde",
+      "description": "Gagner des manches avec au moins six pierres d'avance.",
+      "metric": "high_diff_wins",
+      "tiers": [
+        {"threshold": 5, "ritual": "small"},
+        {"threshold": 15, "ritual": "basic"},
+        {"threshold": 30, "ritual": "grand"}
+      ]
+    },
+    {
+      "id": "bestiary_cards",
+      "title": "Le bestiaire oublié",
+      "description": "Posséder des lignées distinctes.",
+      "metric": "lineages_owned",
+      "tiers": [
+        {"threshold": 60, "cards": [{"lineage_id": "mille_gueules", "copies": 2}]},
+        {"threshold": 80, "cards": [{"lineage_id": "mille_gueules", "copies": 3}]},
+        {"threshold": 90, "cards": [{"lineage_id": "le_roi_des_oubliettes", "copies": 1}]}
+      ]
+    },
+    {
+      "id": "feast_of_souls",
+      "title": "Le festin des âmes",
+      "description": "Dépenser des âmes en améliorations et en boutique.",
+      "metric": "souls_spent",
+      "tiers": [
+        {"threshold": 1500, "cards": [{"lineage_id": "le_tisseur_de_meutes", "copies": 2}]},
+        {"threshold": 3000, "cards": [{"lineage_id": "le_tisseur_de_meutes", "copies": 3}]},
+        {"threshold": 5000, "cards": [{"lineage_id": "le_tisseur_de_meutes", "copies": 4}]}
+      ]
+    },
+    {
+      "id": "trophy_wall",
+      "title": "Le mur des trophées",
+      "description": "Capturer des pierres au total.",
+      "metric": "total_captures",
+      "tiers": [
+        {"threshold": 1200, "cards": [{"lineage_id": "le_guetteur_trifide", "copies": 2}]},
+        {"threshold": 2500, "cards": [{"lineage_id": "le_guetteur_trifide", "copies": 3}]},
+        {"threshold": 4000, "cards": [{"lineage_id": "le_guetteur_trifide", "copies": 4}]}
+      ]
+    },
+    {
+      "id": "series_of_masks",
+      "title": "La série des masques",
+      "description": "Atteindre une série de victoires en campagne.",
+      "metric": "best_streak",
+      "tiers": [
+        {"threshold": 8, "cards": [{"lineage_id": "la_dame_aux_deux_visages", "copies": 2}]},
+        {"threshold": 12, "cards": [{"lineage_id": "la_dame_aux_deux_visages", "copies": 3}]},
+        {"threshold": 15, "cards": [{"lineage_id": "la_dame_aux_deux_visages", "copies": 4}]}
+      ]
+    },
+    {
+      "id": "fever_peak",
+      "title": "La fièvre au sommet",
+      "description": "Posséder des lignées au niveau 3 ou plus.",
+      "metric": "n3_owned",
+      "tiers": [{"threshold": 15, "cards": [{"lineage_id": "le_precheur_des_fievres", "copies": 3}]}]
+    },
+    {
+      "id": "steel_circle",
+      "title": "Le cercle d'acier",
+      "description": "Débloquer les lignées d'Énigma.",
+      "metric": "family_owned_enigma",
+      "tiers": [{"threshold": 10, "cards": [{"lineage_id": "le_demonteur", "copies": 3}]}]
     }
   ]
 }

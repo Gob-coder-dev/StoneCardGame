@@ -25,6 +25,7 @@ func run() -> void:
 	_test_claim()
 	_test_rewards()
 	_test_sorting()
+	_test_card_tiers()
 	fixture.restore()
 
 
@@ -235,6 +236,28 @@ func _test_sorting() -> void:
 			seen_unclaimable = true
 	_check(ordered,
 		"quêtes : les objectifs récoltables remontent en tête de liste")
+
+
+func _test_card_tiers() -> void:
+	PlayerData._apply_profile(Codec.starter_profile())
+	var inventory := InventoryModel.from_dict(PlayerData.inventory_dict())
+	inventory.unlock_god("sylkha")
+	var state := StateModel.from_dict({})
+	state.day_index = Calendar.today()
+	state.bump("souls_spent", 5000, false)
+	PlayerData.commit_economy(inventory, null, state.to_dict())
+	var service := Service.new()
+	var before := int(PlayerData.card_entry("le_tisseur_de_meutes").get("copies", 0))
+	var first := service.claim("feast_of_souls")
+	var second := service.claim("feast_of_souls")
+	var third := service.claim("feast_of_souls")
+	_check(bool(first.get("ok", false)) and bool(second.get("ok", false))
+		and bool(third.get("ok", false))
+		and int(PlayerData.card_entry("le_tisseur_de_meutes").get("copies", 0)) == before + 9,
+		"quêtes : trois paliers de cartes se récoltent cumulativement")
+	var fourth := service.claim("feast_of_souls")
+	_check(not bool(fourth.get("ok", false)),
+		"quêtes : une quête de cartes terminée ne se réclame plus")
 
 
 func _daily_ids(view: Dictionary) -> Array:
