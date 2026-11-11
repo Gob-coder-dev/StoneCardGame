@@ -100,11 +100,14 @@ func _build_headers() -> void:
 
 func _make_header(title: String, accent: Color) -> Dictionary:
 	var root := VBoxContainer.new()
+	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_theme_constant_override("separation", 8)
 	var row := HBoxContainer.new()
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_theme_constant_override("separation", 16)
 	root.add_child(row)
 	var label := Label.new()
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	label.text = title
 	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -117,6 +120,7 @@ func _make_header(title: String, accent: Color) -> Dictionary:
 	rule.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(rule)
 	var subtitle := Label.new()
+	subtitle.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	subtitle.add_theme_font_size_override("font_size", UITheme.FONT_SMALL - 6)
 	subtitle.add_theme_color_override("font_color", UITheme.COL_TEXT_DIM)
 	root.add_child(subtitle)
@@ -161,14 +165,17 @@ func _update_countdown() -> void:
 
 func _quest_card(entry: Dictionary, daily: bool) -> PanelContainer:
 	var panel := PanelContainer.new()
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.add_theme_stylebox_override("panel", UITheme.panel_style(
 		UITheme.COL_PANEL_BG,
 		UITheme.COL_WARNING if bool(entry["claimable"]) else UITheme.COL_BORDER, 3, 14))
 	var row := HBoxContainer.new()
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_theme_constant_override("separation", 18)
 	panel.add_child(row)
 
 	var content := VBoxContainer.new()
+	content.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	content.add_theme_constant_override("separation", 8)
 	row.add_child(content)
@@ -184,6 +191,7 @@ func _quest_card(entry: Dictionary, daily: bool) -> PanelContainer:
 		content.add_child(rewards)
 
 	var action := VBoxContainer.new()
+	action.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	action.custom_minimum_size = Vector2(240, 0)
 	action.add_theme_constant_override("separation", 8)
 	row.add_child(action)
@@ -198,6 +206,8 @@ func _quest_card(entry: Dictionary, daily: bool) -> PanelContainer:
 	else:
 		button.text = "EN COURS"
 	button.disabled = not bool(entry["claimable"])
+	button.mouse_filter = Control.MOUSE_FILTER_IGNORE if button.disabled \
+		else Control.MOUSE_FILTER_PASS
 	button.pressed.connect(_claim.bind(str(entry["id"])))
 	action.add_child(button)
 	if int(entry["tiers"]) > 1 and not bool(entry["finished"]):
@@ -209,6 +219,7 @@ func _quest_card(entry: Dictionary, daily: bool) -> PanelContainer:
 
 func _gauge(entry: Dictionary) -> HBoxContainer:
 	var gauge := HBoxContainer.new()
+	gauge.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	gauge.add_theme_constant_override("separation", 12)
 	var threshold := maxi(1, int(entry["threshold"]))
 	var current := mini(maxi(0, int(entry["value"])), threshold)
@@ -239,6 +250,7 @@ func _gauge(entry: Dictionary) -> HBoxContainer:
 ## qui passe à la ligne plutôt que d'élargir la carte de quête.
 func _reward_row(entry: Dictionary) -> HFlowContainer:
 	var row := HFlowContainer.new()
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_theme_constant_override("h_separation", 18)
 	row.add_theme_constant_override("v_separation", 8)
 	var souls := int(entry.get("souls", 0))
@@ -258,6 +270,7 @@ func _reward_row(entry: Dictionary) -> HFlowContainer:
 
 func _chip(texture: Texture2D, text: String, color: Color) -> HBoxContainer:
 	var chip := HBoxContainer.new()
+	chip.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	chip.add_theme_constant_override("separation", 6)
 	chip.add_child(_icon(texture))
 	chip.add_child(_label(text, UITheme.FONT_SMALL - 6, color))
@@ -275,9 +288,13 @@ func _card_chip(card: Dictionary) -> HBoxContainer:
 	elif deferred:
 		suffix = " · après %s" % _god_name(str(card.get("god_id", "")))
 	var chip := HBoxContainer.new()
+	# PASS conserve l'infobulle à la souris tout en laissant le geste remonter
+	# au ScrollContainer sur mobile.
+	chip.mouse_filter = Control.MOUSE_FILTER_PASS
 	chip.add_theme_constant_override("separation", 6)
 	chip.tooltip_text = "%s · %s%s" % [card_name, _rarity_label(rarity), suffix]
 	var frame := PanelContainer.new()
+	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	frame.add_theme_stylebox_override("panel",
 		_thumb_style(UITheme.rarity_color(rarity)))
 	var art := TextureRect.new()
@@ -309,6 +326,9 @@ func _ritual_chip(ritual: Dictionary) -> HBoxContainer:
 	var sigil := str(ritual.get("sigil", "triangle"))
 	var color := Color(str(ritual.get("color", "#a62f35"))).lightened(0.35)
 	var chip := HBoxContainer.new()
+	# PASS conserve l'infobulle à la souris tout en laissant le geste remonter
+	# au ScrollContainer sur mobile.
+	chip.mouse_filter = Control.MOUSE_FILTER_PASS
 	chip.add_theme_constant_override("separation", 6)
 	chip.tooltip_text = "Rituel offert : %s" % str(ritual.get("name", "Rituel"))
 	var icon := TextureRect.new()
@@ -355,6 +375,7 @@ func _god_name(god_id: String) -> String:
 func _label(text: String, size: int, color: Color,
 		alignment: HorizontalAlignment = HORIZONTAL_ALIGNMENT_LEFT) -> Label:
 	var label := Label.new()
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	label.text = text
 	label.add_theme_font_size_override("font_size", size)
 	label.add_theme_color_override("font_color", color)

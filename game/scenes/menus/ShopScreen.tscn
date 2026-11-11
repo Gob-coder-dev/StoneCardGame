@@ -1,9 +1,10 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/shop/ShopScreenController.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/ui/BottomNav.tscn" id="2"]
 [ext_resource type="Script" path="res://scripts/ui/MenuBackground.gd" id="3"]
 [ext_resource type="PackedScene" path="res://scenes/ui/CurrencyBalances.tscn" id="4"]
+[ext_resource type="Script" path="res://scripts/ui/input/TouchScrollContainer.gd" id="5_scroll"]
 [ext_resource type="PackedScene" path="res://scenes/ui/ShopPurchaseModal.tscn" id="6"]
 
 [sub_resource type="StyleBoxFlat" id="SectionHeaderStyle"]
@@ -64,46 +65,55 @@ text = "BOUTIQUE"
 layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
+script = ExtResource("5_scroll")
 
 [node name="Page" type="VBoxContainer" parent="Content/Scroll"]
 layout_mode = 2
 size_flags_horizontal = 3
+mouse_filter = 2
 theme_override_constants/separation = 22
 
 [node name="CardsHeader" type="PanelContainer" parent="Content/Scroll/Page"]
 layout_mode = 2
+mouse_filter = 2
 theme_override_styles/panel = SubResource("SectionHeaderStyle")
 
 [node name="Title" type="Label" parent="Content/Scroll/Page/CardsHeader"]
 layout_mode = 2
+mouse_filter = 2
 theme_override_font_sizes/font_size = 38
 text = "CARTES"
 horizontal_alignment = 1
 
 [node name="Rotation" type="Label" parent="Content/Scroll/Page"]
 layout_mode = 2
+mouse_filter = 2
 theme_override_font_sizes/font_size = 28
 text = "NOUVELLES CARTES DANS 03:00:00"
 horizontal_alignment = 1
 
 [node name="Offers" type="GridContainer" parent="Content/Scroll/Page"]
 layout_mode = 2
+mouse_filter = 2
 columns = 2
 theme_override_constants/h_separation = 18
 theme_override_constants/v_separation = 18
 
 [node name="RitualsHeader" type="PanelContainer" parent="Content/Scroll/Page"]
 layout_mode = 2
+mouse_filter = 2
 theme_override_styles/panel = SubResource("SectionHeaderStyle")
 
 [node name="Title" type="Label" parent="Content/Scroll/Page/RitualsHeader"]
 layout_mode = 2
+mouse_filter = 2
 theme_override_font_sizes/font_size = 38
 text = "RITUELS"
 horizontal_alignment = 1
 
 [node name="RitualsHelp" type="Label" parent="Content/Scroll/Page"]
 layout_mode = 2
+mouse_filter = 2
 theme_override_colors/font_color = Color(0.7, 0.68, 0.75, 1)
 theme_override_font_sizes/font_size = 23
 text = "Dépensez vos bougies pour invoquer des monstres et obtenir des âmes."
@@ -112,22 +122,26 @@ autowrap_mode = 2
 
 [node name="Rituals" type="GridContainer" parent="Content/Scroll/Page"]
 layout_mode = 2
+mouse_filter = 2
 columns = 2
 theme_override_constants/h_separation = 18
 theme_override_constants/v_separation = 18
 
 [node name="GodsHeader" type="PanelContainer" parent="Content/Scroll/Page"]
 layout_mode = 2
+mouse_filter = 2
 theme_override_styles/panel = SubResource("SectionHeaderStyle")
 
 [node name="Title" type="Label" parent="Content/Scroll/Page/GodsHeader"]
 layout_mode = 2
+mouse_filter = 2
 theme_override_font_sizes/font_size = 38
 text = "DIEUX"
 horizontal_alignment = 1
 
 [node name="GodsHelp" type="Label" parent="Content/Scroll/Page"]
 layout_mode = 2
+mouse_filter = 2
 theme_override_colors/font_color = Color(0.7, 0.68, 0.75, 1)
 theme_override_font_sizes/font_size = 23
 text = "Le premier dieu coûte 100 âmes. Chaque dieu offre deux cartes communes aux pouvoirs différents."
@@ -136,6 +150,7 @@ autowrap_mode = 2
 
 [node name="Gods" type="GridContainer" parent="Content/Scroll/Page"]
 layout_mode = 2
+mouse_filter = 2
 columns = 2
 theme_override_constants/h_separation = 18
 theme_override_constants/v_separation = 18

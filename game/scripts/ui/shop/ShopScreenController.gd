@@ -81,10 +81,12 @@ func _refresh() -> void:
 
 func _offer_panel(offer: Dictionary) -> PanelContainer:
 	var panel := PanelContainer.new()
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	panel.add_theme_stylebox_override("panel", UITheme.panel_style(
 		UITheme.COL_PANEL_BG, UITheme.COL_BORDER, 3, 14))
 	var box := VBoxContainer.new()
+	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_theme_constant_override("separation", 8)
 	panel.add_child(box)
 	var card := CardLayout.make_stone_card(StoneLoader.get_stone(str(offer["stone_id"])),
@@ -92,6 +94,7 @@ func _offer_panel(offer: Dictionary) -> PanelContainer:
 	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(card)
 	var quantity := Label.new()
+	quantity.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	quantity.text = "%s  ×%d" % [str(offer["rarity"]).to_upper(), int(offer["quantity"])]
 	quantity.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	quantity.add_theme_font_size_override("font_size", 24)
@@ -105,6 +108,8 @@ func _offer_panel(offer: Dictionary) -> PanelContainer:
 	button.add_theme_constant_override("icon_max_width", 38)
 	button.alignment = HORIZONTAL_ALIGNMENT_CENTER
 	button.disabled = purchased
+	button.mouse_filter = Control.MOUSE_FILTER_IGNORE if purchased \
+		else Control.MOUSE_FILTER_PASS
 	button.pressed.connect(_buy_offer.bind(str(offer["id"])))
 	box.add_child(button)
 	return panel

@@ -51,6 +51,8 @@ func setup(god: Dictionary, owned: bool, price: int) -> void:
 	else:
 		labels.add_child(_price_row(SoulIcon, price, 52, 31))
 	disabled = owned
+	mouse_filter = Control.MOUSE_FILTER_IGNORE if owned \
+		else Control.MOUSE_FILTER_PASS
 	if not owned:
 		pressed.connect(selection_requested.emit.bind(god_id))
 

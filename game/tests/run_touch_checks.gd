@@ -69,6 +69,7 @@ func _run() -> void:
 	await _check_evolution_inputs()
 	await _check_button_inputs()
 	await _check_main_menu()
+	await _check_shop_and_quest_scroll()
 	await _check_pvp_lobby()
 	await _check_pvp_draft_touch()
 	await _check_other_menus()
@@ -385,6 +386,66 @@ func _check_main_menu() -> void:
 		await _swipe(_center(button), Vector2(0, -150))
 		_check(activations[0] == 1, "accueil : glisser depuis %s ne déclenche rien" % button.name)
 	await _remove(menu)
+
+
+func _check_shop_and_quest_scroll() -> void:
+	var shop := await _open_scene("res://scenes/menus/ShopScreen.tscn")
+	var shop_scroll: ScrollContainer = shop.get_node("Content/Scroll")
+	var offer: Control = shop.get_node("Content/Scroll/Page/Offers").get_child(0)
+	var offer_box: Control = offer.get_child(0)
+	var offer_card: Control = offer_box.get_child(0)
+	var buy_button: Button = offer_box.get_child(offer_box.get_child_count() - 1)
+	var souls_before := PlayerData.souls()
+	shop_scroll.ensure_control_visible(offer_card)
+	await _settle()
+	var before := shop_scroll.scroll_vertical
+	await _swipe(_center(offer_card), Vector2(0, -240))
+	_check(shop_scroll.scroll_vertical > before + 60
+		and not shop.purchase_modal.visible and PlayerData.souls() == souls_before,
+		"boutique : glisser depuis l'illustration d'une offre fait défiler sans acheter")
+	await _reset_scroll(shop_scroll)
+	shop_scroll.ensure_control_visible(buy_button)
+	await _settle()
+	before = shop_scroll.scroll_vertical
+	await _swipe(_center(buy_button), Vector2(0, -240))
+	_check(shop_scroll.scroll_vertical > before + 60
+		and is_instance_valid(buy_button) and buy_button.text != "ACHETÉ"
+		and PlayerData.souls() == souls_before,
+		"boutique : glisser depuis le prix annule l'achat et conserve l'inertie")
+	var ritual: Control = shop.get_node("Content/Scroll/Page/Rituals").get_child(0)
+	shop_scroll.ensure_control_visible(ritual)
+	await _settle()
+	before = shop_scroll.scroll_vertical
+	await _swipe(_center(ritual), Vector2(0, -240))
+	_check(shop_scroll.scroll_vertical > before + 60 and not shop.purchase_modal.visible,
+		"boutique : glisser depuis un Rituel ne l'ouvre pas")
+	await _remove(shop)
+
+	var quests := await _open_scene("res://scenes/menus/Quests.tscn")
+	var quest_scroll: ScrollContainer = quests.get_node("Root/Scroll")
+	var quest_panel: Control = quests.get_node(
+		"Root/Scroll/Content/DailyPanel/DailyContent/DailyList").get_child(0)
+	var quest_row: Control = quest_panel.get_child(0)
+	var quest_title: Control = quest_row.get_child(0).get_child(0)
+	var quest_action: Button = quest_row.get_child(1).get_child(0)
+	var quest_souls_before := PlayerData.souls()
+	quest_scroll.ensure_control_visible(quest_title)
+	await _settle()
+	before = quest_scroll.scroll_vertical
+	await _swipe(_center(quest_title), Vector2(0, -240))
+	_check(quest_scroll.scroll_vertical > before + 60
+		and PlayerData.souls() == quest_souls_before,
+		"quêtes : glisser depuis le texte d'une quête fait défiler sans la collecter")
+	await _reset_scroll(quest_scroll)
+	quest_scroll.ensure_control_visible(quest_action)
+	await _settle()
+	before = quest_scroll.scroll_vertical
+	await _swipe(_center(quest_action), Vector2(0, -240))
+	_check(quest_scroll.scroll_vertical > before + 60
+		and is_instance_valid(quest_panel)
+		and PlayerData.souls() == quest_souls_before,
+		"quêtes : glisser depuis l'action active ou désactivée ne déclenche rien")
+	await _remove(quests)
 
 
 ## Le salon PVP doit rester utilisable au toucher sans ouvrir de socket :
