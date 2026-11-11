@@ -3,7 +3,7 @@
     "lineages":  [
                      {
                          "id":  "nud_vivant",
-                         "name":  "NÅ“ud vivant",
+                         "name":  "Nœud vivant",
                          "rarity":  "common",
                          "god_id":  "sylkha",
                          "description":  "Petit membre de liaison, avec beaucoup de place pour recevoir lâ€™aura.",
@@ -57,7 +57,7 @@
                      },
                      {
                          "id":  "larve_dancrage",
-                         "name":  "Larve dâ€™ancrage",
+                         "name":  "Larve d’ancrage",
                          "rarity":  "common",
                          "god_id":  "sylkha",
                          "description":  "Bas fort, autres faces ouvertes aux renforts du groupe.",
@@ -395,7 +395,7 @@
                      },
                      {
                          "id":  "la_nourrice_nouee",
-                         "name":  "La Nourrice nouÃ©e",
+                         "name":  "La Nourrice nouée",
                          "rarity":  "epic",
                          "god_id":  "sylkha",
                          "description":  "Trois faces de base solides ; rÃ©serve Ã  gauche pour la pousse.",
@@ -463,7 +463,7 @@
                      },
                      {
                          "id":  "le_cur_de_la_colonie",
-                         "name":  "Le CÅ“ur de la colonie",
+                         "name":  "Le Cœur de la colonie",
                          "rarity":  "legendary",
                          "god_id":  "sylkha",
                          "description":  "Quatre faces actives et six places libres avant lâ€™aura.",
@@ -487,7 +487,7 @@
                      },
                      {
                          "id":  "la_mante_cathedrale",
-                         "name":  "La Mante-cathÃ©drale",
+                         "name":  "La Mante-cathédrale",
                          "rarity":  "legendary",
                          "god_id":  "sylkha",
                          "description":  "Haut/gauche maximaux ; bas trÃ¨s vulnÃ©rable avant les renforts.",

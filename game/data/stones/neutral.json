@@ -268,7 +268,7 @@
                      },
                      {
                          "id":  "le_drape_du_seuil",
-                         "name":  "Le DrapÃ© du seuil",
+                         "name":  "Le Drapé du seuil",
                          "rarity":  "common",
                          "god_id":  "neutral",
                          "description":  "Deux faces opposÃ©es haut/bas ; contrÃ´le dâ€™un axe.",
@@ -321,7 +321,7 @@
                      },
                      {
                          "id":  "mache_mur",
-                         "name":  "MÃ¢che-mur",
+                         "name":  "Mâche-mur",
                          "rarity":  "common",
                          "god_id":  "neutral",
                          "description":  "Deux faces opposÃ©es gauche/droite ; deux directions de capture.",
@@ -374,7 +374,7 @@
                      },
                      {
                          "id":  "ecorche_angle",
-                         "name":  "Ã‰corche-angle",
+                         "name":  "Écorche-angle",
                          "rarity":  "common",
                          "god_id":  "neutral",
                          "description":  "Deux faces adjacentes haut/droite ; bon placement en angle.",
@@ -428,7 +428,7 @@
                      },
                      {
                          "id":  "le_sac_a_murmures",
-                         "name":  "Le Sac Ã  murmures",
+                         "name":  "Le Sac à murmures",
                          "rarity":  "common",
                          "god_id":  "neutral",
                          "description":  "Trois faces asymÃ©triques, saturation progressive Ã  quatre, haut toujours ouvert.",
@@ -611,7 +611,7 @@
                      },
                      {
                          "id":  "le_nud_hurlant",
-                         "name":  "Le NÅ“ud hurlant",
+                         "name":  "Le Nœud hurlant",
                          "rarity":  "rare",
                          "god_id":  "neutral",
                          "description":  "Haut dominant, flancs secondaires, bas Ã  zÃ©ro.",
@@ -697,7 +697,7 @@
                      },
                      {
                          "id":  "ogre_a_deux_bouches",
-                         "name":  "Ogre Ã  deux bouches",
+                         "name":  "Ogre à deux bouches",
                          "rarity":  "rare",
                          "god_id":  "neutral",
                          "description":  "Gauche dominante, haut/bas secondaires, droite ouverte.",
@@ -783,7 +783,7 @@
                      },
                      {
                          "id":  "devoreur_de_lanternes",
-                         "name":  "DÃ©voreur de lanternes",
+                         "name":  "Dévoreur de lanternes",
                          "rarity":  "rare",
                          "god_id":  "neutral",
                          "description":  "Quatre faces actives, avec prioritÃ© bas/droite.",
@@ -859,7 +859,7 @@
                      },
                      {
                          "id":  "laffame_du_puits",
-                         "name":  "Lâ€™AffamÃ© du puits",
+                         "name":  "L’Affamé du puits",
                          "rarity":  "epic",
                          "god_id":  "neutral",
                          "description":  "Haut trÃ¨s fort et flanc gauche de soutien ; droite ouverte.",
@@ -925,7 +925,7 @@
                      },
                      {
                          "id":  "le_replie",
-                         "name":  "Le RepliÃ©",
+                         "name":  "Le Replié",
                          "rarity":  "epic",
                          "god_id":  "neutral",
                          "description":  "Droite trÃ¨s forte et haut/gauche secondaires ; bas Ã  zÃ©ro.",

@@ -3,7 +3,7 @@
     "lineages":  [
                      {
                          "id":  "eclat_cuirasse",
-                         "name":  "Ã‰clat cuirassÃ©",
+                         "name":  "Éclat cuirassé",
                          "rarity":  "common",
                          "god_id":  "kharun",
                          "description":  "Flancs dÃ©fensifs sans attaque ; haut/bas gagnent leurs lames.",
@@ -217,7 +217,7 @@
                      },
                      {
                          "id":  "osselet_blinde",
-                         "name":  "Osselet blindÃ©",
+                         "name":  "Osselet blindé",
                          "rarity":  "common",
                          "god_id":  "kharun",
                          "description":  "Bas protÃ©gÃ© et droite offensive ; couverture gauche tardive.",
@@ -341,7 +341,7 @@
                      },
                      {
                          "id":  "golem_de_faience",
-                         "name":  "Golem de faÃ¯ence",
+                         "name":  "Golem de faïence",
                          "rarity":  "rare",
                          "god_id":  "kharun",
                          "description":  "DÃ©fense basse pure et flancs capables de capturer.",
@@ -400,7 +400,7 @@
                      },
                      {
                          "id":  "portail_dos",
-                         "name":  "Portail dâ€™os",
+                         "name":  "Portail d’os",
                          "rarity":  "rare",
                          "god_id":  "kharun",
                          "description":  "Axe haut/bas fortifiÃ© ; deux faces secondaires modestes.",
@@ -456,7 +456,7 @@
                      },
                      {
                          "id":  "colosse_rivete",
-                         "name":  "Colosse rivetÃ©",
+                         "name":  "Colosse riveté",
                          "rarity":  "rare",
                          "god_id":  "kharun",
                          "description":  "Haut offensif, gauche de protection, droite mixte ; bas faible.",
@@ -630,7 +630,7 @@
                      },
                      {
                          "id":  "le_gardien_des_decombres",
-                         "name":  "Le Gardien des dÃ©combres",
+                         "name":  "Le Gardien des décombres",
                          "rarity":  "legendary",
                          "god_id":  "kharun",
                          "description":  "Deux faces trÃ¨s solides, gauche secondaire, droite entiÃ¨rement vulnÃ©rable.",

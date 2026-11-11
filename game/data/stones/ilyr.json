@@ -3,7 +3,7 @@
     "lineages":  [
                      {
                          "id":  "longuepine",
-                         "name":  "LonguÃ©pine",
+                         "name":  "Longuépine",
                          "rarity":  "common",
                          "god_id":  "ilyr",
                          "description":  "Ligne droite principale ; les autres faces gagnent des lames de contact.",
@@ -201,7 +201,7 @@
                      },
                      {
                          "id":  "bouche_arbalete",
-                         "name":  "Bouche-arbalÃ¨te",
+                         "name":  "Bouche-arbalète",
                          "rarity":  "common",
                          "god_id":  "ilyr",
                          "description":  "Ligne gauche principale ; les lames normales couvrent les autres directions.",
@@ -267,7 +267,7 @@
                      },
                      {
                          "id":  "echassier_des_brumes",
-                         "name":  "Ã‰chassier des brumes",
+                         "name":  "Échassier des brumes",
                          "rarity":  "rare",
                          "god_id":  "ilyr",
                          "description":  "Droite mixte : plus fort au contact quâ€™Ã  distance.",
@@ -320,7 +320,7 @@
                      },
                      {
                          "id":  "veilleur_bifurque",
-                         "name":  "Veilleur bifurquÃ©",
+                         "name":  "Veilleur bifurqué",
                          "rarity":  "rare",
                          "god_id":  "ilyr",
                          "description":  "Deux directions de tir opposÃ©es, avec prioritÃ© gauche.",
@@ -376,7 +376,7 @@
                      },
                      {
                          "id":  "perce_voute",
-                         "name":  "Perce-voÃ»te",
+                         "name":  "Perce-voûte",
                          "rarity":  "rare",
                          "god_id":  "ilyr",
                          "description":  "Haut longue portÃ©e et protection basse de contact.",
@@ -482,7 +482,7 @@
                      },
                      {
                          "id":  "lil_empale",
-                         "name":  "Lâ€™Å’il empalÃ©",
+                         "name":  "L’Œil empalé",
                          "rarity":  "epic",
                          "god_id":  "ilyr",
                          "description":  "Deux lignes de tir perpendiculaires haut/droite ; angle bas/gauche faible.",
@@ -596,7 +596,7 @@
                      },
                      {
                          "id":  "la_croisee_des_regards",
-                         "name":  "La CroisÃ©e des regards",
+                         "name":  "La Croisée des regards",
                          "rarity":  "legendary",
                          "god_id":  "ilyr",
                          "description":  "Tirs dans les quatre directions, mais aucune face Ã  quatre lames longues.",

@@ -3,7 +3,7 @@
     "lineages":  [
                      {
                          "id":  "porte_fievre",
-                         "name":  "Porte-fiÃ¨vre",
+                         "name":  "Porte-fièvre",
                          "rarity":  "common",
                          "god_id":  "nerava",
                          "description":  "Petit support dâ€™aura ; les quatre faces sâ€™Ã©toffent lentement.",
@@ -165,7 +165,7 @@
                      },
                      {
                          "id":  "machoire_moisie",
-                         "name":  "MÃ¢choire moisie",
+                         "name":  "Mâchoire moisie",
                          "rarity":  "common",
                          "god_id":  "nerava",
                          "description":  "Deux directions dâ€™Ã©chec possibles, haut/gauche ; Ã©largissement tardif vers la droite.",
@@ -263,7 +263,7 @@
                      },
                      {
                          "id":  "sonneur_pestifere",
-                         "name":  "Sonneur pestifÃ©rÃ©",
+                         "name":  "Sonneur pestiféré",
                          "rarity":  "rare",
                          "god_id":  "nerava",
                          "description":  "Support assez polyvalent, avec faiblesse basse au dÃ©but.",
@@ -429,7 +429,7 @@
                      },
                      {
                          "id":  "le_precheur_des_fievres",
-                         "name":  "Le PrÃªcheur des fiÃ¨vres",
+                         "name":  "Le Prêcheur des fièvres",
                          "rarity":  "epic",
                          "god_id":  "nerava",
                          "description":  "Haut et gauche offensifs ; corrosion sur les cibles quâ€™il ne capture pas.",
@@ -463,7 +463,7 @@
                      },
                      {
                          "id":  "la_cathedrale_malade",
-                         "name":  "La CathÃ©drale malade",
+                         "name":  "La Cathédrale malade",
                          "rarity":  "legendary",
                          "god_id":  "nerava",
                          "description":  "Aura sur un profil Ã  trois faces moyennes et une face faible.",

@@ -165,7 +165,7 @@
                      },
                      {
                          "id":  "depeceur_rampant",
-                         "name":  "DÃ©peceur rampant",
+                         "name":  "Dépeceur rampant",
                          "rarity":  "common",
                          "god_id":  "enigma",
                          "description":  "Haut/gauche puissants, droite toujours ouverte aux boucliers gagnÃ©s.",
@@ -263,7 +263,7 @@
                      },
                      {
                          "id":  "preleveur_de_plaques",
-                         "name":  "PrÃ©leveur de plaques",
+                         "name":  "Préleveur de plaques",
                          "rarity":  "rare",
                          "god_id":  "enigma",
                          "description":  "Bas/droite offensifs ; haut/gauche de soutien.",
@@ -307,7 +307,7 @@
                      },
                      {
                          "id":  "chirurgien_dacier",
-                         "name":  "Chirurgien dâ€™acier",
+                         "name":  "Chirurgien d’acier",
                          "rarity":  "rare",
                          "god_id":  "enigma",
                          "description":  "Attaque haute trÃ¨s spÃ©cialisÃ©e, puis gauche secondaire.",
@@ -395,7 +395,7 @@
                      },
                      {
                          "id":  "le_demonteur",
-                         "name":  "Le DÃ©monteur",
+                         "name":  "Le Démonteur",
                          "rarity":  "epic",
                          "god_id":  "enigma",
                          "description":  "Deux directions de capture majeures, haut/gauche ; deux faces pour stocker les dÃ©fenses.",
@@ -429,7 +429,7 @@
                      },
                      {
                          "id":  "la_broyeuse_dempreintes",
-                         "name":  "La Broyeuse dâ€™empreintes",
+                         "name":  "La Broyeuse d’empreintes",
                          "rarity":  "epic",
                          "god_id":  "enigma",
                          "description":  "Bas trÃ¨s fort, gauche secondaire ; renforts rÃ©cupÃ©rÃ©s utiles sur les deux autres faces.",
@@ -463,7 +463,7 @@
                      },
                      {
                          "id":  "le_collecteur_zero",
-                         "name":  "Le Collecteur ZÃ©ro",
+                         "name":  "Le Collecteur Zéro",
                          "rarity":  "legendary",
                          "god_id":  "enigma",
                          "description":  "Haut maximal, bas ouvert et deux flancs inÃ©gaux ; sept logements encore libres.",
@@ -487,7 +487,7 @@
                      },
                      {
                          "id":  "la_machine_aux_mille_depouilles",
-                         "name":  "La Machine aux mille dÃ©pouilles",
+                         "name":  "La Machine aux mille dépouilles",
                          "rarity":  "legendary",
                          "god_id":  "enigma",
                          "description":  "Trois faces de contact fortes et une faiblesse basse ; cinq places libres pour les prises.",
