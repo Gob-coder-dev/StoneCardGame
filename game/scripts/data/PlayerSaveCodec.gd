@@ -1,6 +1,6 @@
 ## Format de sauvegarde et évolution des profils, sans lecture/écriture disque.
 extends RefCounted
-const VERSION := 9
+const VERSION := 10
 const EconomyConfigModel := preload("res://scripts/data/economy/EconomyConfig.gd")
 const InventoryModel := preload("res://scripts/domain/economy/PlayerInventory.gd")
 const NEUTRAL_DECK_KEY := "neutral"
@@ -10,13 +10,14 @@ static func default_stats() -> Dictionary:
 		"current_streak": 0, "best_streak": 0, "total_captures": 0, "per_npc": {}}
 
 static func encode(decks: Dictionary, selections: Dictionary, god: String,
-		player_name: String, stats: Dictionary, inventory: Dictionary = {}) -> Dictionary:
+		player_name: String, stats: Dictionary, inventory: Dictionary = {},
+		quests: Dictionary = {}) -> Dictionary:
 	var actual_inventory := inventory.duplicate(true) if not inventory.is_empty() \
 		else _legacy_inventory().to_dict()
 	return {"save_version": VERSION, "decks_by_god": decks.duplicate(true),
 		"selected_deck_by_god": selections.duplicate(),
 		"player_god_id": god, "player_name": player_name, "stats": stats.duplicate(true),
-		"inventory": actual_inventory}
+		"inventory": actual_inventory, "quests": quests.duplicate(true)}
 
 static func decode(raw: Dictionary) -> Dictionary:
 	if raw.is_empty():
@@ -43,7 +44,8 @@ static func decode(raw: Dictionary) -> Dictionary:
 		if raw.has("inventory") else _legacy_inventory()
 	if god != "" and not inventory.has_god(god):
 		god = ""
-	return encode(decks, selections, god, player_name, stats, inventory.to_dict())
+	var quests: Dictionary = raw.get("quests", {}) if raw.get("quests") is Dictionary else {}
+	return encode(decks, selections, god, player_name, stats, inventory.to_dict(), quests)
 
 
 static func starter_profile() -> Dictionary:

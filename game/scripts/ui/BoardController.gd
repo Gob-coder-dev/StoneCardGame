@@ -16,6 +16,7 @@ const CampaignDriver := preload("res://scripts/ui/match/CampaignMatchDriver.gd")
 const LanDriver := preload("res://scripts/ui/match/LanMatchDriver.gd")
 const Routes := preload("res://scripts/ui/GameRoutes.gd")
 const BattleLayoutModel := preload("res://scripts/ui/BattleLayout.gd")
+const QuestModel := preload("res://scripts/application/quests/QuestService.gd")
 
 @onready var root: VBoxContainer = $Root
 @onready var turn_manager: TurnManager = $TurnManager
@@ -296,6 +297,7 @@ func _on_game_over(winner: int, score_human: int, score_ai: int) -> void:
 			"winner": winner, "score_human": score_human, "score_ai": score_ai,
 		})
 	if _driver.records_campaign_stats:
+		BattleContext.last_board_size = turn_manager.get_state().board_size
 		BattleContext.prepare_result(winner, score_human, score_ai, _local_captures)
 		# La série doit connaître la manche avant l'enregistrement : un FT2 n'est
 		# gagné qu'après la dernière manche, pas après le premier match.
@@ -327,6 +329,7 @@ func _on_match_finished(winner: int, score_one: int, score_two: int) -> void:
 		return
 	_leaving = true
 	PvpMatchContext.record_result(winner, score_one, score_two)
+	_record_pvp_quest(score_one, score_two)
 	await get_tree().create_timer(1.5).timeout
 	## Le verdict, le score et la revanche appartiennent à l'écran de résultat :
 	## la session réseau reste ouverte jusqu'à ce qu'il soit quitté.
@@ -341,6 +344,18 @@ func _on_match_aborted(message: String) -> void:
 	PvpMatchContext.clear()
 	LanSession.leave_with_notice(message)
 	Routes.go(get_tree(), Routes.PVP_LOBBY)
+
+
+## Le PVP n'écrit jamais dans le profil : la quête quotidienne et la manche
+## parfaite sont donc comptées ici, une seule fois par appareil, quand la partie
+## se termine normalement (un abandon passe par `_on_match_aborted`).
+func _record_pvp_quest(score_one: int, score_two: int) -> void:
+	var local_one := PvpMatchContext.local_side == GameState.PLAYER_ONE
+	QuestModel.new().record_event("pvp_result", {
+		"score_local": score_one if local_one else score_two,
+		"score_opponent": score_two if local_one else score_one,
+		"board_size": GameState.DEFAULT_BOARD_SIZE,
+	})
 
 
 func _exit_tree() -> void:

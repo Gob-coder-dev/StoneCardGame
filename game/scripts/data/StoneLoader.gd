@@ -223,6 +223,15 @@ func get_all_stone_ids() -> Array[String]:
 	return result
 
 
+## Identifiants de lignées, sans copier les définitions complètes. Utilisé par
+## les métriques de collection, qui n'ont besoin que des compteurs.
+func lineage_ids() -> Array[String]:
+	var result: Array[String] = []
+	for lineage_id in _lineages:
+		result.append(str(lineage_id))
+	return result
+
+
 ## Coût d'une pierre du catalogue, 0 si introuvable. La règle vit dans StoneCostRules.
 func stone_cost(stone_id: String) -> float:
 	# StoneCostRules lit seulement la définition : inutile de la copier.

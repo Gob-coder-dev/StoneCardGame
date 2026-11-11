@@ -12,6 +12,7 @@ const CardLayout := preload("res://scripts/ui/collection/CardGridLayout.gd")
 const TouchButtonScript := preload("res://scripts/ui/input/TouchButton.gd")
 const SOUL_ICON := preload("res://assets/ui/soul-placeholder.svg")
 const GodIdentityModel := preload("res://scripts/data/GodIdentity.gd")
+const QuestModel := preload("res://scripts/application/quests/QuestService.gd")
 
 @onready var soul_balance: SoulBalance = $Content/Header/CurrencyBalances/SoulBalance
 @onready var candle_balance: CandleBalance = $Content/Header/CurrencyBalances/CandleBalance
@@ -119,6 +120,11 @@ func _god_panel(god: Dictionary) -> GodOfferCard:
 
 func _buy_offer(offer_id: String) -> void:
 	var result := _shop.buy_offer(offer_id)
+	if bool(result.get("ok", false)):
+		QuestModel.new().record_event("shop_purchase", {
+			"copies": int(result.get("copies", 0)),
+			"souls": int(result.get("price", 0)),
+		})
 	_show_status(str(result.get("reason", "Cartes ajoutées à votre collection.")),
 		not bool(result.get("ok", false)))
 	_refresh()
@@ -145,7 +151,9 @@ func _buy_ritual(ritual_id: String) -> Dictionary:
 	var result := _rituals.purchase(ritual_id)
 	if not bool(result.get("ok", false)):
 		_show_status(str(result.get("reason", "Rituel indisponible.")), true)
-		_refresh()
+	else:
+		QuestModel.new().record_event("ritual_purchase", {})
+	_refresh()
 	return result
 
 

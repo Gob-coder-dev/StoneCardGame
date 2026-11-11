@@ -4,6 +4,7 @@ extends Node
 const OpponentCatalogModel := preload("res://scripts/data/OpponentCatalog.gd")
 const CompletionModel := preload("res://scripts/application/campaign/CampaignCompletionService.gd")
 const RewardModel := preload("res://scripts/application/campaign/CampaignRewardService.gd")
+const QuestModel := preload("res://scripts/application/quests/QuestService.gd")
 
 var selected_npc_id: String = ""
 ## Source du chemin de rencontres ouvert (id de dieu ou Pr.Stone). Elle permet
@@ -18,6 +19,9 @@ var last_winner: int = 0
 var last_score_human: int = 0
 var last_score_ai: int = 0
 var last_captures_human: int = 0
+## Taille du plateau de la dernière manche : la manche parfaite n'existe que
+## sur le plateau complet, jamais sur les 3 × 3 du tutoriel.
+var last_board_size: int = GameState.DEFAULT_BOARD_SIZE
 var last_result_npc_id: String = ""
 ## Une victoire ne débloque la suite que lorsque le profil a réellement été
 ## écrit. L'erreur reste disponible sur l'écran de résultat pour une nouvelle
@@ -289,6 +293,39 @@ func persist_result() -> Error:
 		if error != OK:
 			last_save_error = error
 			return last_save_error
+	if campaign_node_id != "":
+		var quest_error := _record_quest_result()
+		if quest_error != OK:
+			last_save_error = quest_error
+			return last_save_error
 	last_result_saved = true
 	last_save_error = OK
 	return OK
+
+
+## Comptabilise la manche pour les quêtes. La clé d'idempotence reprend la
+## tentative : un nouvel essai d'enregistrement ne compte jamais deux fois.
+func _record_quest_result() -> Error:
+	if campaign_service == null:
+		return OK
+	var rules := {}
+	var mode := mode_state()
+	if mode.get("rules") is Dictionary:
+		rules = mode["rules"]
+	var node = campaign_service.node(campaign_node_id) \
+		if campaign_service.has_node(campaign_node_id) else null
+	var key := "campaign:%d:%s:%d" % [campaign_service.graph().campaign_version,
+		campaign_node_id, campaign_service.progress().attempts_for(campaign_node_id)]
+	return QuestModel.new().record_event("campaign_result", {
+		"winner": last_winner,
+		"score_local": last_score_human,
+		"score_opponent": last_score_ai,
+		"captures": last_captures_human,
+		"board_size": last_board_size,
+		"mode": str(rules.get("mode", GameModeRules.MODE_CLASSIC)),
+		"series": str(rules.get("series", SeriesRules.SERIES_FT1)),
+		"series_complete": campaign_victory_confirmed(),
+		"opponent_god_id": effective_opponent_god_id(),
+		"boss": node != null and (node.is_boss() or node.is_mini_boss()),
+		"tutorial": campaign_node_id.begins_with("tuto_"),
+	}, key)

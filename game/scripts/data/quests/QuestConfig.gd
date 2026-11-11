@@ -1,0 +1,110 @@
+## QuestConfig.gd
+## Catalogue des quêtes. Ajouter une mission ne demande aucune ligne de code :
+## une entrée dans data/quests/quests.json suffit, et sa cohérence est vérifiée
+## au chargement comme pour l'économie et les Rituels.
+class_name QuestConfig
+extends RefCounted
+
+const PATH := "res://data/quests/quests.json"
+const MetricsModel := preload("res://scripts/application/quests/QuestMetrics.gd")
+
+static var _cache: Dictionary = {}
+
+
+static func get_config() -> Dictionary:
+	if _cache.is_empty():
+		_cache = _read()
+	return _cache.duplicate(true)
+
+
+static func clear_cache_for_tests() -> void:
+	_cache.clear()
+
+
+static func dailies() -> Array:
+	var raw: Variant = get_config().get("daily", [])
+	return raw if raw is Array else []
+
+
+static func uniques() -> Array:
+	var raw: Variant = get_config().get("unique", [])
+	return raw if raw is Array else []
+
+
+static func daily_count() -> int:
+	return maxi(1, int(get_config().get("daily_count", 3)))
+
+
+## Bougies offertes à la quotidienne la plus exigeante du tirage.
+static func candle_reward() -> int:
+	return maxi(0, int(get_config().get("candle_reward", 0)))
+
+
+static func definition(quest_id: String) -> Dictionary:
+	for quest in dailies() + uniques():
+		if quest is Dictionary and str(quest.get("id", "")) == quest_id:
+			return quest
+	return {}
+
+
+static func problems(config: Dictionary = {}) -> Array[String]:
+	var value := get_config() if config.is_empty() else config
+	var result: Array[String] = []
+	var daily_entries: Variant = value.get("daily", [])
+	var unique_entries: Variant = value.get("unique", [])
+	if not daily_entries is Array or not unique_entries is Array:
+		return ["Le catalogue des quêtes est invalide."]
+	if int(value.get("daily_count", 0)) < 1:
+		result.append("Le nombre de quêtes quotidiennes doit être positif.")
+	var seen := {}
+	for kind in ["daily", "unique"]:
+		var entries: Array = value.get(kind, [])
+		for raw in entries:
+			if not raw is Dictionary:
+				result.append("Une quête '%s' n'est pas un objet." % kind)
+				continue
+			var quest: Dictionary = raw
+			var quest_id := str(quest.get("id", ""))
+			if quest_id == "":
+				result.append("Une quête '%s' n'a pas d'identifiant." % kind)
+				continue
+			if seen.has(quest_id):
+				result.append("Identifiant de quête en double : %s." % quest_id)
+			seen[quest_id] = true
+			var metric := str(quest.get("metric", ""))
+			if not MetricsModel.is_known(metric):
+				result.append("Métrique inconnue pour '%s' : %s." % [quest_id, metric])
+			elif kind == "daily" and MetricsModel.is_derived(metric):
+				result.append("Une quotidienne ne peut pas lire une métrique dérivée : %s." % quest_id)
+			if str(quest.get("title", "")) == "":
+				result.append("Titre manquant pour '%s'." % quest_id)
+			var tiers: Variant = quest.get("tiers", [])
+			if not tiers is Array or tiers.is_empty():
+				result.append("Paliers manquants pour '%s'." % quest_id)
+				continue
+			var previous := 0
+			for raw_tier in tiers:
+				if not raw_tier is Dictionary:
+					result.append("Palier invalide pour '%s'." % quest_id)
+					continue
+				var tier: Dictionary = raw_tier
+				var threshold := int(tier.get("threshold", 0))
+				if threshold <= previous:
+					result.append("Paliers non croissants pour '%s'." % quest_id)
+				previous = threshold
+				if int(tier.get("souls", 0)) <= 0 and int(tier.get("candles", 0)) <= 0:
+					result.append("Palier sans récompense pour '%s'." % quest_id)
+	return result
+
+
+static func _read() -> Dictionary:
+	var file := FileAccess.open(PATH, FileAccess.READ)
+	if file == null:
+		push_error("QuestConfig: impossible d'ouvrir %s." % PATH)
+		return {}
+	var parsed: Variant = JSON.parse_string(file.get_as_text())
+	file.close()
+	if not parsed is Dictionary:
+		push_error("QuestConfig: JSON invalide.")
+		return {}
+	return parsed

@@ -9,6 +9,9 @@
 extends Node
 
 signal inventory_changed
+## Émis après chaque écriture de l'état des quêtes, dans la même sauvegarde
+## atomique que les monnaies lorsqu'une récompense est réclamée.
+signal quests_changed
 
 const SaveCodec := preload("res://scripts/data/PlayerSaveCodec.gd")
 const SaveStorage := preload("res://scripts/data/PlayerSaveStorage.gd")
@@ -23,6 +26,8 @@ enum ProfileChange { SUCCESS, INVALID, SAVE_FAILED }
 var _decks_by_god: Dictionary = {}
 var _selected_deck_by_god: Dictionary = {}
 var _inventory: PlayerInventory = null
+## État brut des quêtes, écrit et relu par QuestService.
+var _quests: Dictionary = {}
 
 ## Dieu équipé : il détermine les familles de cartes accessibles au deck.
 var player_god_id: String = ""
@@ -116,7 +121,7 @@ func _init(save_path: String = SAVE_PATH) -> void:
 
 func get_profile() -> Dictionary:
 	return SaveCodec.encode(_decks_by_god, _selected_deck_by_god, player_god_id,
-		player_name, stats, inventory_dict())
+		player_name, stats, inventory_dict(), quests_dict())
 
 
 func save() -> Error:
@@ -138,6 +143,8 @@ func _apply_profile(profile: Dictionary) -> void:
 	player_name = profile["player_name"]
 	stats = profile["stats"]
 	_inventory = InventoryModel.from_dict(profile.get("inventory", {}))
+	_quests = profile.get("quests", {}).duplicate(true) \
+		if profile.get("quests", {}) is Dictionary else {}
 
 
 func _ready() -> void:
@@ -230,6 +237,10 @@ func inventory_dict() -> Dictionary:
 	return _inventory.to_dict()
 
 
+func quests_dict() -> Dictionary:
+	return _quests.duplicate(true)
+
+
 func souls() -> int:
 	_ensure_inventory()
 	return _inventory.souls
@@ -306,13 +317,17 @@ func commit_inventory(next: PlayerInventory) -> Error:
 ## Transaction économique pouvant aussi compléter le deck neutre de départ.
 ## Inventaire et deck sont écrits dans le même fichier puis restaurés ensemble
 ## si le stockage échoue.
-func commit_economy(next: PlayerInventory, neutral_deck_override: Variant = null) -> Error:
+func commit_economy(next: PlayerInventory, neutral_deck_override: Variant = null,
+		quests: Variant = null) -> Error:
 	if next == null:
 		return ERR_INVALID_PARAMETER
 	_ensure_inventory()
 	var previous_inventory := _inventory
 	var previous_decks := _decks_by_god.duplicate(true)
+	var previous_quests := _quests
 	_inventory = next
+	if quests is Dictionary:
+		_quests = (quests as Dictionary).duplicate(true)
 	if neutral_deck_override is Array:
 		var candidate: Array = (neutral_deck_override as Array).duplicate()
 		if not bool(DeckRules.validate_deck(candidate, false, "").get("valid", false)):
@@ -325,8 +340,10 @@ func commit_economy(next: PlayerInventory, neutral_deck_override: Variant = null
 	if error != OK:
 		_inventory = previous_inventory
 		_decks_by_god = previous_decks
+		_quests = previous_quests
 	else:
 		inventory_changed.emit()
+		quests_changed.emit()
 	return error
 
 

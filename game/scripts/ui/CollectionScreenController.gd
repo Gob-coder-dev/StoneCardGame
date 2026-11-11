@@ -16,6 +16,7 @@ const CollectionGridView := preload("res://scripts/ui/collection/CollectionGrid.
 const GodSelectorView := preload("res://scripts/ui/collection/GodSelector.gd")
 const NumberedSelector := preload("res://scripts/ui/collection/NumberedSelector.gd")
 const EconomyServiceModel := preload("res://scripts/application/economy/EconomyService.gd")
+const QuestModel := preload("res://scripts/application/quests/QuestService.gd")
 const ACTION_DRAWER_GAP := 10.0
 const ACTION_DRAWER_MARGIN := 24.0
 const BOTTOM_SPACER_DEFAULT := 30.0
@@ -665,10 +666,14 @@ func _prepare_card_art() -> void:
 
 
 func _upgrade_card(lineage_id: String) -> void:
+	var souls_before := PlayerData.souls()
 	var result := EconomyServiceModel.new().upgrade_card(lineage_id)
 	if not bool(result.get("ok", false)):
 		_show_error(str(result.get("reason", "Amélioration impossible.")))
 		return
+	QuestModel.new().record_event("upgrade_purchase", {
+		"souls": maxi(0, souls_before - PlayerData.souls()),
+	})
 	_close_action_drawer()
 	_clear_status()
 	_populate_collection()

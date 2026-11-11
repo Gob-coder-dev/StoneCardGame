@@ -1,0 +1,118 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/QuestsController.gd" id="1_quests"]
+[ext_resource type="Script" path="res://scripts/ui/MenuBackground.gd" id="2_background"]
+[ext_resource type="Script" path="res://scripts/ui/input/TouchScrollContainer.gd" id="3_scroll"]
+[ext_resource type="Script" path="res://scripts/ui/input/TouchButton.gd" id="4_button"]
+[ext_resource type="PackedScene" path="res://scenes/ui/CurrencyBalances.tscn" id="5_currency"]
+[ext_resource type="PackedScene" path="res://scenes/ui/BottomNav.tscn" id="6_nav"]
+
+[node name="Quests" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_quests")
+
+[node name="Background" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("2_background")
+room = 2
+
+[node name="Root" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 40.0
+offset_top = 56.0
+offset_right = -40.0
+offset_bottom = -200.0
+theme_override_constants/separation = 24
+
+[node name="Header" type="HBoxContainer" parent="Root"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Root/Header"]
+theme_type_variation = &"ScreenTitle"
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 60
+text = "QUÊTES"
+vertical_alignment = 1
+
+[node name="CurrencyBalances" parent="Root/Header" instance=ExtResource("5_currency")]
+
+[node name="CloseButton" type="Button" parent="Root/Header"]
+layout_mode = 2
+script = ExtResource("4_button")
+custom_minimum_size = Vector2(108, 100)
+theme_override_font_sizes/font_size = 48
+text = "×"
+
+[node name="Scroll" type="ScrollContainer" parent="Root"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+script = ExtResource("3_scroll")
+
+[node name="Content" type="VBoxContainer" parent="Root/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 24
+
+[node name="DailyTitle" type="Label" parent="Root/Scroll/Content"]
+theme_type_variation = &"SectionTitle"
+layout_mode = 2
+theme_override_font_sizes/font_size = 42
+text = "QUÊTES QUOTIDIENNES"
+
+[node name="DailyPanel" type="PanelContainer" parent="Root/Scroll/Content"]
+layout_mode = 2
+mouse_filter = 1
+
+[node name="DailyContent" type="VBoxContainer" parent="Root/Scroll/Content/DailyPanel"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="Reset" type="Label" parent="Root/Scroll/Content/DailyPanel/DailyContent"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+theme_override_colors/font_color = Color(0.737, 0.698, 0.741, 1)
+
+[node name="DailyList" type="VBoxContainer" parent="Root/Scroll/Content/DailyPanel/DailyContent"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="UniqueTitle" type="Label" parent="Root/Scroll/Content"]
+theme_type_variation = &"SectionTitle"
+layout_mode = 2
+theme_override_font_sizes/font_size = 42
+text = "OBJECTIFS"
+horizontal_alignment = 1
+
+[node name="UniquePanel" type="PanelContainer" parent="Root/Scroll/Content"]
+layout_mode = 2
+mouse_filter = 1
+
+[node name="UniqueList" type="VBoxContainer" parent="Root/Scroll/Content/UniquePanel"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="BottomSpacer" type="Control" parent="Root/Scroll/Content"]
+layout_mode = 2
+mouse_filter = 2
+custom_minimum_size = Vector2(0, 30)
+
+[node name="Status" type="Label" parent="Root"]
+visible = false
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+autowrap_mode = 2
+
+[node name="BottomNav" parent="." instance=ExtResource("6_nav")]
+current_tab = 3

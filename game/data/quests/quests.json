@@ -1,0 +1,332 @@
+{
+  "version": 1,
+  "daily_count": 3,
+  "candle_reward": 5,
+  "daily": [
+    {
+      "id": "daily_god_wins",
+      "title": "Briser deux dieux",
+      "description": "Remporter deux manches de campagne contre un adversaire divin.",
+      "metric": "god_wins",
+      "effort": 70,
+      "min_nodes": 6,
+      "tiers": [{"threshold": 2, "souls": 40}]
+    },
+    {
+      "id": "daily_campaign_wins",
+      "title": "Deux victoires",
+      "description": "Gagner deux manches de campagne, quel que soit l'adversaire.",
+      "metric": "campaign_wins",
+      "effort": 65,
+      "tiers": [{"threshold": 2, "souls": 40}]
+    },
+    {
+      "id": "daily_high_diff",
+      "title": "Sans bavarder",
+      "description": "Gagner une manche avec au moins six pierres d'avance.",
+      "metric": "high_diff_wins",
+      "effort": 60,
+      "tiers": [{"threshold": 1, "souls": 35}]
+    },
+    {
+      "id": "daily_captures",
+      "title": "Moisson de pierres",
+      "description": "Capturer trente pierres en combat.",
+      "metric": "captures",
+      "effort": 55,
+      "tiers": [{"threshold": 30, "souls": 30}]
+    },
+    {
+      "id": "daily_shop",
+      "title": "Une bonne affaire",
+      "description": "Acheter une offre de la boutique.",
+      "metric": "shop_offers",
+      "effort": 45,
+      "min_souls": 60,
+      "tiers": [{"threshold": 1, "souls": 25}]
+    },
+    {
+      "id": "daily_copies",
+      "title": "Provision de copies",
+      "description": "Obtenir dix copies de cartes.",
+      "metric": "copies_gained",
+      "effort": 50,
+      "min_souls": 60,
+      "tiers": [{"threshold": 10, "souls": 30}]
+    },
+    {
+      "id": "daily_spend",
+      "title": "Les âmes circulent",
+      "description": "Dépenser cent âmes.",
+      "metric": "souls_spent",
+      "effort": 40,
+      "min_souls": 100,
+      "tiers": [{"threshold": 100, "souls": 25}]
+    },
+    {
+      "id": "daily_upgrade",
+      "title": "Un cran plus haut",
+      "description": "Faire évoluer une carte d'un niveau.",
+      "metric": "upgrades",
+      "effort": 55,
+      "min_souls": 200,
+      "min_nodes": 6,
+      "tiers": [{"threshold": 1, "souls": 35}]
+    },
+    {
+      "id": "daily_ritual",
+      "title": "Les flammes répondent",
+      "description": "Ouvrir un Rituel.",
+      "metric": "rituals",
+      "effort": 60,
+      "min_candles": 15,
+      "tiers": [{"threshold": 1, "souls": 40}]
+    },
+    {
+      "id": "daily_mode_random",
+      "title": "Le hasard décide",
+      "description": "Gagner une manche en mode Aléatoire.",
+      "metric": "mode_wins_random",
+      "effort": 65,
+      "min_nodes": 12,
+      "tiers": [{"threshold": 1, "souls": 45}]
+    },
+    {
+      "id": "daily_mode_mirror",
+      "title": "À armes égales",
+      "description": "Gagner une manche en mode Miroir.",
+      "metric": "mode_wins_mirror",
+      "effort": 65,
+      "min_nodes": 12,
+      "tiers": [{"threshold": 1, "souls": 45}]
+    },
+    {
+      "id": "daily_mode_draft",
+      "title": "Choix décisifs",
+      "description": "Gagner une manche en mode Sélection.",
+      "metric": "mode_wins_draft",
+      "effort": 85,
+      "min_nodes": 30,
+      "tiers": [{"threshold": 1, "souls": 60}]
+    },
+    {
+      "id": "daily_pvp",
+      "title": "Duel de salon",
+      "description": "Terminer une partie PVP sans abandon.",
+      "metric": "pvp_matches",
+      "effort": 50,
+      "tiers": [{"threshold": 1, "souls": 30}]
+    },
+    {
+      "id": "daily_boss",
+      "title": "La garde tombe",
+      "description": "Battre un boss ou un mini-boss de la campagne.",
+      "metric": "boss_wins",
+      "effort": 75,
+      "min_nodes": 10,
+      "tiers": [{"threshold": 1, "souls": 50}]
+    }
+  ],
+  "unique": [
+    {
+      "id": "tutorial_done",
+      "title": "Le serment du Seuil",
+      "description": "Terminer les cinq tutoriels de Pr.Stone.",
+      "metric": "tutorial_done",
+      "tiers": [{"threshold": 1, "candles": 3}]
+    },
+    {
+      "id": "perfect_round",
+      "title": "Manche parfaite",
+      "description": "Gagner 16 à 0, sur un plateau de 4 × 4 entièrement contrôlé.",
+      "metric": "perfect_rounds",
+      "tiers": [{"threshold": 1, "candles": 5}, {"threshold": 5, "candles": 12}]
+    },
+    {
+      "id": "n2_cards",
+      "title": "Premières évolutions",
+      "description": "Posséder des lignées au niveau 2 ou plus.",
+      "metric": "n2_owned",
+      "tiers": [
+        {"threshold": 1, "souls": 60},
+        {"threshold": 5, "souls": 150},
+        {"threshold": 10, "souls": 300},
+        {"threshold": 25, "souls": 600}
+      ]
+    },
+    {
+      "id": "n3_cards",
+      "title": "Lignées aguerries",
+      "description": "Posséder des lignées au niveau 3 ou plus.",
+      "metric": "n3_owned",
+      "tiers": [
+        {"threshold": 1, "souls": 150},
+        {"threshold": 3, "souls": 400},
+        {"threshold": 10, "souls": 1000}
+      ]
+    },
+    {
+      "id": "n4_cards",
+      "title": "Formes ultimes",
+      "description": "Posséder des lignées au niveau 4.",
+      "metric": "n4_owned",
+      "tiers": [
+        {"threshold": 1, "candles": 2},
+        {"threshold": 3, "candles": 4},
+        {"threshold": 5, "candles": 6}
+      ]
+    },
+    {
+      "id": "neutral_set",
+      "title": "Le bestiaire neutre",
+      "description": "Débloquer les 24 lignées neutres.",
+      "metric": "neutral_owned",
+      "tiers": [{"threshold": 24, "candles": 10}]
+    },
+    {
+      "id": "aleator_set",
+      "title": "Les Aléators au complet",
+      "description": "Débloquer les douze lignées de Véskar.",
+      "metric": "aleator_owned",
+      "tiers": [{"threshold": 12, "candles": 4}]
+    },
+    {
+      "id": "family_nerava",
+      "title": "La fièvre entière",
+      "description": "Débloquer les douze lignées de Nérava.",
+      "metric": "family_owned_nerava",
+      "tiers": [{"threshold": 12, "candles": 4}]
+    },
+    {
+      "id": "family_kharun",
+      "title": "Le rempart complet",
+      "description": "Débloquer les douze lignées de Kharûn.",
+      "metric": "family_owned_kharun",
+      "tiers": [{"threshold": 12, "candles": 4}]
+    },
+    {
+      "id": "family_ilyr",
+      "title": "Tous les regards",
+      "description": "Débloquer les douze lignées d'Ilyr.",
+      "metric": "family_owned_ilyr",
+      "tiers": [{"threshold": 12, "candles": 4}]
+    },
+    {
+      "id": "family_sylkha",
+      "title": "La ruche entière",
+      "description": "Débloquer les douze lignées de Sylkha.",
+      "metric": "family_owned_sylkha",
+      "tiers": [{"threshold": 12, "candles": 4}]
+    },
+    {
+      "id": "family_enigma",
+      "title": "L'assimilation achevée",
+      "description": "Débloquer les douze lignées d'Énigma.",
+      "metric": "family_owned_enigma",
+      "tiers": [{"threshold": 12, "candles": 4}]
+    },
+    {
+      "id": "legendary_set",
+      "title": "Les quinze couronnes",
+      "description": "Débloquer les quinze lignées légendaires.",
+      "metric": "legendary_owned",
+      "tiers": [{"threshold": 15, "candles": 15}]
+    },
+    {
+      "id": "campaign_nodes",
+      "title": "La carte s'ouvre",
+      "description": "Terminer des nœuds de la campagne unifiée.",
+      "metric": "campaign_nodes",
+      "tiers": [
+        {"threshold": 10, "souls": 100},
+        {"threshold": 50, "souls": 500},
+        {"threshold": 100, "souls": 1000},
+        {"threshold": 162, "candles": 3}
+      ]
+    },
+    {
+      "id": "mode_random",
+      "title": "Maître du hasard",
+      "description": "Gagner une manche en mode Aléatoire.",
+      "metric": "mode_wins_random",
+      "tiers": [{"threshold": 1, "candles": 3}]
+    },
+    {
+      "id": "mode_mirror",
+      "title": "Le miroir brisé",
+      "description": "Gagner une manche en mode Miroir.",
+      "metric": "mode_wins_mirror",
+      "tiers": [{"threshold": 1, "candles": 3}]
+    },
+    {
+      "id": "mode_draft",
+      "title": "Draft sans faute",
+      "description": "Gagner une manche en mode Sélection.",
+      "metric": "mode_wins_draft",
+      "tiers": [{"threshold": 1, "candles": 3}]
+    },
+    {
+      "id": "series_ft2",
+      "title": "Deux manches d'avance",
+      "description": "Remporter une série FT2.",
+      "metric": "series_ft2_wins",
+      "tiers": [{"threshold": 1, "candles": 4}]
+    },
+    {
+      "id": "series_ft3",
+      "title": "Le marathon",
+      "description": "Remporter une série FT3.",
+      "metric": "series_ft3_wins",
+      "tiers": [{"threshold": 1, "candles": 6}]
+    },
+    {
+      "id": "upgrades",
+      "title": "Le sang des cartes",
+      "description": "Faire évoluer des cartes d'un niveau.",
+      "metric": "upgrades",
+      "tiers": [{"threshold": 1, "souls": 100}, {"threshold": 10, "souls": 500}]
+    },
+    {
+      "id": "rituals",
+      "title": "Le cercle des flammes",
+      "description": "Ouvrir des Rituels.",
+      "metric": "rituals",
+      "tiers": [{"threshold": 10, "candles": 3}, {"threshold": 50, "candles": 10}]
+    },
+    {
+      "id": "gods_unlocked",
+      "title": "Le panthéon",
+      "description": "Débloquer les six dieux.",
+      "metric": "gods_unlocked",
+      "tiers": [{"threshold": 6, "candles": 10}]
+    },
+    {
+      "id": "captures",
+      "title": "Boucherie méthodique",
+      "description": "Capturer des pierres au total.",
+      "metric": "total_captures",
+      "tiers": [{"threshold": 100, "souls": 200}, {"threshold": 1000, "souls": 1000}]
+    },
+    {
+      "id": "streak",
+      "title": "Rien ne passe",
+      "description": "Atteindre une série de victoires en campagne.",
+      "metric": "best_streak",
+      "tiers": [{"threshold": 5, "souls": 300}, {"threshold": 10, "souls": 800}]
+    },
+    {
+      "id": "lineages",
+      "title": "Le catalogue vivant",
+      "description": "Posséder des lignées distinctes.",
+      "metric": "lineages_owned",
+      "tiers": [{"threshold": 50, "souls": 200}, {"threshold": 96, "souls": 1000}]
+    },
+    {
+      "id": "pvp_matches",
+      "title": "Habitué du salon",
+      "description": "Terminer dix parties PVP.",
+      "metric": "pvp_matches",
+      "tiers": [{"threshold": 10, "candles": 3}]
+    }
+  ]
+}
