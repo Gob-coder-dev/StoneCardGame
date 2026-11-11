@@ -18,15 +18,32 @@ static func threshold(definition: Dictionary, tier: int) -> int:
 	return maxi(0, int(value.get("threshold", 0)))
 
 
+## Un palier peut payer en âmes, en bougies, en copies de cartes ou avec un
+## Rituel offert. Les cartes restent des données : le service les résout ensuite.
 static func reward(definition: Dictionary, tier: int, bonus_candles: int = 0) -> Dictionary:
 	var values := tiers(definition)
 	var souls := 0
 	var candles := 0
+	var cards: Array = []
+	var ritual := ""
 	if tier >= 0 and tier < values.size() and values[tier] is Dictionary:
 		var value: Dictionary = values[tier]
 		souls = maxi(0, int(value.get("souls", 0)))
 		candles = maxi(0, int(value.get("candles", 0)))
-	return {"souls": souls, "candles": candles + maxi(0, bonus_candles)}
+		cards = _cards(value)
+		ritual = str(value.get("ritual", ""))
+	return {"souls": souls, "candles": candles + maxi(0, bonus_candles),
+		"cards": cards, "ritual": ritual}
+
+
+static func _cards(value: Dictionary) -> Array:
+	var result: Array = []
+	var raw: Variant = value.get("cards", [])
+	if raw is Array:
+		for entry in raw:
+			if entry is Dictionary:
+				result.append((entry as Dictionary).duplicate(true))
+	return result
 
 
 ## Nombre de paliers atteints mais pas encore réclamés, dans l'ordre croissant.

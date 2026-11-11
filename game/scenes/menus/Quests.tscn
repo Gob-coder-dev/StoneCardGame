@@ -65,12 +65,6 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 24
 
-[node name="DailyTitle" type="Label" parent="Root/Scroll/Content"]
-theme_type_variation = &"SectionTitle"
-layout_mode = 2
-theme_override_font_sizes/font_size = 42
-text = "QUÊTES QUOTIDIENNES"
-
 [node name="DailyPanel" type="PanelContainer" parent="Root/Scroll/Content"]
 layout_mode = 2
 mouse_filter = 1
@@ -79,21 +73,9 @@ mouse_filter = 1
 layout_mode = 2
 theme_override_constants/separation = 18
 
-[node name="Reset" type="Label" parent="Root/Scroll/Content/DailyPanel/DailyContent"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 28
-theme_override_colors/font_color = Color(0.737, 0.698, 0.741, 1)
-
 [node name="DailyList" type="VBoxContainer" parent="Root/Scroll/Content/DailyPanel/DailyContent"]
 layout_mode = 2
 theme_override_constants/separation = 18
-
-[node name="UniqueTitle" type="Label" parent="Root/Scroll/Content"]
-theme_type_variation = &"SectionTitle"
-layout_mode = 2
-theme_override_font_sizes/font_size = 42
-text = "OBJECTIFS"
-horizontal_alignment = 1
 
 [node name="UniquePanel" type="PanelContainer" parent="Root/Scroll/Content"]
 layout_mode = 2

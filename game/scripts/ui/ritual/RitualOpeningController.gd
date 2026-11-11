@@ -252,11 +252,17 @@ func _small_label(text: String) -> Label:
 	return label
 
 
+## Une récompense de quête revient à l'écran Quêtes, un achat revient à la
+## Boutique. L'origine voyage dans l'ouverture, jamais dans la sauvegarde.
+func _return_route() -> String:
+	return Routes.QUESTS if str(_opening.get("return_to", "")) == "quests" else Routes.SHOP
+
+
 func _finish() -> void:
 	if _stage != Stage.SUMMARY:
 		return
 	RitualOpeningContext.clear()
-	GameRoutes.go(get_tree(), Routes.SHOP)
+	GameRoutes.go(get_tree(), _return_route())
 
 
 func _show_error(message: String) -> void:
@@ -266,11 +272,12 @@ func _show_error(message: String) -> void:
 	status_label.add_theme_color_override("font_color", UITheme.COL_ERROR)
 	prompt_label.text = "Les récompenses ont déjà été enregistrées."
 	finish_button.visible = true
-	finish_button.text = "RETOUR À LA BOUTIQUE"
+	finish_button.text = "RETOUR AUX QUÊTES" if _return_route() == Routes.QUESTS \
+		else "RETOUR À LA BOUTIQUE"
 	finish_button.pressed.disconnect(_finish)
 	finish_button.pressed.connect(func():
 		RitualOpeningContext.clear()
-		GameRoutes.go(get_tree(), Routes.SHOP))
+		GameRoutes.go(get_tree(), _return_route()))
 
 
 func _clear(container: Container) -> void:

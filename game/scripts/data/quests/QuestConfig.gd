@@ -7,6 +7,7 @@ extends RefCounted
 
 const PATH := "res://data/quests/quests.json"
 const MetricsModel := preload("res://scripts/application/quests/QuestMetrics.gd")
+const RitualConfigModel := preload("res://scripts/data/economy/RitualConfig.gd")
 
 static var _cache: Dictionary = {}
 
@@ -92,7 +93,27 @@ static func problems(config: Dictionary = {}) -> Array[String]:
 				if threshold <= previous:
 					result.append("Paliers non croissants pour '%s'." % quest_id)
 				previous = threshold
-				if int(tier.get("souls", 0)) <= 0 and int(tier.get("candles", 0)) <= 0:
+				var raw_cards: Variant = tier.get("cards", [])
+				var reward_cards: Array = raw_cards if raw_cards is Array else []
+				if raw_cards != null and not raw_cards is Array:
+					result.append("Récompenses de cartes invalides pour '%s'." % quest_id)
+				for raw_card in reward_cards:
+					if not raw_card is Dictionary:
+						result.append("Récompense de carte invalide pour '%s'." % quest_id)
+						continue
+					var card: Dictionary = raw_card
+					var lineage_id := str(card.get("lineage_id", ""))
+					if lineage_id == "" or StoneLoader.variant_id(lineage_id, 1) == "":
+						result.append("Lignée inconnue pour '%s' : %s." % [quest_id, lineage_id])
+					elif int(card.get("copies", 0)) <= 0:
+						result.append("Copies invalides pour '%s'." % quest_id)
+				var ritual := str(tier.get("ritual", ""))
+				if ritual != "" and RitualConfigModel.definition(ritual).is_empty():
+					result.append("Rituel inconnu pour '%s' : %s." % [quest_id, ritual])
+				elif ritual == "unique":
+					result.append("Le Rituel unique ne peut pas être offert par une quête.")
+				if int(tier.get("souls", 0)) <= 0 and int(tier.get("candles", 0)) <= 0 \
+						and reward_cards.is_empty() and ritual == "":
 					result.append("Palier sans récompense pour '%s'." % quest_id)
 	return result
 

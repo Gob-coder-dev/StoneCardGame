@@ -23,6 +23,8 @@ func run() -> void:
 	_test_save_format()
 	_test_daily()
 	_test_claim()
+	_test_rewards()
+	_test_sorting()
 	fixture.restore()
 
 
@@ -48,6 +50,20 @@ func _test_configuration() -> void:
 	_check(str(Config.definition("daily_pvp").get("metric", "")) == "pvp_matches"
 		and str(Config.definition("family_owned_nerava").get("id", "")) == "",
 		"quêtes : chaque définition reste identifiée par son métrique")
+
+
+	var broken_card := config.duplicate(true)
+	(broken_card["unique"] as Array).append({"id": "broken_card", "title": "X",
+		"description": "X", "metric": "captures",
+		"tiers": [{"threshold": 1, "cards": [{"lineage_id": "inconnue", "copies": 1}]}]})
+	_check(not Config.problems(broken_card).is_empty(),
+		"quêtes : une récompense de carte inconnue est refusée")
+	var broken_ritual := config.duplicate(true)
+	(broken_ritual["unique"] as Array).append({"id": "broken_ritual", "title": "X",
+		"description": "X", "metric": "captures",
+		"tiers": [{"threshold": 1, "ritual": "inexistant"}]})
+	_check(not Config.problems(broken_ritual).is_empty(),
+		"quêtes : un Rituel inconnu est refusé")
 
 
 func _test_draw() -> void:
@@ -167,6 +183,58 @@ func _test_claim() -> void:
 			entry = candidate
 	_check(int(entry.get("tier_index", -1)) == 1 and not bool(entry.get("claimable", true)),
 		"quêtes : le palier réclamé laisse la place au suivant sans double paiement")
+
+
+func _test_rewards() -> void:
+	PlayerData._apply_profile(Codec.starter_profile())
+	var inventory := InventoryModel.from_dict(PlayerData.inventory_dict())
+	inventory.unlocked_gods.erase("kharun")
+	PlayerData.commit_economy(inventory, null, StateModel.from_dict({}).to_dict())
+	var state := StateModel.from_dict(PlayerData.quests_dict())
+	state.day_index = Calendar.today()
+	state.bump("pvp_matches", 25, false)
+	state.bump("campaign_wins", 40, false)
+	state.bump("boss_wins", 15, false)
+	PlayerData.commit_economy(InventoryModel.from_dict(PlayerData.inventory_dict()),
+		null, state.to_dict())
+	var service := Service.new()
+	var copies_before := int(PlayerData.card_entry("la_veuve_suspendue").get("copies", 0))
+	var card_claim := service.claim("pvp_cards")
+	_check(bool(card_claim.get("ok", false))
+		and int(PlayerData.card_entry("la_veuve_suspendue").get("copies", 0)) == copies_before + 2,
+		"quêtes : une récompense de carte est versée avec la réclamation")
+	var deferred := service.claim("boss_cards")
+	_check(bool(deferred.get("ok", false)) and int(PlayerData.inventory_dict()
+		.get("pending_card_rewards", {}).get("le_reliquaire_ambulant", 0)) == 2,
+		"quêtes : une carte divine attend son dieu dans le coffre")
+	var ritual := service.claim("ritual_small")
+	var opening: Dictionary = ritual.get("opening", {})
+	_check(bool(ritual.get("ok", false)) and str(opening.get("return_to", "")) == "quests"
+		and not (opening.get("rewards", []) as Array).is_empty()
+		and int(PlayerData.inventory_dict().get("ritual_purchase_counter", 0)) == 1,
+		"quêtes : une récompense de Rituel ouvre une invocation déjà enregistrée")
+
+
+func _test_sorting() -> void:
+	PlayerData._apply_profile(Codec.starter_profile())
+	var state := StateModel.from_dict({})
+	state.day_index = Calendar.today()
+	state.bump("upgrades", 10, false)
+	PlayerData.commit_economy(InventoryModel.from_dict(PlayerData.inventory_dict()),
+		null, state.to_dict())
+	var unique: Array = Service.new().view().get("unique", [])
+	var ordered := not unique.is_empty() \
+		and bool((unique[0] as Dictionary).get("claimable", false))
+	var seen_unclaimable := false
+	for raw_entry in unique:
+		var entry: Dictionary = raw_entry
+		if bool(entry.get("claimable", false)):
+			if seen_unclaimable:
+				ordered = false
+		else:
+			seen_unclaimable = true
+	_check(ordered,
+		"quêtes : les objectifs récoltables remontent en tête de liste")
 
 
 func _daily_ids(view: Dictionary) -> Array:

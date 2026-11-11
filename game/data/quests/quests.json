@@ -140,7 +140,7 @@
       "title": "Manche parfaite",
       "description": "Gagner 16 à 0, sur un plateau de 4 × 4 entièrement contrôlé.",
       "metric": "perfect_rounds",
-      "tiers": [{"threshold": 1, "candles": 5}, {"threshold": 5, "candles": 12}]
+      "tiers": [{"threshold": 1, "candles": 5}]
     },
     {
       "id": "n2_cards",
@@ -327,6 +327,48 @@
       "description": "Terminer dix parties PVP.",
       "metric": "pvp_matches",
       "tiers": [{"threshold": 10, "candles": 3}]
+    },
+    {
+      "id": "boss_cards",
+      "title": "Les gardiens tombés",
+      "description": "Vaincre quinze boss ou mini-boss de la campagne.",
+      "metric": "boss_wins",
+      "tiers": [{"threshold": 15, "cards": [{"lineage_id": "le_reliquaire_ambulant", "copies": 2}]}]
+    },
+    {
+      "id": "series_cards",
+      "title": "Le marathon sans faute",
+      "description": "Remporter trois séries FT3.",
+      "metric": "series_ft3_wins",
+      "tiers": [{"threshold": 3, "cards": [{"lineage_id": "la_machine_a_malchance", "copies": 2}]}]
+    },
+    {
+      "id": "pvp_cards",
+      "title": "Le salon vous connaît",
+      "description": "Terminer vingt-cinq parties PVP.",
+      "metric": "pvp_matches",
+      "tiers": [{"threshold": 25, "cards": [{"lineage_id": "la_veuve_suspendue", "copies": 2}]}]
+    },
+    {
+      "id": "ritual_small",
+      "title": "Le cercle des braises",
+      "description": "Remporter quarante manches de campagne.",
+      "metric": "campaign_wins",
+      "tiers": [{"threshold": 40, "ritual": "small"}]
+    },
+    {
+      "id": "ritual_basic",
+      "title": "Trente gardiens",
+      "description": "Vaincre trente boss ou mini-boss de la campagne.",
+      "metric": "boss_wins",
+      "tiers": [{"threshold": 30, "ritual": "basic"}]
+    },
+    {
+      "id": "ritual_grand",
+      "title": "Cinq marathons",
+      "description": "Remporter cinq séries FT3.",
+      "metric": "series_ft3_wins",
+      "tiers": [{"threshold": 5, "ritual": "grand"}]
     }
   ]
 }
