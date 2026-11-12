@@ -81,6 +81,7 @@ func run() -> void:
 	_test_parallel_draft_host_first()
 	_test_parallel_draft_client_first()
 	_test_draft_offers_project_viewer_step()
+	_test_client_receives_live_draft_deadline()
 	_test_draft_timeout_with_one_finished()
 	_test_draft_determinism_and_privacy()
 	_test_classic_ft2_initializes_both_clients()
@@ -99,6 +100,20 @@ func _choose_all(flow: LanSeriesCoordinator) -> bool:
 		if not flow.choose_local(str(offers[0])):
 			return false
 	return true
+
+
+func _test_client_receives_live_draft_deadline() -> void:
+	var pair := _pair(RulesModel.MODE_DRAFT, RulesModel.SERIES_FT1)
+	var host: LanSeriesCoordinator = pair["host"]
+	var client: LanSeriesCoordinator = pair["client"]
+	var host_remaining := host.remaining_seconds()
+	var client_remaining := client.remaining_seconds()
+	_check(host_remaining > 0.0 and client_remaining > 0.0,
+		"timer draft : l'hôte et le client reçoivent une échéance active")
+	_check(absf(host_remaining - client_remaining) < 1.0,
+		"timer draft : le client calcule le même temps restant que l'hôte")
+	host.close()
+	client.close()
 
 
 func _test_parallel_draft_host_first() -> void:

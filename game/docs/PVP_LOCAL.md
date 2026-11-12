@@ -175,6 +175,10 @@ attend un adversaire.
    total. `draft_progress` ne transmet qu'à son propriétaire l'étape, la
    complétion et le deck en construction ; les choix restent privés. Le deck
    local est actualisé après chaque choix accepté.
+   L'échéance absolue du draft est transmise dès `prepare_start`, puis rappelée
+   dans les offres. Chaque appareil calcule localement les secondes restantes :
+   le client voit donc le même compte à rebours fluide que l'hôte sans recevoir
+   un paquet réseau par seconde.
 7. Chaque camp confirme : `loadout_confirm` pour le client, `loadout_ready`
    pour l'hôte. Le premier camp terminé peut se déclarer `PRÊT` sans fermer le
    draft adverse ; sa dernière carte reste toujours sélectionnable. L'hôte

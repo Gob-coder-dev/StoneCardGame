@@ -513,13 +513,14 @@ func _check_pvp_draft_touch() -> void:
 	PvpMatchContext.begin_preparation(host, null, GameState.PLAYER_ONE, 1, 2,
 		host_profile, client_profile, rules, host.public_state())
 	var page: Control = await _open_scene("res://scenes/menus/PvpPreparation.tscn")
-	var cards: Array = page.local_grid._cards
-	_check(cards.size() == 2 and page.draft_deck_grid.get_child_count() == 0,
+	var view = page.preparation_view
+	var cards: Array = view.local_grid._cards
+	_check(cards.size() == 2 and view.draft_deck_grid.get_child_count() == 0,
 		"draft tactile : deux offres locales et un deck vide sont affichés")
 	if cards.size() == 2:
 		await _tap(_center(cards[0] as StoneCard))
-	_check(page.draft_deck_grid.get_child_count() == 1
-		and page.draft_status.text.contains("Choix enregistré"),
+	_check(view.draft_deck_grid.get_child_count() == 1
+		and view.draft_status.text.contains("Choix enregistré"),
 		"draft tactile : un toucher sélectionne une seule offre et actualise le deck")
 	await _remove(page)
 	PvpMatchContext.close_presence()

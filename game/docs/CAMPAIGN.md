@@ -252,7 +252,7 @@ Le fichier est la source de vérité du contenu livré. Il est produit par
 | `max_power_tier` | Palier maximal autorisé pour la rencontre |
 | `ai_profile` | Précision, anticipation et réglages réels du profil |
 | `series_format` | `ft1`, `ft2` ou `ft3` |
-| `seed_policy` | `fixed_per_node` par défaut ; `per_attempt` reste une exception explicite |
+| `seed_policy` | `fixed_per_node` pour un contenu signé ; `per_attempt` pour toute génération |
 | `seed` | Graine déterministe de la rencontre |
 | `board_size` | Taille du plateau, 4 par défaut et 3 pour le premier tutoriel |
 | `player_hand_size` / `opponent_hand_size` | Nombre de cartes réellement distribuées |
@@ -293,11 +293,18 @@ finale selon le chapitre, y compris lors d’une revanche.
 
 ### Graine
 
-Le mode Aléatoire, le Miroir et la Sélection utilisent une graine déterministe
-dérivée de `campaign_version`, de l'identifiant du nœud et de la graine du
-nœud. Rejouer un même nœud conserve donc son identité. Une politique
-`per_attempt` ne doit être choisie que pour une rencontre explicitement conçue
-pour changer à chaque tentative.
+La graine de base reste déterministe à partir de `campaign_version`, de
+l'identifiant et de la graine déclarée. Une rencontre générée — Aléatoire,
+Sélection, Miroir sans deck fixe ou Classique à deck généré — lui ajoute le
+numéro de tentative : relancer le niveau produit donc un nouveau tirage. Un
+Miroir à deck fixe et les rencontres Classiques écrites à la main restent en
+`fixed_per_node`. Le validateur refuse une génération accidentellement figée.
+
+`CampaignPreparation` et `PvpPreparation` projettent leurs états dans la même
+`ModePreparationView`. Les offres, le deck en construction, le dieu, le deck
+final et le calcul responsive ont ainsi un rendu identique. En Sélection, le
+chronomètre est actualisé chaque image depuis la session sans reconstruire les
+cartes ; seule la seconde affichée change.
 
 ## Dieux et thèmes
 

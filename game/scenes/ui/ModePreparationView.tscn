@@ -1,0 +1,171 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/preparation/ModePreparationView.gd" id="1_view"]
+[ext_resource type="Script" path="res://scripts/ui/pvp/LoadoutCardGrid.gd" id="2_grid"]
+[ext_resource type="Script" path="res://scripts/ui/GodPortrait.gd" id="3_portrait"]
+
+[node name="ModePreparationView" type="VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 16
+script = ExtResource("1_view")
+
+[node name="DraftPanel" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="OpponentPanel" type="PanelContainer" parent="DraftPanel"]
+layout_mode = 2
+theme_type_variation = &"DeckPanel"
+
+[node name="OpponentBox" type="VBoxContainer" parent="DraftPanel/OpponentPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="OpponentTitle" type="Label" parent="DraftPanel/OpponentPanel/OpponentBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.737, 0.698, 0.741, 1)
+theme_override_font_sizes/font_size = 25
+text = "PROPOSITIONS DE L'ADVERSAIRE"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="OpponentInfo" type="Label" parent="DraftPanel/OpponentPanel/OpponentBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.737, 0.698, 0.741, 1)
+theme_override_font_sizes/font_size = 24
+text = "Adversaire : 0 / 8 cartes choisies"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="OpponentGrid" type="GridContainer" parent="DraftPanel/OpponentPanel/OpponentBox"]
+layout_mode = 2
+columns = 2
+script = ExtResource("2_grid")
+
+[node name="LocalPanel" type="PanelContainer" parent="DraftPanel"]
+layout_mode = 2
+theme_type_variation = &"DeckPanel"
+
+[node name="LocalBox" type="VBoxContainer" parent="DraftPanel/LocalPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="LocalTitle" type="Label" parent="DraftPanel/LocalPanel/LocalBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.678, 0.49, 1)
+theme_override_font_sizes/font_size = 31
+text = "CHOISISSEZ VOTRE CARTE"
+horizontal_alignment = 1
+
+[node name="LocalGrid" type="GridContainer" parent="DraftPanel/LocalPanel/LocalBox"]
+layout_mode = 2
+columns = 2
+script = ExtResource("2_grid")
+
+[node name="DraftStatus" type="Label" parent="DraftPanel/LocalPanel/LocalBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.933, 0.78, 0.471, 1)
+theme_override_font_sizes/font_size = 27
+text = "Choisissez une carte."
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="DraftInfo" type="Label" parent="DraftPanel/LocalPanel/LocalBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.737, 0.698, 0.741, 1)
+theme_override_font_sizes/font_size = 25
+text = "Étape 1 / 8"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="DraftTimer" type="Label" parent="DraftPanel/LocalPanel/LocalBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.945, 0.804, 0.49, 1)
+theme_override_font_sizes/font_size = 28
+text = "Temps de sélection : 60 s"
+horizontal_alignment = 1
+
+[node name="DraftDeckPanel" type="PanelContainer" parent="DraftPanel"]
+layout_mode = 2
+theme_type_variation = &"DeckPanel"
+
+[node name="DraftDeckBox" type="VBoxContainer" parent="DraftPanel/DraftDeckPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="DraftDeckTitle" type="Label" parent="DraftPanel/DraftDeckPanel/DraftDeckBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.737, 0.698, 0.741, 1)
+theme_override_font_sizes/font_size = 26
+text = "VOTRE DECK — 0 / 8"
+horizontal_alignment = 1
+
+[node name="DraftDeckGrid" type="GridContainer" parent="DraftPanel/DraftDeckPanel/DraftDeckBox"]
+layout_mode = 2
+columns = 4
+script = ExtResource("2_grid")
+
+[node name="RevealPanel" type="VBoxContainer" parent="."]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="GodPanel" type="PanelContainer" parent="RevealPanel"]
+layout_mode = 2
+theme_type_variation = &"DeckPanel"
+
+[node name="GodBox" type="HBoxContainer" parent="RevealPanel/GodPanel"]
+layout_mode = 2
+theme_override_constants/separation = 22
+
+[node name="GodPortrait" type="PanelContainer" parent="RevealPanel/GodPanel/GodBox"]
+custom_minimum_size = Vector2(220, 220)
+layout_mode = 2
+script = ExtResource("3_portrait")
+
+[node name="GodInfo" type="VBoxContainer" parent="RevealPanel/GodPanel/GodBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_override_constants/separation = 6
+
+[node name="GodName" type="Label" parent="RevealPanel/GodPanel/GodBox/GodInfo"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 44
+text = "Dieu"
+autowrap_mode = 2
+
+[node name="GodFamily" type="Label" parent="RevealPanel/GodPanel/GodBox/GodInfo"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = ""
+autowrap_mode = 2
+
+[node name="LoadoutInfo" type="Label" parent="RevealPanel/GodPanel/GodBox/GodInfo"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.737, 0.698, 0.741, 1)
+theme_override_font_sizes/font_size = 24
+text = ""
+autowrap_mode = 2
+
+[node name="DeckTitle" type="Label" parent="RevealPanel"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.737, 0.698, 0.741, 1)
+theme_override_font_sizes/font_size = 25
+text = "VOTRE DECK"
+horizontal_alignment = 1
+
+[node name="DeckGrid" type="GridContainer" parent="RevealPanel"]
+layout_mode = 2
+columns = 2
+script = ExtResource("2_grid")
+
+[node name="WaitLabel" type="Label" parent="."]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.737, 0.698, 0.741, 1)
+theme_override_font_sizes/font_size = 28
+text = "En attente de la préparation…"
+horizontal_alignment = 1
+autowrap_mode = 2

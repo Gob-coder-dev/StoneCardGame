@@ -87,8 +87,12 @@ en bas le deck local `VOTRE DECK — X / 8`, actualisé après chaque choix acce
 Le deck final se présente en deux colonnes et quatre lignes et tient sans
 défilement sur les formats téléphone/tablette pris en charge. Le défilement
 reste seulement un garde-fou pour une fenêtre exceptionnellement petite.
-`PvpPreparationLayout` calcule les tailles de manière pure et
-`LoadoutCardGrid` réutilise ses cartes entre les actualisations.
+La campagne et le PVP instancient la même `ModePreparationView` : aucune
+composition de draft ou de révélation n'est dupliquée entre les deux écrans.
+`ModePreparationLayout` calcule leurs tailles de manière pure et
+`LoadoutCardGrid` réutilise ses cartes entre les actualisations. Le chronomètre
+lit une échéance vivante ; changer uniquement de seconde ne reconstruit aucune
+carte.
 L'enchaînement des manches exige la demande des deux camps, puis deux nouvelles
 confirmations ; `PvpMatchContext` conserve le coordinateur de série et son lien
 réseau entre `PvpLobby`, `PvpPreparation`, `PreBattle`, `Board` et `PvpResult`.
@@ -125,6 +129,7 @@ et affiche `EN PARTIE` jusqu'à son propre retour.
 | `scripts/application/CampaignModeSession.gd` | préparation locale des modes, draft IA et séries de campagne |
 | `scripts/application/ModePreparationService.gd` | cas d'usage commun : loadouts Classique/Aléatoire/Miroir et création/résultat du draft |
 | `scripts/application/pvp/PvpLoadoutFactory.gd` | adaptation des loadouts génériques aux identifiants PVP |
+| `scenes/ui/ModePreparationView.tscn` + `scripts/ui/preparation/` | vue et calculs responsive communs aux préparations campagne/PVP, sans réseau ni navigation |
 | `scripts/ui/pvp/PvpLobbyController.gd` | présentation du salon, règles hôte/client, gestes et transition vers la préparation ou l'avant-combat |
 | `scenes/menus/PvpPreparation.tscn` + `scripts/ui/pvp/PvpPreparationController.gd` | écran dédié de loadout et de draft ; orchestre le coordinateur sans porter ses règles |
 | `scripts/ui/pvp/LoadoutCardGrid.gd` | rendu réutilisable des cartes illustrées (deck local, offres locales, offres adverses) |

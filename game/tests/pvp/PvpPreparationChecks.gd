@@ -122,26 +122,27 @@ func _test_draft_composition_and_live_deck() -> void:
 	var pair := _pair(RulesModel.MODE_DRAFT, RulesModel.SERIES_FT1)
 	var opened := _make_page(pair)
 	var page: Control = opened["page"]
+	var view = page.preparation_view
 	await get_tree().create_timer(0.20).timeout
-	_check(page.draft_panel.visible and not page.reveal_panel.visible,
+	_check(view.draft_panel.visible and not view.reveal_panel.visible,
 		"draft : la zone de sélection est affichée")
 	_check(page.find_child("OpponentTitle", true, false).text.contains("PROPOSITIONS DE L'ADVERSAIRE"),
 		"draft : les propositions adverses sont identifiées en haut")
-	_check(page.opponent_info.text.contains("Adversaire : 0 / 8 cartes choisies"),
+	_check(view.opponent_info.text.contains("Adversaire : 0 / 8 cartes choisies"),
 		"draft : le compteur adverse réel est affiché sans révéler ses cartes")
 	_check(page.find_child("DraftDeckTitle", true, false).text.contains("VOTRE DECK — 0 / 8"),
 		"draft : le deck en construction est identifié avec son compte")
-	_check(page.local_grid.size.x >= page.local_grid.get_parent().size.x - 1.0,
+	_check(view.local_grid.size.x >= view.local_grid.get_parent().size.x - 1.0,
 		"draft : les offres locales remplissent la largeur disponible")
-	_check(page.opponent_grid.get_child_count() == 2 and page.local_grid.get_child_count() == 2,
+	_check(view.opponent_grid.get_child_count() == 2 and view.local_grid.get_child_count() == 2,
 		"draft : deux cartes adverses et deux cartes locales sont visibles")
 	var opponent_read_only := true
 	var local_interactive := true
-	for wrapper in page.opponent_grid.get_children():
+	for wrapper in view.opponent_grid.get_children():
 		var card: StoneCard = wrapper.get_child(0)
 		opponent_read_only = opponent_read_only and card._texture != null \
 			and card.mouse_filter == Control.MOUSE_FILTER_IGNORE
-	for wrapper in page.local_grid.get_children():
+	for wrapper in view.local_grid.get_children():
 		var card: StoneCard = wrapper.get_child(0)
 		local_interactive = local_interactive and card._texture != null \
 			and card.mouse_filter == Control.MOUSE_FILTER_PASS
@@ -149,27 +150,27 @@ func _test_draft_composition_and_live_deck() -> void:
 	_check(local_interactive, "draft : les propositions locales sont illustrées et interactives")
 	var host: LanSeriesCoordinator = pair["host"]
 	var offers: Array = host.public_state()["draft"]["own_offers"]
-	page.local_grid._cards[0].card_pressed.emit(str(offers[0]))
+	view.local_grid._cards[0].card_pressed.emit(str(offers[0]))
 	await get_tree().process_frame
 	await get_tree().process_frame
-	_check(page.draft_deck_grid.get_child_count() == 1
-		and page.draft_deck_title.text.contains("1 / 8"),
+	_check(view.draft_deck_grid.get_child_count() == 1
+		and view.draft_deck_title.text.contains("1 / 8"),
 		"draft : le deck inférieur gagne une carte après le choix accepté")
-	_check(page.draft_status.text.contains("Choix enregistré"),
+	_check(view.draft_status.text.contains("Choix enregistré"),
 		"draft : un toucher affiche un texte court, sans explication de glissement")
 	var forbidden := "Un glissement ne sélectionne rien."
 	_check(not _labels_contain(page, forbidden),
 		"draft : aucun texte explicatif de glissement n'est affiché")
 	for step in range(1, DeckRules.DECK_SIZE):
 		var current: Array = host.public_state()["draft"]["own_offers"]
-		if (page.local_grid._cards as Array).is_empty():
+		if (view.local_grid._cards as Array).is_empty():
 			break
-		page.local_grid._cards[0].card_pressed.emit(str(current[0]))
+		view.local_grid._cards[0].card_pressed.emit(str(current[0]))
 		await get_tree().process_frame
 		await get_tree().process_frame
-	_check(page.draft_deck_grid.get_child_count() == 8,
-		"draft : les huit choix sont reflétés dans le deck en construction")
-	_check(not page.draft_panel.visible and page.reveal_panel.visible,
+	_check(view.deck_grid.get_child_count() == DeckRules.DECK_SIZE,
+		"draft : le huitième choix ouvre immédiatement le deck final complet")
+	_check(not view.draft_panel.visible and view.reveal_panel.visible,
 		"draft : la fin du deck local ouvre sa présentation sans attendre l'adversaire")
 	page.queue_free()
 	await get_tree().process_frame
@@ -188,15 +189,16 @@ func _test_opponent_pair_uses_viewer_step() -> void:
 		client.choose_local(str(offers[0]))
 	var opened := _make_page(pair)
 	var page: Control = opened["page"]
+	var view = page.preparation_view
 	await get_tree().create_timer(0.20).timeout
 	var expected: Array = host._draft.offers_for_step(GameState.PLAYER_TWO, 0)
 	_check(host.public_state()["draft"]["offers_two"] == expected,
 		"projection UI : l'hôte reçoit la paire adverse de son étape 0")
-	_check(_grid_ids(page.opponent_grid) == expected,
+	_check(_grid_ids(view.opponent_grid) == expected,
 		"projection UI : la grille adverse affiche la paire de l'étape locale 0")
-	_check(page.opponent_info.text.contains("Adversaire : 5 / 8 cartes choisies"),
+	_check(view.opponent_info.text.contains("Adversaire : 5 / 8 cartes choisies"),
 		"projection UI : le compteur 5 / 8 reste celui de la progression réelle")
-	_check(_grid_ids(page.local_grid) == host._draft.offers_for_step(GameState.PLAYER_ONE, 0),
+	_check(_grid_ids(view.local_grid) == host._draft.offers_for_step(GameState.PLAYER_ONE, 0),
 		"projection UI : les offres locales restent celles de l'étape 0")
 	page.queue_free()
 	await get_tree().process_frame
@@ -214,36 +216,37 @@ func _test_responsive_draft_layout() -> void:
 	add_child(frame)
 	var opened := _make_page(pair, frame)
 	var page: Control = opened["page"]
+	var view = page.preparation_view
 	var host: LanSeriesCoordinator = pair["host"]
 	await get_tree().create_timer(0.25).timeout
-	var phone_card: int = page.local_grid._card_size
-	_check(page.local_grid.size.x >= page.local_grid.get_parent().size.x - 1.0,
+	var phone_card: int = view.local_grid._card_size
+	_check(view.local_grid.size.x >= view.local_grid.get_parent().size.x - 1.0,
 		"responsive téléphone : la grille locale occupe la largeur")
 	# Sept choix représentent le pire cas encore visible : deux lignes presque
 	# pleines dans le deck inférieur, sans basculer sur la présentation finale.
 	for index in range(7):
 		var offers: Array = host.public_state()["draft"]["own_offers"]
-		if (page.local_grid._cards as Array).is_empty():
+		if (view.local_grid._cards as Array).is_empty():
 			break
-		page.local_grid._cards[0].card_pressed.emit(str(offers[0]))
+		view.local_grid._cards[0].card_pressed.emit(str(offers[0]))
 		await get_tree().process_frame
 		await get_tree().process_frame
 	await get_tree().create_timer(0.20).timeout
-	_check(page.draft_deck_grid.columns == 4,
+	_check(view.draft_deck_grid.columns == 4,
 		"responsive téléphone : le deck en construction garde quatre colonnes lisibles")
-	_check(not _grid_overflows(page.draft_deck_grid, page.draft_deck_grid.size.x)
-			and not _grid_overflows(page.local_grid, page.local_grid.size.x),
+	_check(not _grid_overflows(view.draft_deck_grid, view.draft_deck_grid.size.x)
+			and not _grid_overflows(view.local_grid, view.local_grid.size.x),
 		"responsive téléphone : aucun débordement horizontal")
 	var phone_bar: VScrollBar = page.scroll.get_v_scroll_bar()
 	_check(phone_bar.max_value <= phone_bar.page + 1.0,
 		"responsive téléphone : les sept picks tiennent sans défilement")
 	frame.size = Vector2(1200, 1920)
 	await get_tree().create_timer(0.25).timeout
-	_check(page.local_grid._card_size < phone_card,
-		"responsive tablette : la hauteur réduit les choix (%d contre %d)" % [
-			page.local_grid._card_size, phone_card])
-	_check(not _grid_overflows(page.draft_deck_grid, page.draft_deck_grid.size.x)
-			and not _grid_overflows(page.local_grid, page.local_grid.size.x),
+	_check(view.local_grid._card_size <= phone_card,
+		"responsive tablette : les choix ne grossissent pas au-delà du téléphone (%d contre %d)" % [
+			view.local_grid._card_size, phone_card])
+	_check(not _grid_overflows(view.draft_deck_grid, view.draft_deck_grid.size.x)
+			and not _grid_overflows(view.local_grid, view.local_grid.size.x),
 		"responsive tablette : aucun débordement horizontal")
 	var tablet_bar: VScrollBar = page.scroll.get_v_scroll_bar()
 	_check(tablet_bar.max_value <= tablet_bar.page + 1.0,
@@ -275,25 +278,26 @@ func _test_final_deck_two_columns() -> void:
 	add_child(frame)
 	var opened := _make_page(pair, frame)
 	var page: Control = opened["page"]
+	var view = page.preparation_view
 	await get_tree().create_timer(0.30).timeout
-	_check(page.deck_grid.get_child_count() == DeckRules.DECK_SIZE
-		and page.deck_grid.columns == 2,
+	_check(view.deck_grid.get_child_count() == DeckRules.DECK_SIZE
+		and view.deck_grid.columns == 2,
 		"deck final : huit cartes sont disposées sur deux colonnes")
-	var rows := ceili(float(page.deck_grid.get_child_count()) / float(page.deck_grid.columns))
+	var rows := ceili(float(view.deck_grid.get_child_count()) / float(view.deck_grid.columns))
 	_check(rows == 4, "deck final : les huit cartes forment quatre lignes logiques")
-	var tablet_card: int = page.deck_grid._card_size
+	var tablet_card: int = view.deck_grid._card_size
 	var tablet_bar: VScrollBar = page.scroll.get_v_scroll_bar()
 	_check(tablet_bar.max_value <= tablet_bar.page + 1.0,
 		"deck final tablette : les quatre lignes et le dieu tiennent sans scroll")
 	var widest := 0.0
-	for wrapper in page.deck_grid.get_children():
+	for wrapper in view.deck_grid.get_children():
 		var card: StoneCard = wrapper.get_child(0)
 		widest = maxf(widest, card.size.x)
 	_check(page.scroll.size.x <= 0.0 or widest * 2.0 <= page.scroll.size.x + 1.0,
 		"deck final : deux cartes tiennent dans la largeur, sans débordement horizontal")
 	frame.size = Vector2(1080, 2400)
 	await get_tree().create_timer(0.30).timeout
-	_check(page.deck_grid._card_size >= tablet_card,
+	_check(view.deck_grid._card_size >= tablet_card,
 		"deck final téléphone : la hauteur supplémentaire conserve de grandes cartes")
 	var phone_bar: VScrollBar = page.scroll.get_v_scroll_bar()
 	_check(phone_bar.max_value <= phone_bar.page + 1.0,

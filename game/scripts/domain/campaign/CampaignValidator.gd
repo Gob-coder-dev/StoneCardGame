@@ -256,6 +256,8 @@ static func _encounter_problems(node: CampaignNode, result: Array[String]) -> vo
 		result.append("opponent_deck_policy inconnue sur '%s'." % node.id)
 	if not NodeModel.SEED_POLICIES.has(node.seed_policy()):
 		result.append("seed_policy inconnue sur '%s'." % node.id)
+	elif node.requires_per_attempt_seed() and node.seed_policy() != NodeModel.SEED_PER_ATTEMPT:
+		result.append("seed_policy fixe sur une rencontre générée '%s'." % node.id)
 	var raw_board_size := int(encounter.get("board_size", GameState.DEFAULT_BOARD_SIZE))
 	if raw_board_size < GameState.MIN_BOARD_SIZE or raw_board_size > GameState.MAX_BOARD_SIZE:
 		result.append("taille de plateau hors bornes sur '%s'." % node.id)

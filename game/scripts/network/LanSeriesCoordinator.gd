@@ -684,6 +684,9 @@ func _on_prepare_start(payload: Dictionary) -> void:
 	_series.rules_revision = int(payload.get("rules_revision", 0))
 	_rules["revision"] = _series.rules_revision
 	_prep_id = str(payload.get("preparation_id", ""))
+	# L'échéance appartient à la préparation autoritaire. Le client doit la
+	# conserver dès le premier message, avant même l'arrivée des offres.
+	_draft_deadline_ms = int(payload.get("deadline_unix_ms", 0))
 	# Une nouvelle préparation invalide les confirmations et les demandes de
 	# manche précédentes : chaque manche exige un accord et deux confirmations.
 	_confirmed_one = false
@@ -729,6 +732,9 @@ func _on_draft_offers(payload: Dictionary) -> void:
 		return
 	if int(payload.get("viewer_side", 0)) != _local_side:
 		return
+	# Chaque nouvelle paire resynchronise le compte à rebours du client sans
+	# nécessiter un paquet réseau par seconde.
+	_draft_deadline_ms = int(payload.get("deadline_unix_ms", _draft_deadline_ms))
 	var step_one := int(payload.get("step_one", 0))
 	var step_two := int(payload.get("step_two", 0))
 	var complete_one := bool(payload.get("complete_one", false))
@@ -939,6 +945,12 @@ func public_state() -> Dictionary:
 		_prep_id, _loadout_one, _loadout_two, _confirmed_one, _confirmed_two,
 		_draft if _is_host else null, _client_draft, _client_chosen,
 		_draft_deadline_ms, _remaining_seconds())
+
+
+## Valeur vivante destinée à l'affichage. Le contrôleur ne doit pas relire un
+## ancien snapshot, sinon le texte ne change qu'au prochain événement réseau.
+func remaining_seconds() -> float:
+	return _remaining_seconds()
 
 
 func _remaining_seconds() -> float:

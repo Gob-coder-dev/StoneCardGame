@@ -147,6 +147,18 @@ func declared_seed() -> int:
 	return int(encounter.get("seed", 0))
 
 
+## Les contenus générés doivent varier à chaque nouvelle tentative. Les miroirs
+## dont le deck est explicitement écrit restent, eux, des rencontres signées.
+func requires_per_attempt_seed() -> bool:
+	var mode := game_mode()
+	if mode == GameModeRules.MODE_RANDOM or mode == GameModeRules.MODE_DRAFT:
+		return true
+	if mode == GameModeRules.MODE_MIRROR:
+		return mirror_fixed_deck().is_empty()
+	return mode == GameModeRules.MODE_CLASSIC \
+		and opponent_deck_policy() == DECK_GENERATED
+
+
 ## Identifiant d'une rencontre des anciennes campagnes, indépendant du nouvel
 ## équilibrage. Il permet de réduire une précision ou un palier sans perdre la
 ## migration d'une victoire déjà enregistrée dans les statistiques historiques.

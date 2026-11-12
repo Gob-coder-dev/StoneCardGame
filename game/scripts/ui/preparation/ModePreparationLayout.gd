@@ -1,6 +1,6 @@
-## Calculs purs du layout de préparation. Le contrôleur applique uniquement les
-## tailles retournées aux grilles et ne porte plus les règles responsive.
-class_name PvpPreparationLayout
+## Calculs purs du layout commun aux préparations de campagne et PVP.
+## Les vues appliquent les tailles retournées sans connaître les appareils.
+class_name ModePreparationLayout
 extends RefCounted
 
 
@@ -67,5 +67,5 @@ static func grid_height(count: int, columns: int, card_size: int) -> float:
 	if count <= 0:
 		return 0.0
 	var rows := ceili(float(count) / float(maxi(1, columns)))
-	return float(rows * card_size) + float(maxi(0, rows - 1)) * UITheme.GAP_MEDIUM
-
+	return float(rows * card_size) \
+		+ float(maxi(0, rows - 1)) * UITheme.GAP_MEDIUM

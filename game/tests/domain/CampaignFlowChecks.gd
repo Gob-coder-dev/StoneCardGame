@@ -314,11 +314,12 @@ func _test_preparation_scene() -> void:
 	add_child(mirror_page)
 	await get_tree().process_frame
 	await get_tree().process_frame
-	_check(mirror_page.deck_grid.get_child_count() == DeckRules.DECK_SIZE
-		and mirror_page.deck_grid.columns == 2
-		and mirror_page.deck_title.text == "VOTRE DECK"
+	var mirror_view = mirror_page.preparation_view
+	_check(mirror_view.deck_grid.get_child_count() == DeckRules.DECK_SIZE
+		and mirror_view.deck_grid.columns == 2
+		and mirror_view.deck_title.text == "VOTRE DECK"
 		and not mirror_page.status_label.visible
-		and mirror_page.get_node_or_null("Root/Scroll/Content/OpponentGrid") == null,
+		and mirror_view.get_node_or_null("OpponentGrid") == null,
 		"préparation campagne : Miroir montre uniquement le deck du joueur")
 	mirror_page.queue_free()
 	await get_tree().process_frame
@@ -329,9 +330,10 @@ func _test_preparation_scene() -> void:
 	add_child(random_page)
 	await get_tree().process_frame
 	await get_tree().process_frame
-	_check(random_page.deck_grid.get_child_count() == DeckRules.DECK_SIZE
-		and random_page.deck_grid.columns == 2
-		and random_page.deck_title.text == "VOTRE DECK"
+	var random_view = random_page.preparation_view
+	_check(random_view.deck_grid.get_child_count() == DeckRules.DECK_SIZE
+		and random_view.deck_grid.columns == 2
+		and random_view.deck_title.text == "VOTRE DECK"
 		and not random_page.status_label.visible
 		and not random_page.confirm_button.disabled,
 		"préparation campagne : Aléatoire montre uniquement le deck du joueur")
@@ -345,10 +347,15 @@ func _test_preparation_scene() -> void:
 	var draft_page: Control = (load("res://scenes/campaign/CampaignPreparation.tscn") as PackedScene).instantiate()
 	add_child(draft_page)
 	await get_tree().process_frame
-	_check(draft_page.offers_grid.visible
-		and draft_page.offers_grid.get_child_count() == 2
-		and draft_page.confirm_button.disabled
-		and draft_page.deck_title.text.contains("0 / 8"),
+	var draft_view = draft_page.preparation_view
+	var timer_before := draft_view.draft_timer.text
+	draft_page._process(1.1)
+	_check(draft_view.local_grid.visible
+		and draft_view.local_grid.get_child_count() == 2
+		and not draft_page.confirm_button.visible
+		and draft_view.draft_deck_title.text.contains("0 / 8")
+		and draft_view.draft_timer.visible
+		and draft_view.draft_timer.text != timer_before,
 		"préparation campagne : Sélection charge les deux offres locales avant le draft")
 	draft_page.queue_free()
 	await get_tree().process_frame

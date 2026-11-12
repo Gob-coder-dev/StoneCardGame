@@ -165,6 +165,17 @@ func _test_random_mode() -> void:
 		and BattleContext.player_loadout.total_quarters
 			== BattleContext.opponent_loadout.total_quarters,
 		"rencontres : Aléatoire fournit deux decks légaux de même total")
+	var first_seed := int(result.get("seed", 0))
+	var first_loadout := BattleContext.player_loadout.to_dict()
+	BattleContext.clear_campaign_node()
+	var replay := _enter("veskar_02")
+	_check(BattleContext.confirm_mode_preparation(),
+		"rencontres : une nouvelle tentative Aléatoire se prépare normalement")
+	var replay_loadout := BattleContext.player_loadout.to_dict()
+	_check(int(replay.get("seed", 0)) != first_seed
+		and (replay_loadout.get("god_id", "") != first_loadout.get("god_id", "")
+			or replay_loadout.get("deck", []) != first_loadout.get("deck", [])),
+		"rencontres : une nouvelle tentative Aléatoire produit un nouveau tirage")
 	BattleContext.clear_campaign_node()
 
 

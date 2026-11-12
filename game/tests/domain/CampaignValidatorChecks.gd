@@ -279,6 +279,16 @@ func _test_deck_and_tier_rules() -> void:
 		"validateur : un générateur contraint refuse un dieu inexistant")
 
 	definition = _minimal()
+	var fixed_random_seed: Dictionary = definition["nodes"][2]["encounter"]
+	fixed_random_seed["game_mode"] = "random"
+	fixed_random_seed["opponent_god_policy"] = "generated"
+	fixed_random_seed["opponent_deck_policy"] = "generated"
+	fixed_random_seed["fixed_god_id"] = ""
+	fixed_random_seed["fixed_deck"] = []
+	_check(_has(ValidatorModel.problems(definition), "seed_policy fixe"),
+		"validateur : une rencontre générée exige une graine par tentative")
+
+	definition = _minimal()
 	var excessive_encounter: Dictionary = definition["nodes"][2]["encounter"]
 	excessive_encounter["game_mode"] = "random"
 	excessive_encounter["opponent_god_policy"] = "generated"

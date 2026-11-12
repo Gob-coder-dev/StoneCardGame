@@ -1,5 +1,5 @@
 ## LoadoutCardGrid.gd
-## Grille de cartes illustrées réutilisable par la préparation PVP.
+## Grille de cartes illustrées réutilisable par les préparations campagne/PVP.
 ##
 ## Elle ne contient aucune règle de draft ni de série : elle reçoit des
 ## `stone_id`, réutilise ses `StoneCard` et laisse le contrôleur décider si les

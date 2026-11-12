@@ -17,7 +17,27 @@ ROOT = Path(__file__).resolve().parents[1]
 LIBRARY = json.loads((ROOT / "tools" / "campaign_deck_library.json").read_text(encoding="utf-8"))
 GODS = ["veskar", "nerava", "kharun", "ilyr", "sylkha", "enigma"]
 GODS_DATA = {str(g["id"]): g for g in json.loads((ROOT / "data" / "gods.json").read_text(encoding="utf-8"))["gods"]}
-STONES = json.loads((ROOT / "data" / "stones.json").read_text(encoding="utf-8"))
+
+
+def load_stone_catalogue() -> dict:
+    """Assemble le catalogue éclaté avec les mêmes entrées que StoneLoader."""
+    manifest_path = ROOT / "data" / "stones" / "manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    lineages = []
+    for family in manifest["families"]:
+        resource_path = str(family["path"])
+        if not resource_path.startswith("res://"):
+            raise ValueError(f"chemin de famille invalide : {resource_path}")
+        family_path = ROOT / resource_path.removeprefix("res://")
+        # Les fichiers issus de l'ancien catalogue peuvent conserver un BOM.
+        definition = json.loads(family_path.read_text(encoding="utf-8-sig"))
+        if str(definition.get("family_id", "")) != str(family["id"]):
+            raise ValueError(f"famille incohérente : {family_path}")
+        lineages.extend(definition["lineages"])
+    return {"lineages": lineages}
+
+
+STONES = load_stone_catalogue()
 LINEAGE = {}
 STONE_GOD = {}
 STONE_RARITY = {}
@@ -208,20 +228,18 @@ OPTIONAL_PATHS = {
 # offset_y est relatif à la ligne du prédécesseur ; xs alterne les deux bords
 # libres de la region. Les valeurs maintiennent 170 unités entre les centres.
 OPTIONAL_PATH_LAYOUTS = {
-    "mini_optional_01": dict(xs=[80, 80], offset_y=0, boss_x=90),
-    "r03_mini": dict(xs=[1000, 940], offset_y=0, boss_x=760),
-    "r04_mini": dict(xs=[1000, 940, 1000], offset_y=0, boss_x=900),
-    "r05_mini": dict(xs=[80, 160, 80], offset_y=0, boss_x=100),
-    "r06_mini": dict(xs=[1000, 1000, 940], offset_y=120, boss_x=900),
-    "r09_mini1": dict(xs=[80, 160, 80, 160], offset_y=0, boss_x=80),
-    "r09_mini2": dict(xs=[1000, 940, 1000, 940], offset_y=0, boss_x=1000),
-    "r10_mini": dict(xs=[1000, 940, 1000, 940], offset_y=0, boss_x=960),
-    # Le dernier tronçon remonte par le bord gauche. Le décaler à x=0
-    # empêche l'arête vers le mini-boss de retraverser les trois approches
-    # précédentes, ce que le validateur géométrique refuse à juste titre.
-    "r11_mini": dict(xs=[80, 80, 80, 0], offset_y=-240, boss_y=15840,
-                       boss_x=0),
-    "mini_optional_02": dict(xs=[1000, 940, 1000, 940, 1000], offset_y=0,
+    "mini_optional_01": dict(xs=[100, 100], offset_y=0, boss_x=100),
+    "r03_mini": dict(xs=[980, 940], offset_y=0, boss_x=760),
+    "r04_mini": dict(xs=[980, 940, 980], offset_y=0, boss_x=900),
+    "r05_mini": dict(xs=[100, 160, 100], offset_y=0, boss_x=100),
+    "r06_mini": dict(xs=[980, 980, 940], offset_y=120, boss_x=900),
+    "r09_mini1": dict(xs=[100, 160, 100, 160], offset_y=0, boss_x=100),
+    "r09_mini2": dict(xs=[980, 940, 980, 940], offset_y=0, boss_x=980),
+    "r10_mini": dict(xs=[980, 940, 980, 940], offset_y=0, boss_x=960),
+    # Cette branche longe la marge gauche sans couper l'empreinte des nœuds.
+    "r11_mini": dict(xs=[100, 100, 100, 100], offset_y=-240, boss_y=17410,
+                       boss_x=100),
+    "mini_optional_02": dict(xs=[980, 940, 980, 940, 980], offset_y=0,
                              boss_x=960),
 }
 
@@ -356,7 +374,7 @@ PATTERNS = {
         "roles": ["entry", "a", "b", "c", "mini", "a1", "b1", "c1", "m", "exit"],
         "coords": {"entry": (0, 540), "a": (1, 120), "b": (1, 360), "c": (1, 600),
                    "mini": (1, 860), "a1": (2, 200), "b1": (2, 540),
-                   "c1": (2, 860), "m": (3, 540), "exit": (4, 540)},
+                   "c1": (2, 850), "m": (3, 540), "exit": (4, 540)},
         "edges": [("entry", "a"), ("entry", "b"), ("entry", "c"), ("entry", "mini"),
                   ("a", "a1"), ("b", "b1"), ("c", "c1"),
                   ("a1", "m"), ("b1", "m"), ("c1", "m"), ("m", "exit")],
@@ -596,7 +614,11 @@ def add_node(node_id: str, spec: dict, x: float, y: float) -> None:
             "ai_profile": {"precision": float(spec.get("precision", 0.0)),
                            "anticipation": bool(spec.get("anticipation", False))},
             "series_format": series,
-            "seed_policy": spec.get("seed_policy", "fixed_per_node"),
+            "seed_policy": spec.get("seed_policy", "per_attempt" if mode in {
+                "random", "draft"
+            } or (mode == "mirror" and not spec.get("mirror_deck", False))
+                or (mode == "classic" and deck_kind == "generated")
+                else "fixed_per_node"),
             "seed": 0,
             "legacy_opponent_id": spec.get("legacy_id", ""),
         },
@@ -650,6 +672,7 @@ for index, (node_id, trial) in enumerate(INTRO_TRIALS.items()):
         "generator_min_god_cards": 4,
         "mirror_fixed_deck": list(trial["deck"]),
         "forced_first_player": 1,
+        "seed_policy": "fixed_per_node",
     })
 
 last_intro_y = trial_y + (len(INTRO_TRIALS) - 1) * 240
@@ -1162,6 +1185,18 @@ for node_id, node in nodes.items():
         node["rewards"]["card_rewards"] = list(fixed[:wanted])
 
 # ── Contrôles de construction ───────────────────────────────────────────────
+# Les réécritures de mode peuvent changer la nature d'une rencontre après sa
+# création. La politique finale dépend donc du contenu final, pas du patron de
+# graphe qui avait initialement créé le nœud.
+for node in nodes.values():
+    enc = node["encounter"]
+    generated = (enc["game_mode"] in {"random", "draft"}
+                 or (enc["game_mode"] == "mirror" and not enc["mirror_fixed_deck"])
+                 or (enc["game_mode"] == "classic"
+                     and enc["opponent_deck_policy"] == "generated"))
+    if generated:
+        enc["seed_policy"] = "per_attempt"
+
 if len(nodes) != 162:
     raise SystemExit(f"162 nœuds attendus, obtenu {len(nodes)}")
 if len(set(depth)) != 1 and max(depth.values()) < 45:

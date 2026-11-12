@@ -1,50 +1,35 @@
-## CampaignPreparationController.gd
-## Préparation locale des modes de campagne : révélation des loadouts générés
-## ou draft contre l'IA. Elle réutilise LoadoutCardGrid et CampaignModeSession,
-## jamais les contrôleurs ou coordinateurs réseau du PVP.
+## Adaptateur local de la préparation de campagne. Le rendu est partagé avec le
+## PVP par ModePreparationView ; seules l'IA et la navigation restent ici.
 extends Control
 
 const Routes := preload("res://scripts/ui/GameRoutes.gd")
-const GodIdentityModel := preload("res://scripts/data/GodIdentity.gd")
-const EncounterPresenter := preload("res://scripts/ui/campaign/CampaignEncounterPresenter.gd")
-const LayoutModel := preload("res://scripts/ui/pvp/PvpPreparationLayout.gd")
 
 @onready var background: MenuBackground = $Background
 @onready var back_button: Button = $Root/Header/BackButton
-@onready var title_label: Label = $Root/Header/TitleLabel
-@onready var timer_label: Label = $Root/Header/TimerLabel
+@onready var title_label: Label = $Root/Header/Titles/Title
+@onready var round_label: Label = $Root/Header/Titles/RoundLabel
 @onready var scroll: ScrollContainer = $Root/Scroll
-@onready var content: VBoxContainer = $Root/Scroll/Content
-@onready var status_label: Label = $Root/Scroll/Content/StatusLabel
-@onready var offers_grid: LoadoutCardGrid = $Root/Scroll/Content/OffersGrid
-@onready var deck_title: Label = $Root/Scroll/Content/DeckTitle
-@onready var deck_grid: LoadoutCardGrid = $Root/Scroll/Content/DeckGrid
-@onready var confirm_button: Button = $Root/ConfirmButton
-
-var _deck_ids: Array = []
-var _deck_card_size := UITheme.PVP_FINAL_CARD_MAX
-var _layout_fit_pending := false
+@onready var preparation_view = $Root/Scroll/PreparationView
+@onready var status_label: Label = $Root/Footer/StatusLabel
+@onready var confirm_button: Button = $Root/Footer/ConfirmButton
 
 
 func _ready() -> void:
 	Audio.set_button_sfx(confirm_button, AudioCatalog.SFX_BUTTON_2)
 	back_button.pressed.connect(_on_back)
 	confirm_button.pressed.connect(_on_confirm)
-	offers_grid.card_chosen.connect(_on_card_chosen)
-	scroll.resized.connect(_schedule_deck_fit)
-	background.set_god(GodIdentityModel.player(PlayerData.player_god_id))
-	var service := CampaignContext.get_service()
-	var summary := EncounterPresenter.summary(service.node(CampaignContext.active_node_id()),
-		PlayerData.player_god_id)
-	title_label.text = str(summary.get("name", "PRÉPARATION")).to_upper()
-	status_label.visible = false
+	preparation_view.card_chosen.connect(_on_card_chosen)
+	preparation_view.bind_scroll(scroll)
 	_refresh()
 
 
 func _process(delta: float) -> void:
 	if BattleContext.campaign_mode_session == null:
 		return
-	if BattleContext.advance_mode_preparation(delta):
+	var completed := BattleContext.advance_mode_preparation(delta)
+	var state := BattleContext.mode_state()
+	preparation_view.set_remaining_seconds(float(state.get("remaining_seconds", 0.0)))
+	if completed:
 		_refresh()
 
 
@@ -54,69 +39,39 @@ func _refresh() -> void:
 		_show_missing_session()
 		return
 	var rules: Dictionary = state.get("rules", {})
-	var draft: Dictionary = state.get("draft", {})
-	var draft_open := bool(draft.get("started", false)) and not bool(draft.get("complete", false))
+	var mode := str(rules.get("mode", GameModeRules.MODE_CLASSIC))
+	var format := str(rules.get("series", SeriesRules.SERIES_FT1))
+	title_label.text = "PRÉPARATION • %s" % GameModeRules.mode_label(mode).to_upper()
+	var series: Dictionary = state.get("series", {})
+	round_label.text = "Partie simple" if format == SeriesRules.SERIES_FT1 \
+		else "MANCHE %d • %s" % [int(series.get("round_index", 1)), format.to_upper()]
 	status_label.visible = false
 	status_label.add_theme_color_override("font_color", UITheme.COL_TEXT_DIM)
-	offers_grid.visible = draft_open
+	var draft: Dictionary = state.get("draft", {})
+	var draft_open := bool(draft.get("started", false)) and not bool(draft.get("own_complete", false))
 	if draft_open:
-		_deck_ids.clear()
-		var offers: Array = draft.get("own_offers", [])
-		var own_deck: Array = draft.get("own_deck", [])
-		offers_grid.show_cards(offers, UITheme.CARD_HAND, 2, true, "",
-			UITheme.PVP_LOCAL_CARD_MAX)
-		deck_grid.show_cards(own_deck, UITheme.CARD_DECK, 4, false)
-		deck_title.text = "VOTRE DECK — %d / %d" % [own_deck.size(), DeckRules.DECK_SIZE]
-		timer_label.visible = true
-		timer_label.text = "%d s" % int(ceilf(float(draft.get("remaining_seconds", 0.0))))
-		status_label.text = "Choisissez une carte parmi les deux offres. L'IA effectue son propre draft en parallèle."
-		status_label.visible = true
-		confirm_button.disabled = BattleContext.player_loadout == null
-		confirm_button.text = "COMMENCER" if not confirm_button.disabled else "DRAFT EN COURS…"
+		preparation_view.show_draft(draft)
+		confirm_button.visible = false
 		return
-	timer_label.visible = false
 	var own: Dictionary = state.get("own_loadout", {})
-	if not own.is_empty():
-		_deck_ids = (own.get("deck", []) as Array).duplicate()
-		# Même présentation verticale que la révélation PVP : deux colonnes,
-		# quatre lignes et une taille limitée par la hauteur disponible.
-		deck_grid.show_cards(_deck_ids, _deck_card_size, 2, false, "", _deck_card_size)
-		deck_title.text = "VOTRE DECK"
-	else:
-		_deck_ids.clear()
-		deck_grid.show_cards([], UITheme.CARD_DECK, 4, false)
-		deck_title.text = "VOTRE DECK"
+	if own.is_empty():
+		preparation_view.show_waiting("Préparation du deck en cours…")
+		confirm_button.visible = false
+		return
+	var god: Dictionary = preparation_view.show_loadout(own,
+		int(rules.get("power_tier", GameModeRules.DEFAULT_POWER_TIER)), format)
+	background.set_god(god)
+	confirm_button.visible = true
 	confirm_button.disabled = not BattleContext.has_prepared_loadouts()
 	confirm_button.text = "⚔  AFFRONTER"
-	_schedule_deck_fit()
 
 
 func _show_missing_session() -> void:
-	_deck_ids.clear()
-	status_label.text = "Préparation de campagne absente. Revenez à la carte."
+	preparation_view.show_waiting("Préparation de campagne absente. Revenez à la carte.")
+	status_label.text = "La session de préparation n'est plus disponible."
 	status_label.visible = true
-	offers_grid.visible = false
-	confirm_button.disabled = true
-	confirm_button.text = "INDISPONIBLE"
-
-
-func _schedule_deck_fit() -> void:
-	if _layout_fit_pending or _deck_ids.is_empty() or not is_inside_tree():
-		return
-	_layout_fit_pending = true
-	_fit_deck_layout.call_deferred()
-
-
-func _fit_deck_layout() -> void:
-	_layout_fit_pending = false
-	if _deck_ids.is_empty() or scroll.size.x <= 0.0 or scroll.size.y <= 0.0:
-		return
-	var next_size := LayoutModel.reveal_size(scroll.size,
-		content.get_combined_minimum_size().y, deck_grid.size.x, _deck_card_size)
-	if next_size == _deck_card_size:
-		return
-	_deck_card_size = next_size
-	deck_grid.show_cards(_deck_ids, _deck_card_size, 2, false, "", _deck_card_size)
+	status_label.add_theme_color_override("font_color", UITheme.COL_ERROR)
+	confirm_button.visible = false
 
 
 func _on_card_chosen(stone_id: String) -> void:
