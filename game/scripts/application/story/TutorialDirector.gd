@@ -3,8 +3,18 @@
 ## une scène, éventuellement à une ancre, et avance sur un geste réel. Le
 ## directeur ne dessine rien et ne connaît ni le plateau ni les menus : il ne
 ## voit que des identifiants d'ancres, des événements et leurs propriétés.
+##
+## Aucune attente n'expire : une étape reste en place tant que le joueur n'a
+## pas fait le geste demandé, même après un long moment d'inactivité ou un
+## passage de l'application en arrière-plan. Seul `cancel()` interrompt un
+## chapitre, et seul un chapitre mené jusqu'au bout est marqué comme acquis :
+## fermer le jeu avant la fin le fait reprendre au début, jamais après.
 class_name TutorialDirector
 extends Node
+
+## Drapeau d'étape : le chapitre est acquis dès ce geste, même si un dialogue
+## de conclusion reste à lire (l'échange de carte clôt le parcours guidé).
+const COMPLETE_KEY := "complete_chapter"
 
 var _service: Node = null
 var _chapter: Dictionary = {}
@@ -58,6 +68,9 @@ func cancel() -> void:
 	_steps = []
 	_chapter = {}
 	if _service != null:
+		## Une attente devenue sans limite ne doit pas survivre au chapitre
+		## qu'elle servait, sinon elle consommerait les gestes du suivant.
+		_service.cancel_waits()
 		_service.spotlight_cleared.emit()
 		_service.tutorial_step_changed.emit()
 
@@ -74,9 +87,13 @@ func chapter_id() -> String:
 
 ## Pendant une étape guidée, le joueur ne doit pas pouvoir poser une carte par
 ## un glissement ou un raccourci. Les étapes qui attendent explicitement une
-## pose restent, elles, compatibles avec le plateau.
+## pose restent, elles, compatibles avec le plateau. Une attente sans consigne
+## (résolution d'ancre, dialogue) ne verrouille jamais le plateau : le joueur
+## ne doit pas se retrouver bloqué sans cible visible.
 func blocks_placement() -> bool:
 	if not _running or not _waiting or _current_step.is_empty():
+		return false
+	if _wait_for == "":
 		return false
 	return _wait_for != "stone_placed" and _wait_for != "cell_pressed"
 
@@ -120,54 +137,73 @@ func _run_current_step() -> void:
 	var dialogue := str(step.get("dialogue", ""))
 	if dialogue != "":
 		await _play(dialogue)
-		if _canceled:
-			return
-		if not _running:
+		if not _running or _canceled:
 			return
 	var anchor_id := str(step.get("anchor", ""))
 	var target: Control = null
 	if anchor_id != "":
-		target = await _wait_for_anchor(anchor_id, float(step.get("timeout", 20.0)))
-		if _canceled:
+		target = await _wait_for_anchor(anchor_id, step_scene)
+		if not _running or _canceled:
 			return
 		if target == null:
-			push_warning("TutorialDirector: ancre introuvable '%s'." % anchor_id)
-			_finish(false)
+			# La scène a changé pendant l'attente : l'étape reste à faire et
+			# sera relancée quand le joueur reviendra sur cet écran.
+			_release_step()
 			return
 	var wait_for := str(step.get("wait_for", ""))
 	var spotlight := bool(step.get("spotlight", true)) and target != null
-	if wait_for != "":
-		_wait_for = wait_for
-		_service.tutorial_step_changed.emit()
-		if spotlight:
-			_service.spotlight_requested.emit(target, str(step.get("prompt", "")),
-				wait_for == "tutorial_advance")
-		var event: Dictionary = await _wait_for_expected(wait_for,
-			float(step.get("timeout", 20.0)))
-		if _canceled:
-			return
-		_wait_for = ""
-		if spotlight:
-			_service.spotlight_cleared.emit()
-		_service.tutorial_step_changed.emit()
-		if event.is_empty():
-			push_warning("TutorialDirector: action '%s' non reçue (étape '%s')." % [
-				wait_for, str(step.get("id", ""))])
-			_finish(false)
-			return
+	if wait_for == "":
+		_advance_step()
+		return
+	_wait_for = wait_for
+	_service.tutorial_step_changed.emit()
+	if spotlight:
+		_service.spotlight_requested.emit(target, str(step.get("prompt", "")),
+			wait_for == "tutorial_advance")
+	var event: Dictionary = await _wait_for_expected(wait_for)
+	if not _running or _canceled:
+		return
+	if spotlight:
+		_service.spotlight_cleared.emit()
+	_wait_for = ""
+	_service.tutorial_step_changed.emit()
+	if event.is_empty():
+		_release_step()
+		return
+	_advance_step()
+
+
+## Consomme l'étape courante. Un chapitre ne revient jamais en arrière : l'index
+## n'avance que lorsque le geste attendu est reçu.
+func _advance_step() -> void:
+	if bool(_current_step.get(COMPLETE_KEY, false)):
+		_service.mark_chapter_done(chapter_id())
 	_waiting = false
 	_current_step = {}
 	_step_index += 1
 	_run_current_step()
 
 
-## Attend le bon événement, en ignorant les gestes qui ne correspondent pas à
-## la cible. Un mauvais choix ne consomme donc pas l'étape ni son délai.
-func _wait_for_expected(name: String, timeout: float) -> Dictionary:
-	var deadline := Time.get_ticks_msec() + int(maxf(0.1, timeout) * 1000.0)
-	while not _canceled and Time.get_ticks_msec() < deadline:
-		var remaining := float(deadline - Time.get_ticks_msec()) / 1000.0
-		var event: Dictionary = await _service.wait_for_event([name], maxf(0.1, remaining))
+## Rend l'étape au prochain `notify_screen()` sans toucher à l'index : le
+## joueur retrouve la même consigne en revenant sur l'écran, jamais un chapitre
+## reparti de zéro.
+func _release_step() -> void:
+	if not _running:
+		return
+	_wait_for = ""
+	_waiting = false
+	_current_step = {}
+	_service.tutorial_step_changed.emit()
+
+
+## Attend le bon événement, sans limite de temps : le joueur peut lire,
+## réfléchir ou laisser l'application en arrière-plan, l'étape reste en place.
+## Un geste qui ne correspond pas à `expect` ne consomme pas l'étape.
+func _wait_for_expected(name: String) -> Dictionary:
+	while _running and not _canceled:
+		var event: Dictionary = await _service.wait_for_event([name])
+		if not _running or _canceled:
+			return {}
 		if event.is_empty():
 			return {}
 		var payload: Dictionary = {}
@@ -202,9 +238,13 @@ func _play(sequence_id: String) -> void:
 	await session.finished
 
 
-func _wait_for_anchor(anchor_id: String, timeout: float) -> Control:
-	var deadline := Time.get_ticks_msec() + int(maxf(0.1, timeout) * 1000.0)
-	while not _canceled and Time.get_ticks_msec() < deadline:
+## L'ancre est le vrai Control de la scène, jamais une copie. L'attente n'a pas
+## de limite tant que la scène de l'étape est ouverte ; si le joueur va
+## ailleurs, l'étape est rendue à `notify_screen()` au lieu d'être abandonnée.
+func _wait_for_anchor(anchor_id: String, step_scene: String) -> Control:
+	while _running and not _canceled:
+		if step_scene != "" and step_scene != _scene:
+			return null
 		var target: Control = _service.get_anchor(anchor_id)
 		if target != null:
 			# Laisser une frame au layout pour que le spotlight vise la position
@@ -221,20 +261,23 @@ func _finish_chapter() -> void:
 		await _play(outro)
 		if _canceled:
 			return
-	_finish(true)
+	_finish()
 
 
-func _finish(success: bool) -> void:
+## Seule une exécution menée jusqu'au bout marque le chapitre comme acquis ;
+## une interruption laisse la progression intacte pour la prochaine session.
+func _finish() -> void:
 	if _canceled:
 		return
+	var finished_chapter := chapter_id()
 	_running = false
 	_waiting = false
 	_wait_for = ""
 	_current_step = {}
 	_steps = []
 	if _service != null:
+		_service.cancel_waits()
 		_service.spotlight_cleared.emit()
 		_service.tutorial_step_changed.emit()
-	if success:
-		_service.mark_chapter_done(str(_chapter.get("id", "")))
+		_service.mark_chapter_done(finished_chapter)
 	_chapter = {}

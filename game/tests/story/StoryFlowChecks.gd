@@ -20,9 +20,11 @@ func run() -> void:
 	StoryService._tutorial.start(StoryService.chapter("first_journey"),
 		"res://scenes/game/Board.tscn")
 	_test_journey_content()
+	await _test_late_subscription_receives_event()
 	_test_theme_god_identity(service)
 	await _test_tutorial_match_wins()
 	_test_node_chapters(service)
+	await _test_idle_step_never_expires()
 	StoryService.stop_tutorial()
 	StoryService._memory_states.clear()
 	CampaignContext.reset_for_tests()
@@ -60,6 +62,20 @@ func _test_journey_content() -> void:
 		"setup tuto : l'avant-combat et le match annoncent le même premier joueur")
 	_check(StoryService.needs_prebattle_reading_time(),
 		"tirage : le tout premier duel guidé garde le temps de lecture")
+
+
+## Un geste peut précéder de quelques frames l'attente qui l'écoute. Le service
+## le mémorise : sans cette marge, une attente devenue sans limite resterait
+## bloquée sur un événement déjà passé.
+func _test_late_subscription_receives_event() -> void:
+	StoryService.notify_event("flow_late_event", {"value": 7})
+	var event: Dictionary = await StoryService.wait_for_event(["flow_late_event"])
+	_check(str(event.get("name", "")) == "flow_late_event"
+		and int((event.get("payload", {}) as Dictionary).get("value", 0)) == 7,
+		"scénario : un événement reçu juste avant l'attente n'est plus perdu")
+	var again: Dictionary = StoryService._take_event(["flow_late_event"])
+	_check(again.is_empty(),
+		"scénario : un événement déjà consommé ne fait pas avancer deux étapes")
 
 
 ## Le dieu présenté par un reflet doit être une identité de dialogue réelle :
@@ -197,6 +213,30 @@ func _test_node_chapters(service: CampaignService) -> void:
 	StoryService._screen_path = saved_screen
 	BattleContext.campaign_node_id = saved_node
 	BattleContext.campaign_service = saved_service
+
+
+## Régression : l'ancienne limite d'étape (30 s) arrêtait le chapitre puis le
+## faisait repartir de zéro. Sans geste, l'étape doit rester en place.
+func _test_idle_step_never_expires() -> void:
+	var chapter := {
+		"id": "idle_chapter",
+		"entry_scene": "res://scenes/menus/MainMenu.tscn",
+		"steps": [{
+			"id": "idle",
+			"scene": "res://scenes/menus/MainMenu.tscn",
+			"wait_for": "tutorial_advance",
+			"spotlight": false,
+		}],
+	}
+	StoryService._tutorial.start(chapter, "res://scenes/menus/MainMenu.tscn")
+	## 32 s de jeu : au-delà de l'ancien délai d'une étape.
+	for _frame in range(1900):
+		await get_tree().process_frame
+	_check(StoryService._tutorial.is_running()
+		and StoryService._tutorial._step_index == 0
+		and StoryService._tutorial._wait_for == "tutorial_advance",
+		"tutoriel : 32 s sans geste ne terminent ni ne relancent le chapitre")
+	StoryService.stop_tutorial()
 
 
 func _wait_for_player(manager: TurnManager, player: int) -> bool:

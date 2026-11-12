@@ -61,8 +61,7 @@
           "wait_for": "screen_opened",
           "expect": {
             "scene": "res://scenes/menus/CollectionScreen.tscn"
-          },
-          "timeout": 30.0
+          }
         },
         {
           "id": "deck_intro",
@@ -70,8 +69,7 @@
           "anchor": "collection.deck_panel",
           "dialogue": "journey_deck_intro",
           "prompt": "Voici ton deck. Regarde-le bien.",
-          "wait_for": "tutorial_advance",
-          "timeout": 30.0
+          "wait_for": "tutorial_advance"
         },
         {
           "id": "return_home",
@@ -81,8 +79,7 @@
           "wait_for": "screen_opened",
           "expect": {
             "scene": "res://scenes/menus/MainMenu.tscn"
-          },
-          "timeout": 30.0
+          }
         },
         {
           "id": "campaign",
@@ -93,8 +90,7 @@
           "wait_for": "screen_opened",
           "expect": {
             "scene": "res://scenes/campaign/CampaignMap.tscn"
-          },
-          "timeout": 30.0
+          }
         },
         {
           "id": "first_level",
@@ -105,8 +101,7 @@
           "wait_for": "campaign_node_opened",
           "expect": {
             "node_id": "tuto_01"
-          },
-          "timeout": 30.0
+          }
         },
         {
           "id": "launch_level",
@@ -116,8 +111,7 @@
           "wait_for": "screen_opened",
           "expect": {
             "scene": "res://scenes/menus/PreBattle.tscn"
-          },
-          "timeout": 30.0
+          }
         },
         {
           "id": "prebattle_flip",
@@ -126,8 +120,7 @@
           "wait_for": "prebattle_ready",
           "expect": {
             "player_starts": true
-          },
-          "timeout": 20.0
+          }
         },
         {
           "id": "start_match",
@@ -137,8 +130,7 @@
           "wait_for": "screen_opened",
           "expect": {
             "scene": "res://scenes/game/Board.tscn"
-          },
-          "timeout": 30.0
+          }
         },
         {
           "id": "first_card",
@@ -149,8 +141,7 @@
           "wait_for": "card_selected",
           "expect": {
             "stone_id": "gueule_de_travers_n1"
-          },
-          "timeout": 30.0
+          }
         },
         {
           "id": "place_first",
@@ -163,8 +154,7 @@
             "col": 0,
             "stone_id": "gueule_de_travers_n1",
             "owner": 1
-          },
-          "timeout": 30.0
+          }
         },
         {
           "id": "wait_bot_1",
@@ -173,8 +163,7 @@
           "wait_for": "turn_started",
           "expect": {
             "player": 1
-          },
-          "timeout": 30.0
+          }
         },
         {
           "id": "second_card",
@@ -185,8 +174,7 @@
           "wait_for": "card_selected",
           "expect": {
             "stone_id": "ecorche_angle_n1"
-          },
-          "timeout": 30.0
+          }
         },
         {
           "id": "place_second",
@@ -199,8 +187,7 @@
             "col": 1,
             "stone_id": "ecorche_angle_n1",
             "owner": 1
-          },
-          "timeout": 30.0
+          }
         },
         {
           "id": "wait_bot_2",
@@ -209,8 +196,7 @@
           "wait_for": "turn_started",
           "expect": {
             "player": 1
-          },
-          "timeout": 30.0
+          }
         },
         {
           "id": "third_card",
@@ -221,8 +207,7 @@
           "wait_for": "card_selected",
           "expect": {
             "stone_id": "ogre_droitier_n1"
-          },
-          "timeout": 30.0
+          }
         },
         {
           "id": "place_third",
@@ -235,8 +220,7 @@
             "col": 1,
             "stone_id": "ogre_droitier_n1",
             "owner": 1
-          },
-          "timeout": 30.0
+          }
         },
         {
           "id": "wait_bot_3",
@@ -245,8 +229,7 @@
           "wait_for": "turn_started",
           "expect": {
             "player": 1
-          },
-          "timeout": 30.0
+          }
         },
         {
           "id": "fourth_card",
@@ -257,8 +240,7 @@
           "wait_for": "card_selected",
           "expect": {
             "stone_id": "rampant_des_fosses_n1"
-          },
-          "timeout": 30.0
+          }
         },
         {
           "id": "place_fourth",
@@ -271,8 +253,7 @@
             "col": 1,
             "stone_id": "rampant_des_fosses_n1",
             "owner": 1
-          },
-          "timeout": 30.0
+          }
         },
         {
           "id": "wait_bot_4",
@@ -281,8 +262,7 @@
           "wait_for": "turn_started",
           "expect": {
             "player": 1
-          },
-          "timeout": 30.0
+          }
         },
         {
           "id": "fifth_card",
@@ -293,8 +273,7 @@
           "wait_for": "card_selected",
           "expect": {
             "stone_id": "le_drape_du_seuil_n1"
-          },
-          "timeout": 30.0
+          }
         },
         {
           "id": "place_fifth",
@@ -307,8 +286,7 @@
             "col": 0,
             "stone_id": "le_drape_du_seuil_n1",
             "owner": 1
-          },
-          "timeout": 30.0
+          }
         },
         {
           "id": "victory_gate",
@@ -317,8 +295,7 @@
           "wait_for": "match_won",
           "expect": {
             "winner": 1
-          },
-          "timeout": 60.0
+          }
         },
         {
           "id": "victory",
@@ -330,8 +307,7 @@
           "scene": "res://scenes/menus/Result.tscn",
           "anchor": "result.rewards",
           "prompt": "Voilà tes récompenses : les âmes et les cartes gagnées.",
-          "wait_for": "tutorial_advance",
-          "timeout": 30.0
+          "wait_for": "tutorial_advance"
         },
         {
           "id": "leave_result",
@@ -341,8 +317,7 @@
           "wait_for": "screen_opened",
           "expect": {
             "scene": "res://scenes/menus/MainMenu.tscn"
-          },
-          "timeout": 30.0
+          }
         },
         {
           "id": "open_decks_again",
@@ -352,8 +327,7 @@
           "wait_for": "screen_opened",
           "expect": {
             "scene": "res://scenes/menus/CollectionScreen.tscn"
-          },
-          "timeout": 30.0
+          }
         },
         {
           "id": "swap_intro",
@@ -364,8 +338,7 @@
           "wait_for": "collection_card_opened",
           "expect": {
             "stone_id": "le_sac_a_murmures_n1"
-          },
-          "timeout": 30.0
+          }
         },
         {
           "id": "swap_use",
@@ -375,8 +348,7 @@
           "wait_for": "replacement_opened",
           "expect": {
             "stone_id": "le_sac_a_murmures_n1"
-          },
-          "timeout": 30.0
+          }
         },
         {
           "id": "swap_target",
@@ -387,7 +359,7 @@
           "expect": {
             "new_id": "le_sac_a_murmures_n1"
           },
-          "timeout": 30.0
+          "complete_chapter": true
         },
         {
           "id": "swap_done",
@@ -406,8 +378,7 @@
           "anchor": "board.cell.3.3",
           "dialogue": "tuto_02_intro",
           "prompt": "Le plateau s'étend sur quatre cases de côté.",
-          "wait_for": "tutorial_advance",
-          "timeout": 30.0
+          "wait_for": "tutorial_advance"
         }
       ]
     },
@@ -428,8 +399,7 @@
           "anchor": "board.cell.1.1",
           "dialogue": "tuto_03_intro",
           "prompt": "Case bloquée : ni pose, ni attaque à travers.",
-          "wait_for": "tutorial_advance",
-          "timeout": 30.0
+          "wait_for": "tutorial_advance"
         }
       ]
     }

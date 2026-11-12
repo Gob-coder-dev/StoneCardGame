@@ -17,6 +17,8 @@ const TriggerRulesModel := preload("res://scripts/domain/story/StoryTriggerRules
 const SessionModel := preload("res://scripts/application/story/StorySession.gd")
 const DirectorModel := preload("res://scripts/application/story/TutorialDirector.gd")
 const GodIdentityModel := preload("res://scripts/data/GodIdentity.gd")
+const EVENT_BUFFER_LIMIT := 8
+const EVENT_BUFFER_TTL_MS := 1000
 
 var _dialogues: Dictionary = {}
 var _tutorials: Dictionary = {}
@@ -26,8 +28,12 @@ var _queue: Array[StorySession] = []
 var _anchors: Dictionary = {}
 var _memory_states: Dictionary = {}
 var _tutorial: TutorialDirector = null
-var _pending_event: Dictionary = {}
-var _waiting_names: Array = []
+## Les événements récents sont mémorisés : un geste peut précéder de quelques
+## frames l'attente qui l'écoute, et une attente sans limite resterait alors
+## bloquée sur un événement déjà passé. La péremption empêche qu'un geste d'une
+## étape précédente ne fasse avancer la suivante.
+var _events: Array[Dictionary] = []
+var _wait_generation := 0
 var _screen_path: String = ""
 ## Les tests d'interface démarrent sans onboarding ; le jeu réel le laisse à
 ## true. Ce n'est pas une option de contenu : le chapitre reste le même.
@@ -120,17 +126,33 @@ func notify_event(name: String, payload: Dictionary = {}) -> void:
 	event_received.emit(name, payload)
 
 
-func wait_for_event(names: Array, timeout: float) -> Dictionary:
-	_pending_event = {}
-	_waiting_names = names.duplicate()
-	var deadline := Time.get_ticks_msec() + int(maxf(0.1, timeout) * 1000.0)
-	while _pending_event.is_empty() and Time.get_ticks_msec() < deadline \
-			and is_inside_tree():
+## Attend un des événements nommés. `timeout` vaut 0 par défaut : le scénario
+## attend le joueur, pas une horloge. Un délai positif reste possible pour un
+## appel qui ne doit pas bloquer indéfiniment.
+func wait_for_event(names: Array, timeout: float = 0.0) -> Dictionary:
+	if names.is_empty():
+		return {}
+	var deadline := 0
+	if timeout > 0.0:
+		deadline = Time.get_ticks_msec() + int(maxf(0.1, timeout) * 1000.0)
+	var generation := _wait_generation
+	while is_inside_tree():
+		if generation != _wait_generation:
+			return {}
+		var event := _take_event(names)
+		if not event.is_empty():
+			return event
+		if deadline > 0 and Time.get_ticks_msec() >= deadline:
+			break
 		await get_tree().process_frame
-	_waiting_names.clear()
-	var result := _pending_event
-	_pending_event = {}
-	return result
+	return {}
+
+
+## Interrompt les attentes en cours sans effacer les événements mémorisés.
+## `TutorialDirector.cancel()` s'en sert pour qu'une attente sans limite ne
+## survive pas au chapitre qu'elle servait.
+func cancel_waits() -> void:
+	_wait_generation += 1
 
 
 func register_anchor(anchor_id: String, control: Control) -> void:
@@ -370,8 +392,29 @@ func _on_session_finished(session: StorySession) -> void:
 
 
 func _on_event_received(name: String, payload: Dictionary) -> void:
-	if _pending_event.is_empty() and _waiting_names.has(name):
-		_pending_event = {"name": name, "payload": payload}
+	_events.append({"name": name, "payload": payload, "at": Time.get_ticks_msec()})
+	while _events.size() > EVENT_BUFFER_LIMIT:
+		_events.pop_front()
+
+
+## Retire le plus ancien événement encore frais qui correspond au nom demandé.
+func _take_event(names: Array) -> Dictionary:
+	_prune_events()
+	for index in range(_events.size()):
+		var entry: Dictionary = _events[index]
+		var event_name := str(entry.get("name", ""))
+		if not names.has(event_name):
+			continue
+		_events.remove_at(index)
+		return {"name": event_name,
+			"payload": (entry.get("payload", {}) as Dictionary).duplicate(true)}
+	return {}
+
+
+func _prune_events() -> void:
+	var oldest := Time.get_ticks_msec() - EVENT_BUFFER_TTL_MS
+	while not _events.is_empty() and int(_events[0].get("at", 0)) < oldest:
+		_events.pop_front()
 
 
 func _chapter_for_node(node_id: String) -> Dictionary:
