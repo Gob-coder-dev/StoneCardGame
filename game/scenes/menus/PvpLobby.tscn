@@ -69,7 +69,7 @@ theme_override_constants/separation = 28
 
 [node name="ModeScreen" type="VBoxContainer" parent="Root/Scroll/Content"]
 layout_mode = 2
-theme_override_constants/separation = 22
+theme_override_constants/separation = 28
 
 [node name="ModeTitle" type="Label" parent="Root/Scroll/Content/ModeScreen"]
 layout_mode = 2
@@ -81,7 +81,9 @@ autowrap_mode = 2
 
 [node name="ModeHint" type="Label" parent="Root/Scroll/Content/ModeScreen"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.737, 0.698, 0.741, 1)
+theme_override_colors/font_color = Color(0.933, 0.906, 0.886, 1)
+theme_override_colors/font_outline_color = Color(0.063, 0.063, 0.075, 1)
+theme_override_constants/outline_size = 6
 theme_override_font_sizes/font_size = 28
 text = "Chaque joueur a son téléphone, sur le même Wi-Fi."
 horizontal_alignment = 1
@@ -93,7 +95,20 @@ theme_type_variation = &"DeckPanel"
 
 [node name="CreateBox" type="VBoxContainer" parent="Root/Scroll/Content/ModeScreen/CreateCard"]
 layout_mode = 2
-theme_override_constants/separation = 14
+theme_override_constants/separation = 18
+
+[node name="CreateHint" type="Label" parent="Root/Scroll/Content/ModeScreen/CreateCard/CreateBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.933, 0.906, 0.886, 1)
+theme_override_font_sizes/font_size = 28
+text = "Votre adversaire rejoint depuis son téléphone."
+autowrap_mode = 2
+
+[node name="Divider" type="ColorRect" parent="Root/Scroll/Content/ModeScreen/CreateCard/CreateBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 2)
+mouse_filter = 2
+color = Color(0.318, 0.275, 0.325, 0.65)
 
 [node name="CreateButton" type="Button" parent="Root/Scroll/Content/ModeScreen/CreateCard/CreateBox"]
 custom_minimum_size = Vector2(0, 148)
@@ -103,13 +118,11 @@ theme_override_font_sizes/font_size = 40
 text = "CRÉER UNE PARTIE"
 script = ExtResource("3_touch")
 
-[node name="CreateHint" type="Label" parent="Root/Scroll/Content/ModeScreen/CreateCard/CreateBox"]
+[node name="ChoiceDivider" type="ColorRect" parent="Root/Scroll/Content/ModeScreen"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.737, 0.698, 0.741, 1)
-theme_override_font_sizes/font_size = 26
-text = "Votre adversaire rejoint depuis son téléphone."
-horizontal_alignment = 1
-autowrap_mode = 2
+custom_minimum_size = Vector2(0, 2)
+mouse_filter = 2
+color = Color(0.318, 0.275, 0.325, 0.6)
 
 [node name="JoinCard" type="PanelContainer" parent="Root/Scroll/Content/ModeScreen"]
 layout_mode = 2
@@ -117,7 +130,20 @@ theme_type_variation = &"DeckPanel"
 
 [node name="JoinBox" type="VBoxContainer" parent="Root/Scroll/Content/ModeScreen/JoinCard"]
 layout_mode = 2
-theme_override_constants/separation = 14
+theme_override_constants/separation = 18
+
+[node name="JoinHint" type="Label" parent="Root/Scroll/Content/ModeScreen/JoinCard/JoinBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.933, 0.906, 0.886, 1)
+theme_override_font_sizes/font_size = 28
+text = "Les parties ouvertes sur ce Wi-Fi s'affichent toutes seules."
+autowrap_mode = 2
+
+[node name="Divider" type="ColorRect" parent="Root/Scroll/Content/ModeScreen/JoinCard/JoinBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 2)
+mouse_filter = 2
+color = Color(0.318, 0.275, 0.325, 0.65)
 
 [node name="JoinButton" type="Button" parent="Root/Scroll/Content/ModeScreen/JoinCard/JoinBox"]
 custom_minimum_size = Vector2(0, 148)
@@ -126,14 +152,6 @@ theme_type_variation = &"PvpButton"
 theme_override_font_sizes/font_size = 40
 text = "REJOINDRE UNE PARTIE"
 script = ExtResource("3_touch")
-
-[node name="JoinHint" type="Label" parent="Root/Scroll/Content/ModeScreen/JoinCard/JoinBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.737, 0.698, 0.741, 1)
-theme_override_font_sizes/font_size = 26
-text = "Les parties ouvertes sur ce Wi-Fi s'affichent toutes seules."
-horizontal_alignment = 1
-autowrap_mode = 2
 
 [node name="JoinScreen" type="VBoxContainer" parent="Root/Scroll/Content"]
 visible = false

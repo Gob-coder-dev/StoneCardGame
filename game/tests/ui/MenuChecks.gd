@@ -990,6 +990,17 @@ func _test_pvp_lobby_screens() -> void:
 	_check(page.create_button.text == "CRÉER UNE PARTIE"
 		and page.join_button.text == "REJOINDRE UNE PARTIE",
 		"le choix du mode propose de créer ou de rejoindre une partie")
+	var create_style := page.create_card.get_theme_stylebox("panel") as StyleBoxFlat
+	var join_style := page.join_card.get_theme_stylebox("panel") as StyleBoxFlat
+	_check(create_style != null and join_style != null
+		and create_style.border_width_left == 3 and create_style.border_color == UITheme.COL_ACCENT
+		and join_style.border_width_left == 3 and join_style.border_color == UITheme.COL_NEON
+		and create_style.bg_color.a < 1.0 and join_style.bg_color.a < 1.0
+		and page.create_card.get_node("CreateBox").get_child(0).name == "CreateHint"
+		and page.create_card.get_node("CreateBox").get_child(2).name == "CreateButton"
+		and page.join_card.get_node("JoinBox").get_child(0).name == "JoinHint"
+		and page.create_card.get_node("CreateBox/CreateHint").get_theme_font_size("font_size") == 28,
+		"les deux options sont des cartes encadrées, aide lisible au-dessus de chaque bouton")
 	var refresh := false
 	for button in page.find_children("*", "Button"):
 		if str((button as Button).text).contains("ACTUALISER"):

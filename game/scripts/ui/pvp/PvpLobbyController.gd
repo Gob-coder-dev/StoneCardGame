@@ -25,6 +25,8 @@ const MODE_JOIN := FlowModel.MODE_JOIN
 
 @onready var back_button: Button = $Root/Header/BackButton
 @onready var mode_screen: VBoxContainer = $Root/Scroll/Content/ModeScreen
+@onready var create_card: PanelContainer = $Root/Scroll/Content/ModeScreen/CreateCard
+@onready var join_card: PanelContainer = $Root/Scroll/Content/ModeScreen/JoinCard
 @onready var create_button: Button = \
 	$Root/Scroll/Content/ModeScreen/CreateCard/CreateBox/CreateButton
 @onready var join_button: Button = \
@@ -136,6 +138,7 @@ var _displayed_connection_seconds: int:
 
 
 func _ready() -> void:
+	_style_mode_cards()
 	Audio.set_button_sfx(ready_button, AudioCatalog.SFX_BUTTON_2)
 	_flow.changed.connect(_refresh_status)
 	_flow.games_changed.connect(_on_games_changed)
@@ -221,6 +224,23 @@ func _on_games_changed(games: Array) -> void:
 
 
 ## ─── Choix du mode ───────────────────────────────────────────────────────────
+
+## Les deux cartes d'action portent la couleur de leur bouton. Sans cadre
+## visible, la phrase d'aide flottait et seul le liseré du bouton « rejoindre »
+## délimitait un bloc.
+func _style_mode_cards() -> void:
+	_style_mode_card(create_card, UITheme.COL_ACCENT)
+	_style_mode_card(join_card, UITheme.COL_NEON)
+
+
+func _style_mode_card(card: PanelContainer, accent: Color) -> void:
+	var style := UITheme.panel_style(Color(0.145, 0.133, 0.160, 0.88), accent, 3, 24)
+	style.content_margin_left = 24
+	style.content_margin_right = 24
+	style.content_margin_top = 20
+	style.content_margin_bottom = 22
+	card.add_theme_stylebox_override("panel", style)
+
 
 func _start_hosting() -> void:
 	var deck := PlayerData.get_active_deck()
