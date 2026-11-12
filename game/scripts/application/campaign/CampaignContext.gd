@@ -10,6 +10,9 @@ const FactoryModel := preload("res://scripts/application/campaign/CampaignEncoun
 ## Dernier nœud à recentrer sur la carte. Il n'est pas une progression : la
 ## vérité sauvegardée reste `CampaignProgress.last_selected`.
 var focus_node_id: String = ""
+## Demande venue du résultat : la carte centre sur ce nœud et ouvre sa fiche,
+## sans jamais lancer la rencontre. Consommée une seule fois.
+var _requested_node_id: String = ""
 
 var _service: CampaignService = null
 var _test_service: CampaignService = null
@@ -27,12 +30,34 @@ func get_service() -> CampaignService:
 func set_service_for_tests(service: CampaignService) -> void:
 	_test_service = service
 	focus_node_id = ""
+	_requested_node_id = ""
 
 
 func reset_for_tests() -> void:
 	_test_service = null
 	_service = null
 	focus_node_id = ""
+	_requested_node_id = ""
+
+
+## Le résultat dépose une demande de fiche : la carte la consomme à l'arrivée.
+## Aucune règle de déblocage ici, la carte vérifie l'accessibilité.
+func request_node(node_id: String) -> void:
+	_requested_node_id = node_id
+	if node_id != "":
+		focus_node_id = node_id
+
+
+## Lecture sans consommation : la carte en a besoin pour centrer avant
+## d'ouvrir la fiche.
+func requested_node() -> String:
+	return _requested_node_id
+
+
+func take_requested_node() -> String:
+	var node_id := _requested_node_id
+	_requested_node_id = ""
+	return node_id
 
 
 ## Prépare une tentative complète de façon transactionnelle : toutes les

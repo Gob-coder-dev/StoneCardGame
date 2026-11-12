@@ -122,6 +122,12 @@ func is_playing() -> bool:
 	return _active_session != null
 
 
+## Vrai pendant un chapitre guidé : les écrans qui offrent une navigation
+## parallèle, comme les niveaux suivants du résultat, s'effacent devant lui.
+func is_tutorial_running() -> bool:
+	return _tutorial != null and _tutorial.is_running()
+
+
 func notify_event(name: String, payload: Dictionary = {}) -> void:
 	event_received.emit(name, payload)
 

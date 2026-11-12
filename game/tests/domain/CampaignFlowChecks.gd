@@ -8,6 +8,8 @@ const ProgressModel := preload("res://scripts/domain/campaign/CampaignProgress.g
 const StoreModel := preload("res://scripts/data/campaign/CampaignProgressStore.gd")
 const ServiceModel := preload("res://scripts/application/campaign/CampaignService.gd")
 const ProfileFixture := preload("res://tests/support/PlayerProfileFixture.gd")
+const Routes := preload("res://scripts/ui/GameRoutes.gd")
+const EncounterPresenter := preload("res://scripts/ui/campaign/CampaignEncounterPresenter.gd")
 const PATH := "user://campaign_flow_checks.json"
 
 var _service: CampaignService = null
@@ -33,6 +35,7 @@ func run() -> void:
 	_test_classic_result_once()
 	_test_series_defers_completion()
 	await _test_result_screens()
+	await _test_next_level_grid_layout()
 	await _test_preparation_scene()
 	BattleContext.clear_campaign_node()
 	CampaignContext.reset_for_tests()
@@ -140,11 +143,67 @@ func _test_result_screens() -> void:
 	var victory: Control = (load("res://scenes/menus/Result.tscn") as PackedScene).instantiate()
 	add_child(victory)
 	await get_tree().process_frame
-	_check(victory.next_btn.visible and victory.next_btn.text == "Retour à la carte",
-		"résultat campagne : une série terminée ramène à la carte unifiée")
+	var random_summary := EncounterPresenter.summary(_service.node("veskar_02"), "nerava")
+	_check(str(random_summary.get("opponent_god_label", "")) == "Adversaire",
+		"présentateur : un mode Aléatoire sans dieu imposé ne répète pas le mode comme dieu")
+	_check(not victory.next_btn.visible,
+		"résultat campagne : la victoire ne duplique plus la sortie vers la carte")
 	_check(victory.level_btn.text == "Carte de campagne" and not victory.gods_btn.visible,
 		"résultat campagne : les anciennes sorties par dieu sont remplacées")
+	_check(victory.next_levels.visible
+		and victory.next_levels_title.text == "NIVEAU SUIVANT"
+		and victory.next_levels_rows.get_child_count() == 1
+		and victory.next_levels_rows.get_child(0).get_child_count() == 1,
+		"résultat campagne : la victoire propose le niveau suivant sous forme de carte")
+	var next_card: Button = victory.next_levels_rows.get_child(0).get_child(0)
+	var card_style := next_card.get_theme_stylebox("normal") as StyleBoxFlat
+	_check(victory.next_levels.get_theme_stylebox("panel") is StyleBoxFlat
+		and victory.next_levels_title.get_theme_font_size("font_size") == 36
+		and card_style != null and card_style.border_width_left == 5,
+		"résultat campagne : le bloc est encadré, le titre agrandi, les contours renforcés")
+	var card_content := next_card.get_child(0)
+	_check(str(card_content.get_child(0).text) != ""
+		and str(card_content.get_child(1).text) != "",
+		"résultat campagne : la carte affiche le dieu à combattre et le mode")
+	var requested_paths: Array[String] = []
+	victory.scene_changer = func(path: String) -> void: requested_paths.append(path)
+	next_card.pressed.emit()
+	_check(requested_paths == [Routes.CAMPAIGN_MAP]
+		and CampaignContext.requested_node() == "mirror_01",
+		"résultat campagne : une carte demande la fiche du niveau sans lancer le combat")
+	CampaignContext.take_requested_node()
 	victory.queue_free()
+	await get_tree().process_frame
+
+
+## Trois successeurs : deux cartes sur la première ligne, la troisième seule et
+## centrée sur la seconde. Vérifié sur la géométrie réelle, pas sur l'intention.
+func _test_next_level_grid_layout() -> void:
+	var page: Control = (load("res://scenes/menus/Result.tscn") as PackedScene).instantiate()
+	add_child(page)
+	await get_tree().process_frame
+	page._clear_next_levels()
+	page._build_next_level_cards([
+		{"id": "a", "name": "Le Seuil", "opponent_god_label": "Veskàr",
+			"mode_label": "Classique", "accent": "#ffffff"},
+		{"id": "b", "name": "La Leçon", "opponent_god_label": "Nerava",
+			"mode_label": "Miroir", "accent": "#ffffff"},
+		{"id": "c", "name": "Le Premier Pas", "opponent_god_label": "Kharûn",
+			"mode_label": "Aléatoire", "accent": "#ffffff"},
+	])
+	page.next_levels.visible = true
+	for _frame in range(4):
+		await get_tree().process_frame
+	var rows: VBoxContainer = page.next_levels_rows
+	_check(rows.get_child_count() == 2
+		and rows.get_child(0).get_child_count() == 2
+		and rows.get_child(1).get_child_count() == 1,
+		"résultat : trois niveaux suivants forment deux lignes, deux puis une")
+	var alone: Control = rows.get_child(1).get_child(0)
+	var row_center := (rows.get_child(1) as Control).get_global_rect().get_center().x
+	_check(absf(alone.get_global_rect().get_center().x - row_center) <= 1.0,
+		"résultat : la carte seule de la seconde ligne est centrée")
+	page.queue_free()
 	await get_tree().process_frame
 
 

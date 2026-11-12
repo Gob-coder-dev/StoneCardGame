@@ -136,6 +136,25 @@ layout_mode = 2
 theme_override_constants/separation = 12
 alignment = 1
 
+[node name="NextLevels" type="PanelContainer" parent="VBoxCenter"]
+visible = false
+layout_mode = 2
+
+[node name="Column" type="VBoxContainer" parent="VBoxCenter/NextLevels"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Title" type="Label" parent="VBoxCenter/NextLevels/Column"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.82, 0.48, 1)
+theme_override_font_sizes/font_size = 36
+text = "NIVEAU SUIVANT"
+horizontal_alignment = 1
+
+[node name="Rows" type="VBoxContainer" parent="VBoxCenter/NextLevels/Column"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
 [node name="Separator" type="Control" parent="VBoxCenter"]
 layout_mode = 2
 custom_minimum_size = Vector2(0, 24)

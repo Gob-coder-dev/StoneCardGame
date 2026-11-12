@@ -74,6 +74,7 @@ func _setup_timers() -> void:
 func _show_unavailable() -> void:
 	## Une campagne invalide ne s'ouvre pas partiellement : les diagnostics
 	## restent lisibles pour corriger les données.
+	CampaignContext.take_requested_node()
 	map_view.visible = false
 	loading_hint.visible = false
 	dialog.visible = false
@@ -124,7 +125,12 @@ func _restore_map_position() -> void:
 	_restoring = true
 	map_view.relayout()
 	var target := 0.0
-	if _service.has_map_navigation():
+	var requested := CampaignContext.requested_node()
+	if requested != "" and _service.has_node(requested):
+		# Une demande venue du résultat prime sur la dernière position : le
+		# joueur doit voir le niveau dont la fiche va s'ouvrir.
+		target = map_view.scroll_for_anchor(requested, 0.0)
+	elif _service.has_map_navigation():
 		var saved = _service.map_navigation_state()
 		if _service.has_node(saved.anchor_node_id):
 			target = map_view.scroll_for_anchor(saved.anchor_node_id, saved.offset_y)
@@ -135,6 +141,18 @@ func _restore_map_position() -> void:
 	_nav_ready = true
 	map_view.modulate.a = 1.0
 	_register_story_anchors()
+	_open_requested_node.call_deferred()
+
+
+## Le résultat dépose le joueur sur la carte avec la fiche déjà ouverte. C'est
+## la fiche qui décide du lancement : la carte n'affronte jamais d'elle-même.
+func _open_requested_node() -> void:
+	var node_id := CampaignContext.take_requested_node()
+	if node_id == "" or not is_inside_tree() or dialog.visible:
+		return
+	if not _service.has_node(node_id):
+		return
+	_on_node_activated(node_id)
 
 
 ## Les nœuds sont construits par lots : on réenregistre l'ancre du niveau

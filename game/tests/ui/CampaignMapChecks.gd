@@ -43,8 +43,33 @@ func run() -> void:
 	await _test_restore_position()
 	await _test_close_during_load()
 	await _test_responsive_view()
+	await _test_requested_node_opens_dialog()
 	CampaignContext.reset_for_tests()
 	_cleanup()
+
+
+## Le résultat dépose une demande : la carte centre et ouvre la fiche visée,
+## puis la demande est consommée pour qu'un retour ordinaire ne rouvre rien.
+func _test_requested_node_opens_dialog() -> void:
+	CampaignContext.request_node("tuto_02")
+	var page: Control = (load("res://scenes/campaign/CampaignMap.tscn") as PackedScene).instantiate()
+	add_child(page)
+	for _frame in range(16):
+		await get_tree().process_frame
+	_check(page.dialog.visible and page.dialog.name_label.text == "LA LEÇON",
+		"carte : une demande du résultat ouvre la fiche du niveau visé")
+	_check(CampaignContext.requested_node() == "",
+		"carte : la demande d'ouverture n'est consommée qu'une fois")
+	page.queue_free()
+	await get_tree().process_frame
+	var plain: Control = (load("res://scenes/campaign/CampaignMap.tscn") as PackedScene).instantiate()
+	add_child(plain)
+	for _frame in range(10):
+		await get_tree().process_frame
+	_check(not plain.dialog.visible,
+		"carte : une arrivée sans demande ne rouvre aucune fiche")
+	plain.queue_free()
+	await get_tree().process_frame
 
 
 func _cleanup() -> void:

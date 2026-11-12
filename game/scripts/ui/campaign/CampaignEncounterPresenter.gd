@@ -33,6 +33,7 @@ static func summary(node: CampaignNode, player_god_id: String = "") -> Dictionar
 		"type_label": node.type_label(),
 		"tutorial_id": node.tutorial_id,
 		"opponent_label": opponent_label,
+		"opponent_god_label": opponent_god_label(node, player_god_id),
 		"theme_god_id": node.theme_god_id,
 		"theme_label": ("Inspiration : %s" % theme_name) if theme_name != "" else "",
 		"mode_label": GameModeRulesModel.mode_label(mode),
@@ -46,6 +47,31 @@ static func summary(node: CampaignNode, player_god_id: String = "") -> Dictionar
 		"is_boss": node.is_boss(),
 		"is_tutorial": node.is_tutorial(),
 	}
+
+
+## Nom court du dieu combattu, pour une carte compacte : le mode est affiché
+## juste à côté, donc ce libellé ne le répète jamais. Quand le mode laisse le
+## dieu indéterminé, on reprend le nom que montre la préparation de rencontre.
+static func opponent_god_label(node: CampaignNode, player_god_id: String = "") -> String:
+	if node == null:
+		return ""
+	var generated := _god_name(node.generator_god_id())
+	match node.opponent_god_policy():
+		CampaignNode.GOD_PROFILE:
+			return _god_name(player_god_id)
+		CampaignNode.GOD_MIRRORED:
+			if generated != "":
+				return generated
+			return _god_name(player_god_id) if player_god_id != "" else "Miroir"
+		CampaignNode.GOD_FIXED:
+			if node.fixed_god_id() != "":
+				return _god_name(node.fixed_god_id())
+			return OpponentCatalogModel.NEUTRAL_BOT_NAME
+	if generated != "":
+		return generated
+	if node.game_mode() == GameModeRulesModel.MODE_MIRROR:
+		return _god_name(player_god_id) if player_god_id != "" else "Miroir"
+	return "Adversaire"
 
 
 static func _opponent_label(node: CampaignNode, player_god_id: String,

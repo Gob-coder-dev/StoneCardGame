@@ -1,12 +1,27 @@
 ## ResultController.gd
-## Écran de résultat après une partie. En campagne, la victoire d'un nœud
-## ramène à la carte unifiée ; une série non terminée propose la manche
+## Écran de résultat après une partie. En campagne, la victoire propose les
+## niveaux suivants sous forme de cartes qui déposent le joueur sur la carte
+## avec la fiche du niveau ouverte ; une série non terminée propose la manche
 ## suivante. Les adversaires historiques conservent les cinq sorties d'origine.
 extends Control
 
 const OpponentCatalogModel := preload("res://scripts/data/OpponentCatalog.gd")
 const EncounterPathModel := preload("res://scripts/domain/EncounterPath.gd")
 const Routes := preload("res://scripts/ui/GameRoutes.gd")
+const EncounterPresenter := preload("res://scripts/ui/campaign/CampaignEncounterPresenter.gd")
+const TouchButtonModel := preload("res://scripts/ui/input/TouchButton.gd")
+
+## Deux cartes par ligne sur le canevas 1080. Si un nom de niveau dépasse cette
+## longueur, les noms sont retirés partout plutôt que tronqués inégalement.
+const NEXT_LEVEL_CARD_WIDTH := 420.0
+const NEXT_LEVEL_CARD_HEIGHT := 128.0
+const NEXT_LEVEL_NAME_MAX_CHARS := 24
+const NEXT_LEVELS_PER_ROW := 2
+## Le bloc forme sa propre carte pour se détacher de la récompense ; les cartes
+## de niveau gardent un contour épais pour rester lisibles sur fond sombre.
+const NEXT_LEVELS_GOLD := Color(1, 0.82, 0.48)
+const NEXT_LEVELS_BG := Color(0.075, 0.062, 0.086, 0.94)
+const NEXT_LEVEL_BORDER_WIDTH := 5
 
 @onready var result_label: Label = $VBoxCenter/ResultCard/Content/ResultLabel
 @onready var score_label: Label = $VBoxCenter/ResultCard/Content/ScoreLabel
@@ -25,6 +40,13 @@ const Routes := preload("res://scripts/ui/GameRoutes.gd")
 @onready var menu_btn: Button = $VBoxCenter/MainMenuButton
 @onready var save_status: Label = $VBoxCenter/SaveStatus
 @onready var retry_save_btn: Button = $VBoxCenter/RetrySaveButton
+@onready var next_levels: PanelContainer = $VBoxCenter/NextLevels
+@onready var next_levels_title: Label = $VBoxCenter/NextLevels/Column/Title
+@onready var next_levels_rows: VBoxContainer = $VBoxCenter/NextLevels/Column/Rows
+
+## Navigation injectable : les tests vérifient la destination réelle sans
+## changer de scène. Vide en jeu, la scène est alors ouverte normalement.
+var scene_changer: Callable = Callable()
 
 var _campaign := false
 
@@ -65,7 +87,10 @@ func _ready() -> void:
 		npc_name
 	]
 	_apply_campaign_copy()
+	next_levels.add_theme_stylebox_override("panel", UITheme.panel_style(
+		NEXT_LEVELS_BG, NEXT_LEVELS_GOLD, 2, 22))
 	_refresh_next_button()
+	_refresh_next_levels()
 	_refresh_save_status()
 	_refresh_reward()
 	StoryService.register_anchor("result.home", menu_btn)
@@ -192,16 +217,13 @@ func _next_level() -> Dictionary:
 
 ## Le suivant n'apparaît qu'après une victoire et s'il reste un rond. En
 ## campagne, une série non terminée reste jouable même après une manche perdue.
+## En campagne, le bouton principal ne sert plus qu'à enchaîner une série : la
+## suite du parcours passe par les cartes de niveaux suivants.
 func _refresh_next_button() -> void:
 	if _campaign:
-		var pending := BattleContext.campaign_series_pending()
-		var victory := BattleContext.last_winner == GameState.PLAYER_HUMAN \
-			and BattleContext.campaign_victory_confirmed()
-		next_btn.visible = BattleContext.last_result_saved and (pending or victory)
-		if pending:
-			next_btn.text = "Manche suivante"
-		elif victory:
-			next_btn.text = "Retour à la carte"
+		next_btn.visible = BattleContext.last_result_saved \
+			and BattleContext.campaign_series_pending()
+		next_btn.text = "Manche suivante"
 		return
 	next_btn.text = "Niveau suivant"
 	next_btn.visible = BattleContext.last_winner == GameState.PLAYER_HUMAN \
@@ -226,6 +248,7 @@ func _on_retry_save() -> void:
 		save_status.add_theme_color_override("font_color", UITheme.COL_SUCCESS)
 		retry_save_btn.visible = false
 		_refresh_next_button()
+		_refresh_next_levels()
 		return
 	save_status.text = "Échec de l'enregistrement (%s). Réessayez ou vérifiez l'espace disponible." \
 		% error_string(error)
@@ -234,16 +257,14 @@ func _on_retry_save() -> void:
 
 func _on_next_level() -> void:
 	if _campaign:
-		if BattleContext.campaign_series_pending():
-			var prepared := BattleContext.prepare_next_mode_round()
-			if not bool(prepared.get("ok", false)):
-				_show_action_error(str(prepared.get("reason", "Manche suivante impossible.")))
-				return
-			Routes.go(get_tree(), Routes.CAMPAIGN_PREPARATION
-				if bool(prepared.get("requires_draft", false)) else Routes.PRE_BATTLE)
+		if not BattleContext.campaign_series_pending():
 			return
-		CampaignContext.focus_node_id = BattleContext.campaign_node_id
-		Routes.go(get_tree(), Routes.CAMPAIGN_MAP)
+		var prepared := BattleContext.prepare_next_mode_round()
+		if not bool(prepared.get("ok", false)):
+			_show_action_error(str(prepared.get("reason", "Manche suivante impossible.")))
+			return
+		Routes.go(get_tree(), Routes.CAMPAIGN_PREPARATION
+			if bool(prepared.get("requires_draft", false)) else Routes.PRE_BATTLE)
 		return
 	var next_level := _next_level()
 	if next_level.is_empty() or BattleContext.last_winner != GameState.PLAYER_HUMAN:
@@ -258,6 +279,135 @@ func _on_next_level() -> void:
 	BattleContext.select_opponent(opponent)
 	BattleContext.forced_first_player = 0
 	Routes.go(get_tree(), Routes.PRE_BATTLE)
+
+
+## Successeurs directs du niveau gagné, accessibles et affichables. La carte de
+## campagne reste l'écran de décision : aucune de ces cartes ne lance un combat.
+func _next_level_entries() -> Array:
+	var result: Array = []
+	var service := CampaignContext.get_service()
+	if service == null or not service.is_ready():
+		return result
+	var node_id := BattleContext.campaign_node_id
+	if node_id == "" or not service.has_node(node_id):
+		return result
+	for successor_id in service.graph().successors(node_id):
+		var id := str(successor_id)
+		if not service.is_available(id):
+			continue
+		var node := service.node(id)
+		if node == null:
+			continue
+		var summary := EncounterPresenter.summary(node, PlayerData.player_god_id)
+		if not summary.is_empty():
+			result.append(summary)
+	return result
+
+
+## Bloc des niveaux suivants : victoire confirmée, résultat réellement écrit et
+## aucune manche de série en attente. Le parcours guidé le masque, puisque son
+## spotlight impose son propre chemin.
+func _refresh_next_levels() -> void:
+	_clear_next_levels()
+	next_levels.visible = false
+	if not _campaign or not BattleContext.last_result_saved:
+		return
+	if StoryService.is_tutorial_running():
+		return
+	if not BattleContext.campaign_victory_confirmed() \
+			or BattleContext.campaign_series_pending():
+		return
+	var entries := _next_level_entries()
+	if entries.is_empty():
+		return
+	next_levels_title.text = "NIVEAU SUIVANT" if entries.size() == 1 else "NIVEAUX SUIVANTS"
+	_build_next_level_cards(entries)
+	next_levels.visible = true
+
+
+func _clear_next_levels() -> void:
+	for child in next_levels_rows.get_children():
+		next_levels_rows.remove_child(child)
+		child.queue_free()
+
+
+## Deux cartes par ligne, la dernière centrée : chaque rangée est une HBox
+## alignée au centre, jamais une grille qui collerait la carte seule à gauche.
+func _build_next_level_cards(entries: Array) -> void:
+	var show_name := true
+	for summary in entries:
+		if str(summary.get("name", "")).length() > NEXT_LEVEL_NAME_MAX_CHARS:
+			show_name = false
+			break
+	var row: HBoxContainer = null
+	for index in range(entries.size()):
+		if index % NEXT_LEVELS_PER_ROW == 0:
+			row = HBoxContainer.new()
+			row.alignment = BoxContainer.ALIGNMENT_CENTER
+			row.add_theme_constant_override("separation", UITheme.GAP_SMALL)
+			next_levels_rows.add_child(row)
+		row.add_child(_make_next_level_card(entries[index], show_name))
+
+
+## La carte n'affiche que le dieu et le mode, de quoi choisir sans rouvrir la
+## carte. Un appui dépose la demande de fiche, jamais un lancement.
+func _make_next_level_card(summary: Dictionary, show_name: bool) -> Button:
+	var card: Button = TouchButtonModel.new()
+	card.custom_minimum_size = Vector2(NEXT_LEVEL_CARD_WIDTH, NEXT_LEVEL_CARD_HEIGHT)
+	card.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	card.text = ""
+	card.clip_contents = true
+	var accent := Color(str(summary.get("accent", UITheme.COL_NEON_PINK.to_html())))
+	var normal := UITheme.panel_style(
+		UITheme.COL_SURFACE, accent, NEXT_LEVEL_BORDER_WIDTH, 18)
+	var hover := normal.duplicate() as StyleBoxFlat
+	hover.bg_color = UITheme.COL_SURFACE.lightened(0.08)
+	var pressed := normal.duplicate() as StyleBoxFlat
+	pressed.bg_color = UITheme.COL_SURFACE.darkened(0.12)
+	card.add_theme_stylebox_override("normal", normal)
+	card.add_theme_stylebox_override("hover", hover)
+	card.add_theme_stylebox_override("pressed", pressed)
+	card.add_theme_stylebox_override("hover_pressed", pressed)
+	var content := VBoxContainer.new()
+	content.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	content.offset_left = 14.0
+	content.offset_right = -14.0
+	content.offset_top = 10.0
+	content.offset_bottom = -10.0
+	content.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	content.alignment = BoxContainer.ALIGNMENT_CENTER
+	content.add_theme_constant_override("separation", 2)
+	card.add_child(content)
+	content.add_child(_next_level_label(
+		str(summary.get("opponent_god_label", "")), 30, accent))
+	content.add_child(_next_level_label(
+		str(summary.get("mode_label", "")), 24, UITheme.COL_TEXT_DIM))
+	if show_name:
+		content.add_child(_next_level_label(
+			str(summary.get("name", "")), 20, UITheme.COL_TEXT_DIM))
+	card.pressed.connect(_on_next_level_pressed.bind(str(summary.get("id", ""))))
+	return card
+
+
+func _next_level_label(text: String, font_size: int, color: Color) -> Label:
+	var label := Label.new()
+	label.text = text
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	label.clip_text = true
+	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	label.add_theme_font_size_override("font_size", font_size)
+	label.add_theme_color_override("font_color", color)
+	return label
+
+
+## Même une carte ne lance rien : elle demande la fiche du niveau sur la carte,
+## où « AFFRONTER » reste le seul déclencheur.
+func _on_next_level_pressed(node_id: String) -> void:
+	if node_id == "":
+		return
+	CampaignContext.request_node(node_id)
+	Routes.go_with_override(get_tree(), scene_changer, Routes.CAMPAIGN_MAP)
 
 
 func _on_replay() -> void:
