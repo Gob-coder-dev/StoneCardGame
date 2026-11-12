@@ -5,6 +5,7 @@ const OpponentCatalogModel := preload("res://scripts/data/OpponentCatalog.gd")
 const CompletionModel := preload("res://scripts/application/campaign/CampaignCompletionService.gd")
 const RewardModel := preload("res://scripts/application/campaign/CampaignRewardService.gd")
 const QuestModel := preload("res://scripts/application/quests/QuestService.gd")
+const SeriesEngineModel := preload("res://scripts/domain/SeriesEngine.gd")
 
 var selected_npc_id: String = ""
 ## Source du chemin de rencontres ouvert (id de dieu ou Pr.Stone). Elle permet
@@ -83,6 +84,32 @@ func campaign_series_pending() -> bool:
 		return false
 	var state := campaign_mode_session.series()
 	return state != null and not state.finished
+
+
+## État public de la série de campagne, ou {} hors série multi-manches. C'est
+## la même structure que celle publiée à l'écran de résultat.
+func campaign_series_state() -> Dictionary:
+	if campaign_mode_session == null:
+		return {}
+	var state := campaign_mode_session.series()
+	return SeriesEngineModel.public_state(state) if state != null else {}
+
+
+## Abandon : la série est concédée à l'adversaire et le profil compte une
+## défaite. Le niveau reste non terminé et la manche déjà jouée garde son
+## résultat ; une nouvelle entrée repart sur une série neuve.
+func abandon_campaign_series() -> Dictionary:
+	if campaign_mode_session == null:
+		return {"ok": false, "reason": "Aucune série de campagne active."}
+	var state := campaign_mode_session.series()
+	if state == null or state.finished:
+		return {"ok": false, "reason": "La série est déjà terminée."}
+	if not last_result_saved:
+		return {"ok": false, "reason": "Le résultat de la manche n'est pas encore enregistré."}
+	var error := PlayerData.record_forfeit(last_result_npc_id)
+	if error != OK:
+		return {"ok": false, "reason": "L'abandon n'a pas pu être enregistré."}
+	return SeriesEngineModel.concede(state, GameState.PLAYER_TWO)
 
 
 ## Mémorise la rencontre et son identifiant de statistiques en une seule fois.

@@ -10,6 +10,7 @@ const EncounterPathModel := preload("res://scripts/domain/EncounterPath.gd")
 const Routes := preload("res://scripts/ui/GameRoutes.gd")
 const EncounterPresenter := preload("res://scripts/ui/campaign/CampaignEncounterPresenter.gd")
 const TouchButtonModel := preload("res://scripts/ui/input/TouchButton.gd")
+const SeriesPresenter := preload("res://scripts/ui/result/SeriesResultPresenter.gd")
 
 ## Deux cartes par ligne sur le canevas 1080. Si un nom de niveau dépasse cette
 ## longueur, les noms sont retirés partout plutôt que tronqués inégalement.
@@ -22,6 +23,9 @@ const NEXT_LEVELS_PER_ROW := 2
 const NEXT_LEVELS_GOLD := Color(1, 0.82, 0.48)
 const NEXT_LEVELS_BG := Color(0.075, 0.062, 0.086, 0.94)
 const NEXT_LEVEL_BORDER_WIDTH := 5
+## Le ton « danger » du thème est trop sombre pour être lu sur le fond des
+## boutons : l'abandon prend un corail franc, réservé à cette action.
+const ABANDON_TEXT_COLOR := Color("#ff6f61")
 
 @onready var result_label: Label = $VBoxCenter/ResultCard/Content/ResultLabel
 @onready var score_label: Label = $VBoxCenter/ResultCard/Content/ScoreLabel
@@ -43,12 +47,22 @@ const NEXT_LEVEL_BORDER_WIDTH := 5
 @onready var next_levels: PanelContainer = $VBoxCenter/NextLevels
 @onready var next_levels_title: Label = $VBoxCenter/NextLevels/Column/Title
 @onready var next_levels_rows: VBoxContainer = $VBoxCenter/NextLevels/Column/Rows
+## Ces deux composants sont typés dynamiquement : leurs scripts sont chargés
+## par la scène, sans dépendre du cache des classes globales du projet.
+@onready var series_card = $VBoxCenter/SeriesResultCard
+@onready var abandon_btn: Button = $VBoxCenter/AbandonButton
+@onready var abandon_popup = $ConfirmPopup
 
 ## Navigation injectable : les tests vérifient la destination réelle sans
 ## changer de scène. Vide en jeu, la scène est alors ouverte normalement.
 var scene_changer: Callable = Callable()
 
 var _campaign := false
+var _player_name := ""
+var _opponent_name := ""
+## État public de la série de campagne et sa vue d'affichage. Vides hors FT2/FT3.
+var _series: Dictionary = {}
+var _series_view: Dictionary = {}
 
 
 func _ready() -> void:
@@ -58,38 +72,22 @@ func _ready() -> void:
 	gods_btn.pressed.connect(_on_god_select)
 	menu_btn.pressed.connect(_on_menu)
 	retry_save_btn.pressed.connect(_on_retry_save)
+	abandon_btn.pressed.connect(_on_abandon)
+	abandon_popup.confirmed.connect(_on_abandon_confirmed)
+	abandon_btn.add_theme_color_override("font_color", ABANDON_TEXT_COLOR)
 
 	_campaign = BattleContext.has_campaign_node()
-	match BattleContext.last_winner:
-		GameState.PLAYER_HUMAN:
-			result_label.text = "VICTOIRE !"
-		GameState.PLAYER_AI:
-			result_label.text = "DÉFAITE..."
-		_:
-			result_label.text = "ÉGALITÉ"
-	_play_result_sound()
-
+	_player_name = UIFormat.combatant_name(PlayerData.player_name, 18)
 	var npc := BattleContext.current_opponent()
-	if BattleContext.last_winner == GameState.PLAYER_HUMAN:
-		background.set_result_victory(StoneLoader.get_god(BattleContext.effective_player_god_id()))
-	elif BattleContext.last_winner == GameState.PLAYER_AI:
-		background.set_result_defeat(StoneLoader.get_god(BattleContext.effective_opponent_god_id()))
-	else:
-		background.set_result_draw(StoneLoader.get_god(BattleContext.effective_player_god_id()),
-			StoneLoader.get_god(BattleContext.effective_opponent_god_id()))
-	var npc_name := UIFormat.combatant_name(str(
+	_opponent_name = UIFormat.combatant_name(str(
 		npc.get("combatant_name", npc.get("name", "Adversaire"))), 18)
-	var player_name := UIFormat.combatant_name(PlayerData.player_name, 18)
-	score_label.text = "%s %d  —  %d %s" % [
-		player_name,
-		BattleContext.last_score_human,
-		BattleContext.last_score_ai,
-		npc_name
-	]
+	_series = BattleContext.campaign_series_state() if _campaign else {}
+	_series_view = _build_series_view()
+	_apply_outcome()
 	_apply_campaign_copy()
 	next_levels.add_theme_stylebox_override("panel", UITheme.panel_style(
 		NEXT_LEVELS_BG, NEXT_LEVELS_GOLD, 2, 22))
-	_refresh_next_button()
+	_refresh_actions()
 	_refresh_next_levels()
 	_refresh_save_status()
 	_refresh_reward()
@@ -98,9 +96,62 @@ func _ready() -> void:
 	StoryService.notify_screen(Routes.CAMPAIGN_RESULT)
 
 
+## Une série de campagne FT2/FT3 a sa propre vue ; les autres rencontres gardent
+## le résultat classique sans cadre de série.
+func _build_series_view() -> Dictionary:
+	if not SeriesPresenter.is_series(_series):
+		return {}
+	return SeriesPresenter.view(_series, {
+		"winner": BattleContext.last_winner,
+		"score_one": BattleContext.last_score_human,
+		"score_two": BattleContext.last_score_ai,
+	}, GameState.PLAYER_ONE, _player_name, _opponent_name)
+
+
+## Verdict, cadre de série, score de manche et décor suivent le même vainqueur :
+## la manche en cours, ou la série entière quand elle est terminée.
+func _apply_outcome() -> void:
+	var winner := _effective_winner()
+	if _series_view.is_empty():
+		result_label.text = _classic_title(winner)
+		series_card.hide_view()
+		score_label.text = SeriesPresenter.score_line(BattleContext.last_score_human,
+			BattleContext.last_score_ai, true, _player_name, _opponent_name)
+	else:
+		result_label.text = str(_series_view["title"])
+		series_card.show_view(_series_view)
+		score_label.text = str(_series_view["round_score"])
+	_apply_background(winner)
+	_play_result_sound(winner)
+
+
+func _effective_winner() -> int:
+	if not _series_view.is_empty() and bool(_series_view.get("finished", false)):
+		return int(_series.get("winner", GameState.PLAYER_NONE))
+	return BattleContext.last_winner
+
+
+static func _classic_title(winner: int) -> String:
+	match winner:
+		GameState.PLAYER_HUMAN:
+			return "VICTOIRE !"
+		GameState.PLAYER_AI:
+			return "DÉFAITE..."
+	return "ÉGALITÉ"
+
+
+func _apply_background(winner: int) -> void:
+	if winner == GameState.PLAYER_HUMAN:
+		background.set_result_victory(StoneLoader.get_god(BattleContext.effective_player_god_id()))
+	elif winner == GameState.PLAYER_AI:
+		background.set_result_defeat(StoneLoader.get_god(BattleContext.effective_opponent_god_id()))
+	else:
+		background.set_result_draw(StoneLoader.get_god(BattleContext.effective_player_god_id()),
+			StoneLoader.get_god(BattleContext.effective_opponent_god_id()))
+
+
 ## Une manche intermédiaire de série ne doit jamais jouer le verdict final.
-func _play_result_sound() -> void:
-	var winner := BattleContext.last_winner
+func _play_result_sound(winner: int) -> void:
 	if _campaign and BattleContext.campaign_series_pending():
 		match winner:
 			GameState.PLAYER_HUMAN:
@@ -188,18 +239,27 @@ func _apply_campaign_copy() -> void:
 		return
 	replay_btn.text = "Rejouer"
 	level_btn.text = "Carte de campagne"
-	gods_btn.visible = false
 	menu_btn.text = "Accueil"
 
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
-		_on_menu()
+		_on_back_requested()
 		get_viewport().set_input_as_handled()
 
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
+		_on_back_requested()
+
+
+## Pendant une série, quitter n'est pas une sortie gratuite : c'est un abandon.
+func _on_back_requested() -> void:
+	if abandon_popup.is_open():
+		abandon_popup.dismiss()
+	elif _series_active():
+		_on_abandon()
+	else:
 		_on_menu()
 
 
@@ -215,19 +275,50 @@ func _next_level() -> Dictionary:
 		OpponentCatalogModel.levels_for(source), BattleContext.selected_npc_id)
 
 
-## Le suivant n'apparaît qu'après une victoire et s'il reste un rond. En
-## campagne, une série non terminée reste jouable même après une manche perdue.
-## En campagne, le bouton principal ne sert plus qu'à enchaîner une série : la
-## suite du parcours passe par les cartes de niveaux suivants.
-func _refresh_next_button() -> void:
+## Une seule règle de visibilité pour les deux modes de résultat :
+## - campagne en cours de série : manche suivante et abandon, rien d'autre ;
+## - campagne série terminée (ou FT1) : rejouer, carte et accueil ;
+## - hors campagne : les cinq sorties historiques.
+func _refresh_actions() -> void:
+	var mid_series := _campaign and _series_active()
 	if _campaign:
-		next_btn.visible = BattleContext.last_result_saved \
-			and BattleContext.campaign_series_pending()
 		next_btn.text = "Manche suivante"
+		next_btn.visible = mid_series and BattleContext.last_result_saved
+	else:
+		next_btn.text = "Niveau suivant"
+		next_btn.visible = BattleContext.last_winner == GameState.PLAYER_HUMAN \
+			and BattleContext.last_result_saved and not _next_level().is_empty()
+	replay_btn.visible = not mid_series
+	abandon_btn.visible = mid_series
+	level_btn.visible = not mid_series
+	menu_btn.visible = not mid_series
+	gods_btn.visible = not _campaign
+
+
+## Une série est active tant qu'elle n'est pas terminée : c'est la seule
+## situation où abandonner a un sens.
+func _series_active() -> bool:
+	return not _series_view.is_empty() and not bool(_series_view.get("finished", false))
+
+
+func _on_abandon() -> void:
+	if not _series_active() or abandon_popup.is_open():
 		return
-	next_btn.text = "Niveau suivant"
-	next_btn.visible = BattleContext.last_winner == GameState.PLAYER_HUMAN \
-		and BattleContext.last_result_saved and not _next_level().is_empty()
+	abandon_popup.open("Voulez-vous vraiment abandonner et perdre la partie ?")
+
+
+## L'abandon concède la série : le profil compte une défaite et l'écran bascule
+## sur le résultat de fin, avec les sorties habituelles.
+func _on_abandon_confirmed() -> void:
+	var result := BattleContext.abandon_campaign_series()
+	if not bool(result.get("ok", false)):
+		_show_action_error(str(result.get("reason", "Abandon impossible.")))
+		return
+	_series = BattleContext.campaign_series_state()
+	_series_view = _build_series_view()
+	_apply_outcome()
+	_refresh_actions()
+	_refresh_next_levels()
 
 
 func _refresh_save_status() -> void:
@@ -247,7 +338,7 @@ func _on_retry_save() -> void:
 		save_status.text = "Progression enregistrée."
 		save_status.add_theme_color_override("font_color", UITheme.COL_SUCCESS)
 		retry_save_btn.visible = false
-		_refresh_next_button()
+		_refresh_actions()
 		_refresh_next_levels()
 		return
 	save_status.text = "Échec de l'enregistrement (%s). Réessayez ou vérifiez l'espace disponible." \

@@ -101,6 +101,26 @@ static func remember_loadouts(series: SeriesState, loadout_one: GameLoadout,
 	series.loadout_two = loadout_two.copy()
 
 
+## Abandon : l'adversaire reçoit les victoires qui lui manquaient pour atteindre
+## l'objectif, afin que le score final reste lisible. Une égalité déjà comptée
+## n'est jamais effacée. La manche déjà jouée garde son propre résultat.
+static func concede(series: SeriesState, winner_side: int) -> Dictionary:
+	if series == null:
+		return {"ok": false, "reason": "Série absente."}
+	if series.finished:
+		return {"ok": false, "reason": "La série est déjà terminée.", "series": series}
+	if winner_side != GameState.PLAYER_ONE and winner_side != GameState.PLAYER_TWO:
+		return {"ok": false, "reason": "Vainqueur de série invalide.", "series": series}
+	if winner_side == GameState.PLAYER_ONE:
+		series.wins_one = series.wins_needed
+	else:
+		series.wins_two = series.wins_needed
+	series.finished = true
+	series.winner = winner_side
+	series.abandoned = true
+	return {"ok": true, "reason": "", "series": series, "final_winner": winner_side}
+
+
 static func public_state(series: SeriesState) -> Dictionary:
 	if series == null:
 		return {}
@@ -118,6 +138,7 @@ static func public_state(series: SeriesState) -> Dictionary:
 		"ties": series.ties,
 		"finished": series.finished,
 		"winner": series.winner,
+		"abandoned": series.abandoned,
 		"seed": series.seed,
 		"keeps_loadouts": series.keeps_loadouts(),
 	}

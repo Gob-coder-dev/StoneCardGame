@@ -18,6 +18,7 @@ const Presenter := preload("res://scripts/ui/pvp/PvpResultPresenter.gd")
 @onready var result_label: Label = $VBoxCenter/ResultLabel
 @onready var detail_label: Label = $VBoxCenter/DetailLabel
 @onready var score_label: Label = $VBoxCenter/ScoreLabel
+@onready var series_card = $VBoxCenter/SeriesResultCard
 @onready var status_label: Label = $VBoxCenter/StatusLabel
 @onready var primary_button: Button = $VBoxCenter/PrimaryActionButton
 @onready var return_button: Button = $VBoxCenter/ReturnLobbyButton
@@ -90,6 +91,10 @@ func _apply_presentation(view: Dictionary) -> void:
 	detail_label.text = str(view["detail"])
 	score_label.text = str(view["score"])
 	status_label.text = str(view["status"])
+	if view.has("series_view"):
+		series_card.show_view(view["series_view"])
+	else:
+		series_card.hide_view()
 	_primary_mode = str(view["primary_mode"])
 	primary_button.text = str(view["primary_text"])
 	return_button.text = "RETOUR AU SALON"

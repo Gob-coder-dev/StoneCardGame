@@ -6,6 +6,9 @@ const EncounterPathModel := preload("res://scripts/domain/EncounterPath.gd")
 const TouchButtonScript := preload("res://scripts/ui/input/TouchButton.gd")
 const LobbyCoordinator := preload("res://scripts/network/LanLobbyCoordinator.gd")
 const BattleLayoutModel := preload("res://scripts/ui/BattleLayout.gd")
+const SeriesEngineModel := preload("res://scripts/domain/SeriesEngine.gd")
+const SeriesStateModel := preload("res://scripts/domain/SeriesState.gd")
+const PvpResultPresenterModel := preload("res://scripts/ui/pvp/PvpResultPresenter.gd")
 
 func run() -> void:
 	var fixture := ProfileFixture.new()
@@ -743,14 +746,14 @@ func _test_result_actions() -> void:
 		"après une victoire, le résultat prépare le niveau suivant du même chemin")
 	BattleContext.last_result_saved = false
 	BattleContext.last_save_error = ERR_FILE_CANT_WRITE
-	page._refresh_next_button()
+	page._refresh_actions()
 	page._refresh_save_status()
 	_check(not page.next_btn.visible and page.save_status.visible
 		and page.retry_save_btn.visible and page.save_status.text.contains("enregistrée"),
 		"une sauvegarde échouée bloque le niveau suivant et propose un nouvel essai")
 	BattleContext.last_result_saved = true
 	BattleContext.last_save_error = OK
-	page._refresh_next_button()
+	page._refresh_actions()
 	page._refresh_save_status()
 	var winner_color := Color(str(StoneLoader.get_god(PlayerData.player_god_id)["color"]))
 	_check(page.background.room == MenuBackground.Room.AFTERMATH
@@ -761,12 +764,12 @@ func _test_result_actions() -> void:
 		and page.background._winner_firework_color(3) != page.background._winner_firework_color(4),
 		"la victoire de campagne dessine des feux d'artifice aux nuances du dieu gagnant")
 	BattleContext.select_opponent(OpponentCatalogModel.build("veskar", "n34", "tres_difficile"))
-	page._refresh_next_button()
+	page._refresh_actions()
 	_check(not page.next_btn.visible and page._next_level().is_empty(),
 		"le dernier niveau du chemin ne propose pas de suivant")
 	BattleContext.select_opponent(OpponentCatalogModel.build("veskar", "n1", "tres_facile"))
 	BattleContext.record_result(GameState.PLAYER_AI, 12, 30)
-	page._refresh_next_button()
+	page._refresh_actions()
 	_check(not page.next_btn.visible and page.replay_btn.visible
 		and page.level_btn.visible and page.gods_btn.visible and page.menu_btn.visible,
 		"une défaite retire le niveau suivant et laisse les quatre autres sorties")
@@ -1153,6 +1156,26 @@ func _test_pvp_result() -> void:
 		and not page.status_label.text.contains("Objectif")
 		and not page.result_label.text.contains("MANCHE"),
 		"FT1 reste une partie simple : aucun score ni vocabulaire de série")
+	# Une manche de série utilise le présentateur partagé avec la campagne.
+	var series := SeriesStateModel.create("pvp-check", {"mode": "classic", "series": "ft2"}, 9)
+	SeriesEngineModel.record_round(series, GameState.PLAYER_ONE, 9, 4)
+	var series_view := PvpResultPresenterModel.series(SeriesEngineModel.public_state(series),
+		{"winner": GameState.PLAYER_ONE, "score_one": 9, "score_two": 4},
+		GameState.PLAYER_ONE, "Hôte", "Client")
+	var card_view: Dictionary = series_view["series_view"]
+	_check(series_view["title"] == "MANCHE 1 GAGNÉE"
+		and str(series_view["score"]).contains("Hôte 9")
+		and str(series_view["score"]).contains("4 Client")
+		and str(card_view["score"]) == "Hôte 1  —  0 Client"
+		and str(card_view["caption"]) == "Mode de jeu : Classique • FT2 : premier à 2",
+		"PVP : une manche de série affiche le verdict, le score du round et le cadre commun")
+	SeriesEngineModel.record_round(series, GameState.PLAYER_ONE, 9, 2)
+	var final_view := PvpResultPresenterModel.series(SeriesEngineModel.public_state(series),
+		{"winner": GameState.PLAYER_ONE, "score_one": 9, "score_two": 2},
+		GameState.PLAYER_ONE, "Hôte", "Client")
+	_check(final_view["title"] == "VICTOIRE !" and final_view["primary_text"] == "NOUVELLE SÉRIE"
+		and str((final_view["series_view"] as Dictionary)["score"]) == "Hôte 2  —  0 Client",
+		"PVP : la fin de série garde le menu victoire et le score final")
 	page.queue_free()
 	await get_tree().process_frame
 
@@ -1213,11 +1236,15 @@ func _test_pvp_result() -> void:
 	add_child(series_page)
 	await get_tree().process_frame
 	_check(series_page.primary_button.text == "PARTIE SUIVANTE"
-		and series_page.score_label.text.contains("Série")
-		and series_page.score_label.text.contains("1") and series_page.score_label.text.contains("0")
+		and series_page.result_label.text == "MANCHE 1 GAGNÉE"
+		and series_page.score_label.text == "Hôte 10  —  4 Client"
+		and series_page.series_card.visible
+		and series_page.series_card._score_label.text == "Hôte 1  —  0 Client"
+		and series_page.series_card._caption_label.text
+			== "Mode de jeu : Classique • FT2 : premier à 2"
 		and series_page.return_button.visible and series_page.quit_button.visible
 		and series_page.find_child("PvpPreparationPanel", true, false) == null,
-		"FT2 non terminé montre le score de série, PARTIE SUIVANTE et aucune préparation")
+		"FT2 non terminé montre le verdict et les deux scores, PARTIE SUIVANTE et aucune préparation")
 
 
 ## Configuration minimale d'un match PVP, identique à celle validée par l'hôte.

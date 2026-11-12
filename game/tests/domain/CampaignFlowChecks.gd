@@ -10,6 +10,9 @@ const ServiceModel := preload("res://scripts/application/campaign/CampaignServic
 const ProfileFixture := preload("res://tests/support/PlayerProfileFixture.gd")
 const Routes := preload("res://scripts/ui/GameRoutes.gd")
 const EncounterPresenter := preload("res://scripts/ui/campaign/CampaignEncounterPresenter.gd")
+const SeriesEngineModel := preload("res://scripts/domain/SeriesEngine.gd")
+const SeriesStateModel := preload("res://scripts/domain/SeriesState.gd")
+const SeriesPresenter := preload("res://scripts/ui/result/SeriesResultPresenter.gd")
 const PATH := "user://campaign_flow_checks.json"
 
 var _service: CampaignService = null
@@ -34,6 +37,8 @@ func run() -> void:
 	CampaignContext.set_service_for_tests(_service)
 	_test_classic_result_once()
 	_test_series_defers_completion()
+	_test_series_result_view()
+	await _test_mid_series_abandon()
 	await _test_result_screens()
 	await _test_next_level_grid_layout()
 	await _test_preparation_scene()
@@ -103,6 +108,95 @@ func _test_series_defers_completion() -> void:
 	BattleContext.clear_campaign_node()
 
 
+## Le présentateur sert les deux modes : titre de manche, score du round, score
+## de série encadré et objectif FT2, sans aucun écran.
+func _test_series_result_view() -> void:
+	var series := SeriesStateModel.create("check", {"mode": "random", "series": "ft2"}, 11)
+	SeriesEngineModel.record_round(series, GameState.PLAYER_ONE, 9, 4)
+	var mid := SeriesPresenter.view(SeriesEngineModel.public_state(series),
+		{"winner": GameState.PLAYER_ONE, "score_one": 9, "score_two": 4},
+		GameState.PLAYER_ONE, "Toi", "Veskàr")
+	_check(str(mid["title"]) == "MANCHE 1 GAGNÉE"
+		and str(mid["round_score"]) == "Toi 9  —  4 Veskàr"
+		and str(mid["score"]) == "Toi 1  —  0 Veskàr"
+		and str(mid["caption"]) == "Mode de jeu : Aléatoire • FT2 : premier à 2"
+		and not bool(mid["finished"]),
+		"série : une manche affiche son verdict, son score et l'objectif FT2")
+	SeriesEngineModel.record_round(series, GameState.PLAYER_NONE, 5, 5)
+	var draw := SeriesPresenter.view(SeriesEngineModel.public_state(series),
+		{"winner": GameState.PLAYER_NONE, "score_one": 5, "score_two": 5},
+		GameState.PLAYER_ONE, "Toi", "Veskàr")
+	_check(str(draw["title"]) == "MANCHE 2 ÉGALITÉ" and str(draw["score"]) == "Toi 1  —  0 Veskàr",
+		"série : une manche nulle ne marque aucun point")
+	SeriesEngineModel.record_round(series, GameState.PLAYER_ONE, 9, 3)
+	var final := SeriesPresenter.view(SeriesEngineModel.public_state(series),
+		{"winner": GameState.PLAYER_ONE, "score_one": 9, "score_two": 3},
+		GameState.PLAYER_ONE, "Toi", "Veskàr")
+	_check(str(final["title"]) == "VICTOIRE !" and str(final["score"]) == "Toi 2  —  0 Veskàr",
+		"série : la dernière manche garde le verdict classique et le score final")
+
+
+## En cours de série : verdict de manche, score encadré, et seulement « Manche
+## suivante » et « Abandonner ». Un abandon concède la série et compte une
+## défaite ; une nouvelle entrée repart sur une série neuve.
+func _test_mid_series_abandon() -> void:
+	_enter("veskar_02")
+	var losses_before := int(PlayerData.stats.get("losses", 0))
+	BattleContext.record_mode_round(GameState.PLAYER_HUMAN, 9, 6)
+	BattleContext.prepare_result(GameState.PLAYER_HUMAN, 9, 6, 2)
+	BattleContext.persist_result()
+	var page: Control = (load("res://scenes/menus/Result.tscn") as PackedScene).instantiate()
+	add_child(page)
+	await get_tree().process_frame
+	_check(page.result_label.text == "MANCHE 1 GAGNÉE"
+		and page.series_card.visible
+		and page.series_card._score_label.text == "%s 1  —  0 %s" % [
+			page._player_name, page._opponent_name]
+		and page.next_btn.visible and page.next_btn.text == "Manche suivante"
+		and page.abandon_btn.visible and not page.replay_btn.visible
+		and not page.level_btn.visible and not page.menu_btn.visible,
+		"résultat campagne : une manche de série propose la suite ou l'abandon, jamais Rejouer")
+	_check(page.abandon_btn.get_theme_color("font_color") != UITheme.COL_DANGER
+		and page.abandon_btn.get_theme_color("font_color").get_luminance() > 0.4,
+		"résultat campagne : l'abandon reste lisible sur le fond sombre")
+	page.abandon_btn.pressed.emit()
+	_check(page.abandon_popup.visible and page.abandon_popup.is_open()
+		and page.abandon_popup.message_label.text
+			== "Voulez-vous vraiment abandonner et perdre la partie ?",
+		"résultat campagne : abandonner demande d'abord confirmation")
+	page.abandon_popup.no_btn.pressed.emit()
+	_check(not page.abandon_popup.visible and page.result_label.text == "MANCHE 1 GAGNÉE"
+		and BattleContext.campaign_series_pending(),
+		"résultat campagne : refuser l'abandon laisse la série en cours")
+	page.abandon_btn.pressed.emit()
+	var click := InputEventMouseButton.new()
+	click.button_index = MOUSE_BUTTON_LEFT
+	click.pressed = true
+	page.abandon_popup._gui_input(click)
+	_check(not page.abandon_popup.visible and BattleContext.campaign_series_pending(),
+		"résultat campagne : un clic à côté de la confirmation n'abandonne pas")
+	page.abandon_btn.pressed.emit()
+	page.abandon_popup.yes_btn.pressed.emit()
+	await get_tree().process_frame
+	_check(page.result_label.text == "DÉFAITE..."
+		and page.series_card.visible
+		and page.series_card._score_label.text == "%s 1  —  2 %s" % [
+			page._player_name, page._opponent_name]
+		and page.series_card._note_label.text == "Série abandonnée"
+		and page.replay_btn.visible and page.level_btn.visible and page.menu_btn.visible
+		and not page.abandon_btn.visible and not page.next_btn.visible,
+		"résultat campagne : abandonner concède la série et rouvre les sorties de fin")
+	_check(int(PlayerData.stats.get("losses", 0)) == losses_before + 1,
+		"résultat campagne : l'abandon compte une défaite pour le joueur")
+	page.queue_free()
+	await get_tree().process_frame
+	_enter("veskar_02")
+	_check(BattleContext.campaign_series_pending()
+		and int(BattleContext.campaign_series_state().get("wins_one", -1)) == 0,
+		"résultat campagne : une nouvelle entrée repart sur une série neuve")
+	BattleContext.clear_campaign_node()
+
+
 func _test_result_screens() -> void:
 	# Une défaite ne termine pas le nœud et ne propose pas de suite.
 	_enter("nerava_01")
@@ -155,6 +249,13 @@ func _test_result_screens() -> void:
 		and victory.next_levels_rows.get_child_count() == 1
 		and victory.next_levels_rows.get_child(0).get_child_count() == 1,
 		"résultat campagne : la victoire propose le niveau suivant sous forme de carte")
+	_check(victory.result_label.text == "VICTOIRE !" and victory.series_card.visible
+		and victory.series_card._score_label.text == "%s 2  —  0 %s" % [
+			victory._player_name, victory._opponent_name]
+		and victory.series_card._caption_label.text.contains("FT2 : premier à 2")
+		and victory.replay_btn.visible and victory.level_btn.visible and victory.menu_btn.visible
+		and not victory.abandon_btn.visible,
+		"résultat campagne : la fin de série garde le menu victoire et le score final")
 	var next_card: Button = victory.next_levels_rows.get_child(0).get_child(0)
 	var card_style := next_card.get_theme_stylebox("normal") as StyleBoxFlat
 	_check(victory.next_levels.get_theme_stylebox("panel") is StyleBoxFlat

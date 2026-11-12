@@ -97,6 +97,24 @@ func record_game(npc_id: String, winner: int, score_human: int, score_ai: int,
 	return error
 
 
+## Un abandon concède une série : le profil compte une défaite, sans capture ni
+## score. Le meilleur écart contre cet adversaire reste intact.
+func record_forfeit(npc_id: String) -> Error:
+	var previous := stats.duplicate(true)
+	stats["games_played"] = stats.get("games_played", 0) + 1
+	stats["losses"] = stats.get("losses", 0) + 1
+	stats["current_streak"] = 0
+	var per_npc: Dictionary = stats.get("per_npc", {})
+	if not per_npc.has(npc_id):
+		per_npc[npc_id] = { "wins": 0, "games": 0, "best_diff": -99 }
+	per_npc[npc_id]["games"] += 1
+	stats["per_npc"] = per_npc
+	var error := save()
+	if error != OK:
+		stats = previous
+	return error
+
+
 ## Un NPC est "battu" si le joueur l'a emporté au moins une fois
 func is_npc_beaten(npc_id: String) -> bool:
 	var per_npc: Dictionary = stats.get("per_npc", {})

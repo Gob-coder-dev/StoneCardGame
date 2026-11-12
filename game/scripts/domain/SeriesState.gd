@@ -18,6 +18,8 @@ var round_index: int = 1
 var ties: int = 0
 var finished: bool = false
 var winner: int = GameState.PLAYER_NONE
+## Une série concédée garde son score réel et s'affiche comme abandonnée.
+var abandoned: bool = false
 var seed: int = 0
 ## Loadouts conservés pour les modes Classique et Miroir.
 var loadout_one: GameLoadout = null
@@ -73,6 +75,7 @@ func copy() -> SeriesState:
 	state.ties = ties
 	state.finished = finished
 	state.winner = winner
+	state.abandoned = abandoned
 	state.loadout_one = loadout_one.copy() if loadout_one != null else null
 	state.loadout_two = loadout_two.copy() if loadout_two != null else null
 	state.round_results = round_results.duplicate(true)
