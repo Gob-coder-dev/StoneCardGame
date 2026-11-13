@@ -7,15 +7,20 @@ extends RefCounted
 
 ## Secteur logique : deux colonnes sur la largeur de référence et des tranches
 ## assez fines pour précharger une bande avant qu'elle devienne visible.
-const CHUNK_SIZE := Vector2(540.0, 720.0)
-const PRELOAD_AHEAD := 0.75
-const RETAIN_AHEAD := 1.75
+const CHUNK_SIZE := Vector2(540.0, 360.0)
+const PRELOAD_BEHIND := 0.15
+const PRELOAD_AHEAD := 0.55
+const RETAIN_BEHIND := 0.35
+const RETAIN_AHEAD := 0.80
+const IDLE_PRELOAD := 0.40
+const IDLE_RETAIN := 0.65
 
 var _graph: CampaignGraph = null
 var _node_chunks: Dictionary = {}
 var _chunk_nodes: Dictionary = {}
 var _active_chunks: Dictionary = {}
 var _last_visible := Rect2()
+var _scroll_direction := 0
 
 
 func _init(graph: CampaignGraph = null) -> void:
@@ -55,11 +60,13 @@ func chunk_node_ids(cell: Vector2i) -> Array:
 
 
 func load_rect_for(visible_rect: Rect2, viewport_logical: Vector2) -> Rect2:
-	return _expanded(visible_rect, viewport_logical, PRELOAD_AHEAD)
+	return _expanded_directional(visible_rect, viewport_logical,
+		PRELOAD_BEHIND, PRELOAD_AHEAD, IDLE_PRELOAD)
 
 
 func retain_rect_for(visible_rect: Rect2, viewport_logical: Vector2) -> Rect2:
-	return _expanded(visible_rect, viewport_logical, RETAIN_AHEAD)
+	return _expanded_directional(visible_rect, viewport_logical,
+		RETAIN_BEHIND, RETAIN_AHEAD, IDLE_RETAIN)
 
 
 ## Retourne les nœuds à instancier et à libérer. Un appel répété avec le même
@@ -67,7 +74,7 @@ func retain_rect_for(visible_rect: Rect2, viewport_logical: Vector2) -> Rect2:
 func update(visible_rect: Rect2, viewport_logical: Vector2) -> Dictionary:
 	if _graph == null:
 		return _empty_result(visible_rect)
-	_last_visible = visible_rect
+	_update_direction(visible_rect)
 	var load_rect := load_rect_for(visible_rect, viewport_logical)
 	var keep_rect := retain_rect_for(visible_rect, viewport_logical)
 	var load_cells := _chunks_in(load_rect)
@@ -89,6 +96,7 @@ func update(visible_rect: Rect2, viewport_logical: Vector2) -> Dictionary:
 		if not next_active.has(cell):
 			remove.append_array(_chunk_nodes.get(cell, []))
 	_active_chunks = next_active
+	_last_visible = visible_rect
 	add.sort()
 	remove.sort()
 	return {
@@ -112,11 +120,28 @@ func _cell_rect(cell: Vector2i) -> Rect2:
 	return Rect2(Vector2(cell) * CHUNK_SIZE, CHUNK_SIZE)
 
 
-func _expanded(visible_rect: Rect2, viewport_logical: Vector2,
-		factor: float) -> Rect2:
+func _expanded_directional(visible_rect: Rect2, viewport_logical: Vector2,
+		behind_factor: float, ahead_factor: float, idle_factor: float) -> Rect2:
 	var horizontal := maxf(0.0, viewport_logical.x * 0.10)
-	var vertical := maxf(0.0, viewport_logical.y * factor)
-	return visible_rect.grow_individual(horizontal, vertical, horizontal, vertical)
+	var before := maxf(0.0, viewport_logical.y * idle_factor)
+	var after := before
+	if _scroll_direction > 0:
+		before = maxf(0.0, viewport_logical.y * behind_factor)
+		after = maxf(0.0, viewport_logical.y * ahead_factor)
+	elif _scroll_direction < 0:
+		before = maxf(0.0, viewport_logical.y * ahead_factor)
+		after = maxf(0.0, viewport_logical.y * behind_factor)
+	return visible_rect.grow_individual(horizontal, before, horizontal, after)
+
+
+func _update_direction(visible_rect: Rect2) -> void:
+	if _last_visible.size.y <= 0.0:
+		_scroll_direction = 0
+		return
+	var delta := visible_rect.get_center().y - _last_visible.get_center().y
+	if absf(delta) < 1.0:
+		return
+	_scroll_direction = 1 if delta > 0.0 else -1
 
 
 func _empty_result(visible_rect: Rect2) -> Dictionary:

@@ -30,6 +30,7 @@ func _ready() -> void:
 
 func configure(node: CampaignNode, node_state: int, accent: Color,
 		is_chosen: bool = false) -> void:
+	visible = true
 	node_id = node.id if node != null else ""
 	node_type = node.type if node != null else NodeModel.TYPE_NORMAL
 	_accent = accent
@@ -40,6 +41,19 @@ func configure(node: CampaignNode, node_state: int, accent: Color,
 	disabled = state == UnlockRulesModel.State.LOCKED
 	_set_pulse(state == UnlockRulesModel.State.AVAILABLE)
 	_refresh()
+
+
+## Prépare le bouton pour le pool de la carte. Aucune animation ni aucun
+## traitement ne doit continuer tant que le Control est détaché de la scène.
+func recycle() -> void:
+	_set_pulse(false)
+	node_id = ""
+	state = UnlockRulesModel.State.LOCKED
+	chosen = false
+	disabled = true
+	tooltip_text = ""
+	_style_key = ""
+	visible = false
 
 
 func set_chosen(value: bool) -> void:

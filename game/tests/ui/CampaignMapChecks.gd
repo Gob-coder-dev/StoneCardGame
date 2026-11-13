@@ -36,6 +36,7 @@ func run() -> void:
 	_test_page(page)
 	await _test_dialog(page)
 	await _test_progress_refresh(page)
+	await _test_dense_scroll(page)
 	await _test_far_scroll(page)
 	page.queue_free()
 	for frame in range(2):
@@ -156,9 +157,9 @@ func _test_page(page: Control) -> void:
 			view.node_center(str(endpoint["to_id"]))) < 1.0
 	_check(aligned, "carte : chaque chemin logique commence et finit au centre de ses nœuds")
 	_check(view.drawn_edge_count() > 0 and view.drawn_edge_count() <= _graph.edge_count(),
-		"carte virtuelle : seules les arêtes des nœuds chargés sont dessinées")
-	_check(_drawn_edges_are_loaded(view),
-		"carte virtuelle : aucune arête dessinée ne pointe vers un nœud absent")
+		"carte virtuelle : seule une fraction spatiale des arêtes est dessinée")
+	_check(_drawn_edges_are_near_viewport(view),
+		"carte virtuelle : aucune arête hors de la fenêtre utile n'est dessinée")
 	var completed: Control = view.node_control("tuto_01")
 	var available: Control = view.node_control("tuto_02")
 	var locked: Control = view.node_control("tuto_03")
@@ -211,6 +212,18 @@ func _test_progress_refresh(page: Control) -> void:
 		"carte virtuelle : seul le successeur concerné est actualisé")
 
 
+func _test_dense_scroll(page: Control) -> void:
+	var view: CampaignMapView = page.map_view
+	var scroll: ScrollContainer = page.scroll
+	scroll.scroll_vertical = int(13_520.0 * view.scale_factor())
+	for _frame in range(12):
+		await get_tree().process_frame
+	_check(view.loaded_count() <= 48,
+		"carte mobile : la zone la plus dense conserve au plus 48 boutons")
+	_check(view.drawn_edge_count() <= 45 and _drawn_edges_are_near_viewport(view),
+		"carte mobile : seuls les chemins proches du viewport dense sont dessinés")
+
+
 func _test_far_scroll(page: Control) -> void:
 	var view: CampaignMapView = page.map_view
 	var scroll: ScrollContainer = page.scroll
@@ -231,8 +244,9 @@ func _test_far_scroll(page: Control) -> void:
 	_check(view.get_child_count() == view.loaded_count()
 		and _unique_child_count(view) == view.loaded_count(),
 		"carte virtuelle : les allers-retours ne créent aucun doublon")
-	_check(_drawn_edges_are_loaded(view),
-		"carte virtuelle : les connexions restent cohérentes aux frontières")
+	_check(_drawn_edges_are_near_viewport(view),
+		"carte virtuelle : les connexions restent limitées à la zone utile")
+	var created_after_far := view.created_view_count()
 	scroll.scroll_vertical = 0
 	for frame in range(12):
 		await get_tree().process_frame
@@ -241,6 +255,8 @@ func _test_far_scroll(page: Control) -> void:
 	var restored: Control = view.node_control("tuto_02")
 	_check(restored != null and restored.state == UnlockRules.State.COMPLETED,
 		"carte virtuelle : un niveau recréé retrouve son état de progression")
+	_check(view.created_view_count() == created_after_far,
+		"carte virtuelle : le retour recycle les boutons au lieu de les rallouer")
 
 
 func _test_restore_position() -> void:
@@ -313,11 +329,11 @@ func _test_responsive_view() -> void:
 		await get_tree().process_frame
 
 
-func _drawn_edges_are_loaded(view: CampaignMapView) -> bool:
+func _drawn_edges_are_near_viewport(view: CampaignMapView) -> bool:
 	var result := true
-	for endpoint in view.drawn_edge_endpoints():
-		result = result and view.node_control(str(endpoint["from_id"])) != null
-		result = result and view.node_control(str(endpoint["to_id"])) != null
+	for entry in view.drawn_edge_bounds():
+		var bounds: Rect2 = entry.get("bounds", Rect2())
+		result = result and bounds.intersects(view.render_rect())
 	return result
 
 

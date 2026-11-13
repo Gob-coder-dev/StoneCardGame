@@ -432,13 +432,18 @@ même espace logique et le même facteur d'échelle.
 
 - `CampaignMapLayout` calcule les positions, le rectangle visible logique et le
   défilement d'une ancre, sans instancier d'interface.
-- `CampaignMapChunkManager` découpe la carte en secteurs de `540 × 720` unités.
-  Il charge la zone visible avec une marge de 0,75 écran, puis conserve une
-  marge plus large de 1,75 écran pour éviter les cycles chargement/déchargement.
+- `CampaignMapChunkManager` découpe la carte en secteurs de `540 × 360` unités.
+  Ses marges sont directionnelles : davantage de contenu est préparé devant le
+  geste que derrière lui. Une zone de conservation distincte évite les cycles
+  chargement/déchargement sans garder plusieurs écrans inutiles en mémoire.
 - `CampaignMapView` instancie la première zone par un lot initial de 8 nœuds,
-  puis au maximum 6 nœuds par image. Une arête n'est dessinée que lorsque ses
-  deux extrémités sont chargées ; les connexions de frontière réapparaissent
-  avec le lot suivant.
+  puis au maximum 6 nœuds par image. Les vues retirées sont recyclées dans un
+  pool borné au lieu d'être recréées pendant chaque aller-retour. Le streaming
+  n'est réévalué qu'après 120 unités logiques de déplacement.
+- `CampaignMapRenderIndex` précalcule une seule fois les courbes et leur emprise
+  verticale. `CampaignMapView` ne demande ensuite que les arêtes de la bande de
+  rendu courante, avec une marge de sécurité de 420 unités ; cette liste n'est
+  reconstruite qu'au passage d'une bande de 360 unités.
 - `CampaignMapPositionState` conserve une ancre de niveau, un offset logique et
   une position de `ScrollContainer` de secours, avec un numéro de version. Il
   est stocké dans `CampaignProgress.map_navigation`, séparément des nœuds
@@ -454,9 +459,9 @@ même espace logique et le même facteur d'échelle.
   le lot est terminé.
 - Les nœuds ont un diamètre de 150 unités et une distance minimale mesurée de
   180 unités. Le placement local des approches conserve cette distance. Les
-  courbes sont mises en cache et les nœuds disponibles seuls
+  courbes sont précalculées par l'index spatial et les nœuds disponibles seuls
   animent leur pulsation ; les 162 anciens `_process()` ne sont plus exécutés.
-- Les labels de section sont limités aux chapitres dont un nœud est chargé.
+- Les labels de section sont limités aux chapitres proches du viewport.
 - `CampaignSectionTheme` transforme les treize chapitres en bandes contiguës :
   la frontière entre deux chapitres est placée au milieu de leurs médianes Y,
   ce qui absorbe les plages qui se chevauchent. `CampaignSectionArt` dessine
@@ -491,6 +496,13 @@ Mesures headless sur la machine de développement, avec
 | Nœuds visuels à l'ouverture | 154 | 8 immédiatement, 23 après 6 frames |
 | Mémoire statique approximative | 49,06 Mo | 45,04 Mo |
 
+Une seconde passe, destinée au défilement mobile, réduit dans la zone la plus
+dense le maximum théorique de contrôles de nœud conservés de 73 à 44 (environ
+40 %) et le nombre d'arêtes rendues de 88 à 37 (environ 58 %). Ces valeurs
+proviennent du graphe actuel et d'un viewport logique de téléphone ; elles sont
+vérifiées par `tests/CampaignMapOptimizationChecks.tscn`, qui parcourt toute la
+hauteur de la carte et contrôle aussi la réutilisation du pool.
+
 La validation complète des générations et de la géométrie reste exécutée par
 `CampaignContentLoader.read(path, true)` avec `CampaignGenerationValidator` et
 `CampaignLayoutValidator` ; elle n'est plus dans le chemin d'ouverture. Sur la
@@ -504,14 +516,18 @@ de chargement.
 ### Chargement et déchargement
 
 - Le rectangle de chargement utilise la taille réelle du viewport, la position
-du `ScrollContainer` et une marge calculée en unités logiques ; il prend en
-compte les deux axes pour les branches latérales.
+  du `ScrollContainer`, le sens du déplacement et des marges calculées en unités
+  logiques ; il prend en compte les deux axes pour les branches latérales.
 - Les demandes en double et les callbacks d'une carte fermée sont filtrés par
-les identifiants chargés/en attente et par la durée de vie des `Control`.
+  les identifiants chargés/en attente et par la durée de vie des `Control`.
 - Un nœud sélectionné qui sort de la zone garde son état logique ; il est
-reconfiguré avec cet état à son retour.
+  reconfiguré avec cet état à son retour.
+- Les vues hors zone sont réinitialisées puis placées dans un pool borné ; elles
+  ne traitent plus aucune image tant qu'elles sont détachées.
+- Les arêtes et repères sont filtrés par un index spatial immuable : aucun scan
+  des 190 arêtes n'est effectué à chaque pixel ni à chaque lot de nœuds.
 - La progression n'est jamais recalculée ni modifiée par un chargement ou un
-déchargement.
+  déchargement.
 
 ## Validation automatique
 

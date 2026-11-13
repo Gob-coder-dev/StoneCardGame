@@ -13,6 +13,7 @@ const NodeScene := preload("res://scenes/campaign/CampaignNode.tscn")
 const UnlockRulesModel := preload("res://scripts/domain/campaign/CampaignUnlockRules.gd")
 const LayoutModel := preload("res://scripts/ui/campaign/CampaignMapLayout.gd")
 const ChunkManagerModel := preload("res://scripts/ui/campaign/CampaignMapChunkManager.gd")
+const RenderIndexModel := preload("res://scripts/ui/campaign/CampaignMapRenderIndex.gd")
 const SectionThemeModel := preload("res://scripts/ui/campaign/CampaignSectionTheme.gd")
 const SectionArtModel := preload("res://scripts/ui/campaign/CampaignSectionArt.gd")
 
@@ -21,6 +22,10 @@ const SectionArtModel := preload("res://scripts/ui/campaign/CampaignSectionArt.g
 const INITIAL_BATCH_SIZE: int = 8
 const FRAME_BATCH_SIZE: int = 6
 const DEFAULT_VIEWPORT_HEIGHT: float = 1600.0
+const STREAM_UPDATE_STEP := 120.0
+const RENDER_BAND_STEP := 360.0
+const RENDER_MARGIN := 420.0
+const MAX_POOLED_VIEWS := 48
 
 var _graph: CampaignGraph = null
 var _states: Dictionary = {}
@@ -33,15 +38,22 @@ var _focus_id: String = ""
 var _initial_focus: String = ""
 var _scale: float = 1.0
 var _chunk_manager = null
+var _render_index: CampaignMapRenderIndex = null
 var _visible_rect := Rect2()
+var _render_rect := Rect2()
 var _viewport_logical := Vector2(UITheme.CAMPAIGN_MAP_WIDTH, DEFAULT_VIEWPORT_HEIGHT)
 ## Les courbes ne changent qu'au redimensionnement : on ne recalcule pas toutes
 ## les arêtes à chaque rafraîchissement d'état.
 var _edge_points_cache: Dictionary = {}
 var _visible_edges: Array = []
 var _visible_chapters: Dictionary = {}
+var _chapter_marks: Dictionary = {}
 var _sections: Array = []
 var _setup_done := false
+var _last_stream_top := -INF
+var _render_band := -2_147_483_648
+var _view_pool: Array[CampaignNodeView] = []
+var _created_view_count := 0
 
 
 func _ready() -> void:
@@ -57,6 +69,7 @@ func setup(graph: CampaignGraph, states: Dictionary, selected_id: String = "",
 	_clear_streamed_views()
 	_graph = graph
 	_sections = SectionThemeModel.build(_graph)
+	_build_chapter_marks()
 	_states = states
 	_selected_id = selected_id
 	_focus_id = focus_id
@@ -65,11 +78,14 @@ func setup(graph: CampaignGraph, states: Dictionary, selected_id: String = "",
 	_initial_focus = _focus_id
 	_setup_done = true
 	_chunk_manager = ChunkManagerModel.new(_graph)
+	_render_index = RenderIndexModel.new(_graph)
 	_scale = LayoutModel.scale_for_width(size.x) if size.x > 0.0 else 1.0
 	var viewport := viewport_height if viewport_height > 0.0 else DEFAULT_VIEWPORT_HEIGHT
 	_viewport_logical = Vector2(UITheme.CAMPAIGN_MAP_WIDTH,
 		maxf(1.0, viewport / maxf(0.001, _scale)))
 	_visible_rect = LayoutModel.focus_rect(_graph, _focus_id, _viewport_logical.y)
+	_last_stream_top = _visible_rect.position.y
+	_refresh_render_window(true)
 	custom_minimum_size = Vector2(0.0, content_height())
 	_update_streaming(_visible_rect, _viewport_logical)
 	# Première image utile : quelques ronds autour du focus, pas toute la carte.
@@ -97,7 +113,6 @@ func refresh_states(states: Dictionary, selected_id: String = "") -> void:
 		if _loaded.has(_selected_id):
 			_configure_view(_selected_id)
 	if not changed.is_empty() or previous_selected != _selected_id:
-		_rebuild_visible_edges()
 		queue_redraw()
 
 
@@ -136,6 +151,14 @@ func pending_count() -> int:
 	return _pending.size()
 
 
+func pooled_count() -> int:
+	return _view_pool.size()
+
+
+func created_view_count() -> int:
+	return _created_view_count
+
+
 func loaded_node_ids() -> Array:
 	var result: Array = _loaded.keys()
 	result.sort()
@@ -158,7 +181,12 @@ func update_streaming(scroll_vertical: float, viewport_height: float) -> void:
 		return
 	var logical_height := viewport_height / maxf(0.001, _scale)
 	_viewport_logical = Vector2(UITheme.CAMPAIGN_MAP_WIDTH, maxf(1.0, logical_height))
-	_visible_rect = LayoutModel.visible_rect(scroll_vertical, viewport_height, _scale)
+	var next_rect := LayoutModel.visible_rect(scroll_vertical, viewport_height, _scale)
+	_visible_rect = next_rect
+	_refresh_render_window()
+	if absf(next_rect.position.y - _last_stream_top) < STREAM_UPDATE_STEP:
+		return
+	_last_stream_top = next_rect.position.y
 	_update_streaming(_visible_rect, _viewport_logical)
 
 
@@ -169,7 +197,9 @@ func update_streaming_rect(visible_rect: Rect2) -> void:
 		return
 	_visible_rect = visible_rect
 	_viewport_logical = visible_rect.size
+	_last_stream_top = visible_rect.position.y
 	_update_streaming(_visible_rect, _viewport_logical)
+	_refresh_render_window(true)
 
 
 func scroll_for_anchor(node_id: String, offset_y: float) -> float:
@@ -199,9 +229,8 @@ func edge_endpoints() -> Array:
 	return result
 
 
-## Seules les arêtes dont les deux extrémités sont chargées sont dessinées :
-## une frontière peut donc rester ouverte jusqu'au lot suivant, sans jamais
-## nécessiter de boutons hors écran.
+## Les arêtes sont sélectionnées par leur emprise spatiale, indépendamment des
+## boutons instanciés. Le graphe reste donc continu au bord des lots chargés.
 func drawn_edge_endpoints() -> Array:
 	var result: Array = []
 	for edge in _visible_edges:
@@ -219,6 +248,22 @@ func drawn_edge_count() -> int:
 	return _visible_edges.size()
 
 
+func render_rect() -> Rect2:
+	return _render_rect
+
+
+func drawn_edge_bounds() -> Array:
+	var result: Array = []
+	if _render_index == null:
+		return result
+	for edge in _visible_edges:
+		result.append({
+			"id": edge.id,
+			"bounds": _render_index.bounds_for(edge.id),
+		})
+	return result
+
+
 func relayout() -> void:
 	if _graph == null or size.x <= 0.0:
 		return
@@ -229,6 +274,7 @@ func relayout() -> void:
 		var view: Control = _views.get(node_id, null) as Control
 		if view != null:
 			_place_view(view, str(node_id))
+	_refresh_render_window(true)
 	queue_redraw()
 
 
@@ -236,14 +282,24 @@ func _clear_streamed_views() -> void:
 	for child in get_children():
 		if child is CampaignNodeView:
 			remove_child(child)
-			child.queue_free()
+			child.free()
+	for view in _view_pool:
+		if is_instance_valid(view):
+			view.free()
+	_view_pool.clear()
 	_views.clear()
 	_loaded.clear()
 	_pending.clear()
 	_pending_lookup.clear()
 	_visible_edges.clear()
 	_visible_chapters.clear()
+	_chapter_marks.clear()
 	_sections.clear()
+	_render_index = null
+	_render_rect = Rect2()
+	_render_band = -2_147_483_648
+	_last_stream_top = -INF
+	_created_view_count = 0
 	set_process(false)
 
 
@@ -252,14 +308,12 @@ func _update_streaming(visible_rect: Rect2, viewport_logical: Vector2) -> void:
 		return
 	_visible_rect = visible_rect
 	var delta: Dictionary = _chunk_manager.update(visible_rect, viewport_logical)
-	var changed := false
 	for node_id in delta.get("remove", []):
 		var id := str(node_id)
 		_pending_lookup.erase(id)
 		_pending.erase(id)
 		if _loaded.has(id):
 			_remove_view(id)
-			changed = true
 	for node_id in delta.get("add", []):
 		var id := str(node_id)
 		if _loaded.has(id) or _pending_lookup.has(id):
@@ -269,10 +323,6 @@ func _update_streaming(visible_rect: Rect2, viewport_logical: Vector2) -> void:
 	_pending.sort_custom(_sort_pending)
 	if not _pending.is_empty():
 		set_process(true)
-	changed = changed or not (delta.get("add", []) as Array).is_empty()
-	if changed:
-		_rebuild_visible_edges()
-		queue_redraw()
 	_emit_streaming()
 
 
@@ -321,8 +371,6 @@ func _create_batch(limit: int) -> void:
 		return
 	if _initial_focus != "" and _loaded.has(_focus_id):
 		_initial_focus = ""
-	_rebuild_visible_edges()
-	queue_redraw()
 	_emit_streaming()
 	if _pending.is_empty():
 		set_process(false)
@@ -332,14 +380,19 @@ func _create_view(node_id: String) -> void:
 	var node := _graph.node(node_id)
 	if node == null:
 		return
-	var view: CampaignNodeView = NodeScene.instantiate() as CampaignNodeView
+	var view: CampaignNodeView = null
+	if not _view_pool.is_empty():
+		view = _view_pool.pop_back()
+	else:
+		view = NodeScene.instantiate() as CampaignNodeView
+		_created_view_count += 1
+		view.pressed.connect(_on_view_control_pressed.bind(view))
 	# La scène garde une taille d'édition, mais la carte impose son échelle aux
 	# nœuds : une taille minimale fixe casserait le rendu téléphone.
 	view.custom_minimum_size = Vector2.ZERO
 	view.name = "Node_%s" % node_id
 	_place_view(view, node_id)
 	add_child(view)
-	view.pressed.connect(_on_view_pressed.bind(node_id))
 	_views[node_id] = view
 	_loaded[node_id] = true
 	_configure_view(node_id)
@@ -353,13 +406,17 @@ func _place_view(view: Control, node_id: String) -> void:
 
 
 func _remove_view(node_id: String) -> void:
-	var view: Control = _views.get(node_id, null) as Control
+	var view: CampaignNodeView = _views.get(node_id, null) as CampaignNodeView
 	_views.erase(node_id)
 	_loaded.erase(node_id)
 	if view == null:
 		return
 	remove_child(view)
-	view.queue_free()
+	view.recycle()
+	if _view_pool.size() < MAX_POOLED_VIEWS:
+		_view_pool.append(view)
+	else:
+		view.free()
 
 
 func _configure_view(node_id: String) -> void:
@@ -380,22 +437,41 @@ func _accent_for(node: CampaignNode) -> Color:
 	return UITheme.COL_NEON_PINK
 
 
-func _on_view_pressed(node_id: String) -> void:
-	node_activated.emit(node_id)
+func _on_view_control_pressed(view: CampaignNodeView) -> void:
+	if view != null and view.node_id != "":
+		node_activated.emit(view.node_id)
 
 
-func _rebuild_visible_edges() -> void:
-	_visible_edges.clear()
-	_visible_chapters.clear()
+func _build_chapter_marks() -> void:
+	_chapter_marks.clear()
 	if _graph == null:
 		return
-	for edge in _graph.edges():
-		if _loaded.has(edge.from_id) and _loaded.has(edge.to_id):
-			_visible_edges.append(edge)
-	for node_id in _loaded:
-		var node := _graph.node(str(node_id))
-		if node != null and node.chapter != "" and not _visible_chapters.has(node.chapter):
-			_visible_chapters[node.chapter] = node.position.y
+	for node_variant in _graph.nodes():
+		var node := node_variant as CampaignNode
+		if node == null or node.chapter == "":
+			continue
+		if not _chapter_marks.has(node.chapter) \
+				or node.position.y < float(_chapter_marks[node.chapter]):
+			_chapter_marks[node.chapter] = node.position.y
+
+
+## Le rendu change par bandes et non à chaque pixel de scroll. La marge couvre
+## la bande suivante, tandis que l'index élimine les chemins hors écran.
+func _refresh_render_window(force: bool = false) -> void:
+	if _render_index == null or _visible_rect.size.y <= 0.0:
+		return
+	var band := floori(_visible_rect.position.y / RENDER_BAND_STEP)
+	if not force and band == _render_band:
+		return
+	_render_band = band
+	_render_rect = _visible_rect.grow(RENDER_MARGIN)
+	_visible_edges = _render_index.edges_in(_render_rect)
+	_visible_chapters.clear()
+	for chapter in _chapter_marks:
+		var y := float(_chapter_marks[chapter])
+		if y >= _render_rect.position.y and y <= _render_rect.end.y:
+			_visible_chapters[chapter] = y
+	queue_redraw()
 
 
 func _emit_streaming() -> void:
@@ -454,7 +530,7 @@ func _edge_color(node: CampaignNode) -> Color:
 	return UITheme.COL_CAMPAIGN_EDGE_LIT
 
 
-## Quelques repères de chapitre, limités aux chapitres dont un nœud est chargé.
+## Quelques repères de chapitre, limités à la bande de rendu courante.
 func _draw_map_marks() -> void:
 	if _visible_chapters.is_empty():
 		return
@@ -476,23 +552,22 @@ func _draw_map_marks() -> void:
 func _edge_points(edge: CampaignEdge) -> PackedVector2Array:
 	if _edge_points_cache.has(edge.id):
 		return _edge_points_cache[edge.id]
-	var from := node_center(edge.from_id)
-	var to := node_center(edge.to_id)
-	var control_one := from + Vector2(0.0, (to.y - from.y) * 0.45)
-	var control_two := to - Vector2(0.0, (to.y - from.y) * 0.45)
-	if edge.controls.size() >= 2:
-		control_one = edge.controls[0] * _scale
-		control_two = edge.controls[1] * _scale
-	elif edge.controls.size() == 1:
-		control_one = edge.controls[0] * _scale
-		control_two = control_one + (to - from) * 0.25
 	var points := PackedVector2Array()
-	for index in range(21):
-		var weight := float(index) / 20.0
-		points.append(from.cubic_interpolate(to, control_one, control_two, weight))
+	if _render_index != null:
+		for point in _render_index.points_for(edge.id):
+			points.append(point * _scale)
 	_edge_points_cache[edge.id] = points
 	return points
 
 
 func _on_resized() -> void:
 	relayout()
+
+
+func _exit_tree() -> void:
+	# Les vues du pool sont volontairement détachées : elles ne seraient donc
+	# pas libérées automatiquement avec les enfants du CanvasItem.
+	for view in _view_pool:
+		if is_instance_valid(view):
+			view.free()
+	_view_pool.clear()

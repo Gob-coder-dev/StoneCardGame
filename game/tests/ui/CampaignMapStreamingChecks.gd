@@ -7,6 +7,7 @@ const ProgressModel := preload("res://scripts/domain/campaign/CampaignProgress.g
 const StoreModel := preload("res://scripts/data/campaign/CampaignProgressStore.gd")
 const ServiceModel := preload("res://scripts/application/campaign/CampaignService.gd")
 const ChunkManagerModel := preload("res://scripts/ui/campaign/CampaignMapChunkManager.gd")
+const RenderIndexModel := preload("res://scripts/ui/campaign/CampaignMapRenderIndex.gd")
 const PositionStateModel := preload("res://scripts/application/campaign/CampaignMapPositionState.gd")
 const PATH := "user://campaign_streaming_checks.json"
 
@@ -19,6 +20,7 @@ func run() -> void:
 		return
 	var graph: CampaignGraph = GraphModel.build(content["definition"])
 	_test_chunks(graph)
+	_test_render_index(graph)
 	_test_position_state(graph)
 	_test_navigation_store(graph)
 	_cleanup()
@@ -72,6 +74,31 @@ func _test_chunks(graph: CampaignGraph) -> void:
 		"streaming : les allers-retours ne dupliquent aucun nœud")
 	_check(manager.chunk_for_point(Vector2(700.0, 10.0)).x == 1,
 		"streaming : le découpage prend aussi en compte l'axe latéral")
+	var mobile_manager: CampaignMapChunkManager = ChunkManagerModel.new(graph)
+	var max_active := 0
+	for top in range(0, int(graph.map_size.y), 120):
+		mobile_manager.update(Rect2(0.0, float(top), 1080.0, 1694.0),
+			Vector2(1080.0, 1694.0))
+		max_active = maxi(max_active, mobile_manager.active_node_ids().size())
+	_check(max_active <= 48,
+		"streaming mobile : même la zone la plus dense garde au plus 48 niveaux")
+
+
+func _test_render_index(graph: CampaignGraph) -> void:
+	var index: CampaignMapRenderIndex = RenderIndexModel.new(graph)
+	var dense_rect := Rect2(0.0, 13_520.0, 1080.0, 1694.0).grow(420.0)
+	var edges := index.edges_in(dense_rect)
+	var all_intersect := not edges.is_empty()
+	for edge in edges:
+		all_intersect = all_intersect and index.bounds_for(edge.id).intersects(dense_rect)
+	_check(all_intersect and edges.size() <= 45,
+		"rendu mobile : la zone dense ne demande que ses chemins visibles")
+	var repeated := index.edges_in(dense_rect)
+	var stable := repeated.size() == edges.size()
+	for edge_index in range(mini(edges.size(), repeated.size())):
+		stable = stable and edges[edge_index].id == repeated[edge_index].id
+	_check(stable,
+		"rendu mobile : une même fenêtre retourne un ordre de chemins stable")
 
 
 func _test_position_state(graph: CampaignGraph) -> void:

@@ -194,7 +194,8 @@ Les déclencheurs détaillés, les fichiers et les règles d'extension sont dans
 | `CampaignUnlockRules`, `CampaignProgress` | `states`, `state_for`, `mark_completed`, `record_attempt` | Règle ANY, états et progression sérialisable par identifiant de nœud ; `map_navigation` y reste une donnée de navigation séparée |
 | `CampaignValidator` | `problems` | Validation structurelle, modes, decks fixes et mini-boss, sans dépendance vers la couche application |
 | `CampaignProgressionValidator`, `CampaignGenerationValidator`, `CampaignLayoutValidator` | `problems` | Contrôles de livraison : courbe et jalons, générations réelles et géométrie, absents du chemin runtime |
-| `CampaignMapLayout`, `CampaignMapChunkManager` | `node_center`, `visible_rect`, `update` | Géométrie logique et sélection des secteurs chargés/ préchargés/ libérés, sans `Control` |
+| `CampaignMapLayout`, `CampaignMapChunkManager` | `node_center`, `visible_rect`, `update` | Géométrie logique et sélection directionnelle des secteurs chargés/ préchargés/ libérés, sans `Control` |
+| `CampaignMapRenderIndex` | `edges_in`, `points_for`, `bounds_for` | Courbes précalculées, emprises et index spatial immuable des arêtes visibles |
 | `CampaignSectionTheme`, `CampaignSectionArt` | `build`, `draw_backdrop` | Découpe visuelle des treize chapitres en bandes contiguës et dessin procédural du fond, sans `Control` ni texture |
 | `CampaignMapPositionState` | `make`, `from_dict`, `resolved` | Ancre, offset logique et secours de position, versionnés séparément de la progression |
 | `CampaignAudit` | `build` | Métriques de livraison : dieux, modes, paliers, séries, topologie, précisions et diversité des decks |
@@ -592,13 +593,16 @@ inactif. Après un résultat, la carte se recentre sur le nœud concerné.
 
 La représentation est virtualisée par `CampaignMapChunkManager`. La première
 zone est créée par lots (8 nœuds immédiatement, puis 6 par image), et les
-secteurs situés hors d'une marge de conservation sont libérés. Les positions
+secteurs situés hors de marges directionnelles sont libérés. Les boutons
+retirés sont réinitialisés puis réutilisés depuis un pool borné. Les positions
 logiques viennent de `CampaignMapLayout`, donc les connexions et le centrage ne
-dépendent jamais de l'instanciation d'un bouton. `CampaignMapView` ne dessine
-que les arêtes dont les deux extrémités sont chargées. Le fond de section est
-tracé avant elles par `CampaignSectionArt` : `CampaignSectionTheme` fournit des
-bandes contiguës dérivées des médianes de chapitres, et le dessin reste limité
-aux sections proches du viewport, sans `Control` ni texture. `CampaignMapPositionState`
+dépendent jamais de l'instanciation d'un bouton. `CampaignMapRenderIndex`
+précalcule les courbes et leurs emprises ; `CampaignMapView` ne récupère et ne
+dessine que celles qui coupent la bande de rendu courante, sans rescanner le
+graphe à chaque mouvement. Le fond de section est tracé avant elles par
+`CampaignSectionArt` : `CampaignSectionTheme` fournit des bandes contiguës
+dérivées des médianes de chapitres, et le dessin reste limité aux sections
+proches du viewport, sans `Control` ni texture. `CampaignMapPositionState`
 conserve une ancre et un offset dans `CampaignProgress.map_navigation` ; la
 position est restaurée avant le chargement des zones et sauvegardée avec un
 debounce de 0,65 s. Une ancre devenue invalide retombe sur le dernier niveau
