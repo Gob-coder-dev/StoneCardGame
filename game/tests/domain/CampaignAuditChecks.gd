@@ -137,6 +137,7 @@ func run() -> void:
 		and not bool(audit["has_cycle"])
 		and (audit["duplicate_edges"] as Array).is_empty(),
 		"audit : tous les nœuds sont accessibles, sans cycle ni arête dupliquée")
+	_test_required_boss_progression(graph)
 
 	_check(int(audit["precision_unique"]) >= 25,
 		"audit : la précision utilise une large échelle")
@@ -171,6 +172,37 @@ func run() -> void:
 	_check(float(audit["min_node_distance"]) >= 170.0,
 		"audit : les nœuds restent espacés sur la carte")
 	_test_optional_paths(graph)
+
+
+func _test_required_boss_progression(graph: CampaignGraph) -> void:
+	var required_gap := float(CampaignBalanceConfig.get_config().get(
+		"required_boss_precision_gap", 0.06))
+	for boss_variant in graph.nodes():
+		var boss := boss_variant as CampaignNode
+		if boss == null or (not boss.is_mandatory_mini_boss() and not boss.is_boss()):
+			continue
+		for parent_id in graph.predecessors(boss.id):
+			var parent := graph.node(parent_id)
+			_check(parent != null
+				and parent.balance_profile == "boss_approach"
+				and boss.max_power_tier() >= parent.max_power_tier()
+				and float(boss.ai_profile().get("precision", 0.0)) + 0.001
+					>= float(parent.ai_profile().get("precision", 0.0)) + required_gap,
+				"audit : le boss '%s' domine clairement son approche '%s'" % [
+					boss.id, parent_id])
+
+	var convergence := graph.node("convergence_01")
+	var first_gate := graph.node("boss_required_gate")
+	var tier_one := 0
+	var tier_two := 0
+	for stone_id in convergence.fixed_deck():
+		var tier := CardPowerTierRules.effective_tier(StoneLoader.get_stone(str(stone_id)))
+		tier_one += 1 if tier == 1 else 0
+		tier_two += 1 if tier == 2 else 0
+	_check(tier_one == 6 and tier_two == 2
+		and float(convergence.ai_profile().get("precision", 1.0)) <= 0.24
+		and float(first_gate.ai_profile().get("precision", 0.0)) >= 0.30,
+		"audit : La Convergence prépare le premier mini-boss sans le dépasser")
 
 
 func _test_optional_paths(graph: CampaignGraph) -> void:

@@ -48,6 +48,18 @@ func run() -> void:
 	_check(bool(content.get("ok", false)) \
 		and ProgressionValidator.problems(content.get("definition", {})).is_empty(),
 		"progression : les deux boss-jalons sont incontournables et la courbe est valide")
+	var inverted: Dictionary = (content.get("definition", {}) as Dictionary).duplicate(true)
+	for raw_node in inverted.get("nodes", []):
+		if raw_node is Dictionary and str(raw_node.get("id", "")) == "boss_required_gate":
+			raw_node["encounter"]["ai_profile"]["precision"] = 0.10
+			break
+	var inversion_detected := false
+	for problem in ProgressionValidator.problems(inverted):
+		if str(problem).contains("moins exigeant"):
+			inversion_detected = true
+			break
+	_check(inversion_detected,
+		"progression : une approche plus difficile que son boss est refusée")
 
 
 static func _rarities(groups: Variant) -> Array[String]:

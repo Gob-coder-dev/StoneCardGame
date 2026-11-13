@@ -23,6 +23,7 @@ static func problems(definition: Dictionary) -> Array[String]:
 			nodes[node.id] = node
 			_node_problems(node, result)
 	var outgoing := _outgoing(definition.get("edges", []))
+	var incoming := _incoming(definition.get("edges", []))
 	var start := str(definition.get("start_node_id", ""))
 	var final_node := str(definition.get("final_node_id", ""))
 	for raw_gate in GateConfig.get_config().get("gates", []):
@@ -37,6 +38,7 @@ static func problems(definition: Dictionary) -> Array[String]:
 			result.append("Le jalon '%s' doit être un boss obligatoire." % gate_id)
 		if _reachable(start, final_node, outgoing, gate_id):
 			result.append("Le jalon '%s' peut être contourné." % gate_id)
+	_boss_curve_problems(nodes, incoming, result)
 	return result
 
 
@@ -88,6 +90,46 @@ static func _outgoing(raw_edges: Variant) -> Dictionary:
 			result[source] = []
 		(result[source] as Array).append(target)
 	return result
+
+
+static func _incoming(raw_edges: Variant) -> Dictionary:
+	var result := {}
+	if not raw_edges is Array:
+		return result
+	for raw in raw_edges:
+		if not raw is Dictionary:
+			continue
+		var source := str(raw.get("from", ""))
+		var target := str(raw.get("to", ""))
+		if not result.has(target):
+			result[target] = []
+		(result[target] as Array).append(source)
+	return result
+
+
+static func _boss_curve_problems(nodes: Dictionary, incoming: Dictionary,
+		result: Array[String]) -> void:
+	var required_gap := float(
+		BalanceConfig.get_config().get("required_boss_precision_gap", 0.06))
+	for node_id in nodes:
+		var boss: CampaignNode = nodes[node_id]
+		if not boss.is_mandatory_mini_boss() and not boss.is_boss():
+			continue
+		for raw_parent_id in incoming.get(node_id, []):
+			var parent_id := str(raw_parent_id)
+			if not nodes.has(parent_id):
+				continue
+			var parent: CampaignNode = nodes[parent_id]
+			var boss_precision := float(boss.ai_profile().get("precision", 0.0))
+			var parent_precision := float(parent.ai_profile().get("precision", 0.0))
+			if boss_precision + 0.001 < parent_precision + required_gap:
+				result.append("Boss '%s' moins exigeant que son approche '%s'." % [
+					boss.id, parent.id])
+			if boss.max_power_tier() < parent.max_power_tier():
+				result.append("Boss '%s' d'un palier inferieur a son approche '%s'." % [
+					boss.id, parent.id])
+			if parent.balance_profile != "boss_approach":
+				result.append("Approche de boss non identifiee sur '%s'." % parent.id)
 
 
 static func _reachable(start: String, target: String, outgoing: Dictionary,

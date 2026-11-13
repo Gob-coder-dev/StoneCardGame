@@ -131,6 +131,17 @@ CURATED_DECKS = {
     ],
 }
 
+# Ajustement local appliqué après la sélection globale. Il ne réserve pas une
+# entrée de la bibliothèque et ne décale donc pas les decks des autres niveaux.
+BOSS_APPROACH_DECK_OVERRIDES = {
+    "convergence_01": [
+        "porte_fievre_n1", "crache_cendre_n1",
+        "clochelet_malade_n1", "machoire_moisie_n1",
+        "rampant_des_fosses_n1", "avortons_des_caves_n1",
+        "ronge_chair_n1", "sonneur_pestifere_n1",
+    ],
+}
+
 # Initiations obligatoires : les quatre communes N1 du dieu et quatre communes
 # neutres N1 sont copiées à l'identique aux deux camps. Ces loadouts transitoires
 # permettent d'essayer chaque dieu sans l'acheter ni modifier le profil.
@@ -1115,7 +1126,7 @@ for boss_id, spec in OPTIONAL_MINI_TUNING.items():
 
 # La courbe finale est declarative et remplace les ajustements historiques
 # ci-dessus. Ceux-ci ne servent plus qu'a construire les identites de rencontre.
-apply_balance(nodes, depth, BALANCE_CONFIG, set(INTRO_TRIALS))
+apply_balance(nodes, depth, BALANCE_CONFIG, set(INTRO_TRIALS), incoming)
 
 # Ces premieres rencontres enseignent la transition N1/N2 avec six cartes de
 # palier 1 et deux cartes de palier 2.
@@ -1201,6 +1212,9 @@ for node_id, node in nodes.items():
     used_decks.add(sorted_deck(deck))
     selected_decks.append(lineages(deck))
 
+for node_id, deck in BOSS_APPROACH_DECK_OVERRIDES.items():
+    nodes[node_id]["encounter"]["fixed_deck"] = list(deck)
+
 # Recompenses declaratives par lignee et nombre de copies.
 assign_rewards(nodes, REWARD_CONFIG, STONE_CATALOG, LINEAGE_CATALOG)
 
@@ -1226,13 +1240,38 @@ if len(set(depth)) != 1 and max(depth.values()) < 45:
 if len(edges) != 190:
     raise SystemExit(f"190 arêtes attendues, obtenu {len(edges)}")
 weak_decks = []
+fixed_deck_owners = {}
 for node_id, node in nodes.items():
     god = node["encounter"].get("fixed_god_id", "")
     deck = node["encounter"].get("fixed_deck", [])
     if god and deck and god_card_count(deck, god) < 3:
         weak_decks.append(node_id)
+    if deck:
+        identity = sorted_deck(deck)
+        if identity in fixed_deck_owners:
+            raise SystemExit(
+                f"deck fixe duplique : {fixed_deck_owners[identity]} et {node_id}")
+        fixed_deck_owners[identity] = node_id
 if weak_decks:
     raise SystemExit("decks fixes sans trois cartes du dieu : " + ", ".join(weak_decks))
+
+required_gap = float(BALANCE_CONFIG.get("required_boss_precision_gap", 0.06))
+for boss_id, boss in nodes.items():
+    if boss["mini_boss_kind"] != "mandatory" and boss["type"] != "boss":
+        continue
+    for parent_id in incoming[boss_id]:
+        parent = nodes[parent_id]
+        boss_precision = float(boss["encounter"]["ai_profile"]["precision"])
+        parent_precision = float(parent["encounter"]["ai_profile"]["precision"])
+        if boss_precision + 0.001 < parent_precision + required_gap:
+            raise SystemExit(
+                f"boss {boss_id} moins precis que son approche {parent_id}")
+        if int(boss["encounter"]["max_power_tier"]) < int(
+                parent["encounter"]["max_power_tier"]):
+            raise SystemExit(
+                f"boss {boss_id} sous le palier de son approche {parent_id}")
+        if parent.get("balance_profile") != "boss_approach":
+            raise SystemExit(f"approche de boss non identifiee : {parent_id}")
 
 for node_id, trial in INTRO_TRIALS.items():
     deck = trial["deck"]

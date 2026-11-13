@@ -193,7 +193,7 @@ Les déclencheurs détaillés, les fichiers et les règles d'extension sont dans
 | `CampaignGraph`, `CampaignNode`, `CampaignEdge` | `build`, `node`, `predecessors`, `successors`, `reachable_from`, `has_cycle` | Définition immuable, indexation et requêtes du graphe ; aucune sauvegarde ni interface |
 | `CampaignUnlockRules`, `CampaignProgress` | `states`, `state_for`, `mark_completed`, `record_attempt` | Règle ANY, états et progression sérialisable par identifiant de nœud ; `map_navigation` y reste une donnée de navigation séparée |
 | `CampaignValidator` | `problems` | Validation structurelle, modes, decks fixes et mini-boss, sans dépendance vers la couche application |
-| `CampaignProgressionValidator`, `CampaignGenerationValidator`, `CampaignLayoutValidator` | `problems` | Contrôles de livraison : courbe et jalons, générations réelles et géométrie, absents du chemin runtime |
+| `CampaignProgressionValidator`, `CampaignGenerationValidator`, `CampaignLayoutValidator` | `problems` | Contrôles de livraison : courbe et jalons, domination des boss sur leurs approches, générations réelles et géométrie, absents du chemin runtime |
 | `CampaignMapLayout`, `CampaignMapChunkManager` | `node_center`, `visible_rect`, `update` | Géométrie logique et sélection directionnelle des secteurs chargés/ préchargés/ libérés, sans `Control` |
 | `CampaignMapRenderIndex` | `edges_in`, `points_for`, `bounds_for` | Courbes précalculées, emprises et index spatial immuable des arêtes visibles |
 | `CampaignSectionTheme`, `CampaignSectionArt` | `build`, `draw_backdrop` | Découpe visuelle des treize chapitres en bandes contiguës et dessin procédural du fond, sans `Control` ni texture |
@@ -573,6 +573,10 @@ que les identifiants terminés, les tentatives, le dernier nœud consulté et le
 états de tutoriel. `CampaignValidator` refuse les cycles, les nœuds inaccessibles,
 les impasses non déclarées, les mini-boss facultatifs avec sortie, les mini-boss
 obligatoires contournables et les combinaisons mode/politique impossibles.
+`CampaignProgressionValidator` impose en plus qu'un boss obligatoire dépasse
+chacune de ses approches directes d'au moins six points de précision, sans
+régression de palier. Le générateur marque ces approches avec le profil
+`boss_approach`, qui vise volontairement des decks moins lourds.
 
 `CampaignEncounterFactory` produit un adversaire et une configuration de mode
 compatibles avec `BattleContext` et `CampaignModeSession`, en réutilisant
@@ -699,7 +703,7 @@ les cinq difficultés affrontent les mêmes cartes. L'identifiant
 | Très difficile | 1 | oui | 1,2 s |
 
 Cette table décrit les cinq profils historiques d'`OpponentCatalog`. La campagne
-unifiée utilise en plus des profils à précision continue, avec 57 valeurs
+unifiée utilise en plus des profils à précision continue, avec 83 valeurs
 distinctes réparties entre 0 et 1 selon la profondeur et le rôle du nœud.
 
 Avec la probabilité `precision`, l'IA joue le meilleur coup évalué, au hasard

@@ -119,6 +119,7 @@
       "allowed_modes": ["classic", "random", "mirror", "draft"]
     }
   },
+  "required_boss_precision_gap": 0.06,
   "normal_ft2_nodes": ["r08_m1", "r09_m", "r12_m"],
   "mode_fallbacks": {
     "random": "classic",

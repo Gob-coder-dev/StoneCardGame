@@ -83,7 +83,7 @@ niveau 1 n'est donc pas une carte de palier 1.
 
 ### Précision de l'IA
 
-Les 162 profils utilisent **84 valeurs distinctes** entre 0 et 1. 151 nœuds
+Les 162 profils utilisent **83 valeurs distinctes** entre 0 et 1. 151 nœuds
 utilisent une valeur qui n'est pas un multiple de 0,25. La précision suit la
 profondeur et la fonction de la rencontre, sans progression strictement
 linéaire.
@@ -99,6 +99,15 @@ Les mini-boss et les rencontres majeures servent de pics ; les nœuds qui suiven
 une impasse ou un mini-boss peuvent redescendre pour laisser respirer le joueur.
 Une bonne précision ne signifie pas nécessairement un deck plus puissant : les
 profils combinent cartes modestes et IA précise, ou cartes fortes et IA moyenne.
+
+Toute approche directe d'un mini-boss obligatoire ou du boss final porte le
+profil `boss_approach`. Sa précision est plafonnée sous le maximum ordinaire du
+chapitre et son deck vise la partie basse de la bibliothèque disponible. Le boss
+doit ensuite avoir au moins **0,06** de précision supplémentaire et un palier au
+moins égal. Le générateur et `CampaignProgressionValidator` contrôlent tous les
+deux cette règle afin qu'une régénération ne puisse pas réintroduire une
+inversion. Au premier passage, La Convergence utilise six cartes de palier 1 et
+deux de palier 2 à 0,24, avant La Porte des Assimilateurs à 0,30 en FT2.
 
 ## Topologie
 
@@ -336,7 +345,8 @@ le format de série.
 - Un mini-boss **facultatif** termine une impasse, n'a aucune sortie et n'est
   jamais nécessaire pour atteindre le boss final.
 - Un mini-boss **obligatoire** est placé sur un passage incontournable ; sa
-  victoire ouvre la suite obligatoire.
+  victoire ouvre la suite obligatoire. Il reste plus précis que chacune de ses
+  approches directes et ne descend jamais sous leur palier de puissance.
 - Les rencontres ordinaires restent majoritairement en FT1.
 - Le boss final utilise FT3.
 - Une égalité ne donne aucun point et ouvre une manche supplémentaire.

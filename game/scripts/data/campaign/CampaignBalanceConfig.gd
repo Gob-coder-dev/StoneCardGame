@@ -30,6 +30,9 @@ static func problems(config: Dictionary = {}) -> Array[String]:
 	var chapters: Variant = source.get("chapters", {})
 	if not chapters is Dictionary or (chapters as Dictionary).is_empty():
 		return ["La courbe d'equilibrage ne contient aucun chapitre."]
+	var required_gap := float(source.get("required_boss_precision_gap", -1.0))
+	if required_gap <= 0.0 or required_gap > 0.25:
+		result.append("L'ecart de precision des boss obligatoires est invalide.")
 	for chapter_name in chapters:
 		var raw: Variant = chapters[chapter_name]
 		if not raw is Dictionary:

@@ -1231,21 +1231,21 @@
         "opponent_deck_policy": "fixed",
         "fixed_god_id": "nerava",
         "fixed_deck": [
+          "porte_fievre_n1",
+          "crache_cendre_n1",
+          "clochelet_malade_n1",
+          "machoire_moisie_n1",
           "rampant_des_fosses_n1",
-          "fouisseur_aveugle_n1",
-          "devoreur_de_lanternes_n1",
-          "avortons_des_caves_n2",
+          "avortons_des_caves_n1",
           "ronge_chair_n1",
-          "sonneur_pestifere_n1",
-          "porte_fievre_n2",
-          "le_sac_a_murmures_n2"
+          "sonneur_pestifere_n1"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
         "max_power_tier": 2,
         "ai_profile": {
-          "precision": 0.3,
+          "precision": 0.24,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -1254,15 +1254,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 18,
-        "souls_max": 25,
+        "souls_min": 17,
+        "souls_max": 24,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
       },
       "stage_id": "early_game",
-      "balance_profile": "standard"
+      "balance_profile": "boss_approach"
     },
     {
       "id": "boss_required_gate",
@@ -1299,7 +1299,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 2,
         "ai_profile": {
-          "precision": 0.24,
+          "precision": 0.3,
           "anticipation": false
         },
         "series_format": "ft2",
@@ -1308,8 +1308,8 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 27,
-        "souls_max": 34,
+        "souls_min": 28,
+        "souls_max": 35,
         "card_rewards": [
           {
             "lineage_id": "chirurgien_dacier",
@@ -2353,7 +2353,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 2,
         "ai_profile": {
-          "precision": 0.48,
+          "precision": 0.42,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -2362,8 +2362,8 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 20,
-        "souls_max": 27,
+        "souls_min": 19,
+        "souls_max": 26,
         "card_rewards": [
           {
             "lineage_id": "clochelet_malade",
@@ -2379,7 +2379,7 @@
         "scale": 1.0
       },
       "stage_id": "pre_epic",
-      "balance_profile": "standard"
+      "balance_profile": "boss_approach"
     },
     {
       "id": "r04_gate",
@@ -2416,7 +2416,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 2,
         "ai_profile": {
-          "precision": 0.41,
+          "precision": 0.48,
           "anticipation": false
         },
         "series_format": "ft2",
@@ -2425,8 +2425,8 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 29,
-        "souls_max": 36,
+        "souls_min": 30,
+        "souls_max": 37,
         "card_rewards": [
           {
             "lineage_id": "chevalier_sans_visage",
@@ -3880,7 +3880,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 3,
         "ai_profile": {
-          "precision": 0.66,
+          "precision": 0.62,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -3889,15 +3889,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 25,
-        "souls_max": 33,
+        "souls_min": 24,
+        "souls_max": 32,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
       },
       "stage_id": "pre_legendary",
-      "balance_profile": "standard"
+      "balance_profile": "boss_approach"
     },
     {
       "id": "r07_f",
@@ -3934,7 +3934,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 3,
         "ai_profile": {
-          "precision": 0.68,
+          "precision": 0.62,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -3943,15 +3943,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 25,
-        "souls_max": 33,
+        "souls_min": 24,
+        "souls_max": 32,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
       },
       "stage_id": "pre_legendary",
-      "balance_profile": "standard"
+      "balance_profile": "boss_approach"
     },
     {
       "id": "r07_gate",
@@ -3979,7 +3979,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 3,
         "ai_profile": {
-          "precision": 0.62,
+          "precision": 0.68,
           "anticipation": false
         },
         "series_format": "ft2",
@@ -3988,8 +3988,8 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 34,
-        "souls_max": 42,
+        "souls_min": 35,
+        "souls_max": 43,
         "card_rewards": [
           {
             "lineage_id": "la_dame_aux_deux_visages",
@@ -5380,7 +5380,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.82,
+          "precision": 0.81,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -5397,7 +5397,7 @@
         "scale": 1.0
       },
       "stage_id": "late_game",
-      "balance_profile": "standard"
+      "balance_profile": "boss_approach"
     },
     {
       "id": "r10_d",
@@ -5470,7 +5470,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.82,
+          "precision": 0.87,
           "anticipation": false
         },
         "series_format": "ft2",
@@ -6649,7 +6649,7 @@
         "scale": 1.0
       },
       "stage_id": "endgame",
-      "balance_profile": "standard"
+      "balance_profile": "boss_approach"
     },
     {
       "id": "sylkha_02",
@@ -6686,8 +6686,8 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.94,
-          "anticipation": true
+          "precision": 0.92,
+          "anticipation": false
         },
         "series_format": "ft1",
         "seed_policy": "fixed_per_node",
@@ -6712,7 +6712,7 @@
         "scale": 1.0
       },
       "stage_id": "endgame",
-      "balance_profile": "standard"
+      "balance_profile": "boss_approach"
     },
     {
       "id": "mini_optional_02",
