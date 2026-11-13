@@ -65,6 +65,7 @@ func _run() -> void:
 	_profile = ProfileFixture.new()
 	await _check_rules_scroll()
 	await _check_deck_slots()
+	await _check_deck_clear()
 	await _check_collection()
 	await _check_evolution_inputs()
 	await _check_button_inputs()
@@ -121,6 +122,40 @@ func _check_deck_slots() -> void:
 	await _remove(page)
 
 
+## Le vidage passe par une vraie confirmation tactile : un appui hors de la
+## carte annule, NON conserve le deck et OUI libère l'emplacement affiché.
+func _check_deck_clear() -> void:
+	var page := await _open_scene("res://scenes/menus/CollectionScreen.tscn")
+	var scroll: ScrollContainer = page.get_node("Content/Scroll")
+	var button: Button = page.clear_deck_button
+	scroll.ensure_control_visible(button)
+	await _settle()
+	var deck_size: int = ProfileFixture.DECK.size()
+	await _tap(_center(button))
+	_check(page.confirm_popup.is_open() and page.confirm_popup.visible
+		and PlayerData.get_active_deck().size() == deck_size,
+		"deck : toucher Vider ouvre la confirmation sans rien effacer")
+	await _tap(_point(page, Vector2(12, 12)))
+	_check(not page.confirm_popup.is_open()
+		and PlayerData.get_active_deck().size() == deck_size,
+		"deck : toucher hors de la confirmation annule la suppression")
+	await _tap(_center(button))
+	await _tap(_center(page.confirm_popup.no_btn))
+	_check(not page.confirm_popup.is_open()
+		and PlayerData.get_active_deck().size() == deck_size,
+		"deck : NON conserve le deck affiché")
+	await _tap(_center(button))
+	await _tap(_center(page.confirm_popup.yes_btn))
+	_check(not page.confirm_popup.is_open() and PlayerData.get_active_deck().is_empty()
+		and button.disabled and page.deck_count_label.text.begins_with("0/8"),
+		"deck : OUI vide le deck affiché et grise le bouton")
+	await _tap(_center(button))
+	_check(not page.confirm_popup.is_open(),
+		"deck : un deck vide ne rouvre pas la confirmation")
+	PlayerData.set_player_deck(ProfileFixture.DECK)
+	await _remove(page)
+
+
 func _check_collection() -> void:
 	var page := await _open_scene("res://scenes/menus/CollectionScreen.tscn")
 	var scroll: ScrollContainer = page.get_node("Content/Scroll")
@@ -158,8 +193,8 @@ func _check_collection() -> void:
 	await _settle()
 	await _tap(_center(first_card))
 	_check(is_instance_valid(page._action_drawer), "deck : rouvrir le tiroir pour tester le fond")
-	var deck_hint: Label = scroll.get_node("Page/DeckPanel/DeckContent/DeckHint")
-	await _tap(_center(deck_hint))
+	var deck_title: Label = scroll.get_node("Page/DeckPanel/DeckContent/DeckHeader/DeckTitle")
+	await _tap(_center(deck_title))
 	_check(not is_instance_valid(page._action_drawer), "deck : toucher une zone vide referme le tiroir")
 
 	# Les cartes du deck sont masquées dans la collection : prendre la première affichée.

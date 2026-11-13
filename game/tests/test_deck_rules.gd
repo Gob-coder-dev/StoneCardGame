@@ -89,6 +89,25 @@ func test_remove_keeps_original_deck_unchanged() -> void:
 	assert_eq(deck.size(), DeckRules.DECK_SIZE)
 
 
+func test_clear_empties_the_deck_without_mutating_it() -> void:
+	var deck := _small_deck()
+	var result := DeckRules.try_clear(deck)
+	assert_true(result["success"])
+	assert_eq(result["deck"].size(), 0)
+	assert_eq(result["cost"], 0.0)
+	assert_eq(deck.size(), DeckRules.DECK_SIZE)
+
+
+## Un deck vidé reste un brouillon modifiable : il peut rester incomplet et
+## accepter immédiatement une nouvelle carte.
+func test_cleared_deck_accepts_new_cards() -> void:
+	var cleared: Array = DeckRules.try_clear(_small_deck())["deck"]
+	assert_true(DeckRules.validate_deck(cleared, false)["valid"])
+	var added := DeckRules.try_add(cleared, "deck_4a")
+	assert_true(added["success"])
+	assert_eq(added["deck"], ["deck_4a"])
+
+
 ## 4 pierres à 16 points et 3 à 4 points : 76 points pour 7 pierres.
 const NEARLY_FULL := ["deck_16a", "deck_16b", "deck_16c", "deck_16d", "deck_4a", "deck_4b", "deck_4c"]
 
@@ -125,6 +144,8 @@ func run() -> void:
 	test_add_to_full_deck_requests_replacement()
 	test_add_over_budget_is_rejected()
 	test_remove_keeps_original_deck_unchanged()
+	test_clear_empties_the_deck_without_mutating_it()
+	test_cleared_deck_accepts_new_cards()
 	test_valid_replacement_is_applied()
 	test_replacement_over_budget_is_rejected()
 	test_replacement_cannot_create_a_duplicate()

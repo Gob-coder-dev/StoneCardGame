@@ -123,6 +123,12 @@ static func try_remove(stone_ids: Array, stone_id: String) -> Dictionary:
 	return _operation_result(true, deck, "", deck_cost(deck))
 
 
+## Vider un deck ne supprime pas son emplacement : seule sa composition est
+## effacée, et le joueur peut le reconstruire immédiatement.
+static func try_clear(_stone_ids: Array) -> Dictionary:
+	return _operation_result(true, [], "")
+
+
 static func try_replace(stone_ids: Array, old_id: String, new_id: String, god_id: String = "") -> Dictionary:
 	var deck := stone_ids.duplicate()
 	var index := deck.find(old_id)

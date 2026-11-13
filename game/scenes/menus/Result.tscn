@@ -7,7 +7,7 @@
 [ext_resource type="Texture2D" path="res://assets/ui/soul-placeholder.svg" id="4_soul"]
 [ext_resource type="Texture2D" path="res://assets/ui/candle-placeholder.svg" id="5_candle"]
 [ext_resource type="Script" path="res://scripts/ui/result/SeriesResultCard.gd" id="6_series_card"]
-[ext_resource type="Script" path="res://scripts/ui/ConfirmPopup.gd" id="7_confirm_popup"]
+[ext_resource type="PackedScene" path="res://scenes/ui/ConfirmPopup.tscn" id="7_confirm_popup"]
 
 [sub_resource type="StyleBoxFlat" id="ResultCardStyle"]
 content_margin_left = 34.0
@@ -221,58 +221,4 @@ script = ExtResource("2_touch_button")
 custom_minimum_size = Vector2(0, 104)
 text = "Accueil"
 
-[node name="ConfirmPopup" type="Control" parent="."]
-visible = false
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-mouse_filter = 0
-script = ExtResource("7_confirm_popup")
-
-[node name="Dim" type="ColorRect" parent="ConfirmPopup"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-mouse_filter = 2
-color = Color(0, 0, 0, 0.72)
-
-[node name="Center" type="CenterContainer" parent="ConfirmPopup"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-mouse_filter = 2
-
-[node name="Card" type="PanelContainer" parent="ConfirmPopup/Center"]
-custom_minimum_size = Vector2(760, 0)
-layout_mode = 2
-
-[node name="Content" type="VBoxContainer" parent="ConfirmPopup/Center/Card"]
-layout_mode = 2
-theme_override_constants/separation = 24
-
-[node name="Message" type="Label" parent="ConfirmPopup/Center/Card/Content"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 32
-text = "Voulez-vous vraiment abandonner et perdre la partie ?"
-horizontal_alignment = 1
-autowrap_mode = 2
-
-[node name="Actions" type="HBoxContainer" parent="ConfirmPopup/Center/Card/Content"]
-layout_mode = 2
-theme_override_constants/separation = 20
-alignment = 1
-
-[node name="NoButton" type="Button" parent="ConfirmPopup/Center/Card/Content/Actions"]
-custom_minimum_size = Vector2(280, 104)
-layout_mode = 2
-script = ExtResource("2_touch_button")
-text = "NON"
-
-[node name="YesButton" type="Button" parent="ConfirmPopup/Center/Card/Content/Actions"]
-custom_minimum_size = Vector2(280, 104)
-layout_mode = 2
-script = ExtResource("2_touch_button")
-text = "OUI"
+[node name="ConfirmPopup" parent="." instance=ExtResource("7_confirm_popup")]

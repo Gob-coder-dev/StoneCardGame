@@ -21,6 +21,7 @@ const QuestModel := preload("res://scripts/application/quests/QuestService.gd")
 const ACTION_DRAWER_GAP := 10.0
 const ACTION_DRAWER_MARGIN := 24.0
 const BOTTOM_SPACER_DEFAULT := 30.0
+const CLEAR_DECK_CONFIRMATION: String = "Voulez-vous vraiment supprimer complètement ce deck ?"
 var _deck_panel: RefCounted
 var _collection_grid: RefCounted
 var _god_selector: RefCounted
@@ -41,6 +42,8 @@ var _preview_level := 1
 @onready var god_options: GridContainer = $Content/Scroll/Page/GodMenu/GodOptions
 @onready var deck_rows: VBoxContainer = $Content/Scroll/Page/DeckPanel/DeckContent/DeckRows
 @onready var deck_count_label: Label = $Content/Scroll/Page/DeckPanel/DeckContent/DeckHeader/DeckCount
+@onready var clear_deck_button: Button = \
+	$Content/Scroll/Page/DeckPanel/DeckContent/DeckHeader/ClearDeckButton
 @onready var collection_rows: VBoxContainer = $Content/Scroll/Page/CollectionRows
 @onready var locked_collection_rows: VBoxContainer = $Content/Scroll/Page/LockedCollectionRows
 @onready var locked_collection_title: Label = $Content/Scroll/Page/LockedCollectionTitle
@@ -55,6 +58,7 @@ var _preview_level := 1
 @onready var status_label: Label = $Content/StatusLabel
 @onready var info_sheet: StoneInfoSheet = $StoneInfoSheet
 @onready var replacement_panel: ReplacementPanel = $ReplacementPanel
+@onready var confirm_popup: ConfirmPopup = $ConfirmPopup
 @onready var level_button: Button = $Content/Scroll/Page/LevelButton
 @onready var level_menu: PanelContainer = $Content/Scroll/Page/LevelMenu
 @onready var action_drawer_layer: Control = $ActionDrawerLayer
@@ -111,6 +115,8 @@ func _ready() -> void:
 	replacement_panel.replacement_requested.connect(_on_replacement_requested)
 	pending_rewards_button.pressed.connect(_open_pending_rewards)
 	pending_rewards_vault.shop_requested.connect(_open_shop_from_vault)
+	clear_deck_button.pressed.connect(_request_clear_deck)
+	confirm_popup.confirmed.connect(_clear_deck)
 	if not PlayerData.inventory_changed.is_connected(_on_inventory_changed):
 		PlayerData.inventory_changed.connect(_on_inventory_changed)
 	sort_menu.visible = false
@@ -185,10 +191,18 @@ func _select_deck(slot: int) -> void:
 
 func _close_card_panels() -> void:
 	_close_action_drawer()
+	_dismiss_confirm_popup()
 	info_sheet.close_sheet()
 	replacement_panel.close_panel()
 	_replacement_stone_id = ""
 	level_menu.visible = false
+
+
+## Le retour, un changement de dieu ou d'emplacement annulent la demande en
+## cours : aucune confirmation ne doit survivre au deck qu'elle décrivait.
+func _dismiss_confirm_popup() -> void:
+	if confirm_popup.is_open():
+		confirm_popup.dismiss()
 
 
 ## Les menus de dieu, de tri et de niveau sont posés dans le défilement.
@@ -319,6 +333,9 @@ func _notification(what: int) -> void:
 
 
 func _go_back() -> void:
+	if confirm_popup.is_open():
+		confirm_popup.dismiss()
+		return
 	if pending_rewards_vault.visible:
 		pending_rewards_vault.close()
 		return
@@ -391,6 +408,7 @@ func _refresh_all(preserve_scroll: bool = true, rebuild_collection: bool = false
 		"font_color",
 		UITheme.COL_SUCCESS if DeckRules.is_deck_valid(_current_deck, PlayerData.player_god_id) else UITheme.COL_WARNING
 	)
+	clear_deck_button.disabled = _current_deck.is_empty()
 	if preserve_scroll:
 		_restore_scroll_deferred(previous_scroll)
 	_register_story_anchors()
@@ -429,6 +447,20 @@ func _refresh_god_panel() -> void:
 
 func _refresh_deck() -> void:
 	_deck_panel.refresh(_current_deck)
+
+
+## Action destructive : elle ne modifie rien avant le OUI et ne concerne que
+## l'emplacement affiché. Un deck déjà vide ne propose pas de confirmation.
+func _request_clear_deck() -> void:
+	if _current_deck.is_empty():
+		return
+	_close_card_panels()
+	_close_inline_menus()
+	confirm_popup.open(CLEAR_DECK_CONFIRMATION)
+
+
+func _clear_deck() -> void:
+	_commit_operation(DeckRules.try_clear(_current_deck))
 
 
 func _populate_collection() -> void:

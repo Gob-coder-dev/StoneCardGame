@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://collection_screen"]
+[gd_scene load_steps=14 format=3 uid="uid://collection_screen"]
 
 [ext_resource type="Script" path="res://scripts/ui/CollectionScreenController.gd" id="1_controller"]
 [ext_resource type="Script" path="res://scripts/ui/MenuBackground.gd" id="2_background"]
@@ -11,6 +11,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/CurrencyBalances.tscn" id="9_currency"]
 [ext_resource type="PackedScene" path="res://scenes/ui/PendingRewardsVault.tscn" id="10_vault"]
 [ext_resource type="Texture2D" path="res://assets/ui/vault.svg" id="11_vault_icon"]
+[ext_resource type="PackedScene" path="res://scenes/ui/ConfirmPopup.tscn" id="12_confirm_popup"]
 
 [sub_resource type="StyleBoxFlat" id="VaultBadgeStyle"]
 bg_color = Color(0.875, 0.235, 0.39, 1)
@@ -197,6 +198,7 @@ theme_override_constants/separation = 28
 
 [node name="DeckHeader" type="HBoxContainer" parent="Content/Scroll/Page/DeckPanel/DeckContent"]
 layout_mode = 2
+theme_override_constants/separation = 16
 
 [node name="DeckTitle" type="Label" parent="Content/Scroll/Page/DeckPanel/DeckContent/DeckHeader"]
 theme_type_variation = &"SectionTitle"
@@ -204,18 +206,23 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 42
 text = "MON DECK"
+vertical_alignment = 1
 
 [node name="DeckCount" type="Label" parent="Content/Scroll/Page/DeckPanel/DeckContent/DeckHeader"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 32
 text = "0/8 • 0/80 pts"
 horizontal_alignment = 2
+vertical_alignment = 1
 
-[node name="DeckHint" type="Label" parent="Content/Scroll/Page/DeckPanel/DeckContent"]
+[node name="ClearDeckButton" type="Button" parent="Content/Scroll/Page/DeckPanel/DeckContent/DeckHeader"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 25
-text = "Touche une pierre pour afficher ses actions."
-horizontal_alignment = 1
+script = ExtResource("7_touch_button")
+custom_minimum_size = Vector2(0, 92)
+tooltip_text = "Retirer toutes les cartes du deck affiché"
+theme_override_colors/font_color = Color(0.87451, 0.572549, 0.611765, 1)
+theme_override_font_sizes/font_size = 30
+text = "VIDER LE DECK"
 
 [node name="DeckRows" type="VBoxContainer" parent="Content/Scroll/Page/DeckPanel/DeckContent"]
 layout_mode = 2
@@ -372,3 +379,5 @@ current_tab = 1
 [node name="ReplacementPanel" parent="." instance=ExtResource("5_replacement")]
 
 [node name="PendingRewardsVault" parent="." instance=ExtResource("10_vault")]
+
+[node name="ConfirmPopup" parent="." instance=ExtResource("12_confirm_popup")]

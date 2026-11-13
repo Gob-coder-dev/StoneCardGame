@@ -140,6 +140,8 @@ Decks comporte :
 
 - les six dieux, représentés par leurs portraits ;
 - trois decks sauvegardés automatiquement pour chaque dieu ;
+- le vidage d'un deck confirmé par une modale, qui libère ses huit emplacements
+  sans modifier les deux autres ;
 - la collection, le tri, le remplacement d'une carte et les fiches détaillées ;
 - le choix du niveau à équiper, sans bouton de sauvegarde séparé.
 

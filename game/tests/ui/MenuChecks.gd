@@ -15,6 +15,7 @@ func run() -> void:
 	_test_screen_backgrounds()
 	await _test_god_selector_ui()
 	await _test_deck_slots()
+	await _test_deck_clear()
 	await _test_home_portraits()
 	await _test_sound_settings()
 	await _test_menu_modes()
@@ -459,6 +460,82 @@ func _test_deck_slots() -> void:
 	page.queue_free()
 	await get_tree().process_frame
 	await _test_battle_uses_selected_deck()
+
+
+## Vider un deck est une action destructive confirmée : elle ne touche que
+## l'emplacement affiché et laisse le joueur reconstruire immédiatement.
+func _test_deck_clear() -> void:
+	var original: Array = PlayerData.get_deck("veskar", 0)
+	PlayerData.set_selected_deck(1)
+	PlayerData.set_player_deck(["de_boiteux_n1"])
+	PlayerData.set_selected_deck(2)
+	PlayerData.set_player_deck(["jumeau_de_cuivre_n1"])
+	PlayerData.set_selected_deck(0)
+	var page: Control = (load("res://scenes/menus/CollectionScreen.tscn") as PackedScene).instantiate()
+	add_child(page)
+	await get_tree().process_frame
+	var button: Button = page.clear_deck_button
+	_check(button.get_script() == TouchButtonScript and button.text == "VIDER LE DECK"
+		and not button.disabled,
+		"deck : un bouton tactile permet de vider la composition affichée")
+	button.pressed.emit()
+	await get_tree().process_frame
+	_check(page.confirm_popup.visible and page.confirm_popup.is_open()
+		and page.confirm_popup.message_label.text
+			== "Voulez-vous vraiment supprimer complètement ce deck ?"
+		and PlayerData.get_active_deck().size() == DeckRules.DECK_SIZE,
+		"deck : vider demande une confirmation bloquante avant toute écriture")
+	page.confirm_popup.no_btn.pressed.emit()
+	_check(not page.confirm_popup.is_open()
+		and PlayerData.get_active_deck().size() == DeckRules.DECK_SIZE,
+		"deck : refuser la confirmation conserve toutes les cartes")
+	button.pressed.emit()
+	var click := InputEventMouseButton.new()
+	click.button_index = MOUSE_BUTTON_LEFT
+	click.pressed = true
+	page.confirm_popup._gui_input(click)
+	_check(not page.confirm_popup.is_open()
+		and PlayerData.get_active_deck().size() == DeckRules.DECK_SIZE,
+		"deck : un appui à côté de la confirmation annule la suppression")
+	button.pressed.emit()
+	page.confirm_popup.yes_btn.pressed.emit()
+	await get_tree().process_frame
+	var remaining_cards := 0
+	for row in page.deck_rows.get_children():
+		for wrapper in row.get_children():
+			if wrapper.get_child_count() > 0 and wrapper.get_child(0) is StoneCard:
+				remaining_cards += 1
+	_check(not page.confirm_popup.visible and PlayerData.get_active_deck().is_empty()
+		and page._current_deck.is_empty() and remaining_cards == 0
+		and page.deck_count_label.text.begins_with("0/8") and button.disabled
+		and not page.status_label.visible,
+		"deck : confirmer libère les huit cases de l'emplacement affiché")
+	_check(PlayerData.get_deck("veskar", 1) == ["de_boiteux_n1"]
+		and PlayerData.get_deck("veskar", 2) == ["jumeau_de_cuivre_n1"],
+		"deck : vider un emplacement ne modifie jamais les deux autres")
+	page._on_primary_requested("de_boiteux_n1", CardActionDrawer.Source.COLLECTION)
+	await get_tree().process_frame
+	_check(page._current_deck == ["de_boiteux_n1"] and not button.disabled,
+		"deck : un deck vidé accepte immédiatement de nouvelles cartes")
+	var save_path: String = PlayerData._save_path
+	PlayerData._save_path = save_path + "/missing/profile.json"
+	_expect_log("PlayerData: profil non enregistré")
+	button.pressed.emit()
+	page.confirm_popup.yes_btn.pressed.emit()
+	_check(PlayerData.get_active_deck() == ["de_boiteux_n1"] and page.status_label.visible
+		and page.status_label.text.contains("échoué")
+		and not page.confirm_popup.is_open(),
+		"deck : un échec d'écriture conserve la composition et affiche l'erreur")
+	PlayerData._save_path = save_path
+	# Les tests suivants retrouvent le deck de départ et deux emplacements vides.
+	PlayerData.set_selected_deck(1)
+	PlayerData.set_player_deck([])
+	PlayerData.set_selected_deck(2)
+	PlayerData.set_player_deck([])
+	PlayerData.set_selected_deck(0)
+	PlayerData.set_player_deck(original)
+	page.queue_free()
+	await get_tree().process_frame
 
 
 func _test_battle_uses_selected_deck() -> void:

@@ -62,11 +62,15 @@ func _cancel() -> void:
 	cancelled.emit()
 
 
-## Seul le clic qui atteint la racine est un clic hors de la carte : les enfants
-## de la carte consomment les leurs.
+## Seul l'appui qui atteint la racine est un appui hors de la carte : les
+## enfants de la carte consomment les leurs. Le toucher est traité comme la
+## souris afin que le geste annule aussi la confirmation sur téléphone.
 func _gui_input(event: InputEvent) -> void:
+	if not _open:
+		return
 	var click := event as InputEventMouseButton
-	if _open and click != null and click.pressed:
+	var touch := event as InputEventScreenTouch
+	if (click != null and click.pressed) or (touch != null and touch.pressed):
 		dismiss()
 		accept_event()
 
