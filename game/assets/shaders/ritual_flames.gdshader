@@ -3,6 +3,9 @@ render_mode unshaded;
 
 uniform float coverage : hint_range(0.0, 1.0) = 0.0;
 uniform float full_screen : hint_range(0.0, 1.0) = 1.0;
+// Corrige uniquement le domaine procédural. La progression verticale continue
+// d'utiliser les UV normalisés afin de couvrir l'écran de bas en haut.
+uniform float aspect_correction : hint_range(0.25, 4.0) = 1.0;
 
 float hash21(vec2 p) {
 	p = fract(p * vec2(123.34, 456.21));
@@ -31,6 +34,7 @@ float fbm(vec2 p) {
 
 void fragment() {
 	vec2 uv = UV;
+	float procedural_x = (uv.x - 0.5) * aspect_correction + 0.5;
 	float upward = 1.0 - uv.y;
 	float maximum_height = mix(0.25, 1.12, full_screen);
 	float active_height = maximum_height * coverage;
@@ -43,14 +47,15 @@ void fragment() {
 
 	// Deux champs qui montent à des vitesses différentes cassent toute répétition
 	// géométrique et forment des langues de feu mouvantes.
-	float broad = fbm(vec2(uv.x * 5.2, upward * 2.3 - time * 1.16));
-	float detail = noise(vec2(uv.x * 13.7 + 4.0, upward * 5.8 - time * 2.45));
+	float broad = fbm(vec2(procedural_x * 5.2, upward * 2.3 - time * 1.16));
+	float detail = noise(vec2(procedural_x * 13.7 + 4.0,
+		upward * 5.8 - time * 2.45));
 	float tongues = broad * 0.31 + detail * 0.12;
 	float boundary = active_height * (0.69 + tongues);
 	float body = 1.0 - smoothstep(boundary - 0.035, boundary + 0.028, upward);
 
 	float relative_height = clamp(upward / max(boundary, 0.001), 0.0, 1.0);
-	float inner_noise = noise(vec2(uv.x * 10.0 - time * 0.37,
+	float inner_noise = noise(vec2(procedural_x * 10.0 - time * 0.37,
 		upward * 8.0 - time * 2.8));
 	float hot_core = smoothstep(0.62, 0.93, inner_noise + (1.0 - relative_height) * 0.54);
 	float middle = smoothstep(0.16, 0.82, 1.0 - relative_height + inner_noise * 0.19);
@@ -70,8 +75,10 @@ void fragment() {
 	float smoke_alpha = smoke * (0.78 + broad * 0.18);
 
 	// Quelques braises irrégulières se détachent au-dessus du front de flamme.
-	vec2 ember_cell = floor(vec2(uv.x * 34.0, (upward + time * 0.17) * 38.0));
-	vec2 ember_uv = fract(vec2(uv.x * 34.0, (upward + time * 0.17) * 38.0)) - 0.5;
+	vec2 ember_domain = vec2(procedural_x * 34.0,
+		(upward + time * 0.17) * 38.0);
+	vec2 ember_cell = floor(ember_domain);
+	vec2 ember_uv = fract(ember_domain) - 0.5;
 	float ember_seed = hash21(ember_cell);
 	float ember = step(0.94, ember_seed) * smoothstep(0.15, 0.02, length(ember_uv));
 	ember *= step(upward, active_height + 0.18) * coverage;

@@ -51,6 +51,7 @@ const SUITES: Array[String] = [
 	"res://tests/ui/CardActionPlacementChecks.gd",
 	"res://tests/ui/CardArtworkChecks.gd",
 	"res://tests/ui/PreparationAnimationChecks.gd",
+	"res://tests/ui/RitualFlameBackdropChecks.gd",
 	"res://tests/ui/EffectAnimationChecks.gd",
 	"res://tests/ui/SwarmAnimationChecks.gd",
 	"res://tests/ui/AttackAnimationChecks.gd",

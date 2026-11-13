@@ -7,6 +7,7 @@ signal covered
 signal finished
 
 const FlameShader := preload("res://assets/shaders/ritual_flames.gdshader")
+const REFERENCE_ASPECT := 1080.0 / 1920.0
 
 var coverage := 0.0:
 	set(value):
@@ -25,11 +26,13 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_surface = ColorRect.new()
 	_surface.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_surface.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_flame_material = ShaderMaterial.new()
 	_flame_material.shader = FlameShader
 	_surface.material = _flame_material
 	add_child(_surface)
+	_surface.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	if not resized.is_connected(_on_resized):
+		resized.connect(_on_resized)
 	_sync_material()
 
 
@@ -70,3 +73,17 @@ func _sync_material() -> void:
 		return
 	_flame_material.set_shader_parameter("coverage", coverage)
 	_flame_material.set_shader_parameter("full_screen", 1.0 if _full_screen else 0.0)
+	_flame_material.set_shader_parameter("aspect_correction",
+		aspect_correction_for_size(size))
+
+
+func _on_resized() -> void:
+	_sync_material()
+
+
+## Conserve la densité et la forme des flammes quand le canevas s'élargit ou
+## se resserre. Le format de référence garde donc exactement son rendu actuel.
+static func aspect_correction_for_size(render_size: Vector2) -> float:
+	if render_size.x <= 0.0 or render_size.y <= 0.0:
+		return 1.0
+	return (render_size.x / render_size.y) / REFERENCE_ASPECT
