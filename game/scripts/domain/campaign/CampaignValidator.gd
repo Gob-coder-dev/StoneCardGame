@@ -378,11 +378,17 @@ static func _reward_problems(node: CampaignNode, result: Array[String]) -> void:
 	if not cards is Array:
 		result.append("récompenses de cartes invalides sur '%s'." % node.id)
 		return
-	if not cards.is_empty() and not (node.is_mini_boss() or node.is_boss() or node.id == "tuto_01"):
-		result.append("cartes offertes hors tutoriel initial/mini-boss/boss sur '%s'." % node.id)
-	for raw_stone_id in cards:
-		if not StoneLoader.has_stone(str(raw_stone_id)):
-			result.append("carte de récompense inconnue '%s' sur '%s'." % [raw_stone_id, node.id])
+	for raw_reward in cards:
+		if raw_reward is Dictionary:
+			var lineage_id := str(raw_reward.get("lineage_id", ""))
+			var copies := int(raw_reward.get("copies", 0))
+			if StoneLoader.lineage_max_level(lineage_id) <= 0:
+				result.append("lignée de récompense inconnue '%s' sur '%s'." % [lineage_id, node.id])
+			if copies <= 0:
+				result.append("nombre de copies invalide sur '%s'." % node.id)
+		elif not StoneLoader.has_stone(str(raw_reward)):
+			# Compatibilite avec les anciennes fixtures qui declarent une forme N1.
+			result.append("carte de récompense inconnue '%s' sur '%s'." % [raw_reward, node.id])
 
 static func _fixed_deck_problems(node: CampaignNode, result: Array[String]) -> void:
 	_deck_problems(node, node.fixed_deck(), node.fixed_god_id(), MIN_GOD_CARDS,

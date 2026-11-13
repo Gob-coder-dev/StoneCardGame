@@ -7,6 +7,7 @@ extends RefCounted
 
 const InventoryModel := preload("res://scripts/domain/economy/PlayerInventory.gd")
 const ConfigModel := preload("res://scripts/data/economy/EconomyConfig.gd")
+const AccessService := preload("res://scripts/application/progression/ProgressionAccessService.gd")
 
 
 func state(now_unix: int = 0) -> Dictionary:
@@ -15,11 +16,14 @@ func state(now_unix: int = 0) -> Dictionary:
 	var duration := maxi(1, int(config.get("shop_rotation_seconds", 10800)))
 	var rotation_id := timestamp / duration
 	var next := InventoryModel.from_dict(PlayerData.inventory_dict())
+	var access := AccessService.new().state()
 	var saved_rotation := int(next.shop_state.get("rotation_id", -1))
-	if saved_rotation != rotation_id:
+	var saved_revision := int(next.shop_state.get("access_revision", -1))
+	if saved_rotation != rotation_id or saved_revision != access.revision:
 		next.shop_state = {
 			"rotation_id": rotation_id,
-			"offers": _generate_offers(rotation_id, next, config),
+			"access_revision": access.revision,
+			"offers": _generate_offers(rotation_id, next, config, access),
 			"purchased_offer_ids": {},
 		}
 		var error := PlayerData.commit_inventory(next)
@@ -53,7 +57,8 @@ func buy_offer(offer_id: String, now_unix: int = 0) -> Dictionary:
 		return {"ok": false, "reason": "Pas assez d'âmes."}
 	var lineage_id := str(selected.get("lineage_id", ""))
 	var amount := int(selected.get("quantity", 0))
-	if not _lineage_is_eligible(lineage_id, next) or amount <= 0:
+	var access := AccessService.new().state()
+	if not _lineage_is_eligible(lineage_id, next, access) or amount <= 0:
 		return {"ok": false, "reason": "Cette carte n'est pas disponible."}
 	next.souls -= price
 	next.add_copies(lineage_id, amount)
@@ -67,12 +72,13 @@ func buy_offer(offer_id: String, now_unix: int = 0) -> Dictionary:
 
 
 func _generate_offers(rotation_id: int, inventory: PlayerInventory,
-		config: Dictionary) -> Array:
+		config: Dictionary, access: ContentAccessState) -> Array:
 	var rng := RandomNumberGenerator.new()
 	var gods: Array = inventory.unlocked_gods.keys()
 	gods.sort()
-	rng.seed = hash("samstone-shop|%d|%s" % [rotation_id, ",".join(gods)])
-	var by_rarity := _eligible_by_rarity(inventory)
+	rng.seed = hash("samstone-shop|%d|%d|%s" % [
+		rotation_id, access.revision, ",".join(gods)])
+	var by_rarity := _eligible_by_rarity(inventory, access)
 	var slots: Array = config.get("shop", {}).get("slot_rarities", [])
 	var count := int(config.get("shop_offer_count", 4))
 	var used := {}
@@ -107,7 +113,8 @@ func _generate_offers(rotation_id: int, inventory: PlayerInventory,
 	return result
 
 
-func _eligible_by_rarity(inventory: PlayerInventory) -> Dictionary:
+func _eligible_by_rarity(inventory: PlayerInventory,
+		access: ContentAccessState) -> Dictionary:
 	var result := {"common": [], "rare": [], "epic": [], "legendary": []}
 	var seen := {}
 	for stone in StoneLoader.get_all_stones():
@@ -116,7 +123,7 @@ func _eligible_by_rarity(inventory: PlayerInventory) -> Dictionary:
 		if seen.has(lineage_id):
 			continue
 		seen[lineage_id] = true
-		if not _lineage_is_eligible(lineage_id, inventory):
+		if not _lineage_is_eligible(lineage_id, inventory, access):
 			continue
 		var rarity := StoneLoader.stone_rarity(stone_id)
 		if result.has(rarity):
@@ -124,9 +131,12 @@ func _eligible_by_rarity(inventory: PlayerInventory) -> Dictionary:
 	return result
 
 
-func _lineage_is_eligible(lineage_id: String, inventory: PlayerInventory) -> bool:
+func _lineage_is_eligible(lineage_id: String, inventory: PlayerInventory,
+		access: ContentAccessState) -> bool:
 	var first := StoneLoader.variant_id(lineage_id, 1)
 	if first == "":
+		return false
+	if not access.allows_rarity(StoneLoader.stone_rarity(first)):
 		return false
 	var affinity := StoneLoader.stone_affinity(first)
 	if affinity != "neutral" and not inventory.has_god(affinity):

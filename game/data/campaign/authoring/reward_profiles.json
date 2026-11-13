@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "normal_card_interval": 4,
+  "profiles": {
+    "normal_one": {"card_slots": 1, "copies_per_slot": 2, "rarity_preference": "support"},
+    "normal_two": {"card_slots": 2, "copies_per_slot": 1, "rarity_preference": "support"},
+    "mini_boss": {"card_slots": 2, "copies_per_slot": 3, "rarity_preference": "peak"},
+    "boss": {"card_slots": 2, "copies_per_slot": 3, "rarity_preference": "peak"}
+  }
+}

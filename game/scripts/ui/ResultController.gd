@@ -190,6 +190,9 @@ func _refresh_reward() -> void:
 		_add_reward_card(card_reward, false)
 	for card_reward in reward.get("deferred_cards", []):
 		_add_reward_card(card_reward, true)
+	for unlock in reward.get("unlocks", []):
+		if unlock is Dictionary:
+			_add_unlock_message(unlock)
 	if souls <= 0 and candles <= 0 and reward_cards.get_child_count() == 0:
 		return
 	reward_divider.visible = true
@@ -230,6 +233,18 @@ func _add_reward_card(card_reward: Dictionary, deferred: bool) -> void:
 		status.add_theme_color_override("font_color", UITheme.COL_WARNING)
 		wrapper.add_child(status)
 	reward_cards.add_child(wrapper)
+
+
+func _add_unlock_message(unlock: Dictionary) -> void:
+	var message := Label.new()
+	message.custom_minimum_size = Vector2(280, 96)
+	message.text = str(unlock.get("message", unlock.get("label", "Contenu débloqué")))
+	message.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	message.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	message.add_theme_font_size_override("font_size", 18)
+	message.add_theme_color_override("font_color", UITheme.COL_GOLD)
+	reward_cards.add_child(message)
 
 
 ## En campagne, les anciennes sorties « autre niveau » et « autre dieu » ne

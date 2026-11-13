@@ -6,6 +6,7 @@ const CompletionModel := preload("res://scripts/application/campaign/CampaignCom
 const RewardModel := preload("res://scripts/application/campaign/CampaignRewardService.gd")
 const QuestModel := preload("res://scripts/application/quests/QuestService.gd")
 const SeriesEngineModel := preload("res://scripts/domain/SeriesEngine.gd")
+const ContentGateConfig := preload("res://scripts/data/progression/ContentGateConfig.gd")
 
 var selected_npc_id: String = ""
 ## Source du chemin de rencontres ouvert (id de dieu ou Pr.Stone). Elle permet
@@ -320,6 +321,8 @@ func persist_result() -> Error:
 		if error != OK:
 			last_save_error = error
 			return last_save_error
+		if bool(completion.get("applied", false)):
+			last_reward["unlocks"] = _content_unlocks_for(campaign_node_id)
 	if campaign_node_id != "":
 		var quest_error := _record_quest_result()
 		if quest_error != OK:
@@ -328,6 +331,20 @@ func persist_result() -> Error:
 	last_result_saved = true
 	last_save_error = OK
 	return OK
+
+
+func _content_unlocks_for(node_id: String) -> Array:
+	var result: Array = []
+	var config := ContentGateConfig.get_config()
+	for raw_gate in config.get("gates", []):
+		if raw_gate is Dictionary \
+				and str(raw_gate.get("required_campaign_node", "")) == node_id:
+			result.append({
+				"id": str(raw_gate.get("id", "")),
+				"label": str(raw_gate.get("label", "")),
+				"message": str(raw_gate.get("unlock_message", "")),
+			})
+	return result
 
 
 ## Comptabilise la manche pour les quêtes. La clé d'idempotence reprend la

@@ -131,7 +131,7 @@ func _test_twenty_node_save_upgrade() -> void:
 	progress.campaign_version = 1
 	var migrated := MigrationModel.migrate(graph, {}, progress)
 	_check(bool(migrated.get("changed", false))
-		and progress.campaign_version == 5
+		and progress.campaign_version == 6
 		and progress.completed_count() == 27
 		and progress.is_completed("mini_optional_01_path_2")
 		and progress.is_completed("mini_optional_02_path_5")

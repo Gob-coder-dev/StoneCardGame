@@ -25,21 +25,38 @@ static func apply_victory(service: CampaignService, node_id: String) -> Dictiona
 	var cards: Array = []
 	var starter_cards: Array = []
 	if first_victory:
-		for raw_stone_id in reward.get("card_rewards", []):
-			var stone_id := str(raw_stone_id)
-			if not StoneLoader.has_stone(stone_id):
-				return {"ok": false, "reason": "Récompense inconnue : %s." % stone_id,
+		for raw_reward in reward.get("card_rewards", []):
+			var normalized := _normalize_card_reward(raw_reward)
+			if normalized.is_empty():
+				return {"ok": false, "reason": "Récompense de carte inconnue.",
 					"error": ERR_INVALID_DATA}
-			cards.append({"lineage_id": StoneLoader.stone_lineage(stone_id), "copies": 1})
+			cards.append(normalized)
 		if node_id == "tuto_01":
 			# Les trois premières complètent automatiquement le deck ; la quatrième
 			# reste dans la collection pour faire découvrir l'éditeur de deck.
-			starter_cards = (reward.get("card_rewards", []) as Array).slice(0, 3)
+			for card_reward in cards.slice(0, 3):
+				starter_cards.append(StoneLoader.variant_id(
+					str(card_reward.get("lineage_id", "")), 1))
 	var result := Economy.new().grant_reward(transaction_id, souls, cards,
 		starter_cards, candles)
 	result["first_victory"] = first_victory
 	result["transaction_id"] = transaction_id
 	return result
+
+
+## Accepte le format actuel (lignee + copies) et l'ancien identifiant de forme
+## afin que les fixtures et les sauvegardes de developpement restent lisibles.
+static func _normalize_card_reward(raw_reward: Variant) -> Dictionary:
+	if raw_reward is Dictionary:
+		var lineage_id := str(raw_reward.get("lineage_id", ""))
+		var copies := int(raw_reward.get("copies", 0))
+		if StoneLoader.lineage_max_level(lineage_id) > 0 and copies > 0:
+			return {"lineage_id": lineage_id, "copies": copies}
+		return {}
+	var stone_id := str(raw_reward)
+	if StoneLoader.has_stone(stone_id):
+		return {"lineage_id": StoneLoader.stone_lineage(stone_id), "copies": 1}
+	return {}
 
 
 static func _candles_for_chapter(chapter: String) -> int:

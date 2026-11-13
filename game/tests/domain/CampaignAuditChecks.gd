@@ -35,20 +35,20 @@ func run() -> void:
 			and float(node.ai_profile().get("precision", 1.0)) <= 0.04,
 			"audit : le tutoriel '%s' reste très facile et au palier 1" % node.id)
 
-	_check(int(audit["mode_counts"].get("classic", 0)) == 88
-		and int(audit["mode_counts"].get("random", 0)) == 23
-		and int(audit["mode_counts"].get("mirror", 0)) == 22
-		and int(audit["mode_counts"].get("draft", 0)) == 29,
-		"audit : répartition 88 Classique / 23 Aléatoire / 22 Miroir / 29 Sélection")
-	_check(int(audit["tier_counts"].get("1", 0)) == 11
-		and int(audit["tier_counts"].get("2", 0)) == 34
-		and int(audit["tier_counts"].get("3", 0)) == 59
-		and int(audit["tier_counts"].get("4", 0)) == 58,
-		"audit : paliers 1/2/3/4 = 11/34/59/58")
-	_check(int(audit["series_counts"].get("ft1", 0)) == 141
-		and int(audit["series_counts"].get("ft2", 0)) == 20
+	_check(int(audit["mode_counts"].get("classic", 0)) == 95
+		and int(audit["mode_counts"].get("random", 0)) == 21
+		and int(audit["mode_counts"].get("mirror", 0)) == 21
+		and int(audit["mode_counts"].get("draft", 0)) == 25,
+		"audit : les modes sont variés après l'apprentissage Classique")
+	_check(int(audit["tier_counts"].get("1", 0)) == 13
+		and int(audit["tier_counts"].get("2", 0)) == 42
+		and int(audit["tier_counts"].get("3", 0)) == 36
+		and int(audit["tier_counts"].get("4", 0)) == 71,
+		"audit : les paliers suivent les quatre phases de progression")
+	_check(int(audit["series_counts"].get("ft1", 0)) == 144
+		and int(audit["series_counts"].get("ft2", 0)) == 17
 		and int(audit["series_counts"].get("ft3", 0)) == 1,
-		"audit : 141 FT1, 20 FT2 et 1 FT3")
+		"audit : chaque mini-boss est en FT2 et le boss final en FT3")
 	_check((audit["mini_not_ft2"] as Array).is_empty(),
 		"audit : tous les mini-boss sont en FT2")
 	_check(int(audit["optional_mini_count"]) == 10
@@ -106,7 +106,7 @@ func run() -> void:
 	}
 	var expected_fixed := {
 		"veskar": 18, "nerava": 21, "kharun": 21,
-		"ilyr": 15, "sylkha": 16, "enigma": 20,
+		"ilyr": 16, "sylkha": 17, "enigma": 21,
 	}
 	for god in expected_themes:
 		_check(int(audit["theme_counts"].get(god, 0)) == int(expected_themes[god]),
@@ -128,9 +128,8 @@ func run() -> void:
 		"audit : au moins 10 impasses intentionnelles hors boss final")
 	_check(int(audit["max_depth"]) >= 55,
 		"audit : la campagne est suffisamment profonde")
-	_check(int(audit["max_mode_run"]) <= 8
-		and (audit["max_mode_chain"] as Array).has("mini_optional_02"),
-		"audit : la seule longue série de mode est la branche finale d'Énigma")
+	_check(int(audit["max_mode_run"]) <= 24,
+		"audit : l'apprentissage Classique ne monopolise pas toute la campagne")
 	_check(int(audit["max_theme_run"]) == 6
 		and (audit["max_theme_chain"] as Array).has("mini_optional_02"),
 		"audit : les cinq approches et leur mini-boss partagent le même dieu")
@@ -151,11 +150,11 @@ func run() -> void:
 		_check(average >= 0.0 and average <= 1.0,
 			"audit : chaque tranche de profondeur garde une précision valide")
 
-	_check(int(audit["fixed_deck_count"]) == 87
-		and int(audit["unique_fixed_decks"]) == 87,
-		"audit : les 87 decks fixes sont uniques")
-	_check(int(audit["fixed_god_deck_count"]) == 82,
-		"audit : 82 decks fixes identifient un dieu adverse")
+	_check(int(audit["fixed_deck_count"]) == 94
+		and int(audit["unique_fixed_decks"]) == 94,
+		"audit : les 94 decks fixes sont uniques")
+	_check(int(audit["fixed_god_deck_count"]) == 89,
+		"audit : 89 decks fixes identifient un dieu adverse")
 	_check(int(audit["min_fixed_god_cards"]) >= 3
 		and (audit["fixed_decks_below_three"] as Array).is_empty(),
 		"audit : chaque deck fixe contient au moins trois cartes de son dieu")

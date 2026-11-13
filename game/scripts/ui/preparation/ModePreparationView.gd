@@ -26,6 +26,7 @@ const GodIdentityModel := preload("res://scripts/data/GodIdentity.gd")
 @onready var god_name: Label = $RevealPanel/GodPanel/GodBox/GodInfo/GodName
 @onready var god_family: Label = $RevealPanel/GodPanel/GodBox/GodInfo/GodFamily
 @onready var loadout_info: Label = $RevealPanel/GodPanel/GodBox/GodInfo/LoadoutInfo
+@onready var deck_title: Label = $RevealPanel/DeckTitle
 @onready var deck_grid: LoadoutCardGrid = $RevealPanel/DeckGrid
 @onready var wait_label: Label = $WaitLabel
 

@@ -11,10 +11,17 @@ const DrawModel := preload("res://scripts/domain/quests/QuestDraw.gd")
 const Service := preload("res://scripts/application/quests/QuestService.gd")
 const InventoryModel := preload("res://scripts/domain/economy/PlayerInventory.gd")
 const Fixture := preload("res://tests/support/PlayerProfileFixture.gd")
+const CampaignContent := preload("res://scripts/data/campaign/CampaignContentLoader.gd")
+const CampaignGraphModel := preload("res://scripts/domain/campaign/CampaignGraph.gd")
+const CampaignProgressModel := preload("res://scripts/domain/campaign/CampaignProgress.gd")
+const CampaignServiceModel := preload("res://scripts/application/campaign/CampaignService.gd")
+const CampaignStoreModel := preload("res://scripts/data/campaign/CampaignProgressStore.gd")
+const CAMPAIGN_PATH := "user://quest_gate_checks.json"
 
 
 func run() -> void:
 	var fixture := Fixture.new(Codec.starter_profile())
+	_prepare_unlocked_content()
 	_test_calendar()
 	_test_configuration()
 	_test_draw()
@@ -26,7 +33,21 @@ func run() -> void:
 	_test_rewards()
 	_test_sorting()
 	_test_card_tiers()
+	CampaignContext.reset_for_tests()
+	for suffix in ["", ".tmp", ".unreadable"]:
+		if FileAccess.file_exists(CAMPAIGN_PATH + suffix):
+			DirAccess.remove_absolute(CAMPAIGN_PATH + suffix)
 	fixture.restore()
+
+
+func _prepare_unlocked_content() -> void:
+	var content := CampaignContent.read()
+	var graph: CampaignGraph = CampaignGraphModel.build(content.get("definition", {}))
+	var progress := CampaignProgressModel.new()
+	progress.mark_completed("r04_gate")
+	progress.mark_completed("r07_gate")
+	CampaignContext.set_service_for_tests(CampaignServiceModel.new(
+		graph, progress, CampaignStoreModel.new(CAMPAIGN_PATH), []))
 
 
 func _test_calendar() -> void:
@@ -196,6 +217,7 @@ func _test_rewards() -> void:
 	state.bump("pvp_matches", 25, false)
 	state.bump("campaign_wins", 40, false)
 	state.bump("boss_wins", 15, false)
+	state.activate("boss_cards", 0)
 	PlayerData.commit_economy(InventoryModel.from_dict(PlayerData.inventory_dict()),
 		null, state.to_dict())
 	var service := Service.new()
@@ -245,6 +267,7 @@ func _test_card_tiers() -> void:
 	var state := StateModel.from_dict({})
 	state.day_index = Calendar.today()
 	state.bump("souls_spent", 5000, false)
+	state.activate("feast_of_souls", 0)
 	PlayerData.commit_economy(inventory, null, state.to_dict())
 	var service := Service.new()
 	var before := int(PlayerData.card_entry("le_tisseur_de_meutes").get("copies", 0))

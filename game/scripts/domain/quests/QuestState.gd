@@ -7,7 +7,7 @@
 class_name QuestState
 extends RefCounted
 
-const VERSION := 1
+const VERSION := 2
 
 ## Jour local du tirage courant. -1 signifie « jamais initialisé ».
 var day_index: int = -1
@@ -17,6 +17,9 @@ var daily_counters: Dictionary = {}
 var daily_claimed: Dictionary = {}
 var counters: Dictionary = {}
 var claimed: Dictionary = {}
+## Valeur de la métrique au moment où un défi conditionnel devient accessible.
+## Sa présence marque aussi l'activation : une valeur nulle reste donc valide.
+var activation_baselines: Dictionary = {}
 
 
 static func from_dict(raw: Variant) -> QuestState:
@@ -37,6 +40,7 @@ static func from_dict(raw: Variant) -> QuestState:
 	state.daily_claimed = _clean_counters(daily.get("claimed", {}))
 	state.counters = _clean_counters(data.get("counters", {}))
 	state.claimed = _clean_counters(data.get("claimed", {}))
+	state.activation_baselines = _clean_counters(data.get("activation_baselines", {}))
 	return state
 
 
@@ -63,6 +67,7 @@ func to_dict() -> Dictionary:
 		},
 		"counters": counters.duplicate(),
 		"claimed": claimed.duplicate(),
+		"activation_baselines": activation_baselines.duplicate(),
 	}
 
 
@@ -92,6 +97,19 @@ func mark_claimed(quest_id: String, tier: int, daily: bool) -> void:
 		return
 	var source: Dictionary = daily_claimed if daily else claimed
 	source[quest_id] = maxi(0, tier)
+
+
+func is_activated(quest_id: String) -> bool:
+	return activation_baselines.has(quest_id)
+
+
+func activate(quest_id: String, baseline: int) -> void:
+	if quest_id != "" and not activation_baselines.has(quest_id):
+		activation_baselines[quest_id] = maxi(0, baseline)
+
+
+func activation_baseline(quest_id: String) -> int:
+	return maxi(0, int(activation_baselines.get(quest_id, 0)))
 
 
 ## Nouveau jour : le tirage et les compteurs quotidiens sont remplacés, les

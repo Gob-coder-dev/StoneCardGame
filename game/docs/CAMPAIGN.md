@@ -4,7 +4,7 @@ La campagne est un graphe orienté acyclique unique, chargé depuis
 `data/campaign/campaign_v2.json`. Elle contient **162 niveaux**, **190 arêtes**
 et **13 sections visuelles** sur une seule carte de **1080 × 19800** unités.
 `CampaignContentLoader.DEFAULT_PATH` pointe vers ce fichier et
-`campaign_version` vaut `5`.
+`campaign_version` vaut `6`.
 
 L'ancien fichier `campaign_v1.json` reste dans le dépôt comme archive et source
 de comparaison historique. Il n'est plus chargé par le jeu.
@@ -17,15 +17,15 @@ de comparaison historique. Il n'est plus chargé par le jeu.
 | Arêtes | 190 |
 | Sections visuelles | 13 |
 | Profondeur minimale / maximale | 0 / 77 |
-| Plus longue série de mode | 8, dans la branche finale d'Énigma |
+| Plus longue série de mode | 21, parcours Classique d'apprentissage |
 | Plus longue série d'un même dieu | 6, approches et mini-boss d'Énigma |
 | Carte logique | 1080 × 19800 |
 | Niveaux du Professeur Stone | 5 |
 | Mini-boss facultatifs | 10 |
 | Mini-boss obligatoires | 4 |
 | Mini-boss en FT2 | 14 |
-| Séries FT1 / FT2 / FT3 | 141 / 20 / 1 |
-| Decks fixes uniques | 87 |
+| Séries FT1 / FT2 / FT3 | 144 / 17 / 1 |
+| Decks fixes uniques | 94 |
 | Générateurs contraints | 12 nœuds, dont 3 mini-boss (Véskar, Sylkha, Ilyr) |
 | Decks miroirs fixes | 7 (six initiations et Ilyr) |
 | Cartes du dieu par deck fixe | 3 minimum |
@@ -40,11 +40,11 @@ divin. Ils sont suivis de six initiations miroir, une par dieu.
 | Véskar | 26 | 18 |
 | Nérava | 26 | 21 |
 | Kharûn | 26 | 21 |
-| Énigma | 27 | 20 |
-| Ilyr | 26 | 15 |
-| Sylkha | 26 | 16 |
+| Énigma | 27 | 21 |
+| Ilyr | 26 | 16 |
+| Sylkha | 26 | 17 |
 
-Le total des nœuds à dieu fixé est de 111. Les 40 autres rencontres utilisent les
+Le total des nœuds à dieu fixé est de 114. Les autres rencontres utilisent les
 règles de génération de leur mode ; leur `theme_god_id` sert à l'accent visuel et
 au libellé d'inspiration, pas à verrouiller le tirage.
 
@@ -52,19 +52,19 @@ au libellé d'inspiration, pas à verrouiller le tirage.
 
 | Mode | Niveaux |
 | --- | ---: |
-| Classique | 88 |
-| Aléatoire | 23 |
-| Miroir | 22 |
-| Sélection | 29 |
+| Classique | 95 |
+| Aléatoire | 21 |
+| Miroir | 21 |
+| Sélection | 25 |
 
 Les tutoriels sont Classiques. Les six initiations qui suivent sont des Miroirs
 fixes : les deux camps reçoivent le même dieu et le même deck de quatre communes
-du dieu et quatre communes neutres, toutes N1. L'Aléatoire apparaît ensuite au
-Carrefour, puis la Sélection rejoint les autres modes. Aucun mode ne
-disparaît en fin de campagne. Les 34 niveaux d'approche ajoutent 14 Classiques,
-5 Aléatoires, 4 Miroirs et 11 Sélections à la campagne précédente.
+du dieu et quatre communes neutres, toutes N1. Le Carrefour reste Classique
+pour consolider les règles. L'Aléatoire et le Miroir libre arrivent dans le
+Marais ; la Sélection commence après le premier jalon, dans la Bibliothèque,
+au palier 3 minimum. Aucun mode ne disparaît en fin de campagne.
 
-Quatre-vingt-sept rencontres utilisent un deck fixe explicite. Les exceptions
+Quatre-vingt-quatorze rencontres utilisent un deck fixe explicite. Les exceptions
 Classiques restent déclarées dans les politiques de deck et ne changent pas les
 règles du mode.
 
@@ -72,10 +72,10 @@ règles du mode.
 
 | Palier maximal | Niveaux |
 | --- | ---: |
-| 1 | 11 |
-| 2 | 34 |
-| 3 | 59 |
-| 4 | 58 |
+| 1 | 13 |
+| 2 | 42 |
+| 3 | 36 |
+| 4 | 71 |
 
 Le palier est calculé avec `CardPowerTierRules` : niveau de forme plus décalage
 de rareté, avec l'exception explicite éventuelle du catalogue. Une légendaire
@@ -83,17 +83,17 @@ niveau 1 n'est donc pas une carte de palier 1.
 
 ### Précision de l'IA
 
-Les 162 profils utilisent **57 valeurs distinctes** entre 0 et 1. 142 nœuds
+Les 162 profils utilisent **84 valeurs distinctes** entre 0 et 1. 151 nœuds
 utilisent une valeur qui n'est pas un multiple de 0,25. La précision suit la
 profondeur et la fonction de la rencontre, sans progression strictement
 linéaire.
 
 | Tranche de profondeur | Niveaux | Précision minimale | Précision maximale | Moyenne |
 | --- | ---: | ---: | ---: | ---: |
-| 0–19 | 41 | 0,00 | 0,98 | 0,443 |
-| 20–39 | 38 | 0,04 | 0,93 | 0,519 |
-| 40–59 | 53 | 0,04 | 0,96 | 0,734 |
-| 60–79 | 22 | 0,50 | 1,00 | 0,862 |
+| 0–19 | 31 | 0,00 | 0,38 | 0,165 |
+| 20–39 | 45 | 0,27 | 0,75 | 0,489 |
+| 40–59 | 46 | 0,48 | 0,90 | 0,695 |
+| 60–79 | 40 | 0,74 | 1,00 | 0,869 |
 
 Les mini-boss et les rencontres majeures servent de pics ; les nœuds qui suivent
 une impasse ou un mini-boss peuvent redescendre pour laisser respirer le joueur.
@@ -157,7 +157,7 @@ Le fichier est la source de vérité du contenu livré. Il est produit par
 {
   "id": "samstone_campaign",
   "title": "La Carte de SamStone",
-  "campaign_version": 5,
+  "campaign_version": 6,
   "map": {"width": 1080, "height": 19800},
   "start_node_id": "tuto_01",
   "final_node_id": "final_01",
@@ -187,7 +187,7 @@ Le fichier est la source de vérité du contenu livré. Il est produit par
           "rampant_des_fosses_n1",
           "gueule_de_travers_n1",
           "ecorche_angle_n1",
-          "le_sac_a_murmures_n1"
+          {"lineage_id": "le_sac_a_murmures", "copies": 1}
         ],
         "max_power_tier": 1,
         "ai_profile": {"precision": 0.0, "anticipation": false},
@@ -205,9 +205,9 @@ Le fichier est la source de vérité du contenu livré. Il est produit par
         "souls_min": 11,
         "souls_max": 17,
         "card_rewards": [
-          "avortons_des_caves_n1",
-          "mordeur_des_combles_n1",
-          "mache_mur_n1",
+          {"lineage_id": "avortons_des_caves", "copies": 1},
+          {"lineage_id": "mordeur_des_combles", "copies": 1},
+          {"lineage_id": "mache_mur", "copies": 1},
           "le_sac_a_murmures_n1"
         ]
       },
@@ -231,6 +231,8 @@ Le fichier est la source de vérité du contenu livré. Il est produit par
 | `dead_end` | Déclare explicitement une impasse |
 | `mini_boss_kind` | Vide, `optional` ou `mandatory` |
 | `tutorial_id` | Identifiant de tutoriel, vide hors des cinq tutoriels |
+| `stage_id` | Phase globale de puissance (`early_game`, `epic_intro`, etc.) |
+| `balance_profile` | Fonction du niveau : standard, challenge ou boss |
 | `theme_god_id` | Dieu d'accent et d'inspiration ; vide pour les tutoriels |
 | `accent` | Couleur ou famille d'accent de la carte |
 | `encounter` | Rencontre préparée par `CampaignEncounterFactory` |
@@ -284,12 +286,19 @@ valeurs par défaut restent un plateau 4 × 4 et huit cartes par camp.
 ### Récompenses
 
 Chaque nœud livré possède une fourchette `souls_min` / `souls_max`. Les cartes
-de `card_rewards` sont fixes et accordées une seule fois ; les âmes d’une
+de `card_rewards` sont des couples `lineage_id` / `copies`, fixes et accordés
+une seule fois ; les âmes d’une
 revanche victorieuse sont réduites à 25 %. Une défaite, une égalité ou une
 manche intermédiaire de FT2/FT3 ne déclenche aucune transaction. Le détail de
 la progression économique est décrit dans [ECONOMY.md](ECONOMY.md). La table
 `campaign_candles_by_chapter` accorde en plus 1, 2 ou 5 bougies à toute victoire
 finale selon le chapitre, y compris lors d’une revanche.
+
+Les boss et mini-boss donnent deux lignées différentes. Les rencontres
+ordinaires en distribuent ponctuellement une x2 ou deux x1. La rareté suit la
+phase de campagne : communes sur l'apprentissage, rares avant le premier
+jalon, épiques après celui-ci, puis légendaires après le second. Une récompense
+légendaire reste à une copie puisqu'elle n'a aucun niveau supérieur.
 
 ### Graine
 
@@ -332,9 +341,8 @@ le format de série.
 - Le boss final utilise FT3.
 - Une égalité ne donne aucun point et ouvre une manche supplémentaire.
 
-Les 14 mini-boss sont en FT2. Six autres rencontres majeures utilisent aussi
-FT2 : quatre nœuds de milieu ou de fin de campagne et deux rencontres
-historiques (`veskar_02`, `kharun_02`). Le total est de 20 FT2.
+Les 14 mini-boss sont en FT2. Trois rencontres ordinaires majeures utilisent
+aussi FT2. Le total est donc de 17 FT2 ; le boss final est l'unique FT3.
 
 ### Dix mini-boss facultatifs et leurs approches
 
@@ -347,15 +355,15 @@ approches de `mini_optional_02` forment la plus longue chaîne ; celle de
 
 | Nœud | Nom | Dieu imposé | Mode | Palier | IA | Approches | Particularité |
 | --- | --- | --- | --- | ---: | --- | ---: | --- |
-| `mini_optional_01` | La Cloche des Fièvres | Nérava | Classique | 2 | 0,80 | 2 | Deck fixe 100 % Flétri |
-| `r03_mini` | Le Jeu des Six Faces | Véskar | Aléatoire | 3 | 0,80 | 2 | Deux decks 100 % Aléators, sans neutre |
-| `r04_mini` | Le Premier Essaim | Sylkha | Classique | 2 | 0,85 | 3 | Deck fixe 5 N1 + 3 N2 |
-| `r05_mini` | L'Encre Dévorante | Kharûn | Sélection | 3 | 0,88 | 3 | Draft Kharûn, palier 3 maintenu |
-| `r06_mini` | Le Colporteur de Peaux | Sylkha | Aléatoire | 4 | 0,90 | 3 | Générateur Sylkha à 8 cartes |
-| `r09_mini1` | La Garde en Reflet | Ilyr | Miroir | 4 | 0,92 + anticipation | 4 | Deck miroir fixe, 7 Veilleurs sur 8 cartes |
-| `r09_mini2` | Le Chœur Noyé | Ilyr | Sélection | 4 | 0,92 + anticipation | 4 | Draft Ilyr, palier 3 → 4 |
-| `r10_mini` | Le Mime Absolu | Nérava | Sélection | 4 | 0,95 + anticipation | 4 | Draft Nérava, palier 3 → 4 |
-| `r11_mini` | Le Rempart de Carapace | Kharûn | Classique | 4 | 0,95 + anticipation | 4 | Deck fixe à 58 boucliers, avec `carapace_vide_n4` |
+| `mini_optional_01` | La Cloche des Fièvres | Nérava | Classique | 2 | 0,38 | 2 | Premier challenge facultatif |
+| `r03_mini` | Le Jeu des Six Faces | Véskar | Aléatoire | 2 | 0,56 | 2 | Deux decks 100 % Aléators, sans neutre |
+| `r04_mini` | Le Premier Essaim | Sylkha | Classique | 2 | 0,63 | 3 | Pic de fin de phase pré-épique |
+| `r05_mini` | L'Encre Dévorante | Kharûn | Sélection | 3 | 0,68 | 3 | Premier challenge de Sélection |
+| `r06_mini` | Le Colporteur de Peaux | Sylkha | Aléatoire | 3 | 0,75 | 3 | Générateur Sylkha à 8 cartes |
+| `r09_mini1` | La Garde en Reflet | Ilyr | Miroir | 4 | 0,90 | 4 | Deck miroir fixe, 7 Veilleurs sur 8 cartes |
+| `r09_mini2` | Le Chœur Noyé | Ilyr | Sélection | 4 | 0,90 | 4 | Draft Ilyr |
+| `r10_mini` | Le Mime Absolu | Nérava | Sélection | 4 | 0,93 + anticipation | 4 | Draft Nérava |
+| `r11_mini` | Le Rempart de Carapace | Kharûn | Classique | 4 | 0,96 + anticipation | 4 | Deck fixe de fin de campagne |
 | `mini_optional_02` | Les Faces du Collectionneur | Énigma | Classique | 4 | 1,00 + anticipation | 5 | Deck fixe majoritairement Énigma |
 
 Les cartes signées de Nérava, Sylkha, Kharûn et Énigma sont des decks fixes
@@ -384,9 +392,20 @@ route choisie ou un état réseau. Elle conserve uniquement les identifiants des
 nœuds terminés, les tentatives, le dernier nœud consulté, les états de tutoriel
 et l'archive de migration.
 
+Deux mini-boss obligatoires commandent aussi l'accès global aux raretés :
+
+- `r04_gate`, La Porte des Fontes, ouvre les cartes épiques. Aucun niveau
+  antérieur ne dépasse le palier 2 ;
+- `r07_gate`, La Cloche de Sève, ouvre les cartes légendaires. Aucun niveau
+  antérieur ne dépasse le palier 3.
+
+Ces jalons sont dérivés des nœuds terminés : aucune seconde copie de l'état
+n'est ajoutée au profil. La boutique, les Rituels et les quêtes lisent tous la
+même projection `ContentAccessState`.
+
 ## Migration des sauvegardes
 
-`campaign_version` vaut `5`. La migration est idempotente et conserve les
+`campaign_version` vaut `6`. La migration est idempotente et conserve les
 victoires existantes.
 
 - Un profil de l'ancienne campagne par dieu est converti seulement quand la
@@ -498,7 +517,9 @@ déchargement.
 
 `CampaignValidator.problems(definition)` vérifie les invariants structurels et
 les données immédiatement vérifiables. `CampaignGenerationValidator` prépare
-réellement les decks et drafts, tandis que `CampaignLayoutValidator` contrôle
+réellement les decks et drafts, `CampaignProgressionValidator` garantit la
+courbe, les FT et le caractère incontournable des jalons, tandis que
+`CampaignLayoutValidator` contrôle
 la distance des courbes aux nœuds. Ces deux validations coûteuses sont activées
 par `CampaignContentLoader.read(path, true)` dans les tests de livraison, mais
 pas à chaque clic sur Campagne.
@@ -528,7 +549,7 @@ objectifs de contenu ne sont plus tenus.
 
 ### Decks
 
-Les 87 decks fixes sont uniques. Aucun doublon exact n'est présent. Les 82 decks
+Les 94 decks fixes sont uniques. Aucun doublon exact n'est présent. Les 89 decks
 à dieu identifié contiennent chacun au moins trois cartes de ce dieu. Les cinq
 tutoriels Pr.Stone restent neutres. Les cinq premières rencontres du Carrefour
 emploient chacune six cartes de palier 1 et seulement deux de palier 2. Les six
@@ -550,7 +571,10 @@ pas d'une seule carte pour simuler une nouvelle identité.
 
 Le JSON livré est généré. La source de vérité de construction est
 `tools/build_campaign_v2.py` et la bibliothèque de decks est
-`tools/campaign_deck_library.json`.
+`tools/campaign_deck_library.json`. La courbe par chapitre et les profils de
+récompense vivent dans `data/campaign/authoring/balance_stages.json` et
+`reward_profiles.json`. `tools/campaign_builder/` applique ces politiques sans
+les mélanger au plan topologique.
 
 ### Ajouter un niveau
 
@@ -611,12 +635,9 @@ godot --headless --fixed-fps 60 --path . res://tests/GodSystemChecks.tscn
 godot --headless --fixed-fps 60 --path . res://tests/TouchInputChecks.tscn
 ```
 
-Dernière validation du contenu livré :
-
-```text
-GOD_SYSTEM_CHECKS: 1605 passed, 0 failed, 0 Godot errors
-TACTILE : 95 vérifications, 0 échec(s), 0 erreur(s) Godot.
-```
+La livraison exige zéro échec, zéro erreur Godot et zéro avertissement non
+explicitement attendu. Le nombre de vérifications varie avec les contrats de
+contenu et n'est volontairement pas figé dans cette documentation.
 
 Mesure reproductible :
 

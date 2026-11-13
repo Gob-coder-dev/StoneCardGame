@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "rarity_order": ["common", "rare", "epic", "legendary"],
+  "default_rarities": ["common", "rare"],
+  "gates": [
+    {
+      "id": "epic_cards",
+      "required_campaign_node": "r04_gate",
+      "label": "Cartes épiques",
+      "unlock_message": "La Porte des Fontes est tombée. Les cartes épiques peuvent désormais apparaître.",
+      "unlocked_rarities": ["epic"]
+    },
+    {
+      "id": "legendary_cards",
+      "required_campaign_node": "r07_gate",
+      "label": "Cartes légendaires",
+      "unlock_message": "La Cloche de Sève s'est tue. Les cartes légendaires peuvent désormais apparaître.",
+      "unlocked_rarities": ["legendary"]
+    }
+  ]
+}

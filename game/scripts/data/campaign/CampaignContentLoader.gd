@@ -10,6 +10,7 @@ const DEFAULT_PATH := "res://data/campaign/campaign_v2.json"
 const REGION_DIR := "res://data/campaign/"
 const ValidatorModel := preload("res://scripts/domain/campaign/CampaignValidator.gd")
 const GenerationValidatorModel := preload("res://scripts/application/campaign/CampaignGenerationValidator.gd")
+const ProgressionValidatorModel := preload("res://scripts/application/campaign/CampaignProgressionValidator.gd")
 const LayoutValidatorModel := preload("res://scripts/data/campaign/CampaignLayoutValidator.gd")
 const GraphModel := preload("res://scripts/domain/campaign/CampaignGraph.gd")
 
@@ -54,6 +55,7 @@ static func read(path: String = DEFAULT_PATH,
 		definition["edges"] = edges
 	problems.append_array(ValidatorModel.problems(definition))
 	if validate_delivery and problems.is_empty():
+		problems.append_array(ProgressionValidatorModel.problems(definition))
 		problems.append_array(GenerationValidatorModel.problems(definition))
 		problems.append_array(LayoutValidatorModel.problems(GraphModel.build(definition)))
 	return {

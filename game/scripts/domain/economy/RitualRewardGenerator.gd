@@ -18,7 +18,8 @@ static func generate(definition: Dictionary, inventory: PlayerInventory,
 	if souls_max > 0:
 		rewards.append({"type": "souls", "amount": rng.randi_range(souls_min, souls_max)})
 	if bool(definition.get("unique_missing", false)):
-		var unique := _unique_missing(inventory, rng)
+		var unique := _unique_missing(inventory, rng,
+			definition.get("allowed_rarities", []))
 		if unique == "":
 			return _fail("Aucune nouvelle carte ne reste à débloquer.")
 		rewards.append(_card_reward(unique, 1))
@@ -28,7 +29,8 @@ static func generate(definition: Dictionary, inventory: PlayerInventory,
 	var groups: Variant = definition.get("lucky" if lucky else "normal", [])
 	if not groups is Array:
 		return _fail("Composition du Rituel invalide.")
-	var pools := _eligible_pools(inventory)
+	var pools := _eligible_pools(inventory,
+		definition.get("allowed_rarities", []))
 	var used := {}
 	for raw_group in groups:
 		if not raw_group is Dictionary:
@@ -48,16 +50,17 @@ static func generate(definition: Dictionary, inventory: PlayerInventory,
 	return {"ok": true, "reason": "", "lucky": lucky, "rewards": rewards}
 
 
-static func has_unique_candidate(inventory: PlayerInventory) -> bool:
-	for values in _missing_by_rarity(inventory).values():
+static func has_unique_candidate(inventory: PlayerInventory,
+		allowed_rarities: Variant = []) -> bool:
+	for values in _missing_by_rarity(inventory, allowed_rarities).values():
 		if not (values as Array).is_empty():
 			return true
 	return false
 
 
 static func _unique_missing(inventory: PlayerInventory,
-		rng: RandomNumberGenerator) -> String:
-	var pools := _missing_by_rarity(inventory)
+		rng: RandomNumberGenerator, allowed_rarities: Variant = []) -> String:
+	var pools := _missing_by_rarity(inventory, allowed_rarities)
 	for rarity in RARITY_PRIORITY:
 		var candidates: Array = pools.get(rarity, [])
 		if not candidates.is_empty():
@@ -65,21 +68,25 @@ static func _unique_missing(inventory: PlayerInventory,
 	return ""
 
 
-static func _eligible_pools(inventory: PlayerInventory) -> Dictionary:
+static func _eligible_pools(inventory: PlayerInventory,
+		allowed_rarities: Variant = []) -> Dictionary:
 	var result := {"common": [], "rare": [], "epic": [], "legendary": []}
+	var allowed := _rarity_set(allowed_rarities)
 	for lineage_id in _all_lineages():
 		var stone_id := StoneLoader.variant_id(lineage_id, 1)
 		var affinity := StoneLoader.stone_affinity(stone_id)
 		if affinity != "neutral" and not inventory.has_god(affinity):
 			continue
 		var rarity := StoneLoader.stone_rarity(stone_id)
-		if result.has(rarity):
+		if result.has(rarity) and allowed.has(rarity):
 			result[rarity].append(lineage_id)
 	return result
 
 
-static func _missing_by_rarity(inventory: PlayerInventory) -> Dictionary:
+static func _missing_by_rarity(inventory: PlayerInventory,
+		allowed_rarities: Variant = []) -> Dictionary:
 	var result := {"common": [], "rare": [], "epic": [], "legendary": []}
+	var allowed := _rarity_set(allowed_rarities)
 	for lineage_id in _all_lineages():
 		var stone_id := StoneLoader.variant_id(lineage_id, 1)
 		# Une récompense divine déjà rangée dans le coffre est acquise, même si
@@ -88,8 +95,19 @@ static func _missing_by_rarity(inventory: PlayerInventory) -> Dictionary:
 				or int(inventory.pending_card_rewards.get(lineage_id, 0)) > 0:
 			continue
 		var rarity := StoneLoader.stone_rarity(stone_id)
-		if result.has(rarity):
+		if result.has(rarity) and allowed.has(rarity):
 			result[rarity].append(lineage_id)
+	return result
+
+
+static func _rarity_set(raw: Variant) -> Dictionary:
+	var result := {}
+	if raw is Array and not (raw as Array).is_empty():
+		for rarity in raw:
+			result[str(rarity)] = true
+		return result
+	for rarity in RARITY_PRIORITY:
+		result[rarity] = true
 	return result
 
 

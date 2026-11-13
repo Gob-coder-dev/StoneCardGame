@@ -14,6 +14,9 @@ const SeriesEngineModel := preload("res://scripts/domain/SeriesEngine.gd")
 const SeriesStateModel := preload("res://scripts/domain/SeriesState.gd")
 const SeriesPresenter := preload("res://scripts/ui/result/SeriesResultPresenter.gd")
 const PATH := "user://campaign_flow_checks.json"
+const SERIES_NODE := "r08_m1"
+const RESULT_SERIES_NODE := "r09_m"
+const RESULT_NEXT_NODE := "r09_exit"
 
 var _service: CampaignService = null
 var _fixture: ProfileFixture = null
@@ -29,10 +32,13 @@ func run() -> void:
 		return
 	var graph: CampaignGraph = GraphModel.build(content["definition"])
 	var progress := ProgressModel.new()
-	for node_id in ["tuto_01", "tuto_02", "tuto_03", "tuto_04", "tuto_05",
-			"init_veskar", "init_nerava", "init_kharun", "init_ilyr",
-			"init_sylkha", "init_enigma", "veskar_01"]:
-		progress.mark_completed(node_id)
+	# Le test de flux cible une série située après les jalons. Tous ses
+	# prédécesseurs sont donc préparés, sans prévalider les rencontres dont
+	# le verdict est testé ci-dessous.
+	for node in graph.nodes():
+		if not [SERIES_NODE, "r08_exit", RESULT_SERIES_NODE, RESULT_NEXT_NODE,
+				"nerava_01", "kharun_01"].has(node.id):
+			progress.mark_completed(node.id)
 	_service = ServiceModel.new(graph, progress, StoreModel.new(PATH), [])
 	CampaignContext.set_service_for_tests(_service)
 	_test_classic_result_once()
@@ -82,14 +88,14 @@ func _test_classic_result_once() -> void:
 
 
 func _test_series_defers_completion() -> void:
-	_enter("veskar_02")
+	_enter(SERIES_NODE)
 	_check(BattleContext.campaign_series_pending(),
 		"flux campagne : Aléatoire FT2 ouvre une série non terminée")
 	BattleContext.record_mode_round(GameState.PLAYER_HUMAN, 9, 4)
 	BattleContext.prepare_result(GameState.PLAYER_HUMAN, 9, 4, 2)
 	var first_saved := BattleContext.persist_result()
 	_check(first_saved == OK and BattleContext.last_result_saved
-		and not _service.is_completed("veskar_02")
+		and not _service.is_completed(SERIES_NODE)
 		and BattleContext.campaign_series_pending(),
 		"flux campagne : une manche gagnée n'est pas une victoire de nœud avant la fin de série")
 	_check(BattleContext.campaign_series_pending()
@@ -102,7 +108,7 @@ func _test_series_defers_completion() -> void:
 	BattleContext.prepare_result(GameState.PLAYER_HUMAN, 8, 5, 1)
 	var final_saved := BattleContext.persist_result()
 	_check(final_saved == OK and BattleContext.last_result_saved
-		and _service.is_completed("veskar_02")
+		and _service.is_completed(SERIES_NODE)
 		and not BattleContext.campaign_series_pending(),
 		"flux campagne : la victoire du nœud n'est publiée qu'à la fin de la série")
 	BattleContext.clear_campaign_node()
@@ -140,7 +146,7 @@ func _test_series_result_view() -> void:
 ## suivante » et « Abandonner ». Un abandon concède la série et compte une
 ## défaite ; une nouvelle entrée repart sur une série neuve.
 func _test_mid_series_abandon() -> void:
-	_enter("veskar_02")
+	_enter(SERIES_NODE)
 	var losses_before := int(PlayerData.stats.get("losses", 0))
 	BattleContext.record_mode_round(GameState.PLAYER_HUMAN, 9, 6)
 	BattleContext.prepare_result(GameState.PLAYER_HUMAN, 9, 6, 2)
@@ -190,7 +196,7 @@ func _test_mid_series_abandon() -> void:
 		"résultat campagne : l'abandon compte une défaite pour le joueur")
 	page.queue_free()
 	await get_tree().process_frame
-	_enter("veskar_02")
+	_enter(SERIES_NODE)
 	_check(BattleContext.campaign_series_pending()
 		and int(BattleContext.campaign_series_state().get("wins_one", -1)) == 0,
 		"résultat campagne : une nouvelle entrée repart sur une série neuve")
@@ -229,7 +235,7 @@ func _test_result_screens() -> void:
 	BattleContext.clear_campaign_node()
 
 	# Une série gagnée affiche le retour à la carte, pas une nouvelle manche.
-	_enter("veskar_02")
+	_enter(RESULT_SERIES_NODE)
 	BattleContext.record_mode_round(GameState.PLAYER_HUMAN, 9, 3)
 	BattleContext.record_mode_round(GameState.PLAYER_HUMAN, 9, 2)
 	BattleContext.prepare_result(GameState.PLAYER_HUMAN, 9, 2, 3)
@@ -237,7 +243,8 @@ func _test_result_screens() -> void:
 	var victory: Control = (load("res://scenes/menus/Result.tscn") as PackedScene).instantiate()
 	add_child(victory)
 	await get_tree().process_frame
-	var random_summary := EncounterPresenter.summary(_service.node("veskar_02"), "nerava")
+	var random_summary := EncounterPresenter.summary(
+		_service.node(RESULT_SERIES_NODE), "nerava")
 	_check(str(random_summary.get("opponent_god_label", "")) == "Adversaire",
 		"présentateur : un mode Aléatoire sans dieu imposé ne répète pas le mode comme dieu")
 	_check(not victory.next_btn.visible,
@@ -270,7 +277,7 @@ func _test_result_screens() -> void:
 	victory.scene_changer = func(path: String) -> void: requested_paths.append(path)
 	next_card.pressed.emit()
 	_check(requested_paths == [Routes.CAMPAIGN_MAP]
-		and CampaignContext.requested_node() == "mirror_01",
+		and CampaignContext.requested_node() == RESULT_NEXT_NODE,
 		"résultat campagne : une carte demande la fiche du niveau sans lancer le combat")
 	CampaignContext.take_requested_node()
 	victory.queue_free()
@@ -325,7 +332,7 @@ func _test_preparation_scene() -> void:
 	await get_tree().process_frame
 	BattleContext.clear_campaign_node()
 
-	_enter("veskar_02")
+	_enter("r03_b")
 	var random_page: Control = (load("res://scenes/campaign/CampaignPreparation.tscn") as PackedScene).instantiate()
 	add_child(random_page)
 	await get_tree().process_frame
@@ -343,12 +350,12 @@ func _test_preparation_scene() -> void:
 
 	# Le draft est derrière la convergence : un seul prédécesseur suffit (ANY).
 	_service.complete_node("nerava_01")
-	_enter("convergence_01")
+	_enter("r05_a1")
 	var draft_page: Control = (load("res://scenes/campaign/CampaignPreparation.tscn") as PackedScene).instantiate()
 	add_child(draft_page)
 	await get_tree().process_frame
 	var draft_view = draft_page.preparation_view
-	var timer_before := draft_view.draft_timer.text
+	var timer_before: String = draft_view.draft_timer.text
 	draft_page._process(1.1)
 	_check(draft_view.local_grid.visible
 		and draft_view.local_grid.get_child_count() == 2

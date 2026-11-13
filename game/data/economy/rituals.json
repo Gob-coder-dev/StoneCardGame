@@ -18,11 +18,27 @@
         {"rarity": "common", "slots": 1, "min_copies": 3, "max_copies": 5},
         {"rarity": "rare", "slots": 1, "min_copies": 1, "max_copies": 2},
         {"rarity": "epic", "slots": 1, "min_copies": 1, "max_copies": 1}
-      ]
+      ],
+      "progression_profiles": {
+        "base": {
+          "lucky": [
+            {"rarity": "common", "slots": 1, "min_copies": 3, "max_copies": 5},
+            {"rarity": "rare", "slots": 2, "min_copies": 2, "max_copies": 3}
+          ]
+        },
+        "epic_cards": {
+          "lucky": [
+            {"rarity": "common", "slots": 1, "min_copies": 3, "max_copies": 5},
+            {"rarity": "rare", "slots": 1, "min_copies": 1, "max_copies": 2},
+            {"rarity": "epic", "slots": 1, "min_copies": 1, "max_copies": 1}
+          ]
+        }
+      }
     },
     {
       "id": "basic",
       "name": "Rituel basique",
+      "required_gate": "epic_cards",
       "price_candles": 30,
       "souls_min": 30,
       "souls_max": 50,
@@ -40,11 +56,29 @@
         {"rarity": "rare", "slots": 1, "min_copies": 3, "max_copies": 5},
         {"rarity": "epic", "slots": 1, "min_copies": 2, "max_copies": 3},
         {"rarity": "legendary", "slots": 1, "min_copies": 1, "max_copies": 1}
-      ]
+      ],
+      "progression_profiles": {
+        "epic_cards": {
+          "lucky": [
+            {"rarity": "common", "slots": 1, "min_copies": 4, "max_copies": 7},
+            {"rarity": "rare", "slots": 1, "min_copies": 3, "max_copies": 5},
+            {"rarity": "epic", "slots": 2, "min_copies": 2, "max_copies": 3}
+          ]
+        },
+        "legendary_cards": {
+          "lucky": [
+            {"rarity": "common", "slots": 1, "min_copies": 4, "max_copies": 7},
+            {"rarity": "rare", "slots": 1, "min_copies": 3, "max_copies": 5},
+            {"rarity": "epic", "slots": 1, "min_copies": 2, "max_copies": 3},
+            {"rarity": "legendary", "slots": 1, "min_copies": 1, "max_copies": 1}
+          ]
+        }
+      }
     },
     {
       "id": "grand",
       "name": "Grand rituel",
+      "required_gate": "legendary_cards",
       "price_candles": 70,
       "souls_min": 100,
       "souls_max": 200,

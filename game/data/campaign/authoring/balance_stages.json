@@ -1,0 +1,128 @@
+{
+  "version": 1,
+  "chapters": {
+    "Seuil": {
+      "stage_id": "tutorial",
+      "tier_min": 1,
+      "tier_max": 1,
+      "precision_min": 0.0,
+      "precision_max": 0.0,
+      "challenge_precision_max": 0.0,
+      "allowed_modes": ["classic"]
+    },
+    "Initiations": {
+      "stage_id": "initiation",
+      "tier_min": 1,
+      "tier_max": 1,
+      "precision_min": 0.03,
+      "precision_max": 0.10,
+      "challenge_precision_max": 0.10,
+      "allowed_modes": ["mirror"]
+    },
+    "Carrefour": {
+      "stage_id": "early_game",
+      "tier_min": 1,
+      "tier_max": 2,
+      "precision_min": 0.10,
+      "precision_max": 0.30,
+      "challenge_precision_max": 0.40,
+      "allowed_modes": ["classic"]
+    },
+    "Le Marais des Serments": {
+      "stage_id": "pre_epic",
+      "tier_min": 2,
+      "tier_max": 2,
+      "precision_min": 0.20,
+      "precision_max": 0.40,
+      "challenge_precision_max": 0.60,
+      "allowed_modes": ["classic", "random", "mirror"]
+    },
+    "Les Forges Basses": {
+      "stage_id": "pre_epic",
+      "tier_min": 2,
+      "tier_max": 2,
+      "precision_min": 0.27,
+      "precision_max": 0.48,
+      "challenge_precision_max": 0.68,
+      "allowed_modes": ["classic", "random", "mirror"]
+    },
+    "La Bibliothèque des Os": {
+      "stage_id": "epic_intro",
+      "tier_min": 2,
+      "tier_max": 3,
+      "precision_min": 0.34,
+      "precision_max": 0.55,
+      "challenge_precision_max": 0.72,
+      "allowed_modes": ["classic", "random", "mirror", "draft"]
+    },
+    "Le Marché Nocturne": {
+      "stage_id": "epic_game",
+      "tier_min": 3,
+      "tier_max": 3,
+      "precision_min": 0.41,
+      "precision_max": 0.62,
+      "challenge_precision_max": 0.78,
+      "allowed_modes": ["classic", "random", "mirror", "draft"]
+    },
+    "Les Serres de Verre": {
+      "stage_id": "pre_legendary",
+      "tier_min": 3,
+      "tier_max": 3,
+      "precision_min": 0.48,
+      "precision_max": 0.68,
+      "challenge_precision_max": 0.82,
+      "allowed_modes": ["classic", "random", "mirror", "draft"]
+    },
+    "Les Remparts Muets": {
+      "stage_id": "legendary_intro",
+      "tier_min": 3,
+      "tier_max": 4,
+      "precision_min": 0.54,
+      "precision_max": 0.74,
+      "challenge_precision_max": 0.86,
+      "allowed_modes": ["classic", "random", "mirror", "draft"]
+    },
+    "Le Puits des Échos": {
+      "stage_id": "legendary_game",
+      "tier_min": 4,
+      "tier_max": 4,
+      "precision_min": 0.61,
+      "precision_max": 0.82,
+      "challenge_precision_max": 0.91,
+      "allowed_modes": ["classic", "random", "mirror", "draft"]
+    },
+    "La Cour des Masques": {
+      "stage_id": "late_game",
+      "tier_min": 4,
+      "tier_max": 4,
+      "precision_min": 0.68,
+      "precision_max": 0.87,
+      "challenge_precision_max": 0.94,
+      "allowed_modes": ["classic", "random", "mirror", "draft"]
+    },
+    "Les Jardins de Cendre": {
+      "stage_id": "late_game",
+      "tier_min": 4,
+      "tier_max": 4,
+      "precision_min": 0.74,
+      "precision_max": 0.92,
+      "challenge_precision_max": 0.96,
+      "allowed_modes": ["classic", "random", "mirror", "draft"]
+    },
+    "Cime": {
+      "stage_id": "endgame",
+      "tier_min": 4,
+      "tier_max": 4,
+      "precision_min": 0.80,
+      "precision_max": 0.98,
+      "challenge_precision_max": 1.0,
+      "allowed_modes": ["classic", "random", "mirror", "draft"]
+    }
+  },
+  "normal_ft2_nodes": ["r08_m1", "r09_m", "r12_m"],
+  "mode_fallbacks": {
+    "random": "classic",
+    "mirror": "classic",
+    "draft": "classic"
+  }
+}

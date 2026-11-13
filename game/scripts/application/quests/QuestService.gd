@@ -19,6 +19,7 @@ const RitualServiceModel := preload("res://scripts/application/economy/RitualSer
 const RitualConfigModel := preload("res://scripts/data/economy/RitualConfig.gd")
 const Compensation := preload("res://scripts/domain/economy/CardCompensation.gd")
 const InventoryModel := preload("res://scripts/domain/economy/PlayerInventory.gd")
+const AccessServiceModel := preload("res://scripts/application/progression/ProgressionAccessService.gd")
 
 const TRANSACTION_PREFIX := "quest:"
 ## La manche parfaite exige le score maximal du jeu : 16 à 0 sur un plateau
@@ -33,7 +34,9 @@ var _metrics := MetricsModel.new()
 func view() -> Dictionary:
 	_metrics = MetricsModel.new()
 	var state := StateModel.from_dict(PlayerData.quests_dict())
-	if _ensure_daily(state):
+	var changed := _sync_gate_activations(state)
+	changed = _ensure_daily(state) or changed
+	if changed:
 		var rollover_error := _commit(state)
 		if rollover_error != OK:
 			return {"ok": false, "reason": "Quêtes non enregistrées (%s)."
@@ -47,7 +50,7 @@ func view() -> Dictionary:
 			daily.append(_entry(definition, state, true, inventory))
 	var unique: Array = []
 	for definition in ConfigModel.uniques():
-		if definition is Dictionary:
+		if definition is Dictionary and _is_accessible(definition):
 			unique.append(_entry(definition, state, false, inventory))
 	# Les paliers récoltables passent devant, puis les objectifs en cours ;
 	# l'ordre du catalogue départage les égalités de façon stable.
@@ -73,7 +76,8 @@ func claimable_count() -> int:
 func record_event(kind: String, payload: Dictionary, key: String = "") -> Error:
 	_metrics = MetricsModel.new()
 	var state := StateModel.from_dict(PlayerData.quests_dict())
-	var rolled := _ensure_daily(state)
+	var rolled := _sync_gate_activations(state)
+	rolled = _ensure_daily(state) or rolled
 	var increments := _event_counters(kind, payload)
 	if increments.is_empty() and not rolled:
 		return OK
@@ -93,8 +97,11 @@ func claim(quest_id: String) -> Dictionary:
 	var definition := ConfigModel.definition(quest_id)
 	if definition.is_empty():
 		return _fail("Quête inconnue.")
+	if not _is_accessible(definition):
+		return _fail("Cette quête n'est pas encore accessible.")
 	_metrics = MetricsModel.new()
 	var state := StateModel.from_dict(PlayerData.quests_dict())
+	_sync_gate_activations(state)
 	_ensure_daily(state)
 	var daily := state.daily_ids.has(quest_id)
 	if not daily and _in_daily_pool(quest_id):
@@ -176,6 +183,8 @@ func _ensure_daily(state: StateModel) -> bool:
 ## Le tirage ne propose jamais une quête que le joueur ne peut pas réaliser
 ## aujourd'hui : ni mode non atteint, ni Rituel sans bougies, ni achat sans âmes.
 func _eligible(quest: Dictionary) -> bool:
+	if not _is_accessible(quest):
+		return false
 	if PlayerData.souls() < int(quest.get("min_souls", 0)):
 		return false
 	if PlayerData.candles() < int(quest.get("min_candles", 0)):
@@ -227,11 +236,42 @@ func _entry(definition: Dictionary, state: StateModel, daily: bool,
 
 func _value(definition: Dictionary, state: StateModel, daily: bool) -> int:
 	var metric := str(definition.get("metric", ""))
+	var raw := 0
 	if daily:
-		return state.counter(metric, true)
-	if MetricsModel.is_derived(metric):
-		return _metrics.value(metric)
-	return state.counter(metric, false)
+		raw = state.counter(metric, true)
+	elif MetricsModel.is_derived(metric):
+		raw = _metrics.value(metric)
+	else:
+		raw = state.counter(metric, false)
+	if not daily and str(definition.get("progress_policy", "lifetime")) == "since_gate":
+		raw = maxi(0, raw - state.activation_baseline(str(definition.get("id", ""))))
+	return raw
+
+
+func _is_accessible(definition: Dictionary) -> bool:
+	return AccessServiceModel.new().is_gate_unlocked(
+		str(definition.get("required_gate", "")))
+
+
+## Active chaque défi conditionnel une seule fois et photographie sa métrique.
+## Les statistiques historiques restent partagées, mais ne peuvent pas remplir
+## rétroactivement un objectif qui n'existait pas encore pour le joueur.
+func _sync_gate_activations(state: StateModel) -> bool:
+	var changed := false
+	for raw in ConfigModel.uniques():
+		if not raw is Dictionary:
+			continue
+		var definition: Dictionary = raw
+		var quest_id := str(definition.get("id", ""))
+		if str(definition.get("progress_policy", "lifetime")) != "since_gate" \
+				or state.is_activated(quest_id) or not _is_accessible(definition):
+			continue
+		var metric := str(definition.get("metric", ""))
+		var baseline := _metrics.value(metric) if MetricsModel.is_derived(metric) \
+			else state.counter(metric, false)
+		state.activate(quest_id, baseline)
+		changed = true
+	return changed
 
 
 func _in_daily_pool(quest_id: String) -> bool:

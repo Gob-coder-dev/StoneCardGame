@@ -7,27 +7,39 @@ const InventoryModel := preload("res://scripts/domain/economy/PlayerInventory.gd
 const Generator := preload("res://scripts/domain/economy/RitualRewardGenerator.gd")
 const Rituals := preload("res://scripts/data/economy/RitualConfig.gd")
 const Compensation := preload("res://scripts/domain/economy/CardCompensation.gd")
+const AccessService := preload("res://scripts/application/progression/ProgressionAccessService.gd")
+const AccessRules := preload("res://scripts/domain/economy/RitualAccessRules.gd")
 
 
 func state() -> Dictionary:
 	var inventory := InventoryModel.from_dict(PlayerData.inventory_dict())
+	var access := AccessService.new().state()
 	var entries: Array = []
 	for definition in Rituals.definitions():
-		var copy: Dictionary = definition.duplicate(true)
+		var copy: Dictionary = AccessRules.resolve(definition, access)
 		var has_candidate := not bool(copy.get("unique_missing", false)) \
-			or Generator.has_unique_candidate(inventory)
-		copy["available"] = has_candidate
-		copy["unavailable_reason"] = "" if has_candidate \
-			else "Toutes les cartes ont déjà été obtenues."
+			or Generator.has_unique_candidate(inventory,
+				copy.get("allowed_rarities", []))
+		var gate_available := bool(copy.get("available", false))
+		copy["available"] = gate_available and has_candidate
+		if not gate_available:
+			copy["unavailable_reason"] = AccessService.new().locked_reason(
+				str(copy.get("required_gate", "")))
+		else:
+			copy["unavailable_reason"] = "" if has_candidate \
+				else "Toutes les cartes accessibles ont déjà été obtenues."
 		entries.append(copy)
 	return {"ok": Rituals.problems().is_empty(), "candles": inventory.candles,
 		"rituals": entries}
 
 
 func purchase(ritual_id: String, seed_override: Variant = null) -> Dictionary:
-	var definition := Rituals.definition(ritual_id)
+	var definition := _resolved_definition(ritual_id)
 	if definition.is_empty():
 		return _fail("Ce Rituel n'existe pas.")
+	if not bool(definition.get("available", false)):
+		return _fail(AccessService.new().locked_reason(
+			str(definition.get("required_gate", ""))))
 	var next := InventoryModel.from_dict(PlayerData.inventory_dict())
 	var price := int(definition.get("price_candles", 0))
 	if price <= 0:
@@ -50,10 +62,19 @@ func purchase(ritual_id: String, seed_override: Variant = null) -> Dictionary:
 ## sans bougies. L'inventaire reçu est modifié ; l'appelant l'enregistre avec son
 ## propre état afin de garder une seule écriture.
 static func grant(ritual_id: String, inventory: PlayerInventory, seed: int) -> Dictionary:
-	var definition := Rituals.definition(ritual_id)
+	var definition := _resolved_definition(ritual_id)
 	if definition.is_empty():
 		return _fail("Ce Rituel n'existe pas.")
+	if not bool(definition.get("available", false)):
+		return _fail("Ce Rituel n'est pas encore débloqué.")
 	return _apply(definition, inventory, seed)
+
+
+static func _resolved_definition(ritual_id: String) -> Dictionary:
+	var definition := Rituals.definition(ritual_id)
+	if definition.is_empty():
+		return {}
+	return AccessRules.resolve(definition, AccessService.new().state())
 
 
 static func _apply(definition: Dictionary, inventory: PlayerInventory, seed: int) -> Dictionary:

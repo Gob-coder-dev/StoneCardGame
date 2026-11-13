@@ -56,7 +56,10 @@ ne change donc ni le tirage ni son état d’achat.
 | Épique | 1 à 3 | 30 âmes par copie |
 | Légendaire | 1 | 1 000 âmes |
 
-Les cartes liées à un dieu verrouillé sont exclues du tirage. Les six dieux
+Les cartes liées à un dieu verrouillé sont exclues du tirage. Les épiques
+n'entrent dans la rotation qu'après `r04_gate` et les légendaires après
+`r07_gate`. Débloquer un jalon renouvelle proprement les offres de la rotation
+courante grâce à la révision d'accès enregistrée dans `shop_state`. Les six dieux
 restent visibles indépendamment de la rotation : le premier dieu acheté coûte
 100 âmes, puis chaque autre dieu coûte 800 âmes. Chaque achat offre deux
 communes fixes du dieu, choisies pour présenter des mécaniques différentes.
@@ -78,7 +81,12 @@ coffre si son dieu est encore verrouillé.
 | Unique | 100 | 0 | 1 carte non possédée de tout le catalogue |
 
 Le Petit et le Basique ont 10 % de chances d’utiliser leur composition
-exceptionnelle. Le Rituel unique cherche en priorité une légendaire manquante,
+exceptionnelle. Avant le jalon épique, le Petit remplace son invocation épique
+chanceuse par une seconde rare renforcée. Le Basique devient achetable avec les
+épiques ; avant les légendaires, sa chance exceptionnelle donne une seconde
+épique. Le Grand attend le jalon légendaire. Le Rituel unique reste disponible
+mais ne cherche que parmi les raretés actuellement ouvertes, en priorité une
+légendaire manquante,
 puis une épique, une rare et une commune, sans exclure les cartes neutres ni les
 dieux verrouillés. Une carte divine verrouillée rejoint le coffre ; elle compte
 alors comme déjà gagnée et ne peut plus être tirée par ce Rituel. Il est
@@ -113,9 +121,10 @@ rien. Une série FT2/FT3 ne récompense que sa victoire finale. Les victoires
 donnent 1 bougie dans les premiers chapitres, 2 au milieu de la campagne et 5
 dans les trois dernières sections ; une revanche victorieuse conserve ce montant.
 
-Les cartes de récompense sont accordées une seule fois. Elles sont actuellement
-réservées au premier tutoriel ainsi qu’aux boss et mini-boss possédant une
-récompense fixe dans les données. Les identifiants de transaction empêchent un
+Les cartes de récompense sont accordées une seule fois. Le premier tutoriel,
+tous les boss et mini-boss, ainsi qu'une sélection espacée de rencontres
+ordinaires en possèdent. Leur rareté suit la phase globale de campagne et les
+jalons. Les identifiants de transaction empêchent un
 double paiement si un résultat ou un signal est traité deux fois.
 
 Une carte neutre, ou une carte liée à un dieu déjà débloqué, rejoint directement
@@ -131,12 +140,29 @@ côté de « Cartes possédées ». Sa pastille compte les lignées distinctes e
 attente ; la fenêtre regroupe ensuite les cartes par dieu et affiche le nombre
 exact de copies. Les sections vides ne sont jamais créées.
 
+## Quêtes conditionnelles
+
+Une quête qui distribue du contenu épique ou légendaire déclare
+`required_gate` dans `data/quests/quests.json`. Elle est absente de l'interface,
+du tirage quotidien et de la réclamation tant que ce jalon est fermé. Les
+objectifs concernés utilisent `progress_policy: "since_gate"` : `QuestState`
+photographie leur métrique à l'activation et n'affiche ensuite que les progrès
+effectués après le boss. Les anciennes statistiques ne peuvent donc pas
+terminer instantanément un défi qui n'était pas encore visible.
+
+Les baselines sont sérialisées avec l'état des quêtes. Le catalogue valide que
+chaque jalon existe et qu'aucune récompense épique ou légendaire n'est exposée
+sans la condition correspondante.
+
 ## Architecture et persistance
 
 | Élément | Mission unique |
 | --- | --- |
 | `EconomyConfig` | charger et valider la configuration d’équilibrage |
 | `RitualConfig` | charger et valider les quatre définitions de Rituels |
+| `ContentGateConfig` | déclarer les boss qui ouvrent les raretés |
+| `ProgressionAccessService` | projeter les nœuds terminés en accès partagés |
+| `RitualAccessRules` | résoudre la composition d'un Rituel pour ces accès |
 | `CardProgressionRules` | calculer seuils, coûts et états d’amélioration |
 | `PlayerInventory` | représenter monnaies, dieux, copies, niveaux et achats persistants |
 | `EconomyService` | exécuter récompenses, améliorations et achats de dieux |

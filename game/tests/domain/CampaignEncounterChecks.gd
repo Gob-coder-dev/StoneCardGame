@@ -155,7 +155,7 @@ func _test_early_curve() -> void:
 
 
 func _test_random_mode() -> void:
-	var result := _enter("veskar_02")
+	var result := _enter("r03_b")
 	_check(bool(result.get("needs_series_session", false))
 		and BattleContext.has_mode_session(),
 		"rencontres : Aléatoire FT2 démarre une session locale")
@@ -168,7 +168,7 @@ func _test_random_mode() -> void:
 	var first_seed := int(result.get("seed", 0))
 	var first_loadout := BattleContext.player_loadout.to_dict()
 	BattleContext.clear_campaign_node()
-	var replay := _enter("veskar_02")
+	var replay := _enter("r03_b")
 	_check(BattleContext.confirm_mode_preparation(),
 		"rencontres : une nouvelle tentative Aléatoire se prépare normalement")
 	var replay_loadout := BattleContext.player_loadout.to_dict()
@@ -180,7 +180,7 @@ func _test_random_mode() -> void:
 
 
 func _test_mirror_mode() -> void:
-	_enter("mirror_01")
+	_enter("r06_a")
 	_check(BattleContext.confirm_mode_preparation() and BattleContext.has_prepared_loadouts(),
 		"rencontres : Miroir prépare ses loadouts localement")
 	_check(BattleContext.player_loadout.god_id == BattleContext.opponent_loadout.god_id
@@ -190,7 +190,7 @@ func _test_mirror_mode() -> void:
 
 
 func _test_draft_mode() -> void:
-	var result := _enter("convergence_01")
+	var result := _enter("r05_a1")
 	_check(bool(result.get("needs_preparation", false)) and BattleContext.has_mode_session(),
 		"rencontres : Sélection ouvre une préparation de draft")
 	for index in range(DeckRules.DECK_SIZE):
@@ -254,9 +254,9 @@ func _test_special_minis() -> void:
 		BattleContext.clear_campaign_node()
 
 	var fixed_checks := [
-		["mini_optional_01", "nerava", 2, 0.80, false],
-		["r04_mini", "sylkha", 2, 0.85, false],
-		["r11_mini", "kharun", 4, 0.95, true],
+		["mini_optional_01", "nerava", 2, 0.38, false],
+		["r04_mini", "sylkha", 2, 0.63, false],
+		["r11_mini", "kharun", 4, 0.96, true],
 		["mini_optional_02", "enigma", 4, 1.0, true],
 	]
 	for entry in fixed_checks:
@@ -314,10 +314,10 @@ func _test_failed_attempt_save_is_transactional() -> void:
 	var failing_service := ServiceModel.new(_graph, progress,
 		StoreModel.new(BAD_PATH), [])
 	CampaignContext.set_service_for_tests(failing_service)
-	var attempts_before := progress.attempts_for("veskar_02")
-	var result := CampaignContext.enter_node("veskar_02")
+	var attempts_before := progress.attempts_for("r03_b")
+	var result := CampaignContext.enter_node("r03_b")
 	_check(not bool(result.get("ok", true))
-		and failing_service.progress().attempts_for("veskar_02") == attempts_before
+		and failing_service.progress().attempts_for("r03_b") == attempts_before
 		and not BattleContext.has_campaign_node()
 		and not BattleContext.has_mode_session(),
 		"rencontres : un échec de sauvegarde ne publie ni tentative ni session partielle")

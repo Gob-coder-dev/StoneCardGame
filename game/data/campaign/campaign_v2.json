@@ -1,7 +1,7 @@
 {
   "id": "samstone_campaign",
   "title": "La Carte de SamStone",
-  "campaign_version": 5,
+  "campaign_version": 6,
   "map": {
     "width": 1080,
     "height": 19800
@@ -62,15 +62,29 @@
         "souls_min": 11,
         "souls_max": 17,
         "card_rewards": [
-          "avortons_des_caves_n1",
-          "mordeur_des_combles_n1",
-          "mache_mur_n1",
-          "le_sac_a_murmures_n1"
+          {
+            "lineage_id": "avortons_des_caves",
+            "copies": 1
+          },
+          {
+            "lineage_id": "mordeur_des_combles",
+            "copies": 1
+          },
+          {
+            "lineage_id": "mache_mur",
+            "copies": 1
+          },
+          {
+            "lineage_id": "le_sac_a_murmures",
+            "copies": 1
+          }
         ]
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "tutorial",
+      "balance_profile": "tutorial"
     },
     {
       "id": "tuto_02",
@@ -124,7 +138,9 @@
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "tutorial",
+      "balance_profile": "tutorial"
     },
     {
       "id": "tuto_03",
@@ -187,7 +203,9 @@
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "tutorial",
+      "balance_profile": "tutorial"
     },
     {
       "id": "tuto_04",
@@ -240,7 +258,9 @@
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "tutorial",
+      "balance_profile": "tutorial"
     },
     {
       "id": "tuto_05",
@@ -293,7 +313,9 @@
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "tutorial",
+      "balance_profile": "tutorial"
     },
     {
       "id": "init_veskar",
@@ -346,7 +368,9 @@
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "initiation",
+      "balance_profile": "initiation"
     },
     {
       "id": "init_nerava",
@@ -399,7 +423,9 @@
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "initiation",
+      "balance_profile": "initiation"
     },
     {
       "id": "init_kharun",
@@ -452,7 +478,9 @@
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "initiation",
+      "balance_profile": "initiation"
     },
     {
       "id": "init_ilyr",
@@ -505,7 +533,9 @@
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "initiation",
+      "balance_profile": "initiation"
     },
     {
       "id": "init_sylkha",
@@ -558,7 +588,9 @@
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "initiation",
+      "balance_profile": "initiation"
     },
     {
       "id": "init_enigma",
@@ -611,7 +643,9 @@
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "initiation",
+      "balance_profile": "initiation"
     },
     {
       "id": "veskar_01",
@@ -648,7 +682,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 2,
         "ai_profile": {
-          "precision": 0.1,
+          "precision": 0.14,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -657,13 +691,15 @@
         "legacy_opponent_id": "bot_veskar_n2_facile"
       },
       "rewards": {
-        "souls_min": 15,
-        "souls_max": 22,
+        "souls_min": 16,
+        "souls_max": 23,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "early_game",
+      "balance_profile": "standard"
     },
     {
       "id": "nerava_01",
@@ -715,7 +751,9 @@
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "early_game",
+      "balance_profile": "standard"
     },
     {
       "id": "kharun_01",
@@ -767,7 +805,9 @@
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "early_game",
+      "balance_profile": "standard"
     },
     {
       "id": "mini_optional_01",
@@ -804,7 +844,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 2,
         "ai_profile": {
-          "precision": 0.8,
+          "precision": 0.38,
           "anticipation": false
         },
         "series_format": "ft2",
@@ -813,15 +853,24 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 34,
-        "souls_max": 41,
+        "souls_min": 29,
+        "souls_max": 36,
         "card_rewards": [
-          "porte_fievre_n2"
+          {
+            "lineage_id": "griffe_septique",
+            "copies": 3
+          },
+          {
+            "lineage_id": "ronge_chair",
+            "copies": 3
+          }
         ]
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "early_game",
+      "balance_profile": "challenge"
     },
     {
       "id": "veskar_02",
@@ -839,32 +888,48 @@
       "theme_god_id": "ilyr",
       "accent": "#5fa8ff",
       "encounter": {
-        "game_mode": "random",
-        "opponent_god_policy": "generated",
-        "opponent_deck_policy": "generated",
-        "fixed_god_id": "",
-        "fixed_deck": [],
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "ilyr",
+        "fixed_deck": [
+          "fouisseur_aveugle_n1",
+          "fauche_fond_n2",
+          "longuepine_n2",
+          "echassier_des_brumes_n1",
+          "dard_de_traverse_n1",
+          "avortons_des_caves_n2",
+          "le_sac_a_murmures_n2",
+          "bouche_arbalete_n2"
+        ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 3,
+        "max_power_tier": 2,
         "ai_profile": {
-          "precision": 0.5,
+          "precision": 0.21,
           "anticipation": false
         },
-        "series_format": "ft2",
-        "seed_policy": "per_attempt",
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
         "seed": 5555,
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 23,
-        "souls_max": 31,
-        "card_rewards": []
+        "souls_min": 17,
+        "souls_max": 24,
+        "card_rewards": [
+          {
+            "lineage_id": "bouche_arbalete",
+            "copies": 2
+          }
+        ]
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "early_game",
+      "balance_profile": "standard"
     },
     {
       "id": "ilyr_01",
@@ -901,7 +966,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 2,
         "ai_profile": {
-          "precision": 0.16,
+          "precision": 0.15,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -916,7 +981,9 @@
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "early_game",
+      "balance_profile": "standard"
     },
     {
       "id": "mirror_01",
@@ -934,32 +1001,43 @@
       "theme_god_id": "sylkha",
       "accent": "#7fc95b",
       "encounter": {
-        "game_mode": "mirror",
-        "opponent_god_policy": "mirrored",
-        "opponent_deck_policy": "mirrored",
-        "fixed_god_id": "",
-        "fixed_deck": [],
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "sylkha",
+        "fixed_deck": [
+          "tisse_griffe_n2",
+          "fouisseur_aveugle_n1",
+          "dos_fendu_n1",
+          "la_veuve_suspendue_n1",
+          "mante_des_racines_n1",
+          "ogre_a_deux_bouches_n1",
+          "le_drape_du_seuil_n2",
+          "ronce_rampante_n1"
+        ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 3,
+        "max_power_tier": 2,
         "ai_profile": {
-          "precision": 0.5,
+          "precision": 0.25,
           "anticipation": false
         },
         "series_format": "ft1",
-        "seed_policy": "per_attempt",
+        "seed_policy": "fixed_per_node",
         "seed": 5629,
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 23,
-        "souls_max": 31,
+        "souls_min": 17,
+        "souls_max": 24,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "early_game",
+      "balance_profile": "standard"
     },
     {
       "id": "kharun_02",
@@ -977,32 +1055,43 @@
       "theme_god_id": "enigma",
       "accent": "#ef8b45",
       "encounter": {
-        "game_mode": "random",
-        "opponent_god_policy": "generated",
-        "opponent_deck_policy": "generated",
-        "fixed_god_id": "",
-        "fixed_deck": [],
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "enigma",
+        "fixed_deck": [
+          "avortons_des_caves_n1",
+          "collecteur_de_dents_n1",
+          "mordeur_des_combles_n1",
+          "mache_mur_n1",
+          "scie_boiteuse_n1",
+          "gueule_de_travers_n1",
+          "pince_carcasse_n1",
+          "depeceur_rampant_n1"
+        ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 3,
+        "max_power_tier": 1,
         "ai_profile": {
-          "precision": 0.5,
+          "precision": 0.17,
           "anticipation": false
         },
-        "series_format": "ft2",
-        "seed_policy": "per_attempt",
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
         "seed": 5666,
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 23,
-        "souls_max": 31,
+        "souls_min": 13,
+        "souls_max": 19,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "early_game",
+      "balance_profile": "standard"
     },
     {
       "id": "sylkha_01",
@@ -1050,11 +1139,22 @@
       "rewards": {
         "souls_min": 16,
         "souls_max": 23,
-        "card_rewards": []
+        "card_rewards": [
+          {
+            "lineage_id": "bourgeon_mordant",
+            "copies": 1
+          },
+          {
+            "lineage_id": "larve_dancrage",
+            "copies": 1
+          }
+        ]
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "early_game",
+      "balance_profile": "standard"
     },
     {
       "id": "veilleur_impasse",
@@ -1077,21 +1177,21 @@
         "opponent_deck_policy": "fixed",
         "fixed_god_id": "ilyr",
         "fixed_deck": [
-          "le_sac_a_murmures_n1",
-          "echassier_des_brumes_n2",
-          "devoreur_de_lanternes_n1",
-          "laffame_du_puits_n1",
-          "le_porte_visages_n1",
-          "ogre_a_deux_bouches_n2",
-          "bouche_arbalete_n3",
-          "lil_empale_n1"
+          "dard_de_traverse_n1",
+          "perce_voute_n1",
+          "ogre_a_deux_bouches_n1",
+          "gueule_de_travers_n2",
+          "le_drape_du_seuil_n1",
+          "charognard_courbe_n1",
+          "fouisseur_aveugle_n1",
+          "fauche_fond_n2"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 3,
+        "max_power_tier": 2,
         "ai_profile": {
-          "precision": 0.5,
+          "precision": 0.36,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -1100,13 +1200,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 23,
-        "souls_max": 31,
+        "souls_min": 18,
+        "souls_max": 25,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "early_game",
+      "balance_profile": "challenge"
     },
     {
       "id": "convergence_01",
@@ -1124,32 +1226,43 @@
       "theme_god_id": "nerava",
       "accent": "#9b6bc7",
       "encounter": {
-        "game_mode": "draft",
+        "game_mode": "classic",
         "opponent_god_policy": "fixed",
-        "opponent_deck_policy": "draft",
+        "opponent_deck_policy": "fixed",
         "fixed_god_id": "nerava",
-        "fixed_deck": [],
+        "fixed_deck": [
+          "rampant_des_fosses_n1",
+          "fouisseur_aveugle_n1",
+          "devoreur_de_lanternes_n1",
+          "avortons_des_caves_n2",
+          "ronge_chair_n1",
+          "sonneur_pestifere_n1",
+          "porte_fievre_n2",
+          "le_sac_a_murmures_n2"
+        ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 3,
+        "max_power_tier": 2,
         "ai_profile": {
-          "precision": 0.5,
+          "precision": 0.3,
           "anticipation": false
         },
         "series_format": "ft1",
-        "seed_policy": "per_attempt",
+        "seed_policy": "fixed_per_node",
         "seed": 5777,
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 23,
-        "souls_max": 31,
+        "souls_min": 18,
+        "souls_max": 25,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "early_game",
+      "balance_profile": "standard"
     },
     {
       "id": "boss_required_gate",
@@ -1172,21 +1285,21 @@
         "opponent_deck_policy": "fixed",
         "fixed_god_id": "enigma",
         "fixed_deck": [
-          "chirurgien_dacier_n2",
-          "fouisseur_aveugle_n2",
-          "la_broyeuse_dempreintes_n1",
-          "depeceur_rampant_n3",
-          "le_demonteur_n1",
-          "ogre_a_deux_bouches_n2",
-          "mille_gueules_n1",
+          "dos_fendu_n1",
+          "charognard_courbe_n1",
+          "collecteur_de_dents_n1",
+          "ogre_a_deux_bouches_n1",
+          "le_sac_a_murmures_n2",
+          "recycleur_thoracique_n1",
+          "porte_greffes_n1",
           "avortons_des_caves_n2"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 3,
+        "max_power_tier": 2,
         "ai_profile": {
-          "precision": 0.75,
+          "precision": 0.24,
           "anticipation": false
         },
         "series_format": "ft2",
@@ -1195,15 +1308,24 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 36,
-        "souls_max": 44,
+        "souls_min": 27,
+        "souls_max": 34,
         "card_rewards": [
-          "chirurgien_dacier_n2"
+          {
+            "lineage_id": "chirurgien_dacier",
+            "copies": 3
+          },
+          {
+            "lineage_id": "porte_greffes",
+            "copies": 3
+          }
         ]
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "early_game",
+      "balance_profile": "required_boss"
     },
     {
       "id": "r03_entry",
@@ -1226,21 +1348,21 @@
         "opponent_deck_policy": "fixed",
         "fixed_god_id": "veskar",
         "fixed_deck": [
+          "griffe_a_jetons_n2",
+          "rampant_des_fosses_n1",
+          "croupier_manchot_n1",
           "charognard_courbe_n1",
+          "de_boiteux_n1",
           "dos_fendu_n1",
-          "jumeau_de_cuivre_n1",
-          "fouisseur_aveugle_n1",
           "ogre_a_deux_bouches_n1",
-          "valet_a_lenvers_n1",
-          "roulette_vorace_n1",
-          "de_boiteux_n2"
+          "fouisseur_aveugle_n1"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
         "max_power_tier": 2,
         "ai_profile": {
-          "precision": 0.04,
+          "precision": 0.2,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -1249,13 +1371,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 14,
-        "souls_max": 21,
+        "souls_min": 16,
+        "souls_max": 23,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "pre_epic",
+      "balance_profile": "standard"
     },
     {
       "id": "r03_a",
@@ -1292,7 +1416,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 2,
         "ai_profile": {
-          "precision": 0.98,
+          "precision": 0.22,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -1301,13 +1425,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 26,
-        "souls_max": 33,
+        "souls_min": 17,
+        "souls_max": 24,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "pre_epic",
+      "balance_profile": "standard"
     },
     {
       "id": "r03_b",
@@ -1335,7 +1461,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 2,
         "ai_profile": {
-          "precision": 0.98,
+          "precision": 0.24,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -1344,13 +1470,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 26,
-        "souls_max": 33,
+        "souls_min": 17,
+        "souls_max": 24,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "pre_epic",
+      "balance_profile": "standard"
     },
     {
       "id": "r03_a1",
@@ -1387,7 +1515,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 2,
         "ai_profile": {
-          "precision": 0.15,
+          "precision": 0.26,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -1396,13 +1524,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 16,
-        "souls_max": 23,
+        "souls_min": 17,
+        "souls_max": 24,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "pre_epic",
+      "balance_profile": "standard"
     },
     {
       "id": "r03_a2",
@@ -1425,21 +1555,21 @@
         "opponent_deck_policy": "fixed",
         "fixed_god_id": "enigma",
         "fixed_deck": [
-          "ogre_a_deux_bouches_n1",
-          "le_nud_hurlant_n1",
-          "depeceur_rampant_n1",
-          "gueule_de_travers_n1",
-          "avortons_des_caves_n2",
-          "scie_boiteuse_n1",
+          "preleveur_de_plaques_n1",
+          "scie_boiteuse_n2",
+          "pince_carcasse_n2",
           "porte_greffes_n1",
-          "le_sac_a_murmures_n2"
+          "ecorche_angle_n2",
+          "avortons_des_caves_n2",
+          "le_sac_a_murmures_n2",
+          "devoreur_de_lanternes_n1"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
         "max_power_tier": 2,
         "ai_profile": {
-          "precision": 0.15,
+          "precision": 0.28,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -1448,13 +1578,20 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 16,
-        "souls_max": 23,
-        "card_rewards": []
+        "souls_min": 17,
+        "souls_max": 24,
+        "card_rewards": [
+          {
+            "lineage_id": "collecteur_de_dents",
+            "copies": 2
+          }
+        ]
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "pre_epic",
+      "balance_profile": "standard"
     },
     {
       "id": "r03_b1",
@@ -1491,7 +1628,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 2,
         "ai_profile": {
-          "precision": 0.15,
+          "precision": 0.3,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -1500,13 +1637,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 16,
-        "souls_max": 23,
+        "souls_min": 18,
+        "souls_max": 25,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "pre_epic",
+      "balance_profile": "standard"
     },
     {
       "id": "r03_m",
@@ -1524,32 +1663,43 @@
       "theme_god_id": "enigma",
       "accent": "#ef8b45",
       "encounter": {
-        "game_mode": "draft",
+        "game_mode": "classic",
         "opponent_god_policy": "fixed",
-        "opponent_deck_policy": "draft",
+        "opponent_deck_policy": "fixed",
         "fixed_god_id": "enigma",
-        "fixed_deck": [],
+        "fixed_deck": [
+          "scie_boiteuse_n1",
+          "depeceur_rampant_n2",
+          "rampant_des_fosses_n2",
+          "dos_fendu_n1",
+          "le_drape_du_seuil_n2",
+          "le_sac_a_murmures_n2",
+          "fouisseur_aveugle_n1",
+          "recycleur_thoracique_n1"
+        ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 3,
+        "max_power_tier": 2,
         "ai_profile": {
-          "precision": 0.23,
+          "precision": 0.32,
           "anticipation": false
         },
         "series_format": "ft1",
-        "seed_policy": "per_attempt",
+        "seed_policy": "fixed_per_node",
         "seed": 6073,
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 20,
-        "souls_max": 28,
+        "souls_min": 18,
+        "souls_max": 25,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "pre_epic",
+      "balance_profile": "standard"
     },
     {
       "id": "r03_c",
@@ -1586,7 +1736,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 2,
         "ai_profile": {
-          "precision": 0.46,
+          "precision": 0.34,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -1595,13 +1745,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 20,
-        "souls_max": 27,
+        "souls_min": 18,
+        "souls_max": 25,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "pre_epic",
+      "balance_profile": "standard"
     },
     {
       "id": "r03_exit",
@@ -1638,7 +1790,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 2,
         "ai_profile": {
-          "precision": 0.79,
+          "precision": 0.38,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -1647,13 +1799,24 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 23,
-        "souls_max": 30,
-        "card_rewards": []
+        "souls_min": 19,
+        "souls_max": 26,
+        "card_rewards": [
+          {
+            "lineage_id": "collecteur_de_dents",
+            "copies": 1
+          },
+          {
+            "lineage_id": "depeceur_rampant",
+            "copies": 1
+          }
+        ]
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "pre_epic",
+      "balance_profile": "standard"
     },
     {
       "id": "r03_mini",
@@ -1679,9 +1842,9 @@
         "generator_god_id": "veskar",
         "generator_min_god_cards": 8,
         "mirror_fixed_deck": [],
-        "max_power_tier": 3,
+        "max_power_tier": 2,
         "ai_profile": {
-          "precision": 0.8,
+          "precision": 0.56,
           "anticipation": false
         },
         "series_format": "ft2",
@@ -1690,13 +1853,24 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 37,
-        "souls_max": 45,
-        "card_rewards": []
+        "souls_min": 31,
+        "souls_max": 38,
+        "card_rewards": [
+          {
+            "lineage_id": "croupier_manchot",
+            "copies": 3
+          },
+          {
+            "lineage_id": "jumeau_de_cuivre",
+            "copies": 3
+          }
+        ]
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "pre_epic",
+      "balance_profile": "challenge"
     },
     {
       "id": "r04_entry",
@@ -1733,7 +1907,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 2,
         "ai_profile": {
-          "precision": 0.96,
+          "precision": 0.27,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -1742,13 +1916,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 26,
-        "souls_max": 33,
+        "souls_min": 17,
+        "souls_max": 24,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "pre_epic",
+      "balance_profile": "standard"
     },
     {
       "id": "r04_a",
@@ -1771,13 +1947,13 @@
         "opponent_deck_policy": "fixed",
         "fixed_god_id": "nerava",
         "fixed_deck": [
-          "rampant_des_fosses_n1",
-          "fouisseur_aveugle_n1",
-          "devoreur_de_lanternes_n1",
-          "avortons_des_caves_n2",
-          "ronge_chair_n1",
-          "sonneur_pestifere_n1",
-          "porte_fievre_n2",
+          "le_nud_hurlant_n1",
+          "mordeur_des_combles_n1",
+          "clochelet_malade_n1",
+          "ogre_a_deux_bouches_n1",
+          "machoire_moisie_n2",
+          "crache_cendre_n2",
+          "tricorne_errant_n1",
           "le_sac_a_murmures_n2"
         ],
         "generator_god_id": "",
@@ -1785,7 +1961,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 2,
         "ai_profile": {
-          "precision": 0.93,
+          "precision": 0.29,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -1794,13 +1970,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 25,
-        "souls_max": 32,
+        "souls_min": 17,
+        "souls_max": 24,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "pre_epic",
+      "balance_profile": "standard"
     },
     {
       "id": "r04_b",
@@ -1837,7 +2015,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 2,
         "ai_profile": {
-          "precision": 0.93,
+          "precision": 0.31,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -1846,13 +2024,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 25,
-        "souls_max": 32,
+        "souls_min": 18,
+        "souls_max": 25,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "pre_epic",
+      "balance_profile": "standard"
     },
     {
       "id": "r04_mini",
@@ -1889,24 +2069,33 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 2,
         "ai_profile": {
-          "precision": 0.85,
+          "precision": 0.63,
           "anticipation": false
         },
         "series_format": "ft2",
-        "seed_policy": "per_attempt",
+        "seed_policy": "fixed_per_node",
         "seed": 6332,
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 34,
-        "souls_max": 41,
+        "souls_min": 32,
+        "souls_max": 39,
         "card_rewards": [
-          "nud_vivant_n2"
+          {
+            "lineage_id": "fourmilion_des_nerfs",
+            "copies": 3
+          },
+          {
+            "lineage_id": "mante_des_racines",
+            "copies": 3
+          }
         ]
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "pre_epic",
+      "balance_profile": "challenge"
     },
     {
       "id": "r04_a1",
@@ -1924,32 +2113,48 @@
       "theme_god_id": "kharun",
       "accent": "#72c7d8",
       "encounter": {
-        "game_mode": "draft",
+        "game_mode": "classic",
         "opponent_god_policy": "fixed",
-        "opponent_deck_policy": "draft",
+        "opponent_deck_policy": "fixed",
         "fixed_god_id": "kharun",
-        "fixed_deck": [],
+        "fixed_deck": [
+          "heaume_errant_n2",
+          "carapace_vide_n1",
+          "eclat_cuirasse_n2",
+          "le_drape_du_seuil_n1",
+          "portail_dos_n1",
+          "charognard_courbe_n1",
+          "tricorne_errant_n1",
+          "avortons_des_caves_n2"
+        ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 3,
+        "max_power_tier": 2,
         "ai_profile": {
-          "precision": 0.21,
+          "precision": 0.35,
           "anticipation": false
         },
         "series_format": "ft1",
-        "seed_policy": "per_attempt",
+        "seed_policy": "fixed_per_node",
         "seed": 6369,
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 20,
-        "souls_max": 28,
-        "card_rewards": []
+        "souls_min": 18,
+        "souls_max": 25,
+        "card_rewards": [
+          {
+            "lineage_id": "carapace_vide",
+            "copies": 2
+          }
+        ]
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "pre_epic",
+      "balance_profile": "standard"
     },
     {
       "id": "r04_a2",
@@ -1972,21 +2177,21 @@
         "opponent_deck_policy": "fixed",
         "fixed_god_id": "sylkha",
         "fixed_deck": [
-          "le_replie_n1",
           "ronce_rampante_n1",
-          "rampant_des_fosses_n2",
-          "larve_dancrage_n3",
-          "ogre_a_deux_bouches_n2",
-          "mordeur_des_combles_n3",
-          "la_nourrice_nouee_n1",
-          "fourmilion_des_nerfs_n2"
+          "ogre_droitier_n1",
+          "charognard_courbe_n1",
+          "porte_nid_n1",
+          "la_veuve_suspendue_n1",
+          "avortons_des_caves_n2",
+          "mante_des_racines_n1",
+          "le_sac_a_murmures_n2"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 3,
+        "max_power_tier": 2,
         "ai_profile": {
-          "precision": 0.21,
+          "precision": 0.38,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -1995,13 +2200,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 20,
-        "souls_max": 28,
+        "souls_min": 19,
+        "souls_max": 26,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "pre_epic",
+      "balance_profile": "standard"
     },
     {
       "id": "r04_b1",
@@ -2024,21 +2231,21 @@
         "opponent_deck_policy": "fixed",
         "fixed_god_id": "enigma",
         "fixed_deck": [
-          "chirurgien_dacier_n1",
-          "ecorche_angle_n3",
-          "la_broyeuse_dempreintes_n1",
           "ogre_a_deux_bouches_n1",
-          "collecteur_de_dents_n2",
-          "recycleur_thoracique_n1",
-          "mache_mur_n3",
-          "devoreur_de_lanternes_n2"
+          "le_nud_hurlant_n1",
+          "depeceur_rampant_n1",
+          "gueule_de_travers_n1",
+          "avortons_des_caves_n2",
+          "scie_boiteuse_n1",
+          "porte_greffes_n1",
+          "le_sac_a_murmures_n2"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 3,
+        "max_power_tier": 2,
         "ai_profile": {
-          "precision": 0.21,
+          "precision": 0.4,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -2047,13 +2254,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 20,
-        "souls_max": 28,
+        "souls_min": 19,
+        "souls_max": 26,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "pre_epic",
+      "balance_profile": "standard"
     },
     {
       "id": "r04_d",
@@ -2090,7 +2299,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 2,
         "ai_profile": {
-          "precision": 0.61,
+          "precision": 0.44,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -2099,13 +2308,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 21,
-        "souls_max": 28,
+        "souls_min": 19,
+        "souls_max": 26,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "pre_epic",
+      "balance_profile": "standard"
     },
     {
       "id": "r04_m",
@@ -2123,32 +2334,52 @@
       "theme_god_id": "nerava",
       "accent": "#9b6bc7",
       "encounter": {
-        "game_mode": "draft",
+        "game_mode": "classic",
         "opponent_god_policy": "fixed",
-        "opponent_deck_policy": "draft",
+        "opponent_deck_policy": "fixed",
         "fixed_god_id": "nerava",
-        "fixed_deck": [],
+        "fixed_deck": [
+          "veuve_des_spores_n1",
+          "la_veuve_suspendue_n1",
+          "ogre_droitier_n1",
+          "le_sac_a_murmures_n2",
+          "avortons_des_caves_n2",
+          "devoreur_de_lanternes_n1",
+          "crache_cendre_n2",
+          "porte_fievre_n2"
+        ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 3,
+        "max_power_tier": 2,
         "ai_profile": {
-          "precision": 0.91,
+          "precision": 0.48,
           "anticipation": false
         },
         "series_format": "ft1",
-        "seed_policy": "per_attempt",
+        "seed_policy": "fixed_per_node",
         "seed": 6517,
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 28,
-        "souls_max": 36,
-        "card_rewards": []
+        "souls_min": 20,
+        "souls_max": 27,
+        "card_rewards": [
+          {
+            "lineage_id": "clochelet_malade",
+            "copies": 1
+          },
+          {
+            "lineage_id": "crache_cendre",
+            "copies": 1
+          }
+        ]
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "pre_epic",
+      "balance_profile": "standard"
     },
     {
       "id": "r04_gate",
@@ -2171,21 +2402,21 @@
         "opponent_deck_policy": "fixed",
         "fixed_god_id": "kharun",
         "fixed_deck": [
-          "fouisseur_aveugle_n2",
-          "le_porte_visages_n1",
-          "le_nud_hurlant_n1",
-          "golem_de_faience_n1",
-          "colosse_rivete_n2",
-          "le_reliquaire_ambulant_n1",
-          "devoreur_de_lanternes_n2",
-          "osselet_blinde_n2"
+          "mache_mur_n1",
+          "tricorne_errant_n1",
+          "osselet_blinde_n2",
+          "carapace_vide_n2",
+          "eclat_cuirasse_n2",
+          "devoreur_de_lanternes_n1",
+          "le_sac_a_murmures_n2",
+          "avortons_des_caves_n2"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 3,
+        "max_power_tier": 2,
         "ai_profile": {
-          "precision": 0.21,
+          "precision": 0.41,
           "anticipation": false
         },
         "series_format": "ft2",
@@ -2194,15 +2425,24 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 30,
-        "souls_max": 38,
+        "souls_min": 29,
+        "souls_max": 36,
         "card_rewards": [
-          "fouisseur_aveugle_n2"
+          {
+            "lineage_id": "chevalier_sans_visage",
+            "copies": 3
+          },
+          {
+            "lineage_id": "colosse_rivete",
+            "copies": 3
+          }
         ]
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "pre_epic",
+      "balance_profile": "required_boss"
     },
     {
       "id": "r05_entry",
@@ -2225,21 +2465,21 @@
         "opponent_deck_policy": "fixed",
         "fixed_god_id": "sylkha",
         "fixed_deck": [
-          "mante_des_racines_n2",
-          "nud_vivant_n2",
-          "le_tisseur_de_meutes_n1",
-          "charognard_courbe_n2",
-          "le_replie_n1",
-          "avortons_des_caves_n3",
-          "le_sac_a_murmures_n3",
-          "devoreur_de_lanternes_n2"
+          "avortons_des_caves_n2",
+          "bourgeon_mordant_n1",
+          "devoreur_de_lanternes_n1",
+          "fouisseur_aveugle_n1",
+          "le_sac_a_murmures_n2",
+          "tisse_griffe_n2",
+          "fourmilion_des_nerfs_n1",
+          "ronce_rampante_n1"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 3,
+        "max_power_tier": 2,
         "ai_profile": {
-          "precision": 0.37,
+          "precision": 0.34,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -2248,13 +2488,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 21,
-        "souls_max": 29,
+        "souls_min": 18,
+        "souls_max": 25,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "epic_intro",
+      "balance_profile": "standard"
     },
     {
       "id": "r05_a",
@@ -2277,13 +2519,13 @@
         "opponent_deck_policy": "fixed",
         "fixed_god_id": "enigma",
         "fixed_deck": [
-          "scie_boiteuse_n1",
-          "depeceur_rampant_n2",
-          "rampant_des_fosses_n2",
-          "dos_fendu_n1",
-          "le_drape_du_seuil_n2",
-          "le_sac_a_murmures_n2",
+          "gueule_de_travers_n1",
+          "chirurgien_dacier_n1",
+          "tricorne_errant_n1",
+          "charognard_courbe_n1",
+          "preleveur_de_plaques_n1",
           "fouisseur_aveugle_n1",
+          "ogre_a_deux_bouches_n1",
           "recycleur_thoracique_n1"
         ],
         "generator_god_id": "",
@@ -2291,7 +2533,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 2,
         "ai_profile": {
-          "precision": 0.32,
+          "precision": 0.36,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -2306,7 +2548,9 @@
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "epic_intro",
+      "balance_profile": "standard"
     },
     {
       "id": "r05_b",
@@ -2329,21 +2573,21 @@
         "opponent_deck_policy": "fixed",
         "fixed_god_id": "veskar",
         "fixed_deck": [
-          "griffe_a_jetons_n2",
-          "rampant_des_fosses_n1",
-          "croupier_manchot_n1",
-          "charognard_courbe_n1",
-          "de_boiteux_n1",
-          "dos_fendu_n1",
-          "ogre_a_deux_bouches_n1",
-          "fouisseur_aveugle_n1"
+          "fouisseur_aveugle_n1",
+          "griffe_a_jetons_n1",
+          "jumeau_de_cuivre_n1",
+          "le_drape_du_seuil_n2",
+          "devoreur_de_lanternes_n1",
+          "sou_ricanant_n1",
+          "roulette_vorace_n1",
+          "devoracle_n2"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
         "max_power_tier": 2,
         "ai_profile": {
-          "precision": 0.32,
+          "precision": 0.38,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -2352,13 +2596,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 18,
-        "souls_max": 25,
+        "souls_min": 19,
+        "souls_max": 26,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "epic_intro",
+      "balance_profile": "standard"
     },
     {
       "id": "r05_a1",
@@ -2386,7 +2632,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 3,
         "ai_profile": {
-          "precision": 0.52,
+          "precision": 0.4,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -2395,13 +2641,20 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 23,
-        "souls_max": 31,
-        "card_rewards": []
+        "souls_min": 22,
+        "souls_max": 30,
+        "card_rewards": [
+          {
+            "lineage_id": "griffe_septique",
+            "copies": 2
+          }
+        ]
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "epic_intro",
+      "balance_profile": "standard"
     },
     {
       "id": "r05_b1",
@@ -2424,21 +2677,21 @@
         "opponent_deck_policy": "fixed",
         "fixed_god_id": "kharun",
         "fixed_deck": [
-          "avortons_des_caves_n1",
-          "gueule_de_travers_n3",
-          "colosse_rivete_n1",
-          "mille_gueules_n1",
-          "rampant_des_fosses_n3",
-          "le_bastion_fendu_n1",
-          "devoreur_de_lanternes_n2",
-          "golem_de_faience_n2"
+          "carapace_vide_n1",
+          "le_nud_hurlant_n1",
+          "rampant_des_fosses_n2",
+          "osselet_blinde_n2",
+          "chevalier_sans_visage_n1",
+          "portail_dos_n1",
+          "eclat_cuirasse_n2",
+          "mordeur_des_combles_n1"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 3,
+        "max_power_tier": 2,
         "ai_profile": {
-          "precision": 0.52,
+          "precision": 0.42,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -2447,13 +2700,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 23,
-        "souls_max": 31,
+        "souls_min": 19,
+        "souls_max": 26,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "epic_intro",
+      "balance_profile": "standard"
     },
     {
       "id": "r05_a2",
@@ -2476,21 +2731,21 @@
         "opponent_deck_policy": "fixed",
         "fixed_god_id": "ilyr",
         "fixed_deck": [
-          "mordeur_des_combles_n1",
-          "le_guetteur_trifide_n1",
-          "dos_fendu_n1",
-          "bouche_arbalete_n3",
-          "le_sac_a_murmures_n3",
-          "perce_voute_n2",
-          "fouisseur_aveugle_n2",
-          "avortons_des_caves_n3"
+          "bouche_arbalete_n1",
+          "gueule_de_travers_n2",
+          "le_nud_hurlant_n1",
+          "tricorne_errant_n1",
+          "pique_en_haut_n2",
+          "avortons_des_caves_n2",
+          "le_sac_a_murmures_n2",
+          "fauche_fond_n2"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 3,
+        "max_power_tier": 2,
         "ai_profile": {
-          "precision": 0.68,
+          "precision": 0.44,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -2499,13 +2754,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 25,
-        "souls_max": 33,
+        "souls_min": 19,
+        "souls_max": 26,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "epic_intro",
+      "balance_profile": "standard"
     },
     {
       "id": "r05_b2",
@@ -2533,7 +2790,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 3,
         "ai_profile": {
-          "precision": 0.68,
+          "precision": 0.45,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -2542,13 +2799,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 25,
-        "souls_max": 33,
+        "souls_min": 22,
+        "souls_max": 30,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "epic_intro",
+      "balance_profile": "standard"
     },
     {
       "id": "r05_m",
@@ -2571,36 +2830,47 @@
         "opponent_deck_policy": "fixed",
         "fixed_god_id": "enigma",
         "fixed_deck": [
-          "preleveur_de_plaques_n1",
-          "scie_boiteuse_n2",
-          "pince_carcasse_n2",
-          "porte_greffes_n1",
-          "ecorche_angle_n2",
-          "avortons_des_caves_n2",
-          "le_sac_a_murmures_n2",
-          "devoreur_de_lanternes_n1"
+          "chirurgien_dacier_n1",
+          "ecorche_angle_n3",
+          "la_broyeuse_dempreintes_n1",
+          "ogre_a_deux_bouches_n1",
+          "collecteur_de_dents_n2",
+          "recycleur_thoracique_n1",
+          "mache_mur_n3",
+          "devoreur_de_lanternes_n2"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 2,
+        "max_power_tier": 3,
         "ai_profile": {
-          "precision": 0.89,
+          "precision": 0.49,
           "anticipation": false
         },
-        "series_format": "ft2",
+        "series_format": "ft1",
         "seed_policy": "fixed_per_node",
         "seed": 6850,
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 25,
-        "souls_max": 32,
-        "card_rewards": []
+        "souls_min": 23,
+        "souls_max": 31,
+        "card_rewards": [
+          {
+            "lineage_id": "chirurgien_dacier",
+            "copies": 1
+          },
+          {
+            "lineage_id": "porte_greffes",
+            "copies": 1
+          }
+        ]
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "epic_intro",
+      "balance_profile": "standard"
     },
     {
       "id": "r05_exit",
@@ -2628,7 +2898,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 3,
         "ai_profile": {
-          "precision": 0.34,
+          "precision": 0.53,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -2637,13 +2907,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 21,
-        "souls_max": 29,
+        "souls_min": 23,
+        "souls_max": 31,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "epic_intro",
+      "balance_profile": "standard"
     },
     {
       "id": "r05_mini",
@@ -2669,9 +2941,9 @@
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 4,
+        "max_power_tier": 3,
         "ai_profile": {
-          "precision": 0.88,
+          "precision": 0.68,
           "anticipation": false
         },
         "series_format": "ft2",
@@ -2680,13 +2952,24 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 41,
-        "souls_max": 50,
-        "card_rewards": []
+        "souls_min": 35,
+        "souls_max": 43,
+        "card_rewards": [
+          {
+            "lineage_id": "le_bastion_fendu",
+            "copies": 3
+          },
+          {
+            "lineage_id": "le_reliquaire_ambulant",
+            "copies": 3
+          }
+        ]
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "epic_intro",
+      "balance_profile": "challenge"
     },
     {
       "id": "r06_entry",
@@ -2723,7 +3006,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 3,
         "ai_profile": {
-          "precision": 0.71,
+          "precision": 0.41,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -2732,13 +3015,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 26,
-        "souls_max": 34,
+        "souls_min": 22,
+        "souls_max": 30,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "epic_game",
+      "balance_profile": "standard"
     },
     {
       "id": "r06_a",
@@ -2764,9 +3049,9 @@
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 2,
+        "max_power_tier": 3,
         "ai_profile": {
-          "precision": 0.61,
+          "precision": 0.43,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -2775,13 +3060,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 21,
-        "souls_max": 28,
+        "souls_min": 22,
+        "souls_max": 30,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "epic_game",
+      "balance_profile": "standard"
     },
     {
       "id": "r06_b",
@@ -2807,9 +3094,9 @@
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 2,
+        "max_power_tier": 3,
         "ai_profile": {
-          "precision": 0.61,
+          "precision": 0.45,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -2818,13 +3105,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 21,
-        "souls_max": 28,
+        "souls_min": 22,
+        "souls_max": 30,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "epic_game",
+      "balance_profile": "standard"
     },
     {
       "id": "r06_c",
@@ -2847,21 +3136,21 @@
         "opponent_deck_policy": "fixed",
         "fixed_god_id": "nerava",
         "fixed_deck": [
-          "le_nud_hurlant_n1",
-          "mordeur_des_combles_n1",
-          "clochelet_malade_n1",
-          "ogre_a_deux_bouches_n1",
-          "machoire_moisie_n2",
-          "crache_cendre_n2",
+          "veuve_des_spores_n2",
+          "griffe_septique_n1",
+          "crache_cendre_n1",
+          "le_porte_visages_n1",
+          "le_precheur_des_fievres_n1",
           "tricorne_errant_n1",
-          "le_sac_a_murmures_n2"
+          "ogre_a_deux_bouches_n2",
+          "avortons_des_caves_n3"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 2,
+        "max_power_tier": 3,
         "ai_profile": {
-          "precision": 0.61,
+          "precision": 0.47,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -2870,13 +3159,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 21,
-        "souls_max": 28,
+        "souls_min": 23,
+        "souls_max": 31,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "epic_game",
+      "balance_profile": "standard"
     },
     {
       "id": "r06_mini",
@@ -2904,7 +3195,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 3,
         "ai_profile": {
-          "precision": 0.9,
+          "precision": 0.75,
           "anticipation": false
         },
         "series_format": "ft2",
@@ -2913,13 +3204,24 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 38,
-        "souls_max": 46,
-        "card_rewards": []
+        "souls_min": 36,
+        "souls_max": 44,
+        "card_rewards": [
+          {
+            "lineage_id": "la_nourrice_nouee",
+            "copies": 3
+          },
+          {
+            "lineage_id": "le_tisseur_de_meutes",
+            "copies": 3
+          }
+        ]
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "epic_game",
+      "balance_profile": "challenge"
     },
     {
       "id": "r06_a1",
@@ -2942,21 +3244,21 @@
         "opponent_deck_policy": "fixed",
         "fixed_god_id": "kharun",
         "fixed_deck": [
-          "charognard_courbe_n2",
+          "fouisseur_aveugle_n2",
+          "le_porte_visages_n1",
+          "le_nud_hurlant_n1",
+          "golem_de_faience_n1",
           "colosse_rivete_n2",
-          "le_nud_hurlant_n2",
-          "laffame_du_puits_n1",
-          "ecorche_angle_n2",
-          "mordeur_des_combles_n2",
-          "le_bastion_fendu_n1",
-          "eclat_cuirasse_n2"
+          "le_reliquaire_ambulant_n1",
+          "devoreur_de_lanternes_n2",
+          "osselet_blinde_n2"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
         "max_power_tier": 3,
         "ai_profile": {
-          "precision": 0.98,
+          "precision": 0.51,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -2965,13 +3267,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 29,
-        "souls_max": 37,
+        "souls_min": 23,
+        "souls_max": 31,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "epic_game",
+      "balance_profile": "standard"
     },
     {
       "id": "r06_b1",
@@ -3008,7 +3312,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 3,
         "ai_profile": {
-          "precision": 0.98,
+          "precision": 0.52,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -3017,13 +3321,20 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 29,
-        "souls_max": 37,
-        "card_rewards": []
+        "souls_min": 23,
+        "souls_max": 31,
+        "card_rewards": [
+          {
+            "lineage_id": "dard_de_traverse",
+            "copies": 2
+          }
+        ]
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "epic_game",
+      "balance_profile": "standard"
     },
     {
       "id": "r06_c1",
@@ -3051,7 +3362,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 3,
         "ai_profile": {
-          "precision": 0.07,
+          "precision": 0.54,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -3060,13 +3371,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 18,
-        "souls_max": 26,
+        "souls_min": 23,
+        "souls_max": 31,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "epic_game",
+      "balance_profile": "standard"
     },
     {
       "id": "r06_m",
@@ -3089,21 +3402,21 @@
         "opponent_deck_policy": "fixed",
         "fixed_god_id": "enigma",
         "fixed_deck": [
-          "gueule_de_travers_n1",
+          "chirurgien_dacier_n2",
+          "fouisseur_aveugle_n2",
+          "la_broyeuse_dempreintes_n1",
+          "depeceur_rampant_n3",
           "le_demonteur_n1",
-          "pince_carcasse_n3",
-          "chirurgien_dacier_n1",
-          "laffame_du_puits_n1",
-          "rampant_des_fosses_n1",
-          "avortons_des_caves_n3",
-          "le_sac_a_murmures_n3"
+          "ogre_a_deux_bouches_n2",
+          "mille_gueules_n1",
+          "avortons_des_caves_n2"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
         "max_power_tier": 3,
         "ai_profile": {
-          "precision": 0.15,
+          "precision": 0.58,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -3112,13 +3425,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 19,
-        "souls_max": 27,
+        "souls_min": 24,
+        "souls_max": 32,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "epic_game",
+      "balance_profile": "standard"
     },
     {
       "id": "r06_exit",
@@ -3141,21 +3456,21 @@
         "opponent_deck_policy": "fixed",
         "fixed_god_id": "veskar",
         "fixed_deck": [
-          "fouisseur_aveugle_n1",
-          "griffe_a_jetons_n1",
-          "jumeau_de_cuivre_n1",
-          "le_drape_du_seuil_n2",
-          "devoreur_de_lanternes_n1",
-          "sou_ricanant_n1",
-          "roulette_vorace_n1",
-          "devoracle_n2"
+          "roulette_vorace_n2",
+          "ogre_droitier_n2",
+          "de_boiteux_n2",
+          "la_machine_a_malchance_n1",
+          "le_porte_visages_n1",
+          "laffame_du_puits_n1",
+          "mordeur_des_combles_n2",
+          "griffe_a_jetons_n3"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 2,
+        "max_power_tier": 3,
         "ai_profile": {
-          "precision": 0.41,
+          "precision": 0.62,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -3164,13 +3479,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 19,
-        "souls_max": 26,
+        "souls_min": 24,
+        "souls_max": 32,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "epic_game",
+      "balance_profile": "standard"
     },
     {
       "id": "r07_entry",
@@ -3193,21 +3510,21 @@
         "opponent_deck_policy": "fixed",
         "fixed_god_id": "nerava",
         "fixed_deck": [
-          "mache_mur_n3",
-          "le_precheur_des_fievres_n1",
+          "gueule_de_travers_n1",
           "avortons_des_caves_n3",
-          "sonneur_pestifere_n1",
-          "laffame_du_puits_n1",
-          "veuve_des_spores_n2",
+          "le_precheur_des_fievres_n1",
+          "crache_cendre_n3",
           "charognard_courbe_n2",
-          "le_drape_du_seuil_n2"
+          "sonneur_pestifere_n1",
+          "le_replie_n1",
+          "devoreur_de_lanternes_n2"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
         "max_power_tier": 3,
         "ai_profile": {
-          "precision": 0.63,
+          "precision": 0.48,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -3216,13 +3533,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 25,
-        "souls_max": 33,
+        "souls_min": 23,
+        "souls_max": 31,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "pre_legendary",
+      "balance_profile": "standard"
     },
     {
       "id": "r07_a",
@@ -3245,21 +3564,21 @@
         "opponent_deck_policy": "fixed",
         "fixed_god_id": "kharun",
         "fixed_deck": [
-          "portail_dos_n2",
+          "charognard_courbe_n2",
+          "colosse_rivete_n2",
+          "le_nud_hurlant_n2",
           "laffame_du_puits_n1",
-          "colosse_rivete_n1",
-          "carapace_vide_n3",
-          "fouisseur_aveugle_n1",
-          "ogre_a_deux_bouches_n2",
-          "heaume_errant_n2",
-          "avortons_des_caves_n3"
+          "ecorche_angle_n2",
+          "mordeur_des_combles_n2",
+          "le_bastion_fendu_n1",
+          "eclat_cuirasse_n2"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
         "max_power_tier": 3,
         "ai_profile": {
-          "precision": 0.57,
+          "precision": 0.51,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -3268,13 +3587,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 24,
-        "souls_max": 32,
+        "souls_min": 23,
+        "souls_max": 31,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "pre_legendary",
+      "balance_profile": "standard"
     },
     {
       "id": "r07_b",
@@ -3302,7 +3623,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 3,
         "ai_profile": {
-          "precision": 0.57,
+          "precision": 0.53,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -3311,13 +3632,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 24,
-        "souls_max": 32,
+        "souls_min": 23,
+        "souls_max": 31,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "pre_legendary",
+      "balance_profile": "standard"
     },
     {
       "id": "r07_m1",
@@ -3340,21 +3663,21 @@
         "opponent_deck_policy": "fixed",
         "fixed_god_id": "ilyr",
         "fixed_deck": [
-          "lil_empale_n2",
-          "le_drape_du_seuil_n1",
+          "le_sac_a_murmures_n1",
+          "echassier_des_brumes_n2",
+          "devoreur_de_lanternes_n1",
+          "laffame_du_puits_n1",
           "le_porte_visages_n1",
-          "la_gueule_sous_le_lit_n1",
-          "le_voyeur_n1",
-          "la_croisee_des_regards_n1",
-          "tricorne_errant_n3",
-          "perce_voute_n2"
+          "ogre_a_deux_bouches_n2",
+          "bouche_arbalete_n3",
+          "lil_empale_n1"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 4,
+        "max_power_tier": 3,
         "ai_profile": {
-          "precision": 0.79,
+          "precision": 0.56,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -3363,13 +3686,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 29,
-        "souls_max": 38,
+        "souls_min": 24,
+        "souls_max": 32,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "pre_legendary",
+      "balance_profile": "standard"
     },
     {
       "id": "r07_c",
@@ -3397,7 +3722,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 3,
         "ai_profile": {
-          "precision": 0.89,
+          "precision": 0.58,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -3406,13 +3731,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 28,
-        "souls_max": 36,
+        "souls_min": 24,
+        "souls_max": 32,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "pre_legendary",
+      "balance_profile": "standard"
     },
     {
       "id": "r07_d",
@@ -3440,7 +3767,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 3,
         "ai_profile": {
-          "precision": 0.89,
+          "precision": 0.6,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -3449,13 +3776,20 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 28,
-        "souls_max": 36,
-        "card_rewards": []
+        "souls_min": 24,
+        "souls_max": 32,
+        "card_rewards": [
+          {
+            "lineage_id": "fourmilion_des_nerfs",
+            "copies": 2
+          }
+        ]
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "pre_legendary",
+      "balance_profile": "standard"
     },
     {
       "id": "r07_m2",
@@ -3478,21 +3812,21 @@
         "opponent_deck_policy": "fixed",
         "fixed_god_id": "enigma",
         "fixed_deck": [
-          "pince_carcasse_n2",
-          "le_drape_du_seuil_n2",
-          "la_broyeuse_dempreintes_n1",
-          "ogre_droitier_n1",
-          "ogre_a_deux_bouches_n1",
-          "preleveur_de_plaques_n1",
+          "gueule_de_travers_n1",
+          "le_demonteur_n1",
+          "pince_carcasse_n3",
+          "chirurgien_dacier_n1",
+          "laffame_du_puits_n1",
+          "rampant_des_fosses_n1",
           "avortons_des_caves_n3",
-          "devoreur_de_lanternes_n2"
+          "le_sac_a_murmures_n3"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
         "max_power_tier": 3,
         "ai_profile": {
-          "precision": 0.13,
+          "precision": 0.63,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -3501,13 +3835,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 19,
-        "souls_max": 27,
+        "souls_min": 25,
+        "souls_max": 33,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "pre_legendary",
+      "balance_profile": "standard"
     },
     {
       "id": "r07_e",
@@ -3530,21 +3866,21 @@
         "opponent_deck_policy": "fixed",
         "fixed_god_id": "veskar",
         "fixed_deck": [
-          "ogre_droitier_n1",
-          "le_porte_visages_n2",
-          "tricorne_errant_n2",
-          "la_banque_vivante_n1",
-          "la_machine_a_malchance_n1",
-          "la_veuve_suspendue_n3",
-          "avortons_des_caves_n4",
-          "de_boiteux_n4"
+          "mache_mur_n2",
+          "valet_a_lenvers_n1",
+          "dos_fendu_n2",
+          "devoracle_n1",
+          "jumeau_de_cuivre_n1",
+          "roulette_vorace_n2",
+          "avortons_des_caves_n3",
+          "le_sac_a_murmures_n3"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 4,
+        "max_power_tier": 3,
         "ai_profile": {
-          "precision": 0.54,
+          "precision": 0.66,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -3553,13 +3889,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 26,
-        "souls_max": 35,
+        "souls_min": 25,
+        "souls_max": 33,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "pre_legendary",
+      "balance_profile": "standard"
     },
     {
       "id": "r07_f",
@@ -3582,21 +3920,21 @@
         "opponent_deck_policy": "fixed",
         "fixed_god_id": "nerava",
         "fixed_deck": [
-          "griffe_septique_n3",
-          "veuve_des_spores_n1",
+          "le_sac_a_murmures_n3",
+          "fouisseur_aveugle_n2",
+          "le_nud_hurlant_n1",
           "dos_fendu_n2",
-          "fouisseur_aveugle_n3",
-          "le_porte_cercueil_n2",
-          "le_voyeur_n1",
-          "le_nud_hurlant_n3",
-          "le_dernier_souffle_n1"
+          "sonneur_pestifere_n1",
+          "ronge_chair_n1",
+          "machoire_moisie_n3",
+          "ecorche_angle_n1"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 4,
+        "max_power_tier": 3,
         "ai_profile": {
-          "precision": 0.54,
+          "precision": 0.68,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -3605,13 +3943,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 26,
-        "souls_max": 35,
+        "souls_min": 25,
+        "souls_max": 33,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "pre_legendary",
+      "balance_profile": "standard"
     },
     {
       "id": "r07_gate",
@@ -3639,7 +3979,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 3,
         "ai_profile": {
-          "precision": 0.06,
+          "precision": 0.62,
           "anticipation": false
         },
         "series_format": "ft2",
@@ -3648,13 +3988,24 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 28,
-        "souls_max": 36,
-        "card_rewards": []
+        "souls_min": 34,
+        "souls_max": 42,
+        "card_rewards": [
+          {
+            "lineage_id": "la_dame_aux_deux_visages",
+            "copies": 3
+          },
+          {
+            "lineage_id": "la_machine_a_malchance",
+            "copies": 3
+          }
+        ]
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "pre_legendary",
+      "balance_profile": "required_boss"
     },
     {
       "id": "r08_entry",
@@ -3677,21 +4028,21 @@
         "opponent_deck_policy": "fixed",
         "fixed_god_id": "kharun",
         "fixed_deck": [
-          "le_sac_a_murmures_n2",
-          "fouisseur_aveugle_n2",
-          "osselet_blinde_n3",
-          "le_reliquaire_ambulant_n1",
-          "avortons_des_caves_n3",
-          "portail_dos_n2",
+          "avortons_des_caves_n1",
+          "gueule_de_travers_n3",
+          "colosse_rivete_n1",
+          "mille_gueules_n1",
+          "rampant_des_fosses_n3",
+          "le_bastion_fendu_n1",
           "devoreur_de_lanternes_n2",
-          "le_bastion_fendu_n1"
+          "golem_de_faience_n2"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
         "max_power_tier": 3,
         "ai_profile": {
-          "precision": 0.19,
+          "precision": 0.54,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -3700,13 +4051,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 19,
-        "souls_max": 27,
+        "souls_min": 23,
+        "souls_max": 31,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "legendary_intro",
+      "balance_profile": "standard"
     },
     {
       "id": "r08_a",
@@ -3732,9 +4085,9 @@
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 4,
+        "max_power_tier": 3,
         "ai_profile": {
-          "precision": 0.94,
+          "precision": 0.56,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -3743,13 +4096,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 31,
-        "souls_max": 40,
+        "souls_min": 24,
+        "souls_max": 32,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "legendary_intro",
+      "balance_profile": "standard"
     },
     {
       "id": "r08_b",
@@ -3772,21 +4127,21 @@
         "opponent_deck_policy": "fixed",
         "fixed_god_id": "ilyr",
         "fixed_deck": [
-          "la_veuve_suspendue_n2",
-          "pique_en_haut_n3",
-          "ogre_droitier_n2",
-          "mille_gueules_n2",
-          "le_sac_a_murmures_n2",
-          "fauche_fond_n4",
-          "avortons_des_caves_n4",
-          "veilleur_bifurque_n3"
+          "ecorche_angle_n1",
+          "devoreur_de_lanternes_n2",
+          "longuepine_n3",
+          "dos_fendu_n2",
+          "le_replie_n1",
+          "dard_de_traverse_n1",
+          "mille_gueules_n1",
+          "fauche_fond_n3"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 4,
+        "max_power_tier": 3,
         "ai_profile": {
-          "precision": 0.94,
+          "precision": 0.58,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -3795,13 +4150,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 31,
-        "souls_max": 40,
+        "souls_min": 24,
+        "souls_max": 32,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "legendary_intro",
+      "balance_profile": "standard"
     },
     {
       "id": "r08_c",
@@ -3827,9 +4184,9 @@
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 4,
+        "max_power_tier": 3,
         "ai_profile": {
-          "precision": 0.94,
+          "precision": 0.61,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -3838,13 +4195,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 31,
-        "souls_max": 40,
+        "souls_min": 24,
+        "souls_max": 32,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "legendary_intro",
+      "balance_profile": "standard"
     },
     {
       "id": "r08_a1",
@@ -3881,7 +4240,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 3,
         "ai_profile": {
-          "precision": 0.77,
+          "precision": 0.63,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -3890,13 +4249,20 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 26,
-        "souls_max": 34,
-        "card_rewards": []
+        "souls_min": 25,
+        "souls_max": 33,
+        "card_rewards": [
+          {
+            "lineage_id": "la_broyeuse_dempreintes",
+            "copies": 2
+          }
+        ]
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "legendary_intro",
+      "balance_profile": "standard"
     },
     {
       "id": "r08_b1",
@@ -3922,9 +4288,9 @@
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 3,
+        "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.77,
+          "precision": 0.65,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -3933,13 +4299,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 26,
-        "souls_max": 34,
+        "souls_min": 28,
+        "souls_max": 37,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "legendary_intro",
+      "balance_profile": "standard"
     },
     {
       "id": "r08_c1",
@@ -3962,21 +4330,21 @@
         "opponent_deck_policy": "fixed",
         "fixed_god_id": "veskar",
         "fixed_deck": [
-          "roulette_vorace_n2",
-          "ogre_droitier_n2",
-          "de_boiteux_n2",
-          "la_machine_a_malchance_n1",
+          "ecorche_angle_n3",
+          "jumeau_de_cuivre_n2",
+          "la_banque_vivante_n1",
           "le_porte_visages_n1",
-          "laffame_du_puits_n1",
-          "mordeur_des_combles_n2",
-          "griffe_a_jetons_n3"
+          "la_machine_a_malchance_n1",
+          "devoreur_de_lanternes_n3",
+          "roulette_vorace_n3",
+          "avortons_des_caves_n4"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 3,
+        "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.77,
+          "precision": 0.67,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -3985,13 +4353,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 26,
-        "souls_max": 34,
+        "souls_min": 28,
+        "souls_max": 37,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "legendary_intro",
+      "balance_profile": "standard"
     },
     {
       "id": "r08_m1",
@@ -4017,9 +4387,9 @@
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 3,
+        "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.74,
+          "precision": 0.7,
           "anticipation": false
         },
         "series_format": "ft2",
@@ -4028,13 +4398,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 26,
-        "souls_max": 34,
+        "souls_min": 28,
+        "souls_max": 37,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "legendary_intro",
+      "balance_profile": "standard"
     },
     {
       "id": "r08_m2",
@@ -4060,9 +4432,9 @@
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 3,
+        "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.74,
+          "precision": 0.72,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -4071,13 +4443,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 26,
-        "souls_max": 34,
+        "souls_min": 29,
+        "souls_max": 38,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "legendary_intro",
+      "balance_profile": "standard"
     },
     {
       "id": "r08_exit",
@@ -4114,7 +4488,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.88,
+          "precision": 0.74,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -4123,13 +4497,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 31,
-        "souls_max": 40,
+        "souls_min": 29,
+        "souls_max": 38,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "legendary_intro",
+      "balance_profile": "standard"
     },
     {
       "id": "r09_entry",
@@ -4152,21 +4528,21 @@
         "opponent_deck_policy": "fixed",
         "fixed_god_id": "ilyr",
         "fixed_deck": [
-          "ecorche_angle_n1",
-          "devoreur_de_lanternes_n2",
-          "longuepine_n3",
-          "dos_fendu_n2",
-          "le_replie_n1",
-          "dard_de_traverse_n1",
-          "mille_gueules_n1",
-          "fauche_fond_n3"
+          "lil_empale_n2",
+          "le_drape_du_seuil_n1",
+          "le_porte_visages_n1",
+          "la_gueule_sous_le_lit_n1",
+          "le_voyeur_n1",
+          "la_croisee_des_regards_n1",
+          "tricorne_errant_n3",
+          "perce_voute_n2"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 3,
+        "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.82,
+          "precision": 0.61,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -4176,12 +4552,14 @@
       },
       "rewards": {
         "souls_min": 27,
-        "souls_max": 35,
+        "souls_max": 36,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "legendary_game",
+      "balance_profile": "standard"
     },
     {
       "id": "r09_a",
@@ -4209,7 +4587,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.74,
+          "precision": 0.62,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -4218,13 +4596,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 29,
-        "souls_max": 38,
+        "souls_min": 27,
+        "souls_max": 36,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "legendary_game",
+      "balance_profile": "standard"
     },
     {
       "id": "r09_b",
@@ -4261,7 +4641,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.74,
+          "precision": 0.64,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -4270,13 +4650,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 29,
-        "souls_max": 38,
+        "souls_min": 28,
+        "souls_max": 37,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "legendary_game",
+      "balance_profile": "standard"
     },
     {
       "id": "r09_c",
@@ -4313,7 +4695,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.74,
+          "precision": 0.65,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -4322,13 +4704,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 29,
-        "souls_max": 38,
+        "souls_min": 28,
+        "souls_max": 37,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "legendary_game",
+      "balance_profile": "standard"
     },
     {
       "id": "r09_mini1",
@@ -4365,22 +4749,33 @@
         ],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.92,
-          "anticipation": true
+          "precision": 0.9,
+          "anticipation": false
         },
         "series_format": "ft2",
-        "seed_policy": "per_attempt",
+        "seed_policy": "fixed_per_node",
         "seed": 8219,
         "legacy_opponent_id": ""
       },
       "rewards": {
         "souls_min": 41,
         "souls_max": 50,
-        "card_rewards": []
+        "card_rewards": [
+          {
+            "lineage_id": "la_croisee_des_regards",
+            "copies": 1
+          },
+          {
+            "lineage_id": "le_traverse_nuit",
+            "copies": 1
+          }
+        ]
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "legendary_game",
+      "balance_profile": "challenge"
     },
     {
       "id": "r09_mini2",
@@ -4408,8 +4803,8 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.92,
-          "anticipation": true
+          "precision": 0.9,
+          "anticipation": false
         },
         "series_format": "ft2",
         "seed_policy": "per_attempt",
@@ -4419,11 +4814,22 @@
       "rewards": {
         "souls_min": 41,
         "souls_max": 50,
-        "card_rewards": []
+        "card_rewards": [
+          {
+            "lineage_id": "la_croisee_des_regards",
+            "copies": 1
+          },
+          {
+            "lineage_id": "le_traverse_nuit",
+            "copies": 1
+          }
+        ]
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "legendary_game",
+      "balance_profile": "challenge"
     },
     {
       "id": "r09_a1",
@@ -4460,7 +4866,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.86,
+          "precision": 0.67,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -4469,13 +4875,20 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 30,
-        "souls_max": 39,
-        "card_rewards": []
+        "souls_min": 28,
+        "souls_max": 37,
+        "card_rewards": [
+          {
+            "lineage_id": "la_dame_aux_deux_visages",
+            "copies": 2
+          }
+        ]
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "legendary_game",
+      "balance_profile": "standard"
     },
     {
       "id": "r09_b1",
@@ -4503,7 +4916,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.91,
+          "precision": 0.68,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -4512,13 +4925,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 31,
-        "souls_max": 40,
+        "souls_min": 28,
+        "souls_max": 37,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "legendary_game",
+      "balance_profile": "standard"
     },
     {
       "id": "r09_m",
@@ -4546,7 +4961,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.88,
+          "precision": 0.72,
           "anticipation": false
         },
         "series_format": "ft2",
@@ -4555,13 +4970,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 31,
-        "souls_max": 40,
+        "souls_min": 29,
+        "souls_max": 38,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "legendary_game",
+      "balance_profile": "standard"
     },
     {
       "id": "r09_exit",
@@ -4584,21 +5001,21 @@
         "opponent_deck_policy": "fixed",
         "fixed_god_id": "kharun",
         "fixed_deck": [
+          "colosse_rivete_n2",
+          "le_roi_des_oubliettes_n1",
+          "fouisseur_aveugle_n3",
           "carapace_vide_n2",
-          "osselet_blinde_n1",
-          "le_replie_n1",
-          "dos_fendu_n2",
-          "devoreur_de_lanternes_n2",
-          "golem_de_faience_n2",
-          "le_sac_a_murmures_n3",
-          "avortons_des_caves_n3"
+          "ogre_a_deux_bouches_n1",
+          "le_gardien_des_decombres_n1",
+          "le_sac_a_murmures_n1",
+          "mordeur_des_combles_n1"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 3,
+        "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.84,
+          "precision": 0.76,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -4607,13 +5024,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 27,
-        "souls_max": 35,
+        "souls_min": 29,
+        "souls_max": 38,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "legendary_game",
+      "balance_profile": "standard"
     },
     {
       "id": "r10_entry",
@@ -4650,7 +5069,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.91,
+          "precision": 0.68,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -4659,13 +5078,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 31,
-        "souls_max": 40,
+        "souls_min": 28,
+        "souls_max": 37,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "late_game",
+      "balance_profile": "standard"
     },
     {
       "id": "r10_a",
@@ -4688,21 +5109,21 @@
         "opponent_deck_policy": "fixed",
         "fixed_god_id": "sylkha",
         "fixed_deck": [
-          "la_veuve_suspendue_n2",
-          "rampant_des_fosses_n4",
-          "bourgeon_mordant_n3",
-          "tisse_griffe_n4",
-          "fourmilion_des_nerfs_n3",
-          "le_tisseur_de_meutes_n2",
-          "avortons_des_caves_n4",
-          "devoreur_de_lanternes_n3"
+          "la_nourrice_nouee_n2",
+          "mante_des_racines_n1",
+          "le_cur_de_la_colonie_n1",
+          "la_veuve_suspendue_n1",
+          "la_gueule_sous_le_lit_n1",
+          "tisse_griffe_n3",
+          "porte_nid_n3",
+          "rampant_des_fosses_n1"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.84,
+          "precision": 0.7,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -4711,13 +5132,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 30,
-        "souls_max": 39,
+        "souls_min": 28,
+        "souls_max": 37,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "late_game",
+      "balance_profile": "standard"
     },
     {
       "id": "r10_b",
@@ -4740,21 +5163,21 @@
         "opponent_deck_policy": "fixed",
         "fixed_god_id": "enigma",
         "fixed_deck": [
-          "la_gueule_sous_le_lit_n1",
-          "gueule_de_travers_n4",
-          "charognard_courbe_n1",
-          "pince_carcasse_n2",
-          "recycleur_thoracique_n2",
-          "le_replie_n2",
-          "devoreur_de_lanternes_n2",
-          "le_demonteur_n2"
+          "le_collecteur_zero_n1",
+          "le_replie_n1",
+          "dos_fendu_n2",
+          "la_machine_aux_mille_depouilles_n1",
+          "depeceur_rampant_n2",
+          "le_nud_hurlant_n2",
+          "avortons_des_caves_n4",
+          "le_sac_a_murmures_n4"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.84,
+          "precision": 0.71,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -4763,13 +5186,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 30,
-        "souls_max": 39,
+        "souls_min": 29,
+        "souls_max": 38,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "late_game",
+      "balance_profile": "standard"
     },
     {
       "id": "r10_c",
@@ -4797,7 +5222,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.84,
+          "precision": 0.73,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -4806,13 +5231,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 30,
-        "souls_max": 39,
+        "souls_min": 29,
+        "souls_max": 38,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "late_game",
+      "balance_profile": "standard"
     },
     {
       "id": "r10_a1",
@@ -4849,8 +5276,8 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.94,
-          "anticipation": true
+          "precision": 0.75,
+          "anticipation": false
         },
         "series_format": "ft1",
         "seed_policy": "fixed_per_node",
@@ -4858,13 +5285,20 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 31,
-        "souls_max": 40,
-        "card_rewards": []
+        "souls_min": 29,
+        "souls_max": 38,
+        "card_rewards": [
+          {
+            "lineage_id": "la_dame_aux_deux_visages",
+            "copies": 2
+          }
+        ]
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "late_game",
+      "balance_profile": "standard"
     },
     {
       "id": "r10_b1",
@@ -4892,8 +5326,8 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.94,
-          "anticipation": true
+          "precision": 0.77,
+          "anticipation": false
         },
         "series_format": "ft1",
         "seed_policy": "per_attempt",
@@ -4901,13 +5335,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 31,
-        "souls_max": 40,
+        "souls_min": 29,
+        "souls_max": 38,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "late_game",
+      "balance_profile": "standard"
     },
     {
       "id": "r10_m",
@@ -4944,7 +5380,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.84,
+          "precision": 0.82,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -4959,7 +5395,9 @@
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "late_game",
+      "balance_profile": "standard"
     },
     {
       "id": "r10_d",
@@ -4987,7 +5425,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.86,
+          "precision": 0.78,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -4996,13 +5434,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 30,
-        "souls_max": 39,
+        "souls_min": 29,
+        "souls_max": 38,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "late_game",
+      "balance_profile": "standard"
     },
     {
       "id": "r10_gate",
@@ -5030,7 +5470,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.91,
+          "precision": 0.82,
           "anticipation": false
         },
         "series_format": "ft2",
@@ -5039,13 +5479,24 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 41,
-        "souls_max": 50,
-        "card_rewards": []
+        "souls_min": 40,
+        "souls_max": 49,
+        "card_rewards": [
+          {
+            "lineage_id": "le_gardien_des_decombres",
+            "copies": 1
+          },
+          {
+            "lineage_id": "le_sarcophage_debout",
+            "copies": 1
+          }
+        ]
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "late_game",
+      "balance_profile": "required_boss"
     },
     {
       "id": "r10_mini",
@@ -5073,7 +5524,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.95,
+          "precision": 0.93,
           "anticipation": true
         },
         "series_format": "ft2",
@@ -5084,11 +5535,22 @@
       "rewards": {
         "souls_min": 41,
         "souls_max": 50,
-        "card_rewards": []
+        "card_rewards": [
+          {
+            "lineage_id": "la_cathedrale_malade",
+            "copies": 1
+          },
+          {
+            "lineage_id": "le_dernier_souffle",
+            "copies": 1
+          }
+        ]
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "late_game",
+      "balance_profile": "challenge"
     },
     {
       "id": "r11_entry",
@@ -5125,7 +5587,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.88,
+          "precision": 0.74,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -5134,13 +5596,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 31,
-        "souls_max": 40,
+        "souls_min": 29,
+        "souls_max": 38,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "late_game",
+      "balance_profile": "standard"
     },
     {
       "id": "r11_a",
@@ -5166,10 +5630,10 @@
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 3,
+        "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.93,
-          "anticipation": true
+          "precision": 0.76,
+          "anticipation": false
         },
         "series_format": "ft1",
         "seed_policy": "per_attempt",
@@ -5177,13 +5641,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 28,
-        "souls_max": 36,
+        "souls_min": 29,
+        "souls_max": 38,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "late_game",
+      "balance_profile": "standard"
     },
     {
       "id": "r11_b",
@@ -5209,10 +5675,10 @@
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 3,
+        "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.93,
-          "anticipation": true
+          "precision": 0.77,
+          "anticipation": false
         },
         "series_format": "ft1",
         "seed_policy": "per_attempt",
@@ -5220,13 +5686,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 28,
-        "souls_max": 36,
+        "souls_min": 29,
+        "souls_max": 38,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "late_game",
+      "balance_profile": "standard"
     },
     {
       "id": "r11_a1",
@@ -5249,21 +5717,21 @@
         "opponent_deck_policy": "fixed",
         "fixed_god_id": "sylkha",
         "fixed_deck": [
-          "la_nourrice_nouee_n2",
-          "mante_des_racines_n1",
-          "le_cur_de_la_colonie_n1",
-          "la_veuve_suspendue_n1",
-          "la_gueule_sous_le_lit_n1",
-          "tisse_griffe_n3",
           "porte_nid_n3",
-          "rampant_des_fosses_n1"
+          "le_replie_n1",
+          "mordeur_des_combles_n2",
+          "fourmilion_des_nerfs_n1",
+          "la_mante_cathedrale_n1",
+          "mache_mur_n3",
+          "larve_dancrage_n3",
+          "devoreur_de_lanternes_n1"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.84,
+          "precision": 0.79,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -5272,13 +5740,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 30,
-        "souls_max": 39,
+        "souls_min": 29,
+        "souls_max": 38,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "late_game",
+      "balance_profile": "standard"
     },
     {
       "id": "r11_a2",
@@ -5306,7 +5776,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.84,
+          "precision": 0.8,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -5321,7 +5791,9 @@
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "late_game",
+      "balance_profile": "standard"
     },
     {
       "id": "r11_b1",
@@ -5358,7 +5830,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.84,
+          "precision": 0.82,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -5369,11 +5841,18 @@
       "rewards": {
         "souls_min": 30,
         "souls_max": 39,
-        "card_rewards": []
+        "card_rewards": [
+          {
+            "lineage_id": "la_dame_aux_deux_visages",
+            "copies": 2
+          }
+        ]
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "late_game",
+      "balance_profile": "standard"
     },
     {
       "id": "r11_b2",
@@ -5401,7 +5880,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.84,
+          "precision": 0.83,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -5416,7 +5895,9 @@
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "late_game",
+      "balance_profile": "standard"
     },
     {
       "id": "r11_m",
@@ -5439,21 +5920,21 @@
         "opponent_deck_policy": "fixed",
         "fixed_god_id": "nerava",
         "fixed_deck": [
-          "ogre_droitier_n2",
-          "le_precheur_des_fievres_n1",
-          "ecorche_angle_n3",
-          "devoreur_de_lanternes_n2",
-          "machoire_moisie_n3",
+          "le_dernier_souffle_n1",
+          "dos_fendu_n3",
           "le_voyeur_n1",
-          "laffame_du_puits_n1",
-          "sonneur_pestifere_n3"
+          "fouisseur_aveugle_n1",
+          "machoire_moisie_n2",
+          "le_precheur_des_fievres_n2",
+          "ogre_a_deux_bouches_n2",
+          "laffame_du_puits_n1"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.89,
+          "precision": 0.84,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -5462,13 +5943,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 31,
-        "souls_max": 40,
+        "souls_min": 30,
+        "souls_max": 39,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "late_game",
+      "balance_profile": "standard"
     },
     {
       "id": "r11_mini",
@@ -5505,24 +5988,33 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.95,
+          "precision": 0.96,
           "anticipation": true
         },
         "series_format": "ft2",
-        "seed_policy": "per_attempt",
+        "seed_policy": "fixed_per_node",
         "seed": 9107,
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 41,
-        "souls_max": 50,
+        "souls_min": 42,
+        "souls_max": 51,
         "card_rewards": [
-          "carapace_vide_n4"
+          {
+            "lineage_id": "le_gardien_des_decombres",
+            "copies": 1
+          },
+          {
+            "lineage_id": "le_sarcophage_debout",
+            "copies": 1
+          }
         ]
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "late_game",
+      "balance_profile": "challenge"
     },
     {
       "id": "r11_exit",
@@ -5559,8 +6051,8 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.96,
-          "anticipation": true
+          "precision": 0.86,
+          "anticipation": false
         },
         "series_format": "ft1",
         "seed_policy": "fixed_per_node",
@@ -5568,13 +6060,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 32,
-        "souls_max": 41,
+        "souls_min": 30,
+        "souls_max": 39,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "late_game",
+      "balance_profile": "standard"
     },
     {
       "id": "r12_entry",
@@ -5611,7 +6105,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.84,
+          "precision": 0.8,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -5626,7 +6120,9 @@
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "endgame",
+      "balance_profile": "standard"
     },
     {
       "id": "r12_a",
@@ -5663,7 +6159,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.84,
+          "precision": 0.81,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -5678,7 +6174,9 @@
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "endgame",
+      "balance_profile": "standard"
     },
     {
       "id": "r12_b",
@@ -5706,7 +6204,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.84,
+          "precision": 0.82,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -5721,7 +6219,9 @@
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "endgame",
+      "balance_profile": "standard"
     },
     {
       "id": "r12_c",
@@ -5744,21 +6244,21 @@
         "opponent_deck_policy": "fixed",
         "fixed_god_id": "enigma",
         "fixed_deck": [
+          "pince_carcasse_n2",
+          "gueule_de_travers_n2",
+          "rampant_des_fosses_n2",
+          "chirurgien_dacier_n1",
+          "preleveur_de_plaques_n2",
           "le_roi_des_oubliettes_n1",
-          "charognard_courbe_n1",
-          "le_demonteur_n1",
-          "fouisseur_aveugle_n2",
-          "chirurgien_dacier_n2",
-          "ogre_droitier_n3",
-          "porte_greffes_n3",
-          "gueule_de_travers_n3"
+          "la_veuve_suspendue_n2",
+          "devoreur_de_lanternes_n3"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.84,
+          "precision": 0.83,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -5773,7 +6273,9 @@
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "endgame",
+      "balance_profile": "standard"
     },
     {
       "id": "r12_a1",
@@ -5816,7 +6318,9 @@
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "endgame",
+      "balance_profile": "standard"
     },
     {
       "id": "r12_a2",
@@ -5844,7 +6348,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.84,
+          "precision": 0.85,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -5855,11 +6359,18 @@
       "rewards": {
         "souls_min": 30,
         "souls_max": 39,
-        "card_rewards": []
+        "card_rewards": [
+          {
+            "lineage_id": "la_dame_aux_deux_visages",
+            "copies": 2
+          }
+        ]
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "endgame",
+      "balance_profile": "standard"
     },
     {
       "id": "r12_b1",
@@ -5887,7 +6398,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.84,
+          "precision": 0.86,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -5902,7 +6413,9 @@
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "endgame",
+      "balance_profile": "standard"
     },
     {
       "id": "r12_b2",
@@ -5930,7 +6443,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.89,
+          "precision": 0.87,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -5939,13 +6452,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 31,
-        "souls_max": 40,
+        "souls_min": 30,
+        "souls_max": 39,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "endgame",
+      "balance_profile": "standard"
     },
     {
       "id": "r12_c1",
@@ -5973,7 +6488,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.89,
+          "precision": 0.88,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -5988,7 +6503,9 @@
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "endgame",
+      "balance_profile": "standard"
     },
     {
       "id": "r12_m",
@@ -6011,22 +6528,22 @@
         "opponent_deck_policy": "fixed",
         "fixed_god_id": "kharun",
         "fixed_deck": [
-          "devoreur_de_lanternes_n1",
-          "eclat_cuirasse_n2",
-          "le_reliquaire_ambulant_n1",
-          "colosse_rivete_n1",
-          "mille_gueules_n1",
-          "chevalier_sans_visage_n2",
-          "golem_de_faience_n1",
-          "le_sac_a_murmures_n3"
+          "le_porte_visages_n1",
+          "eclat_cuirasse_n1",
+          "mille_gueules_n2",
+          "le_replie_n1",
+          "le_reliquaire_ambulant_n2",
+          "le_sac_a_murmures_n3",
+          "colosse_rivete_n2",
+          "avortons_des_caves_n4"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 3,
+        "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.96,
-          "anticipation": true
+          "precision": 0.9,
+          "anticipation": false
         },
         "series_format": "ft2",
         "seed_policy": "fixed_per_node",
@@ -6034,13 +6551,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 29,
-        "souls_max": 37,
+        "souls_min": 31,
+        "souls_max": 40,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "endgame",
+      "balance_profile": "standard"
     },
     {
       "id": "choice_01",
@@ -6066,9 +6585,9 @@
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 3,
+        "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.5,
+          "precision": 0.91,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -6077,13 +6596,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 23,
-        "souls_max": 31,
+        "souls_min": 31,
+        "souls_max": 40,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "endgame",
+      "balance_profile": "standard"
     },
     {
       "id": "ilyr_02",
@@ -6111,7 +6632,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.75,
+          "precision": 0.92,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -6120,13 +6641,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 29,
-        "souls_max": 38,
+        "souls_min": 31,
+        "souls_max": 40,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "endgame",
+      "balance_profile": "standard"
     },
     {
       "id": "sylkha_02",
@@ -6163,8 +6686,8 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.75,
-          "anticipation": false
+          "precision": 0.94,
+          "anticipation": true
         },
         "series_format": "ft1",
         "seed_policy": "fixed_per_node",
@@ -6172,13 +6695,24 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 29,
-        "souls_max": 38,
-        "card_rewards": []
+        "souls_min": 31,
+        "souls_max": 40,
+        "card_rewards": [
+          {
+            "lineage_id": "la_nourrice_nouee",
+            "copies": 1
+          },
+          {
+            "lineage_id": "le_tisseur_de_meutes",
+            "copies": 1
+          }
+        ]
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "endgame",
+      "balance_profile": "standard"
     },
     {
       "id": "mini_optional_02",
@@ -6219,7 +6753,7 @@
           "anticipation": true
         },
         "series_format": "ft2",
-        "seed_policy": "per_attempt",
+        "seed_policy": "fixed_per_node",
         "seed": 9662,
         "legacy_opponent_id": ""
       },
@@ -6227,12 +6761,21 @@
         "souls_min": 42,
         "souls_max": 51,
         "card_rewards": [
-          "collecteur_de_dents_n3"
+          {
+            "lineage_id": "la_machine_aux_mille_depouilles",
+            "copies": 1
+          },
+          {
+            "lineage_id": "le_collecteur_zero",
+            "copies": 1
+          }
         ]
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "endgame",
+      "balance_profile": "challenge"
     },
     {
       "id": "final_01",
@@ -6271,11 +6814,22 @@
       "rewards": {
         "souls_min": 50,
         "souls_max": 59,
-        "card_rewards": []
+        "card_rewards": [
+          {
+            "lineage_id": "la_machine_aux_mille_depouilles",
+            "copies": 1
+          },
+          {
+            "lineage_id": "le_collecteur_zero",
+            "copies": 1
+          }
+        ]
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "endgame",
+      "balance_profile": "boss"
     },
     {
       "id": "mini_optional_02_path_1",
@@ -6298,21 +6852,21 @@
         "opponent_deck_policy": "fixed",
         "fixed_god_id": "enigma",
         "fixed_deck": [
-          "charognard_courbe_n1",
+          "scie_boiteuse_n2",
+          "chirurgien_dacier_n2",
+          "ogre_droitier_n2",
           "la_broyeuse_dempreintes_n1",
-          "mordeur_des_combles_n3",
-          "mille_gueules_n1",
-          "le_sac_a_murmures_n3",
-          "fouisseur_aveugle_n2",
-          "porte_greffes_n2",
-          "depeceur_rampant_n3"
+          "devoreur_de_lanternes_n2",
+          "le_demonteur_n2",
+          "la_machine_aux_mille_depouilles_n1",
+          "avortons_des_caves_n4"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 3,
+        "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.75,
+          "precision": 0.88,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -6321,13 +6875,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 26,
-        "souls_max": 34,
+        "souls_min": 31,
+        "souls_max": 40,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "endgame",
+      "balance_profile": "challenge"
     },
     {
       "id": "mini_optional_02_path_2",
@@ -6350,21 +6906,21 @@
         "opponent_deck_policy": "fixed",
         "fixed_god_id": "enigma",
         "fixed_deck": [
-          "le_demonteur_n1",
-          "devoreur_de_lanternes_n2",
-          "fouisseur_aveugle_n2",
+          "porte_greffes_n1",
+          "charognard_courbe_n1",
+          "la_broyeuse_dempreintes_n2",
+          "rampant_des_fosses_n2",
           "preleveur_de_plaques_n2",
-          "le_sac_a_murmures_n3",
-          "porte_greffes_n2",
-          "avortons_des_caves_n3",
-          "la_broyeuse_dempreintes_n1"
+          "ecorche_angle_n4",
+          "ogre_a_deux_bouches_n2",
+          "devoreur_de_lanternes_n3"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 3,
+        "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.8,
+          "precision": 0.9,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -6373,13 +6929,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 27,
-        "souls_max": 35,
+        "souls_min": 31,
+        "souls_max": 40,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "endgame",
+      "balance_profile": "challenge"
     },
     {
       "id": "mini_optional_02_path_3",
@@ -6390,58 +6948,6 @@
       "position": {
         "x": 980,
         "y": 18780
-      },
-      "dead_end": false,
-      "mini_boss_kind": "",
-      "tutorial_id": "",
-      "theme_god_id": "enigma",
-      "accent": "#ef8b45",
-      "encounter": {
-        "game_mode": "classic",
-        "opponent_god_policy": "fixed",
-        "opponent_deck_policy": "fixed",
-        "fixed_god_id": "enigma",
-        "fixed_deck": [
-          "collecteur_de_dents_n1",
-          "tricorne_errant_n1",
-          "preleveur_de_plaques_n1",
-          "pince_carcasse_n3",
-          "avortons_des_caves_n3",
-          "chirurgien_dacier_n2",
-          "le_sac_a_murmures_n3",
-          "devoreur_de_lanternes_n2"
-        ],
-        "generator_god_id": "",
-        "generator_min_god_cards": 0,
-        "mirror_fixed_deck": [],
-        "max_power_tier": 3,
-        "ai_profile": {
-          "precision": 0.85,
-          "anticipation": false
-        },
-        "series_format": "ft1",
-        "seed_policy": "fixed_per_node",
-        "seed": 9810,
-        "legacy_opponent_id": ""
-      },
-      "rewards": {
-        "souls_min": 27,
-        "souls_max": 35,
-        "card_rewards": []
-      },
-      "visual": {
-        "scale": 1.0
-      }
-    },
-    {
-      "id": "mini_optional_02_path_4",
-      "name": "Le Cabinet des Peaux",
-      "chapter": "Cime",
-      "region": "Les Assimilateurs",
-      "type": "normal",
-      "position": {
-        "x": 940,
-        "y": 19020
       },
       "dead_end": false,
       "mini_boss_kind": "",
@@ -6468,7 +6974,61 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.9,
+          "precision": 0.92,
+          "anticipation": true
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 9810,
+        "legacy_opponent_id": ""
+      },
+      "rewards": {
+        "souls_min": 31,
+        "souls_max": 40,
+        "card_rewards": []
+      },
+      "visual": {
+        "scale": 1.0
+      },
+      "stage_id": "endgame",
+      "balance_profile": "challenge"
+    },
+    {
+      "id": "mini_optional_02_path_4",
+      "name": "Le Cabinet des Peaux",
+      "chapter": "Cime",
+      "region": "Les Assimilateurs",
+      "type": "normal",
+      "position": {
+        "x": 940,
+        "y": 19020
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "enigma",
+      "accent": "#ef8b45",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "enigma",
+        "fixed_deck": [
+          "la_broyeuse_dempreintes_n1",
+          "mille_gueules_n2",
+          "le_collecteur_zero_n1",
+          "scie_boiteuse_n2",
+          "chirurgien_dacier_n2",
+          "la_gueule_sous_le_lit_n1",
+          "rampant_des_fosses_n3",
+          "avortons_des_caves_n4"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.94,
           "anticipation": true
         },
         "series_format": "ft1",
@@ -6479,11 +7039,18 @@
       "rewards": {
         "souls_min": 31,
         "souls_max": 40,
-        "card_rewards": []
+        "card_rewards": [
+          {
+            "lineage_id": "la_broyeuse_dempreintes",
+            "copies": 2
+          }
+        ]
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "endgame",
+      "balance_profile": "challenge"
     },
     {
       "id": "mini_optional_02_path_5",
@@ -6506,21 +7073,21 @@
         "opponent_deck_policy": "fixed",
         "fixed_god_id": "enigma",
         "fixed_deck": [
-          "le_collecteur_zero_n1",
-          "le_replie_n1",
-          "dos_fendu_n2",
+          "le_nud_hurlant_n1",
           "la_machine_aux_mille_depouilles_n1",
-          "depeceur_rampant_n2",
-          "le_nud_hurlant_n2",
+          "collecteur_de_dents_n1",
+          "la_broyeuse_dempreintes_n1",
+          "laffame_du_puits_n1",
+          "le_sac_a_murmures_n3",
           "avortons_des_caves_n4",
-          "le_sac_a_murmures_n4"
+          "devoreur_de_lanternes_n3"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.95,
+          "precision": 0.96,
           "anticipation": true
         },
         "series_format": "ft1",
@@ -6529,13 +7096,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 31,
-        "souls_max": 40,
+        "souls_min": 32,
+        "souls_max": 41,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "endgame",
+      "balance_profile": "challenge"
     },
     {
       "id": "r11_mini_path_1",
@@ -6546,162 +7115,6 @@
       "position": {
         "x": 100,
         "y": 16520
-      },
-      "dead_end": false,
-      "mini_boss_kind": "",
-      "tutorial_id": "",
-      "theme_god_id": "kharun",
-      "accent": "#72c7d8",
-      "encounter": {
-        "game_mode": "classic",
-        "opponent_god_policy": "fixed",
-        "opponent_deck_policy": "fixed",
-        "fixed_god_id": "kharun",
-        "fixed_deck": [
-          "dos_fendu_n2",
-          "eclat_cuirasse_n1",
-          "le_nud_hurlant_n2",
-          "laffame_du_puits_n1",
-          "chevalier_sans_visage_n2",
-          "le_sac_a_murmures_n3",
-          "avortons_des_caves_n3",
-          "colosse_rivete_n2"
-        ],
-        "generator_god_id": "",
-        "generator_min_god_cards": 0,
-        "mirror_fixed_deck": [],
-        "max_power_tier": 3,
-        "ai_profile": {
-          "precision": 0.7,
-          "anticipation": false
-        },
-        "series_format": "ft1",
-        "seed_policy": "fixed_per_node",
-        "seed": 9921,
-        "legacy_opponent_id": ""
-      },
-      "rewards": {
-        "souls_min": 25,
-        "souls_max": 33,
-        "card_rewards": []
-      },
-      "visual": {
-        "scale": 1.0
-      }
-    },
-    {
-      "id": "r11_mini_path_2",
-      "name": "Le Mur des Cendres",
-      "chapter": "Les Jardins de Cendre",
-      "region": "Les Cendres",
-      "type": "normal",
-      "position": {
-        "x": 100,
-        "y": 16760
-      },
-      "dead_end": false,
-      "mini_boss_kind": "",
-      "tutorial_id": "",
-      "theme_god_id": "kharun",
-      "accent": "#72c7d8",
-      "encounter": {
-        "game_mode": "classic",
-        "opponent_god_policy": "fixed",
-        "opponent_deck_policy": "fixed",
-        "fixed_god_id": "kharun",
-        "fixed_deck": [
-          "rampant_des_fosses_n2",
-          "le_porte_visages_n1",
-          "chevalier_sans_visage_n1",
-          "osselet_blinde_n2",
-          "laffame_du_puits_n1",
-          "ogre_a_deux_bouches_n2",
-          "le_sac_a_murmures_n3",
-          "colosse_rivete_n2"
-        ],
-        "generator_god_id": "",
-        "generator_min_god_cards": 0,
-        "mirror_fixed_deck": [],
-        "max_power_tier": 3,
-        "ai_profile": {
-          "precision": 0.77,
-          "anticipation": false
-        },
-        "series_format": "ft1",
-        "seed_policy": "fixed_per_node",
-        "seed": 9958,
-        "legacy_opponent_id": ""
-      },
-      "rewards": {
-        "souls_min": 26,
-        "souls_max": 34,
-        "card_rewards": []
-      },
-      "visual": {
-        "scale": 1.0
-      }
-    },
-    {
-      "id": "r11_mini_path_3",
-      "name": "La Forge Éteinte",
-      "chapter": "Les Jardins de Cendre",
-      "region": "Les Cendres",
-      "type": "normal",
-      "position": {
-        "x": 100,
-        "y": 17000
-      },
-      "dead_end": false,
-      "mini_boss_kind": "",
-      "tutorial_id": "",
-      "theme_god_id": "kharun",
-      "accent": "#72c7d8",
-      "encounter": {
-        "game_mode": "classic",
-        "opponent_god_policy": "fixed",
-        "opponent_deck_policy": "fixed",
-        "fixed_god_id": "kharun",
-        "fixed_deck": [
-          "le_roi_des_oubliettes_n1",
-          "le_bastion_fendu_n1",
-          "heaume_errant_n3",
-          "tricorne_errant_n2",
-          "mille_gueules_n2",
-          "le_porte_visages_n2",
-          "le_sac_a_murmures_n3",
-          "colosse_rivete_n2"
-        ],
-        "generator_god_id": "",
-        "generator_min_god_cards": 0,
-        "mirror_fixed_deck": [],
-        "max_power_tier": 4,
-        "ai_profile": {
-          "precision": 0.83,
-          "anticipation": false
-        },
-        "series_format": "ft1",
-        "seed_policy": "fixed_per_node",
-        "seed": 9995,
-        "legacy_opponent_id": ""
-      },
-      "rewards": {
-        "souls_min": 30,
-        "souls_max": 39,
-        "card_rewards": []
-      },
-      "visual": {
-        "scale": 1.0
-      }
-    },
-    {
-      "id": "r11_mini_path_4",
-      "name": "Le Chemin des Carapaces",
-      "chapter": "Les Jardins de Cendre",
-      "region": "Les Cendres",
-      "type": "normal",
-      "position": {
-        "x": 100,
-        "y": 17240
       },
       "dead_end": false,
       "mini_boss_kind": "",
@@ -6728,8 +7141,179 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
+          "precision": 0.86,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 9921,
+        "legacy_opponent_id": ""
+      },
+      "rewards": {
+        "souls_min": 30,
+        "souls_max": 39,
+        "card_rewards": []
+      },
+      "visual": {
+        "scale": 1.0
+      },
+      "stage_id": "late_game",
+      "balance_profile": "challenge"
+    },
+    {
+      "id": "r11_mini_path_2",
+      "name": "Le Mur des Cendres",
+      "chapter": "Les Jardins de Cendre",
+      "region": "Les Cendres",
+      "type": "normal",
+      "position": {
+        "x": 100,
+        "y": 16760
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "kharun",
+      "accent": "#72c7d8",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "kharun",
+        "fixed_deck": [
+          "ecorche_angle_n4",
+          "heaume_errant_n4",
+          "osselet_blinde_n4",
+          "le_drape_du_seuil_n2",
+          "eclat_cuirasse_n4",
+          "rampant_des_fosses_n4",
+          "golem_de_faience_n2",
+          "devoreur_de_lanternes_n3"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.88,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 9958,
+        "legacy_opponent_id": ""
+      },
+      "rewards": {
+        "souls_min": 31,
+        "souls_max": 40,
+        "card_rewards": [
+          {
+            "lineage_id": "le_bastion_fendu",
+            "copies": 1
+          },
+          {
+            "lineage_id": "le_reliquaire_ambulant",
+            "copies": 1
+          }
+        ]
+      },
+      "visual": {
+        "scale": 1.0
+      },
+      "stage_id": "late_game",
+      "balance_profile": "challenge"
+    },
+    {
+      "id": "r11_mini_path_3",
+      "name": "La Forge Éteinte",
+      "chapter": "Les Jardins de Cendre",
+      "region": "Les Cendres",
+      "type": "normal",
+      "position": {
+        "x": 100,
+        "y": 17000
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "kharun",
+      "accent": "#72c7d8",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "kharun",
+        "fixed_deck": [
+          "mordeur_des_combles_n2",
+          "carapace_vide_n1",
+          "le_roi_des_oubliettes_n1",
+          "mache_mur_n4",
+          "colosse_rivete_n2",
+          "le_bastion_fendu_n2",
+          "avortons_des_caves_n4",
+          "devoreur_de_lanternes_n3"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
           "precision": 0.9,
-          "anticipation": true
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 9995,
+        "legacy_opponent_id": ""
+      },
+      "rewards": {
+        "souls_min": 31,
+        "souls_max": 40,
+        "card_rewards": []
+      },
+      "visual": {
+        "scale": 1.0
+      },
+      "stage_id": "late_game",
+      "balance_profile": "challenge"
+    },
+    {
+      "id": "r11_mini_path_4",
+      "name": "Le Chemin des Carapaces",
+      "chapter": "Les Jardins de Cendre",
+      "region": "Les Cendres",
+      "type": "normal",
+      "position": {
+        "x": 100,
+        "y": 17240
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "kharun",
+      "accent": "#72c7d8",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "kharun",
+        "fixed_deck": [
+          "le_roi_des_oubliettes_n1",
+          "le_bastion_fendu_n1",
+          "heaume_errant_n3",
+          "tricorne_errant_n2",
+          "mille_gueules_n2",
+          "le_porte_visages_n2",
+          "le_sac_a_murmures_n3",
+          "colosse_rivete_n2"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.92,
+          "anticipation": false
         },
         "series_format": "ft1",
         "seed_policy": "fixed_per_node",
@@ -6743,7 +7327,9 @@
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "late_game",
+      "balance_profile": "challenge"
     },
     {
       "id": "r10_mini_path_1",
@@ -6769,9 +7355,9 @@
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 3,
+        "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.7,
+          "precision": 0.83,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -6780,13 +7366,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 25,
-        "souls_max": 33,
+        "souls_min": 30,
+        "souls_max": 39,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "late_game",
+      "balance_profile": "challenge"
     },
     {
       "id": "r10_mini_path_2",
@@ -6812,9 +7400,9 @@
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 3,
+        "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.77,
+          "precision": 0.85,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -6823,13 +7411,24 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 26,
-        "souls_max": 34,
-        "card_rewards": []
+        "souls_min": 30,
+        "souls_max": 39,
+        "card_rewards": [
+          {
+            "lineage_id": "le_porte_cercueil",
+            "copies": 1
+          },
+          {
+            "lineage_id": "le_precheur_des_fievres",
+            "copies": 1
+          }
+        ]
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "late_game",
+      "balance_profile": "challenge"
     },
     {
       "id": "r10_mini_path_3",
@@ -6857,7 +7456,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.83,
+          "precision": 0.87,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -6872,7 +7471,9 @@
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "late_game",
+      "balance_profile": "challenge"
     },
     {
       "id": "r10_mini_path_4",
@@ -6900,8 +7501,8 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.9,
-          "anticipation": true
+          "precision": 0.89,
+          "anticipation": false
         },
         "series_format": "ft1",
         "seed_policy": "per_attempt",
@@ -6915,7 +7516,9 @@
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "late_game",
+      "balance_profile": "challenge"
     },
     {
       "id": "r09_mini1_path_1",
@@ -6941,9 +7544,9 @@
         "generator_god_id": "ilyr",
         "generator_min_god_cards": 7,
         "mirror_fixed_deck": [],
-        "max_power_tier": 3,
+        "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.67,
+          "precision": 0.8,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -6952,13 +7555,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 25,
-        "souls_max": 33,
+        "souls_min": 30,
+        "souls_max": 39,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "legendary_game",
+      "balance_profile": "challenge"
     },
     {
       "id": "r09_mini1_path_2",
@@ -6984,9 +7589,9 @@
         "generator_god_id": "ilyr",
         "generator_min_god_cards": 7,
         "mirror_fixed_deck": [],
-        "max_power_tier": 3,
+        "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.74,
+          "precision": 0.82,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -6995,13 +7600,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 26,
-        "souls_max": 34,
+        "souls_min": 30,
+        "souls_max": 39,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "legendary_game",
+      "balance_profile": "challenge"
     },
     {
       "id": "r09_mini1_path_3",
@@ -7029,7 +7636,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.8,
+          "precision": 0.84,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -7044,7 +7651,9 @@
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "legendary_game",
+      "balance_profile": "challenge"
     },
     {
       "id": "r09_mini1_path_4",
@@ -7072,7 +7681,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.87,
+          "precision": 0.86,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -7087,7 +7696,9 @@
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "legendary_game",
+      "balance_profile": "challenge"
     },
     {
       "id": "r09_mini2_path_1",
@@ -7113,9 +7724,9 @@
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 3,
+        "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.67,
+          "precision": 0.8,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -7124,13 +7735,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 25,
-        "souls_max": 33,
+        "souls_min": 30,
+        "souls_max": 39,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "legendary_game",
+      "balance_profile": "challenge"
     },
     {
       "id": "r09_mini2_path_2",
@@ -7156,9 +7769,9 @@
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 3,
+        "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.74,
+          "precision": 0.82,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -7167,13 +7780,24 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 26,
-        "souls_max": 34,
-        "card_rewards": []
+        "souls_min": 30,
+        "souls_max": 39,
+        "card_rewards": [
+          {
+            "lineage_id": "le_guetteur_trifide",
+            "copies": 1
+          },
+          {
+            "lineage_id": "lil_empale",
+            "copies": 1
+          }
+        ]
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "legendary_game",
+      "balance_profile": "challenge"
     },
     {
       "id": "r09_mini2_path_3",
@@ -7201,7 +7825,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.8,
+          "precision": 0.84,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -7216,7 +7840,9 @@
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "legendary_game",
+      "balance_profile": "challenge"
     },
     {
       "id": "r09_mini2_path_4",
@@ -7244,7 +7870,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 4,
         "ai_profile": {
-          "precision": 0.87,
+          "precision": 0.86,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -7259,7 +7885,9 @@
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "legendary_game",
+      "balance_profile": "challenge"
     },
     {
       "id": "r06_mini_path_1",
@@ -7285,9 +7913,9 @@
         "generator_god_id": "sylkha",
         "generator_min_god_cards": 8,
         "mirror_fixed_deck": [],
-        "max_power_tier": 2,
+        "max_power_tier": 3,
         "ai_profile": {
-          "precision": 0.65,
+          "precision": 0.67,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -7296,13 +7924,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 22,
-        "souls_max": 29,
+        "souls_min": 25,
+        "souls_max": 33,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "epic_game",
+      "balance_profile": "challenge"
     },
     {
       "id": "r06_mini_path_2",
@@ -7328,9 +7958,9 @@
         "generator_god_id": "sylkha",
         "generator_min_god_cards": 8,
         "mirror_fixed_deck": [],
-        "max_power_tier": 2,
+        "max_power_tier": 3,
         "ai_profile": {
-          "precision": 0.75,
+          "precision": 0.69,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -7339,13 +7969,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 23,
-        "souls_max": 30,
+        "souls_min": 25,
+        "souls_max": 33,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "epic_game",
+      "balance_profile": "challenge"
     },
     {
       "id": "r06_mini_path_3",
@@ -7373,7 +8005,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 3,
         "ai_profile": {
-          "precision": 0.85,
+          "precision": 0.71,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -7382,13 +8014,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 27,
-        "souls_max": 35,
+        "souls_min": 26,
+        "souls_max": 34,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "epic_game",
+      "balance_profile": "challenge"
     },
     {
       "id": "r05_mini_path_1",
@@ -7416,7 +8050,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 3,
         "ai_profile": {
-          "precision": 0.63,
+          "precision": 0.6,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -7425,13 +8059,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 25,
-        "souls_max": 33,
+        "souls_min": 24,
+        "souls_max": 32,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "epic_intro",
+      "balance_profile": "challenge"
     },
     {
       "id": "r05_mini_path_2",
@@ -7459,7 +8095,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 3,
         "ai_profile": {
-          "precision": 0.73,
+          "precision": 0.62,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -7468,13 +8104,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 26,
-        "souls_max": 34,
+        "souls_min": 24,
+        "souls_max": 32,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "epic_intro",
+      "balance_profile": "challenge"
     },
     {
       "id": "r05_mini_path_3",
@@ -7500,9 +8138,9 @@
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 4,
+        "max_power_tier": 3,
         "ai_profile": {
-          "precision": 0.83,
+          "precision": 0.64,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -7511,13 +8149,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 30,
-        "souls_max": 39,
+        "souls_min": 25,
+        "souls_max": 33,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "epic_intro",
+      "balance_profile": "challenge"
     },
     {
       "id": "r04_mini_path_1",
@@ -7528,58 +8168,6 @@
       "position": {
         "x": 980,
         "y": 5980
-      },
-      "dead_end": false,
-      "mini_boss_kind": "",
-      "tutorial_id": "",
-      "theme_god_id": "sylkha",
-      "accent": "#7fc95b",
-      "encounter": {
-        "game_mode": "classic",
-        "opponent_god_policy": "fixed",
-        "opponent_deck_policy": "fixed",
-        "fixed_god_id": "sylkha",
-        "fixed_deck": [
-          "mante_des_racines_n1",
-          "tisse_griffe_n1",
-          "porte_nid_n1",
-          "fouisseur_aveugle_n1",
-          "ogre_droitier_n2",
-          "le_sac_a_murmures_n2",
-          "dos_fendu_n1",
-          "ogre_a_deux_bouches_n1"
-        ],
-        "generator_god_id": "",
-        "generator_min_god_cards": 0,
-        "mirror_fixed_deck": [],
-        "max_power_tier": 2,
-        "ai_profile": {
-          "precision": 0.6,
-          "anticipation": false
-        },
-        "series_format": "ft1",
-        "seed_policy": "fixed_per_node",
-        "seed": 10735,
-        "legacy_opponent_id": ""
-      },
-      "rewards": {
-        "souls_min": 21,
-        "souls_max": 28,
-        "card_rewards": []
-      },
-      "visual": {
-        "scale": 1.0
-      }
-    },
-    {
-      "id": "r04_mini_path_2",
-      "name": "Le Nid des Soufflets",
-      "chapter": "Les Forges Basses",
-      "region": "Les Souffles",
-      "type": "normal",
-      "position": {
-        "x": 940,
-        "y": 6220
       },
       "dead_end": false,
       "mini_boss_kind": "",
@@ -7606,32 +8194,34 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 2,
         "ai_profile": {
-          "precision": 0.7,
+          "precision": 0.55,
           "anticipation": false
         },
         "series_format": "ft1",
         "seed_policy": "fixed_per_node",
-        "seed": 10772,
+        "seed": 10735,
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 22,
-        "souls_max": 29,
+        "souls_min": 21,
+        "souls_max": 28,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "pre_epic",
+      "balance_profile": "challenge"
     },
     {
-      "id": "r04_mini_path_3",
-      "name": "L’Antichambre de l’Essaim",
+      "id": "r04_mini_path_2",
+      "name": "Le Nid des Soufflets",
       "chapter": "Les Forges Basses",
       "region": "Les Souffles",
       "type": "normal",
       "position": {
-        "x": 980,
-        "y": 6460
+        "x": 940,
+        "y": 6220
       },
       "dead_end": false,
       "mini_boss_kind": "",
@@ -7658,7 +8248,61 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 2,
         "ai_profile": {
-          "precision": 0.8,
+          "precision": 0.57,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "fixed_per_node",
+        "seed": 10772,
+        "legacy_opponent_id": ""
+      },
+      "rewards": {
+        "souls_min": 21,
+        "souls_max": 28,
+        "card_rewards": []
+      },
+      "visual": {
+        "scale": 1.0
+      },
+      "stage_id": "pre_epic",
+      "balance_profile": "challenge"
+    },
+    {
+      "id": "r04_mini_path_3",
+      "name": "L’Antichambre de l’Essaim",
+      "chapter": "Les Forges Basses",
+      "region": "Les Souffles",
+      "type": "normal",
+      "position": {
+        "x": 980,
+        "y": 6460
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "sylkha",
+      "accent": "#7fc95b",
+      "encounter": {
+        "game_mode": "classic",
+        "opponent_god_policy": "fixed",
+        "opponent_deck_policy": "fixed",
+        "fixed_god_id": "sylkha",
+        "fixed_deck": [
+          "dos_fendu_n1",
+          "mante_des_racines_n1",
+          "gueule_de_travers_n1",
+          "ecorche_angle_n2",
+          "fourmilion_des_nerfs_n1",
+          "tisse_griffe_n2",
+          "avortons_des_caves_n2",
+          "le_sac_a_murmures_n2"
+        ],
+        "generator_god_id": "",
+        "generator_min_god_cards": 0,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 2,
+        "ai_profile": {
+          "precision": 0.59,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -7667,13 +8311,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 24,
-        "souls_max": 31,
+        "souls_min": 21,
+        "souls_max": 28,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "pre_epic",
+      "balance_profile": "challenge"
     },
     {
       "id": "r03_mini_path_1",
@@ -7701,7 +8347,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 2,
         "ai_profile": {
-          "precision": 0.55,
+          "precision": 0.5,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -7710,13 +8356,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 21,
-        "souls_max": 28,
+        "souls_min": 20,
+        "souls_max": 27,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "pre_epic",
+      "balance_profile": "challenge"
     },
     {
       "id": "r03_mini_path_2",
@@ -7742,9 +8390,9 @@
         "generator_god_id": "veskar",
         "generator_min_god_cards": 8,
         "mirror_fixed_deck": [],
-        "max_power_tier": 3,
+        "max_power_tier": 2,
         "ai_profile": {
-          "precision": 0.75,
+          "precision": 0.52,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -7753,13 +8401,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 26,
-        "souls_max": 34,
+        "souls_min": 20,
+        "souls_max": 27,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "pre_epic",
+      "balance_profile": "challenge"
     },
     {
       "id": "mini_optional_01_path_1",
@@ -7782,21 +8432,21 @@
         "opponent_deck_policy": "fixed",
         "fixed_god_id": "nerava",
         "fixed_deck": [
-          "veuve_des_spores_n1",
-          "la_veuve_suspendue_n1",
-          "ogre_droitier_n1",
-          "le_sac_a_murmures_n2",
-          "avortons_des_caves_n2",
-          "devoreur_de_lanternes_n1",
-          "crache_cendre_n2",
-          "porte_fievre_n2"
+          "machoire_moisie_n1",
+          "clochelet_malade_n1",
+          "avortons_des_caves_n1",
+          "porte_fievre_n1",
+          "mache_mur_n1",
+          "le_sac_a_murmures_n1",
+          "ecorche_angle_n1",
+          "crache_cendre_n1"
         ],
         "generator_god_id": "",
         "generator_min_god_cards": 0,
         "mirror_fixed_deck": [],
-        "max_power_tier": 2,
+        "max_power_tier": 1,
         "ai_profile": {
-          "precision": 0.55,
+          "precision": 0.32,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -7805,13 +8455,15 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 21,
-        "souls_max": 28,
+        "souls_min": 15,
+        "souls_max": 21,
         "card_rewards": []
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "early_game",
+      "balance_profile": "challenge"
     },
     {
       "id": "mini_optional_01_path_2",
@@ -7848,7 +8500,7 @@
         "mirror_fixed_deck": [],
         "max_power_tier": 2,
         "ai_profile": {
-          "precision": 0.75,
+          "precision": 0.34,
           "anticipation": false
         },
         "series_format": "ft1",
@@ -7857,13 +8509,20 @@
         "legacy_opponent_id": ""
       },
       "rewards": {
-        "souls_min": 23,
-        "souls_max": 30,
-        "card_rewards": []
+        "souls_min": 18,
+        "souls_max": 25,
+        "card_rewards": [
+          {
+            "lineage_id": "clochelet_malade",
+            "copies": 2
+          }
+        ]
       },
       "visual": {
         "scale": 1.0
-      }
+      },
+      "stage_id": "early_game",
+      "balance_profile": "challenge"
     }
   ],
   "edges": [

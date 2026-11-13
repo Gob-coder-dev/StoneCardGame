@@ -8,6 +8,7 @@ extends RefCounted
 const PATH := "res://data/quests/quests.json"
 const MetricsModel := preload("res://scripts/application/quests/QuestMetrics.gd")
 const RitualConfigModel := preload("res://scripts/data/economy/RitualConfig.gd")
+const GateConfigModel := preload("res://scripts/data/progression/ContentGateConfig.gd")
 
 static var _cache: Dictionary = {}
 
@@ -58,6 +59,10 @@ static func problems(config: Dictionary = {}) -> Array[String]:
 	if int(value.get("daily_count", 0)) < 1:
 		result.append("Le nombre de quêtes quotidiennes doit être positif.")
 	var seen := {}
+	var gate_ids := {}
+	for gate in GateConfigModel.get_config().get("gates", []):
+		if gate is Dictionary:
+			gate_ids[str(gate.get("id", ""))] = true
 	for kind in ["daily", "unique"]:
 		var entries: Array = value.get(kind, [])
 		for raw in entries:
@@ -73,6 +78,12 @@ static func problems(config: Dictionary = {}) -> Array[String]:
 				result.append("Identifiant de quête en double : %s." % quest_id)
 			seen[quest_id] = true
 			var metric := str(quest.get("metric", ""))
+			var required_gate := str(quest.get("required_gate", ""))
+			if required_gate != "" and not gate_ids.has(required_gate):
+				result.append("Jalon inconnu pour '%s' : %s." % [quest_id, required_gate])
+			var progress_policy := str(quest.get("progress_policy", "lifetime"))
+			if not ["lifetime", "since_gate"].has(progress_policy):
+				result.append("Politique de progression inconnue pour '%s'." % quest_id)
 			if not MetricsModel.is_known(metric):
 				result.append("Métrique inconnue pour '%s' : %s." % [quest_id, metric])
 			elif kind == "daily" and MetricsModel.is_derived(metric):
@@ -107,6 +118,13 @@ static func problems(config: Dictionary = {}) -> Array[String]:
 						result.append("Lignée inconnue pour '%s' : %s." % [quest_id, lineage_id])
 					elif int(card.get("copies", 0)) <= 0:
 						result.append("Copies invalides pour '%s'." % quest_id)
+					else:
+						var stone_id := StoneLoader.variant_id(lineage_id, 1)
+						var rarity := StoneLoader.stone_rarity(stone_id)
+						if rarity == "epic" and required_gate == "":
+							result.append("Récompense épique sans jalon pour '%s'." % quest_id)
+						elif rarity == "legendary" and required_gate != "legendary_cards":
+							result.append("Récompense légendaire sans jalon pour '%s'." % quest_id)
 				var ritual := str(tier.get("ritual", ""))
 				if ritual != "" and RitualConfigModel.definition(ritual).is_empty():
 					result.append("Rituel inconnu pour '%s' : %s." % [quest_id, ritual])

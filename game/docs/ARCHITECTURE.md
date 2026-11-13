@@ -186,12 +186,14 @@ Les déclencheurs détaillés, les fichiers et les règles d'extension sont dans
 | `data/gods.json` | — | Dieux, familles, couleurs et descriptions |
 | `data/npcs.json` | — | Six adversaires historiques, leurs decks et profils d'IA |
 | `data/campaign/campaign_v2.json` | `CampaignContentLoader` | Définition consolidée du graphe : 162 nœuds, rencontres, positions et arêtes |
+| `data/campaign/authoring/*.json` | `CampaignBalanceConfig` + builder Python | Courbe par chapitre et profils de récompense ; jamais lus par le combat |
+| `data/progression/content_gates.json` | `ContentGateConfig` | Boss obligatoires qui ouvrent les raretés épique et légendaire |
 | `data/economy/economy_config.json` | `EconomyConfig` | Valeurs uniques des âmes, améliorations, rotations, lots et cadeaux de dieux |
 | `data/economy/rituals.json` | `RitualConfig` | Prix en bougies, sceaux, compositions, quantités et chances des quatre Rituels |
 | `CampaignGraph`, `CampaignNode`, `CampaignEdge` | `build`, `node`, `predecessors`, `successors`, `reachable_from`, `has_cycle` | Définition immuable, indexation et requêtes du graphe ; aucune sauvegarde ni interface |
 | `CampaignUnlockRules`, `CampaignProgress` | `states`, `state_for`, `mark_completed`, `record_attempt` | Règle ANY, états et progression sérialisable par identifiant de nœud ; `map_navigation` y reste une donnée de navigation séparée |
 | `CampaignValidator` | `problems` | Validation structurelle, modes, decks fixes et mini-boss, sans dépendance vers la couche application |
-| `CampaignGenerationValidator`, `CampaignLayoutValidator` | `problems` | Contrôles de livraison coûteux : générations réelles et géométrie des courbes, absents du chemin runtime |
+| `CampaignProgressionValidator`, `CampaignGenerationValidator`, `CampaignLayoutValidator` | `problems` | Contrôles de livraison : courbe et jalons, générations réelles et géométrie, absents du chemin runtime |
 | `CampaignMapLayout`, `CampaignMapChunkManager` | `node_center`, `visible_rect`, `update` | Géométrie logique et sélection des secteurs chargés/ préchargés/ libérés, sans `Control` |
 | `CampaignSectionTheme`, `CampaignSectionArt` | `build`, `draw_backdrop` | Découpe visuelle des treize chapitres en bandes contiguës et dessin procédural du fond, sans `Control` ni texture |
 | `CampaignMapPositionState` | `make`, `from_dict`, `resolved` | Ancre, offset logique et secours de position, versionnés séparément de la progression |
@@ -217,6 +219,8 @@ Les déclencheurs détaillés, les fichiers et les règles d'extension sont dans
 | `ContentValidator` | `find_problems` | Liste les incohérences des catalogues ; `StoneLoader` les signale au démarrage |
 | `PlayerInventory`, `CardProgressionRules` | `to_dict`, `from_dict`, `upgrade_cost`, `progress` | État économique sérialisable (âmes, bougies, cartes et coffre) et règles pures d’évolution |
 | `EconomyService`, `ShopService` | `grant`, `upgrade_card`, `buy_god`, `state`, `buy_offer` | Transactions atomiques et rotation déterministe de la boutique |
+| `ContentAccessState`, `ProgressionAccessService` | `allows_rarity`, `state` | Projection immuable des accès depuis la campagne ; aucune duplication dans le profil |
+| `RitualAccessRules` | `resolve` | Composition et disponibilité des Rituels selon les jalons |
 | `RitualRewardGenerator`, `RitualService` | `generate`, `purchase` | Tirage pur, compensation et attribution atomique avant animation |
 | `RitualOpeningContext` | `begin`, `current`, `clear` | Présentation éphémère d’un Rituel, volontairement absente de la sauvegarde |
 | `PlayerData` | `get_active_deck`, `get_deck`, `set_player_deck`, `commit_economy`, `load_save`, `save` | Propriétaire du profil, des banques et de l’inventaire ; une seule écriture atomique |

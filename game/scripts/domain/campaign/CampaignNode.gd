@@ -41,6 +41,10 @@ var position: Vector2 = Vector2.ZERO
 var dead_end: bool = false
 var mini_boss_kind: String = ""
 var tutorial_id: String = ""
+## Etape de progression et profil d'equilibrage produits par l'outil
+## d'authoring. Ils sont descriptifs et ne pilotent pas la progression joueur.
+var stage_id: String = ""
+var balance_profile: String = ""
 ## Identité de dieu utilisée pour l'accent de carte et les statistiques de
 ## thème. Elle ne force jamais le dieu adverse des modes Aléatoire ou Miroir.
 var theme_god_id: String = ""
@@ -66,6 +70,8 @@ static func from_dict(source: Dictionary) -> CampaignNode:
 	node.dead_end = bool(source.get("dead_end", false))
 	node.mini_boss_kind = str(source.get("mini_boss_kind", ""))
 	node.tutorial_id = str(source.get("tutorial_id", ""))
+	node.stage_id = str(source.get("stage_id", ""))
+	node.balance_profile = str(source.get("balance_profile", ""))
 	node.theme_god_id = str(source.get("theme_god_id", ""))
 	node.accent = str(source.get("accent", ""))
 	var raw_encounter: Variant = source.get("encounter", {})

@@ -13,10 +13,15 @@ import math
 from collections import Counter, defaultdict, deque
 from pathlib import Path
 
+from campaign_builder.balance_model import apply_balance, deck_target_ratio
+from campaign_builder.reward_model import assign_rewards
+
 ROOT = Path(__file__).resolve().parents[1]
 LIBRARY = json.loads((ROOT / "tools" / "campaign_deck_library.json").read_text(encoding="utf-8"))
 GODS = ["veskar", "nerava", "kharun", "ilyr", "sylkha", "enigma"]
 GODS_DATA = {str(g["id"]): g for g in json.loads((ROOT / "data" / "gods.json").read_text(encoding="utf-8"))["gods"]}
+BALANCE_CONFIG = json.loads((ROOT / "data" / "campaign" / "authoring" / "balance_stages.json").read_text(encoding="utf-8"))
+REWARD_CONFIG = json.loads((ROOT / "data" / "campaign" / "authoring" / "reward_profiles.json").read_text(encoding="utf-8"))
 
 
 def load_stone_catalogue() -> dict:
@@ -39,12 +44,19 @@ def load_stone_catalogue() -> dict:
 
 STONES = load_stone_catalogue()
 LINEAGE = {}
+LINEAGE_CATALOG = {}
+STONE_CATALOG = {}
 STONE_GOD = {}
 STONE_RARITY = {}
 STONE_LEVEL = {}
 STONE_TIER = {}
 RARITY_OFFSET = {"common": 0, "rare": 1, "epic": 2, "legendary": 3}
 for lineage in STONES["lineages"]:
+    lineage_id = str(lineage["id"])
+    LINEAGE_CATALOG[lineage_id] = {
+        "affinity": str(lineage.get("god_id", "neutral")),
+        "rarity": str(lineage.get("rarity", "common")),
+    }
     for level_index, form in enumerate(lineage["levels"], start=1):
         form_id = str(form["id"])
         rarity = str(lineage.get("rarity", ""))
@@ -54,6 +66,11 @@ for lineage in STONES["lineages"]:
         STONE_RARITY[form_id] = rarity
         STONE_LEVEL[form_id] = level
         STONE_TIER[form_id] = int(form.get("power_tier", level + RARITY_OFFSET[rarity]))
+        STONE_CATALOG[form_id] = {
+            "lineage_id": lineage_id,
+            "affinity": STONE_GOD[form_id],
+            "rarity": rarity,
+        }
 
 MODES = {"C": "classic", "R": "random", "M": "mirror", "D": "draft"}
 
@@ -1096,6 +1113,25 @@ for boss_id, spec in OPTIONAL_MINI_TUNING.items():
             "anticipation": bool(spec["anticipation"] and precision >= 0.90),
         }
 
+# La courbe finale est declarative et remplace les ajustements historiques
+# ci-dessus. Ceux-ci ne servent plus qu'a construire les identites de rencontre.
+apply_balance(nodes, depth, BALANCE_CONFIG, set(INTRO_TRIALS))
+
+# Ces premieres rencontres enseignent la transition N1/N2 avec six cartes de
+# palier 1 et deux cartes de palier 2.
+for early_id in ["veskar_01", "nerava_01", "kharun_01", "ilyr_01", "sylkha_01"]:
+    nodes[early_id]["encounter"]["max_power_tier"] = 2
+    nodes[early_id]["encounter"]["ai_profile"]["precision"] = min(
+        0.18, nodes[early_id]["encounter"]["ai_profile"]["precision"])
+
+# Un deck miroir signe qui excede le palier recalcule doit etre regenere.
+for node in nodes.values():
+    encounter = node["encounter"]
+    mirror_deck = encounter.get("mirror_fixed_deck", [])
+    if mirror_deck and any(STONE_TIER.get(card, 99) > encounter["max_power_tier"]
+                           for card in mirror_deck):
+        encounter["mirror_fixed_deck"] = []
+
 # ── Decks fixes distincts ───────────────────────────────────────────────────
 neutral_used = set()
 
@@ -1122,13 +1158,14 @@ for node_id, node in nodes.items():
     policy = enc["opponent_deck_policy"]
     if policy != "fixed":
         continue
-    if node_id in CURATED_DECKS:
-        deck = list(CURATED_DECKS[node_id])
+    tier = int(enc["max_power_tier"])
+    curated = CURATED_DECKS.get(node_id, [])
+    if curated and all(STONE_TIER.get(card, 99) <= tier for card in curated):
+        deck = list(curated)
         enc["fixed_deck"] = deck
         used_decks.add(sorted_deck(deck))
         selected_decks.append(lineages(deck))
         continue
-    tier = int(enc["max_power_tier"])
     god = ""
     if node["type"] == "tutorial":
         bucket = LIBRARY["neutral"].get("neutral_n%d" % tier, [])
@@ -1147,8 +1184,13 @@ for node_id, node in nodes.items():
             continue
         overlap = max((len(lineages(candidate["deck"]) & used) for used in selected_decks),
                       default=0)
-        score = (overlap, len(identity), abs(sum(ord(c) for c in node_id) % 17 -
-                                             int(candidate["seed"]) % 17))
+        points = float(candidate.get("points", 0.0))
+        bucket_points = [float(value.get("points", 0.0)) for value in bucket]
+        low = min(bucket_points, default=points)
+        high = max(bucket_points, default=points)
+        target = low + (high - low) * deck_target_ratio(node)
+        score = (abs(points - target), overlap,
+                 abs(sum(ord(c) for c in node_id) % 17 - int(candidate["seed"]) % 17))
         if best_score is None or score < best_score:
             best_score = score
             best = candidate
@@ -1159,30 +1201,8 @@ for node_id, node in nodes.items():
     used_decks.add(sorted_deck(deck))
     selected_decks.append(lineages(deck))
 
-# Récompenses explicites dans le JSON final. Le montant croît avec le palier,
-# la précision et le statut du niveau ; seules les premières victoires de
-# mini-boss/boss distribuent aussi des cartes.
-FIRST_TUTORIAL_REWARDS = [
-    "avortons_des_caves_n1", "mordeur_des_combles_n1",
-    "mache_mur_n1", "le_sac_a_murmures_n1",
-]
-for node_id, node in nodes.items():
-    enc = node["encounter"]
-    tier = int(enc["max_power_tier"])
-    precision = float(enc["ai_profile"]["precision"])
-    boss_bonus = 18 if node["type"] == "boss" else 10 if node["type"] == "mini_boss" else 0
-    base = 8 + tier * 3 + round(precision * 12) + boss_bonus
-    node["rewards"] = {
-        "souls_min": int(base),
-        "souls_max": int(base + 5 + tier),
-        "card_rewards": [],
-    }
-    if node_id == "tuto_01":
-        node["rewards"]["card_rewards"] = FIRST_TUTORIAL_REWARDS
-    elif node["type"] in {"mini_boss", "boss"}:
-        fixed = enc.get("fixed_deck", [])
-        wanted = 2 if node["type"] == "boss" else 1
-        node["rewards"]["card_rewards"] = list(fixed[:wanted])
+# Recompenses declaratives par lignee et nombre de copies.
+assign_rewards(nodes, REWARD_CONFIG, STONE_CATALOG, LINEAGE_CATALOG)
 
 # ── Contrôles de construction ───────────────────────────────────────────────
 # Les réécritures de mode peuvent changer la nature d'une rencontre après sa
@@ -1196,6 +1216,8 @@ for node in nodes.values():
                      and enc["opponent_deck_policy"] == "generated"))
     if generated:
         enc["seed_policy"] = "per_attempt"
+    else:
+        enc["seed_policy"] = "fixed_per_node"
 
 if len(nodes) != 162:
     raise SystemExit(f"162 nœuds attendus, obtenu {len(nodes)}")
@@ -1247,7 +1269,7 @@ map_height = max(n["position"]["y"] for n in nodes.values()) + 300
 result = {
     "id": "samstone_campaign",
     "title": "La Carte de SamStone",
-    "campaign_version": 5,
+    "campaign_version": 6,
     "map": {"width": 1080, "height": int(map_height)},
     "start_node_id": "tuto_01",
     "final_node_id": "final_01",
