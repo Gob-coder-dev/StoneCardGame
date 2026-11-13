@@ -7,7 +7,6 @@ signal covered
 signal finished
 
 const FlameShader := preload("res://assets/shaders/ritual_flames.gdshader")
-const REFERENCE_ASPECT := 1080.0 / 1920.0
 
 var coverage := 0.0:
 	set(value):
@@ -73,17 +72,16 @@ func _sync_material() -> void:
 		return
 	_flame_material.set_shader_parameter("coverage", coverage)
 	_flame_material.set_shader_parameter("full_screen", 1.0 if _full_screen else 0.0)
-	_flame_material.set_shader_parameter("aspect_correction",
-		aspect_correction_for_size(size))
+	_flame_material.set_shader_parameter("render_aspect", render_aspect_for_size(size))
 
 
 func _on_resized() -> void:
 	_sync_material()
 
 
-## Conserve la densité et la forme des flammes quand le canevas s'élargit ou
-## se resserre. Le format de référence garde donc exactement son rendu actuel.
-static func aspect_correction_for_size(render_size: Vector2) -> float:
+## Le shader travaille en unités de hauteur et reçoit le ratio réel de sa
+## surface. Sa densité reste donc stable sans dépendre d'un format de référence.
+static func render_aspect_for_size(render_size: Vector2) -> float:
 	if render_size.x <= 0.0 or render_size.y <= 0.0:
-		return 1.0
-	return (render_size.x / render_size.y) / REFERENCE_ASPECT
+		return 1080.0 / 1920.0
+	return render_size.x / render_size.y
