@@ -1,9 +1,8 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/QuestsController.gd" id="1_quests"]
 [ext_resource type="Script" path="res://scripts/ui/MenuBackground.gd" id="2_background"]
 [ext_resource type="Script" path="res://scripts/ui/input/TouchScrollContainer.gd" id="3_scroll"]
-[ext_resource type="Script" path="res://scripts/ui/input/TouchButton.gd" id="4_button"]
 [ext_resource type="PackedScene" path="res://scenes/ui/CurrencyBalances.tscn" id="5_currency"]
 [ext_resource type="PackedScene" path="res://scenes/ui/BottomNav.tscn" id="6_nav"]
 
@@ -28,31 +27,24 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 40.0
-offset_top = 56.0
-offset_right = -40.0
+offset_left = 32.0
+offset_top = 42.0
+offset_right = -32.0
 offset_bottom = -212.0
-theme_override_constants/separation = 24
+theme_override_constants/separation = 18
 
 [node name="Header" type="HBoxContainer" parent="Root"]
 layout_mode = 2
+theme_override_constants/separation = 18
 
 [node name="Title" type="Label" parent="Root/Header"]
 theme_type_variation = &"ScreenTitle"
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 60
 text = "QUÊTES"
 vertical_alignment = 1
 
 [node name="CurrencyBalances" parent="Root/Header" instance=ExtResource("5_currency")]
-
-[node name="CloseButton" type="Button" parent="Root/Header"]
-layout_mode = 2
-script = ExtResource("4_button")
-custom_minimum_size = Vector2(108, 100)
-theme_override_font_sizes/font_size = 48
-text = "×"
 
 [node name="Scroll" type="ScrollContainer" parent="Root"]
 layout_mode = 2

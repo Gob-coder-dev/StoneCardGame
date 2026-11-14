@@ -35,7 +35,6 @@ const STARTUP_POLL_INTERVAL: float = 0.5
 var _insets := _empty_insets()
 var _base_offsets: Dictionary = {}
 var _forced_insets: Variant = null
-var _debug_label: Label = null
 var _poll_left: float = 0.0
 var _poll_tick: float = 0.0
 
@@ -43,8 +42,6 @@ var _poll_tick: float = 0.0
 func _ready() -> void:
 	get_tree().root.size_changed.connect(_refresh)
 	get_tree().node_added.connect(_on_node_added)
-	if OS.is_debug_build() and OS.get_name() == "Android":
-		_build_debug_overlay()
 	_refresh()
 	if OS.has_feature("mobile") and OS.get_name() == "Android":
 		_poll_left = STARTUP_POLL_SECONDS
@@ -90,20 +87,13 @@ func _targets_an_edge(control: Control) -> bool:
 func _refresh() -> void:
 	var next: Dictionary = _forced_insets if _forced_insets != null else _read_os_insets()
 	if next == _insets:
-		_refresh_debug_overlay()
 		return
 	_insets = next
-	if OS.get_name() == "Android":
-		# Visible dans `adb logcat` même sur un export de production.
-		print("SafeArea: insets=%s cutouts=%d safe=%s" % [str(_insets),
-			DisplayServer.get_display_cutouts().size(),
-			str(DisplayServer.get_display_safe_area())])
 	for control in _base_offsets.keys():
 		if is_instance_valid(control):
 			_apply(control)
 		else:
 			_base_offsets.erase(control)
-	_refresh_debug_overlay()
 
 
 ## Les offsets d'origine ne sont enregistrés qu'une fois : appliquer deux fois
@@ -181,28 +171,3 @@ static func cutout_depth(cutouts: Array, screen_height: float) -> float:
 
 func _empty_insets() -> Dictionary:
 	return {"top": 0.0, "left": 0.0, "right": 0.0}
-
-
-## Diagnostic réservé aux exports de debug sur Android : il affiche la valeur
-## réellement mesurée, sans jamais apparaître dans une version de production.
-func _build_debug_overlay() -> void:
-	var layer := CanvasLayer.new()
-	layer.name = "SafeAreaDebug"
-	layer.layer = 128
-	add_child(layer)
-	_debug_label = Label.new()
-	_debug_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_debug_label.position = Vector2(12, 12)
-	_debug_label.add_theme_font_size_override("font_size", 22)
-	_debug_label.add_theme_color_override("font_color", Color(1, 0.82, 0.48))
-	layer.add_child(_debug_label)
-
-
-func _refresh_debug_overlay() -> void:
-	if _debug_label == null:
-		return
-	var cutouts := DisplayServer.get_display_cutouts()
-	_debug_label.text = "SAFE AREA top=%d left=%d right=%d cutouts=%s safe=%s" % [
-		int(_insets["top"]), int(_insets["left"]), int(_insets["right"]),
-		str(cutouts), str(DisplayServer.get_display_safe_area())]
-	print(_debug_label.text)

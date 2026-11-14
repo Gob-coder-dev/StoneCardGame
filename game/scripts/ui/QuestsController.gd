@@ -17,7 +17,6 @@ const RITUAL_ICONS := {
 }
 
 @onready var background: MenuBackground = $Background
-@onready var close_button: Button = $Root/Header/CloseButton
 @onready var content: VBoxContainer = $Root/Scroll/Content
 @onready var scroll: ScrollContainer = $Root/Scroll
 @onready var daily_panel: PanelContainer = $Root/Scroll/Content/DailyPanel
@@ -35,7 +34,6 @@ var _card_art: Dictionary = {}
 
 func _ready() -> void:
 	background.set_god(GodIdentityModel.player(PlayerData.player_god_id))
-	close_button.pressed.connect(_close)
 	_style_sections()
 	_build_headers()
 	CardArtCache.texture_ready.connect(_on_card_art_ready)

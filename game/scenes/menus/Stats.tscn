@@ -27,21 +27,21 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 40.0
-offset_top = 56.0
-offset_right = -40.0
+offset_left = 32.0
+offset_top = 42.0
+offset_right = -32.0
 offset_bottom = -40.0
-theme_override_constants/separation = 28
+theme_override_constants/separation = 18
 
 [node name="Header" type="HBoxContainer" parent="Root"]
 layout_mode = 2
+theme_override_constants/separation = 18
 
 [node name="Title" type="Label" parent="Root/Header"]
 theme_type_variation = &"ScreenTitle"
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 60
-text = "PROFIL & STATS"
+text = "PROFIL"
 vertical_alignment = 1
 
 [node name="CurrencyBalances" parent="Root/Header" instance=ExtResource("5_currency")]
@@ -49,8 +49,8 @@ vertical_alignment = 1
 [node name="CloseButton" type="Button" parent="Root/Header"]
 layout_mode = 2
 script = ExtResource("4_touch_button")
-custom_minimum_size = Vector2(108, 100)
-theme_override_font_sizes/font_size = 48
+custom_minimum_size = Vector2(96, 86)
+theme_override_font_sizes/font_size = 44
 text = "×"
 
 [node name="Scroll" type="ScrollContainer" parent="Root"]
