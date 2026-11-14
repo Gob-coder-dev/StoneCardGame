@@ -85,9 +85,9 @@ func _init() -> void:
 	CardArtCache.texture_ready.connect(_on_texture_ready)
 
 
-func setup(stone: Dictionary, owner: int = OWNER_NONE, battle_stone = null) -> void:
+func setup(stone: Dictionary, stone_owner: int = OWNER_NONE, battle_stone = null) -> void:
 	_stone = stone
-	_owner = owner
+	_owner = stone_owner
 	_battle_stone = battle_stone if battle_stone is BattleStoneModel else null
 	_drawn_stone_state = _stone_state(_battle_stone)
 	_catalog_preview = null
@@ -95,10 +95,10 @@ func setup(stone: Dictionary, owner: int = OWNER_NONE, battle_stone = null) -> v
 	queue_redraw()
 
 
-func set_combat_owner(owner: int) -> void:
-	if owner == _owner:
+func set_combat_owner(stone_owner: int) -> void:
+	if stone_owner == _owner:
 		return
-	_owner = owner
+	_owner = stone_owner
 
 
 func get_combat_owner() -> int:

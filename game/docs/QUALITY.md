@@ -87,6 +87,18 @@ tests de panne sont distingués des erreurs réelles par `TestLog`. La CI GitHub
 Actions utilise Godot 4.7.2, réimporte les ressources et vérifie le contenu exporté.
 Elle ne signe ni ne publie d'application.
 
+Avant les suites, un récepteur de débogage local se connecte dès le démarrage.
+`StartupChecks` compile tous les scripts de production et initialise l'accueil.
+Toute erreur ou tout avertissement de compilation reçu fait échouer le contrôle :
+ces avertissements sont envoyés au débogueur et ne passent pas par `TestLog`.
+Les messages capturés sont conservés dans `StartupChecks.debugger.json`.
+Le diagnostic natif du magasin de certificats Windows est identifié séparément
+et reste visible ; les autres erreurs moteur restent bloquantes.
+
+Les exceptions `unused_signal` sont limitées aux déclarations de contrats dont
+les signaux sont émis par une sous-classe ou un collaborateur identifié dans le
+commentaire. Les avertissements du projet restent activés.
+
 Les deux suites doivent terminer avec le code `0`. Une vérification visuelle
 reste obligatoire sur téléphone et tablette pour les proportions, gestes,
 transitions et coûts de première ouverture.

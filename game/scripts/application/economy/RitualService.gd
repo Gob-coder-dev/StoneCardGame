@@ -47,8 +47,8 @@ func purchase(ritual_id: String, seed_override: Variant = null) -> Dictionary:
 		return _fail("Prix du Rituel invalide.")
 	if next.candles < price:
 		return _fail("Pas assez de bougies.")
-	var seed := int(seed_override) if seed_override != null else _fresh_seed(next.ritual_purchase_counter + 1)
-	var prepared := _apply(definition, next, seed)
+	var generation_seed := int(seed_override) if seed_override != null else _fresh_seed(next.ritual_purchase_counter + 1)
+	var prepared := _apply(definition, next, generation_seed)
 	if not bool(prepared.get("ok", false)):
 		return prepared
 	next.candles -= price
@@ -62,13 +62,13 @@ func purchase(ritual_id: String, seed_override: Variant = null) -> Dictionary:
 ## Rituel offert par une récompense : même tirage et même versement qu'un achat,
 ## sans bougies. L'inventaire reçu est modifié ; l'appelant l'enregistre avec son
 ## propre état afin de garder une seule écriture.
-static func grant(ritual_id: String, inventory: PlayerInventory, seed: int) -> Dictionary:
+static func grant(ritual_id: String, inventory: PlayerInventory, generation_seed: int) -> Dictionary:
 	var definition := _resolved_definition(ritual_id)
 	if definition.is_empty():
 		return _fail("Ce Rituel n'existe pas.")
 	if not bool(definition.get("available", false)):
 		return _fail("Ce Rituel n'est pas encore débloqué.")
-	return _apply(definition, inventory, seed)
+	return _apply(definition, inventory, generation_seed)
 
 
 static func _resolved_definition(ritual_id: String) -> Dictionary:
@@ -78,10 +78,10 @@ static func _resolved_definition(ritual_id: String) -> Dictionary:
 	return AccessRules.resolve(definition, AccessService.new().state())
 
 
-static func _apply(definition: Dictionary, inventory: PlayerInventory, seed: int) -> Dictionary:
+static func _apply(definition: Dictionary, inventory: PlayerInventory, generation_seed: int) -> Dictionary:
 	if inventory == null:
 		return _fail("Inventaire introuvable.")
-	var generated := Generator.generate(definition, inventory, seed)
+	var generated := Generator.generate(definition, inventory, generation_seed)
 	if not bool(generated.get("ok", false)):
 		return generated
 	var resolved: Array = []
@@ -106,7 +106,7 @@ static func _apply(definition: Dictionary, inventory: PlayerInventory, seed: int
 		"purchase_id": "ritual:%d" % purchase_number,
 		"ritual_id": str(definition.get("id", "")),
 		"ritual_name": str(definition.get("name", "Rituel")),
-		"seed": seed,
+		"seed": generation_seed,
 		"lucky": bool(generated.get("lucky", false)),
 		"rewards": resolved,
 	}}

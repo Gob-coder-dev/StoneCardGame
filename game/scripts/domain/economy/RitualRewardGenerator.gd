@@ -7,11 +7,11 @@ const RARITY_PRIORITY := ["legendary", "epic", "rare", "common"]
 
 
 static func generate(definition: Dictionary, inventory: PlayerInventory,
-		seed: int) -> Dictionary:
+		generation_seed: int) -> Dictionary:
 	if definition.is_empty() or inventory == null:
 		return _fail("Rituel invalide.")
 	var rng := RandomNumberGenerator.new()
-	rng.seed = seed
+	rng.seed = generation_seed
 	var rewards: Array = []
 	var souls_min := maxi(0, int(definition.get("souls_min", 0)))
 	var souls_max := maxi(souls_min, int(definition.get("souls_max", souls_min)))
@@ -38,8 +38,8 @@ static func generate(definition: Dictionary, inventory: PlayerInventory,
 		var group: Dictionary = raw_group
 		var rarity := str(group.get("rarity", ""))
 		for _slot in range(int(group.get("slots", 0))):
-			var candidates: Array = (pools.get(rarity, []) as Array).filter(func(lineage_id):
-				return not used.has(str(lineage_id)))
+			var candidates: Array = (pools.get(rarity, []) as Array).filter(func(candidate_id):
+				return not used.has(str(candidate_id)))
 			if candidates.is_empty():
 				return _fail("Pas assez de cartes %s éligibles." % rarity)
 			var lineage_id := str(candidates[rng.randi_range(0, candidates.size() - 1)])

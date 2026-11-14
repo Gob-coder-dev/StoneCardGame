@@ -20,7 +20,7 @@ var finished: bool = false
 var winner: int = GameState.PLAYER_NONE
 ## Une série concédée garde son score réel et s'affiche comme abandonnée.
 var abandoned: bool = false
-var seed: int = 0
+var generation_seed: int = 0
 ## Loadouts conservés pour les modes Classique et Miroir.
 var loadout_one: GameLoadout = null
 var loadout_two: GameLoadout = null
@@ -45,7 +45,7 @@ static func create(p_series_id: String, p_rules: Dictionary, p_seed: int) -> Ser
 	state.power_tier = int(rules_value["power_tier"])
 	state.wins_needed = SeriesRules.wins_needed(state.series_format)
 	state.max_rounds = SeriesRules.max_rounds(state.series_format)
-	state.seed = p_seed
+	state.generation_seed = p_seed
 	return state
 
 
@@ -62,7 +62,7 @@ func total_scored_rounds() -> int:
 
 
 func copy() -> SeriesState:
-	var state := SeriesState.create(series_id, rules, seed)
+	var state := SeriesState.create(series_id, rules, generation_seed)
 	state.mode = mode
 	state.series_format = series_format
 	state.rules_revision = rules_revision
@@ -97,7 +97,7 @@ func to_dict() -> Dictionary:
 		"ties": ties,
 		"finished": finished,
 		"winner": winner,
-		"seed": seed,
+		"seed": generation_seed,
 		"loadout_one": loadout_one.to_dict() if loadout_one != null else {},
 		"loadout_two": loadout_two.to_dict() if loadout_two != null else {},
 		"round_results": round_results.duplicate(true),
@@ -105,13 +105,13 @@ func to_dict() -> Dictionary:
 
 
 static func from_dict(data: Dictionary) -> SeriesState:
-	var rules := {
+	var saved_rules := {
 		"mode": str(data.get("mode", GameModeRules.MODE_CLASSIC)),
 		"series": str(data.get("series", SeriesRules.SERIES_FT1)),
 		"power_tier": int(data.get("power_tier", GameModeRules.DEFAULT_POWER_TIER)),
 		"revision": int(data.get("rules_revision", 0)),
 	}
-	var state := SeriesState.create(str(data.get("series_id", "")), rules,
+	var state := SeriesState.create(str(data.get("series_id", "")), saved_rules,
 		int(data.get("seed", 0)))
 	state.wins_needed = int(data.get("wins_needed", state.wins_needed))
 	state.max_rounds = int(data.get("max_rounds", state.max_rounds))

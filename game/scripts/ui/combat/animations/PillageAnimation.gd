@@ -278,7 +278,7 @@ func _distribution_branch_point(end: Vector2, index: int, value: float) -> Vecto
 	return _center.lerp(end, smoothstep(0.0, 1.0, value)) \
 		+ tangent * sin(value * PI) * _square * 0.030 * bend_sign
 
-func _draw_flying_marker(point: Vector2, direction: Vector2, kind: String, size: float, alpha: float) -> void:
+func _draw_flying_marker(point: Vector2, direction: Vector2, kind: String, marker_size: float, alpha: float) -> void:
 	var color := Symbols.GOLD
 	match kind:
 		"random": color = Symbols.FORTUNE
@@ -287,14 +287,14 @@ func _draw_flying_marker(point: Vector2, direction: Vector2, kind: String, size:
 		"shield": color = Symbols.SHIELD
 	color.a = alpha
 	if kind == "shield":
-		Symbols.draw_shield(self, point - direction * size * 0.25, size * 1.35, size,
+		Symbols.draw_shield(self, point - direction * marker_size * 0.25, marker_size * 1.35, marker_size,
 			direction if not direction.is_zero_approx() else Vector2.UP, color)
 		return
 	var forward := direction if not direction.is_zero_approx() else Vector2.UP
 	var tangent := Vector2(-forward.y, forward.x)
-	var points := PackedVector2Array([point + forward * size,
-		point - forward * size * 0.65 + tangent * size * 0.58,
-		point - forward * size * 0.65 - tangent * size * 0.58])
+	var points := PackedVector2Array([point + forward * marker_size,
+		point - forward * marker_size * 0.65 + tangent * marker_size * 0.58,
+		point - forward * marker_size * 0.65 - tangent * marker_size * 0.58])
 	draw_colored_polygon(points, color)
 	points.append(points[0])
 	draw_polyline(points, Color(1.0, 0.91, 0.68, alpha), maxf(1.0, _square * 0.008), true)

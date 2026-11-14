@@ -22,7 +22,7 @@ var generator: LoadoutGenerator = null
 var god_one: String = ""
 var god_two: String = ""
 var max_tier: int = GameModeRules.DEFAULT_POWER_TIER
-var seed: int = 0
+var generation_seed: int = 0
 
 var _deck_size: int = DeckRules.DECK_SIZE
 var _duration: float = DEFAULT_DURATION_SECONDS
@@ -54,7 +54,7 @@ func _init(pool: Array = [], deck_size: int = DeckRules.DECK_SIZE,
 func start(p_seed: int, p_god_one: String, p_god_two: String, p_max_tier: int,
 		duration: float = DEFAULT_DURATION_SECONDS) -> Dictionary:
 	_reset()
-	seed = p_seed
+	generation_seed = p_seed
 	god_one = p_god_one
 	god_two = p_god_two
 	max_tier = p_max_tier
@@ -73,7 +73,7 @@ func start(p_seed: int, p_god_one: String, p_god_two: String, p_max_tier: int,
 	if common_costs.is_empty():
 		return {"ok": false, "reason": "Aucun coût commun entre les deux dieux."}
 	for attempt in range(MAX_PLAN_ATTEMPTS):
-		var rng := _rng(seed + attempt * 104729)
+		var rng := _rng(generation_seed + attempt * 104729)
 		var plan := _build_plan(costs_one, costs_two, common_costs, rng)
 		if not bool(plan.get("ok", false)):
 			continue
@@ -128,27 +128,27 @@ func _install_plan(plan: Dictionary) -> void:
 
 
 static func _duplicate_pairs(pairs: Array) -> Array:
-	var result: Array = []
+	var search_result: Array = []
 	for pair in pairs:
-		result.append((pair as Array).duplicate())
-	return result
+		search_result.append((pair as Array).duplicate())
+	return search_result
 
 
 ## Coût de chaque lignée disponible pour un dieu. Une lignée ne peut être
 ## utilisée qu'une seule fois dans le plan, même si elle possède plusieurs
 ## formes de coûts différents.
 func _costs_by_lineage(god_id: String, tier: int) -> Dictionary:
-	var result := {}
+	var search_result := {}
 	for card_value in generator.cards_for_god(god_id, tier):
 		var card_data: Dictionary = card_value
 		var cost := int(card_data.get("cost_q", -1))
 		var lineage := str(card_data.get("lineage", ""))
 		if cost <= 0 or lineage == "":
 			continue
-		if not result.has(cost):
-			result[cost] = {}
-		(result[cost] as Dictionary)[lineage] = true
-	return result
+		if not search_result.has(cost):
+			search_result[cost] = {}
+		(search_result[cost] as Dictionary)[lineage] = true
+	return search_result
 
 
 ## Recherche d'un plan par tentatives déterministes. Les coûts sont pris parmi
@@ -162,17 +162,17 @@ func _build_plan(costs_one: Dictionary, costs_two: Dictionary,
 	var pairs_two: Array = []
 	var chosen_costs: Array = []
 	var total := 0
-	for step in range(_deck_size):
+	for pick_index in range(_deck_size):
 		var candidates: Array = []
 		for cost_value in common_costs:
-			var cost := int(cost_value)
-			if total + cost > generator.budget_quarters:
+			var candidate_cost := int(cost_value)
+			if total + candidate_cost > generator.budget_quarters:
 				continue
-			if _unused_lineages(costs_one, cost, used_one).size() < 2:
+			if _unused_lineages(costs_one, candidate_cost, used_one).size() < 2:
 				continue
-			if _unused_lineages(costs_two, cost, used_two).size() < 2:
+			if _unused_lineages(costs_two, candidate_cost, used_two).size() < 2:
 				continue
-			candidates.append(cost)
+			candidates.append(candidate_cost)
 		if candidates.is_empty():
 			return {"ok": false}
 		var pick_limit := mini(4, candidates.size())
@@ -207,14 +207,14 @@ func _build_plan(costs_one: Dictionary, costs_two: Dictionary,
 
 
 func _unused_lineages(costs: Dictionary, cost: int, used: Dictionary) -> Array:
-	var result: Array = []
+	var search_result: Array = []
 	if not costs.has(cost):
-		return result
+		return search_result
 	for lineage in (costs[cost] as Dictionary):
 		if not used.has(lineage):
-			result.append(str(lineage))
-	result.sort()
-	return result
+			search_result.append(str(lineage))
+	search_result.sort()
+	return search_result
 
 
 ## Choisit un identifiant de carte concret pour chaque lignée, au coût demandé.
@@ -231,15 +231,15 @@ func _pair_ids_for_god(god_id: String, cost: int, lineages: Array, count: int) -
 		if not wanted.has(lineage) or by_lineage.has(lineage):
 			continue
 		by_lineage[lineage] = str(card_data.get("id", ""))
-	var result: Array = []
+	var search_result: Array = []
 	for lineage in lineages:
 		var card_id := str(by_lineage.get(str(lineage), ""))
 		if card_id == "":
 			return []
-		result.append(card_id)
-		if result.size() == count:
+		search_result.append(card_id)
+		if search_result.size() == count:
 			break
-	return result
+	return search_result
 
 
 func _verify_plan(pairs_one: Array, pairs_two: Array, costs: Array) -> bool:
@@ -250,13 +250,13 @@ func _verify_plan(pairs_one: Array, pairs_two: Array, costs: Array) -> bool:
 	var lineages_one := {}
 	var lineages_two := {}
 	var total := 0
-	for step in range(_deck_size):
-		var cost := int(costs[step])
+	for pick_index in range(_deck_size):
+		var cost := int(costs[pick_index])
 		total += cost
 		if cost <= 0 or cost > generator.budget_quarters:
 			return false
-		var pair_one: Array = pairs_one[step]
-		var pair_two: Array = pairs_two[step]
+		var pair_one: Array = pairs_one[pick_index]
+		var pair_two: Array = pairs_two[pick_index]
 		if pair_one.size() != 2 or pair_two.size() != 2:
 			return false
 		if str(pair_one[0]) == str(pair_one[1]) or str(pair_two[0]) == str(pair_two[1]):
@@ -279,10 +279,10 @@ func _verify_plan(pairs_one: Array, pairs_two: Array, costs: Array) -> bool:
 	for mask in range(1 << _deck_size):
 		var deck_one: Array = []
 		var deck_two: Array = []
-		for step in range(_deck_size):
-			var index := 1 if (mask & (1 << step)) != 0 else 0
-			deck_one.append(str((pairs_one[step] as Array)[index]))
-			deck_two.append(str((pairs_two[step] as Array)[index]))
+		for pick_index in range(_deck_size):
+			var index := 1 if (mask & (1 << pick_index)) != 0 else 0
+			deck_one.append(str((pairs_one[pick_index] as Array)[index]))
+			deck_two.append(str((pairs_two[pick_index] as Array)[index]))
 		if DeckRules.deck_quarters(deck_one) != total or DeckRules.deck_quarters(deck_two) != total:
 			return false
 		if not DeckRules.is_deck_valid(deck_one, god_one):
@@ -294,9 +294,9 @@ func _verify_plan(pairs_one: Array, pairs_two: Array, costs: Array) -> bool:
 	return true
 
 
-func _lineages_unique(deck: Array) -> bool:
+func _lineages_unique(selected_deck: Array) -> bool:
 	var seen := {}
-	for stone_id in deck:
+	for stone_id in selected_deck:
 		var lineage := generator.lineage_of(str(stone_id))
 		if lineage == "" or seen.has(lineage):
 			return false
@@ -343,13 +343,13 @@ func offers_for(side: int) -> Array:
 ## Paire prévue pour un camp à une étape donnée. C'est la projection utilisée
 ## pour montrer à un joueur les propositions adverses de **sa** position, même
 ## si l'adversaire a déjà avancé plus loin ou terminé son deck.
-func offers_for_step(side: int, step: int) -> Array:
-	if step < 0 or step >= _deck_size:
+func offers_for_step(side: int, pick_index: int) -> Array:
+	if pick_index < 0 or pick_index >= _deck_size:
 		return []
 	if side == GameState.PLAYER_ONE:
-		return _current_pair(_plan_one, step)
+		return _current_pair(_plan_one, pick_index)
 	if side == GameState.PLAYER_TWO:
-		return _current_pair(_plan_two, step)
+		return _current_pair(_plan_two, pick_index)
 	return []
 
 
@@ -518,10 +518,10 @@ func public_state(viewer_side: int) -> Dictionary:
 	}
 
 
-func _current_pair(plan: Array, step: int) -> Array:
-	if step < 0 or step >= plan.size():
+func _current_pair(plan: Array, pick_index: int) -> Array:
+	if pick_index < 0 or pick_index >= plan.size():
 		return []
-	return (plan[step] as Array).duplicate()
+	return (plan[pick_index] as Array).duplicate()
 
 
 ## ─── Utilitaires déterministes ──────────────────────────────────────────────

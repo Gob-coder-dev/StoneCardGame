@@ -115,8 +115,8 @@ func _apply_style() -> void:
 	var hover := normal.duplicate() as StyleBoxFlat
 	hover.bg_color = background.lightened(0.07)
 	hover.border_color = _family_color.lightened(0.18)
-	var pressed := normal.duplicate() as StyleBoxFlat
-	pressed.bg_color = background.darkened(0.12)
+	var pressed_style := normal.duplicate() as StyleBoxFlat
+	pressed_style.bg_color = background.darkened(0.12)
 	var focus := UITheme.panel_style(Color.TRANSPARENT, UITheme.COL_ACCENT_LIGHT, 3, 18)
 	focus.shadow_size = 0
 	focus.content_margin_left = 0
@@ -125,7 +125,7 @@ func _apply_style() -> void:
 	focus.content_margin_bottom = 0
 	add_theme_stylebox_override("normal", normal)
 	add_theme_stylebox_override("hover", hover)
-	add_theme_stylebox_override("pressed", pressed)
-	add_theme_stylebox_override("hover_pressed", pressed)
+	add_theme_stylebox_override("pressed", pressed_style)
+	add_theme_stylebox_override("hover_pressed", pressed_style)
 	add_theme_stylebox_override("disabled", normal)
 	add_theme_stylebox_override("focus", focus)

@@ -128,14 +128,14 @@ func _draw() -> void:
 	_draw_base()
 	_draw_side_rails_for_room()
 	var full_bleed := room == Room.BOARD or room == Room.PVP
-	var scale := _full_bleed_scale_for_size(size) if full_bleed \
+	var art_scale := _full_bleed_scale_for_size(size) if full_bleed \
 		else _artwork_scale_for_size(size)
-	var offset := _full_bleed_offset_for_size(size, scale) if full_bleed \
-		else _artwork_offset_for_size(size, scale)
-	var visible_top := -offset.y / scale
-	var visible_bottom := (size.y - offset.y) / scale
+	var offset := _full_bleed_offset_for_size(size, art_scale) if full_bleed \
+		else _artwork_offset_for_size(size, art_scale)
+	var visible_top := -offset.y / art_scale
+	var visible_bottom := (size.y - offset.y) / art_scale
 	draw_set_transform(offset, 0.0,
-		Vector2.ONE * scale)
+		Vector2.ONE * art_scale)
 	match room:
 		Room.REFUGE:
 			_draw_main_menu()
@@ -175,8 +175,8 @@ func _artwork_scale_for_size(viewport_size: Vector2) -> float:
 	return minf(viewport_size.x / 1080.0, viewport_size.y / 1920.0)
 
 
-func _artwork_offset_for_size(viewport_size: Vector2, scale: float) -> Vector2:
-	var artwork_size := Vector2(1080.0, 1920.0) * scale
+func _artwork_offset_for_size(viewport_size: Vector2, art_scale: float) -> Vector2:
+	var artwork_size := Vector2(1080.0, 1920.0) * art_scale
 	return (viewport_size - artwork_size) * 0.5
 
 
@@ -187,8 +187,8 @@ func _full_bleed_scale_for_size(viewport_size: Vector2) -> float:
 	return viewport_size.x / 1080.0
 
 
-func _full_bleed_offset_for_size(viewport_size: Vector2, scale: float) -> Vector2:
-	return Vector2(0.0, (viewport_size.y - 1920.0 * scale) * 0.5)
+func _full_bleed_offset_for_size(viewport_size: Vector2, art_scale: float) -> Vector2:
+	return Vector2(0.0, (viewport_size.y - 1920.0 * art_scale) * 0.5)
 
 
 ## Le bestiaire (personnalisation de deck), la campagne, la boutique, le profil

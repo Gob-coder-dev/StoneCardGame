@@ -20,7 +20,7 @@ var lobby_resume: Dictionary = {}
 
 ## Configuration validée du match en cours.
 var match_id: String = ""
-var seed: int = 1
+var generation_seed: int = 1
 var blocked_cells: Array = []
 var starting_player: int = GameState.PLAYER_ONE
 var participants: Array = []
@@ -68,15 +68,15 @@ func is_active() -> bool:
 
 
 ## Remplit le contexte depuis la configuration validée de l'hôte.
-func begin(config: Dictionary, side: int, peer_id: int,
-		local_profile: Dictionary, remote_profile: Dictionary,
+func begin(match_config: Dictionary, side: int, peer_id: int,
+		local_snapshot: Dictionary, remote_snapshot: Dictionary,
 		preserve_series: bool = false, rules: Dictionary = {}) -> void:
 	var saved_lobby_local := _lobby_local_profile.duplicate(true) if preserve_series else {}
 	var saved_lobby_remote := _lobby_remote_profile.duplicate(true) if preserve_series else {}
 	if saved_lobby_local.is_empty():
-		saved_lobby_local = _profile_snapshot(local_profile)
+		saved_lobby_local = _profile_snapshot(local_snapshot)
 	if saved_lobby_remote.is_empty():
-		saved_lobby_remote = _profile_snapshot(remote_profile)
+		saved_lobby_remote = _profile_snapshot(remote_snapshot)
 	var saved_series := series_public.duplicate(true) if preserve_series else {}
 	var saved_loadout := local_loadout.duplicate(true) if preserve_series else {}
 	var saved_preparation := preparation_id if preserve_series else ""
@@ -94,16 +94,16 @@ func begin(config: Dictionary, side: int, peer_id: int,
 	round_index = saved_round
 	series_flow = saved_flow
 	series_link = saved_link
-	raw_config = config.duplicate(true)
-	match_id = str(config.get("match_id", ""))
-	seed = int(config.get("seed", 1))
-	blocked_cells = (config.get("blocked_cells", []) as Array).duplicate()
-	starting_player = int(config.get("starting_player", GameState.PLAYER_ONE))
+	raw_config = match_config.duplicate(true)
+	match_id = str(match_config.get("match_id", ""))
+	generation_seed = int(match_config.get("seed", 1))
+	blocked_cells = (match_config.get("blocked_cells", []) as Array).duplicate()
+	starting_player = int(match_config.get("starting_player", GameState.PLAYER_ONE))
 	local_side = side
 	local_peer_id = peer_id
 	participants = []
 	peer_sides = {}
-	for entry in config.get("participants", []):
+	for entry in match_config.get("participants", []):
 		var participant: Dictionary = (entry as Dictionary).duplicate(true)
 		participants.append(participant)
 		peer_sides[int(participant.get("peer_id", 0))] = int(participant.get("side", 0))
@@ -113,8 +113,8 @@ func begin(config: Dictionary, side: int, peer_id: int,
 	var configured_local := participant_for_side(local_side)
 	var configured_remote := participant_for_side(remote_side())
 	_apply_profiles(
-		configured_local if not configured_local.is_empty() else local_profile,
-		configured_remote if not configured_remote.is_empty() else remote_profile
+		configured_local if not configured_local.is_empty() else local_snapshot,
+		configured_remote if not configured_remote.is_empty() else remote_snapshot
 	)
 	turn_number = 0
 	last_result = {}
@@ -124,26 +124,26 @@ func begin(config: Dictionary, side: int, peer_id: int,
 ## les deux profils, le camp et le lien ENet restent vivants. Aucun deck
 ## adverse n'est copié dans la vue locale ; il ne sert qu'à configurer le camp.
 func begin_preparation(flow: RefCounted, link: RefCounted, side: int,
-		local_peer: int, remote_peer: int, local_profile: Dictionary,
-		remote_profile: Dictionary, rules: Dictionary, state: Dictionary) -> void:
+		local_peer: int, remote_peer: int, local_snapshot: Dictionary,
+		remote_snapshot: Dictionary, rules: Dictionary, state: Dictionary) -> void:
 	clear()
 	stage = Stage.PREPARATION
-	_set_lobby_profiles(local_profile, remote_profile)
+	_set_lobby_profiles(local_snapshot, remote_snapshot)
 	series_flow = flow
 	series_link = link
 	local_side = side
 	local_peer_id = local_peer
-	local_name = str(local_profile.get("name", "Joueur"))
-	local_god_id = str(local_profile.get("god_id", ""))
-	local_deck = (local_profile.get("deck", []) as Array).duplicate()
-	remote_name = str(remote_profile.get("name", "Adversaire"))
-	remote_god_id = str(remote_profile.get("god_id", ""))
-	remote_deck = (remote_profile.get("deck", []) as Array).duplicate()
+	local_name = str(local_snapshot.get("name", "Joueur"))
+	local_god_id = str(local_snapshot.get("god_id", ""))
+	local_deck = (local_snapshot.get("deck", []) as Array).duplicate()
+	remote_name = str(remote_snapshot.get("name", "Adversaire"))
+	remote_god_id = str(remote_snapshot.get("god_id", ""))
+	remote_deck = (remote_snapshot.get("deck", []) as Array).duplicate()
 	match_id = str(state.get("series_id", ""))
 	match_rules = rules.duplicate(true)
 	participants = [
-		_participant(local_peer, side, local_profile),
-		_participant(remote_peer, remote_side(), remote_profile),
+		_participant(local_peer, side, local_snapshot),
+		_participant(remote_peer, remote_side(), remote_snapshot),
 	]
 	peer_sides = {local_peer: side, remote_peer: remote_side()}
 	set_series(state)
@@ -159,18 +159,18 @@ static func _participant(peer_id: int, side: int, profile: Dictionary) -> Dictio
 	}
 
 
-func _apply_profiles(local_profile: Dictionary, remote_profile: Dictionary) -> void:
-	local_name = str(local_profile.get("name", "Joueur"))
-	local_god_id = str(local_profile.get("god_id", ""))
-	local_deck = (local_profile.get("deck", []) as Array).duplicate()
-	remote_name = str(remote_profile.get("name", "Adversaire"))
-	remote_god_id = str(remote_profile.get("god_id", ""))
-	remote_deck = (remote_profile.get("deck", []) as Array).duplicate()
+func _apply_profiles(local_snapshot: Dictionary, remote_snapshot: Dictionary) -> void:
+	local_name = str(local_snapshot.get("name", "Joueur"))
+	local_god_id = str(local_snapshot.get("god_id", ""))
+	local_deck = (local_snapshot.get("deck", []) as Array).duplicate()
+	remote_name = str(remote_snapshot.get("name", "Adversaire"))
+	remote_god_id = str(remote_snapshot.get("god_id", ""))
+	remote_deck = (remote_snapshot.get("deck", []) as Array).duplicate()
 
 
-func _set_lobby_profiles(local_profile: Dictionary, remote_profile: Dictionary) -> void:
-	_lobby_local_profile = _profile_snapshot(local_profile)
-	_lobby_remote_profile = _profile_snapshot(remote_profile)
+func _set_lobby_profiles(local_snapshot: Dictionary, remote_snapshot: Dictionary) -> void:
+	_lobby_local_profile = _profile_snapshot(local_snapshot)
+	_lobby_remote_profile = _profile_snapshot(remote_snapshot)
 
 
 static func _profile_snapshot(profile: Dictionary) -> Dictionary:
@@ -189,7 +189,7 @@ static func _profile_snapshot(profile: Dictionary) -> Dictionary:
 func clear() -> void:
 	raw_config = {}
 	match_id = ""
-	seed = 1
+	generation_seed = 1
 	blocked_cells = []
 	starting_player = GameState.PLAYER_ONE
 	participants = []

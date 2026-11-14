@@ -277,39 +277,39 @@ func _input(event: InputEvent) -> void:
 
 func _outside_tap_released(event: InputEvent) -> bool:
 	var pointer := -1
-	var position := Vector2.ZERO
+	var card_position := Vector2.ZERO
 	var pressed := false
 	var released := false
 	var canceled := false
 	if event is InputEventScreenTouch:
 		pointer = event.index
-		position = event.position
+		card_position = event.position
 		pressed = event.pressed
 		released = not event.pressed
 		canceled = event.canceled
 	elif event is InputEventScreenDrag:
 		pointer = event.index
-		position = event.position
+		card_position = event.position
 	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		pointer = -2
-		position = event.position
+		card_position = event.position
 		pressed = event.pressed
 		released = not event.pressed
 		canceled = event.canceled
 	elif event is InputEventMouseMotion and _outside_pointer == -2:
 		pointer = -2
-		position = event.position
+		card_position = event.position
 	else:
 		return false
 	if pressed:
 		if _outside_pointer == -1:
 			_outside_pointer = pointer
-			_outside_origin = position
+			_outside_origin = card_position
 			_outside_canceled = false
 		return false
 	if pointer != _outside_pointer:
 		return false
-	if position.distance_to(_outside_origin) > UITheme.TOUCH_SLOP:
+	if card_position.distance_to(_outside_origin) > UITheme.TOUCH_SLOP:
 		_outside_canceled = true
 	if not released:
 		return false

@@ -7,9 +7,13 @@ extends Node
 
 signal session_started(session: StorySession)
 signal session_finished(session: StorySession)
-signal event_received(name: String, payload: Dictionary)
+signal event_received(event_name: String, payload: Dictionary)
+## TutorialDirector émet ces signaux via le service ; StoryLayer les consomme.
+@warning_ignore("unused_signal")
 signal spotlight_requested(target: Control, prompt: String, show_advance: bool)
+@warning_ignore("unused_signal")
 signal spotlight_cleared
+@warning_ignore("unused_signal")
 signal tutorial_step_changed
 
 const LoaderModel := preload("res://scripts/data/story/StoryContentLoader.gd")
@@ -128,8 +132,8 @@ func is_tutorial_running() -> bool:
 	return _tutorial != null and _tutorial.is_running()
 
 
-func notify_event(name: String, payload: Dictionary = {}) -> void:
-	event_received.emit(name, payload)
+func notify_event(event_name: String, payload: Dictionary = {}) -> void:
+	event_received.emit(event_name, payload)
 
 
 ## Attend un des événements nommés. `timeout` vaut 0 par défaut : le scénario
@@ -397,8 +401,8 @@ func _on_session_finished(session: StorySession) -> void:
 	_pump.call_deferred()
 
 
-func _on_event_received(name: String, payload: Dictionary) -> void:
-	_events.append({"name": name, "payload": payload, "at": Time.get_ticks_msec()})
+func _on_event_received(event_name: String, payload: Dictionary) -> void:
+	_events.append({"name": event_name, "payload": payload, "at": Time.get_ticks_msec()})
 	while _events.size() > EVENT_BUFFER_LIMIT:
 		_events.pop_front()
 

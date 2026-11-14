@@ -60,20 +60,20 @@ var _loadout_factory: PvpLoadoutFactory = LoadoutFactoryModel.new()
 
 ## Branche la série sur la session déjà ouverte par le salon. `rules` doit être
 ## verrouillée par le salon ; le coordinateur ne modifie jamais la configuration.
-func attach(transport: LanTransportLink, is_host: bool, local_side: int,
-		client_peer: int, local_profile: Dictionary, remote_profile: Dictionary,
-		rules: Dictionary, series_seed: int = 0) -> void:
+func attach(transport: LanTransportLink, host_role: bool, participant_side: int,
+		client_peer: int, local_snapshot: Dictionary, remote_snapshot: Dictionary,
+		series_rules: Dictionary, series_seed: int = 0) -> void:
 	close()
 	_closed = false
 	_transport = transport
-	_is_host = is_host
-	_local_side = local_side
+	_is_host = host_role
+	_local_side = participant_side
 	_client_peer = client_peer
-	_rules = RulesModel.normalized(rules)
+	_rules = RulesModel.normalized(series_rules)
 	_rules["locked"] = true
 	_series_seed = series_seed
-	_local_profile = (local_profile as Dictionary).duplicate(true)
-	_remote_profile = (remote_profile as Dictionary).duplicate(true)
+	_local_profile = (local_snapshot as Dictionary).duplicate(true)
+	_remote_profile = (remote_snapshot as Dictionary).duplicate(true)
 	_transport.message_received.connect(_on_message)
 
 
@@ -895,17 +895,17 @@ func _accepts_new_series(payload: Dictionary) -> bool:
 
 
 func _reset_for_new_series(payload: Dictionary) -> void:
-	var rules := RulesModel.normalized({
+	var series_rules := RulesModel.normalized({
 		"mode": str(payload.get("mode", RulesModel.MODE_CLASSIC)),
 		"series": str(payload.get("series", RulesModel.SERIES_FT1)),
 		"power_tier": int(payload.get("power_tier", RulesModel.DEFAULT_POWER_TIER)),
 		"revision": int(payload.get("rules_revision", 0)),
 		"locked": true,
 	})
-	_series = SeriesStateModel.create(str(payload.get("series_id", "")), rules, 0)
+	_series = SeriesStateModel.create(str(payload.get("series_id", "")), series_rules, 0)
 	_series.round_index = int(payload.get("round_index", 1))
 	_series.rules_revision = int(payload.get("rules_revision", 0))
-	_rules = rules
+	_rules = series_rules
 	_rules["revision"] = _series.rules_revision
 	_prep_id = ""
 	_loadout_one = null
@@ -1038,7 +1038,7 @@ func _offers_for_client(side: int) -> Array:
 
 
 func _seed_for_round() -> int:
-	return _series.seed + _series.round_index * 104729
+	return _series.generation_seed + _series.round_index * 104729
 
 
 func _now_ms() -> int:

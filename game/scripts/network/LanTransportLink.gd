@@ -8,9 +8,15 @@
 class_name LanTransportLink
 extends RefCounted
 
+## Contrat de signaux : ils sont émis par LanSessionLink et FakeLanTransport,
+## puis consommés par les coordinateurs ; le compilateur n'analyse que cette base.
+@warning_ignore("unused_signal")
 signal message_received(from_peer: int, kind: String, payload: Dictionary)
+@warning_ignore("unused_signal")
 signal peer_joined(peer_id: int)
+@warning_ignore("unused_signal")
 signal peer_left(peer_id: int)
+@warning_ignore("unused_signal")
 signal connected_to_host()
 
 

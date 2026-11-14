@@ -92,8 +92,8 @@ const PATH_CHAPTER_LABEL_HEIGHT: int = 56
 ## Positions logiques sur une largeur de référence de 1080 ; la hauteur est
 ## fournie par les données. La carte entière partage un seul facteur d'échelle.
 const CAMPAIGN_MAP_WIDTH: float = 1080.0
-const CampaignMapGeometry := preload("res://scripts/domain/campaign/CampaignMapGeometry.gd")
-const CAMPAIGN_NODE_SIZE: int = CampaignMapGeometry.NODE_DIAMETER
+const MapGeometry := preload("res://scripts/domain/campaign/CampaignMapGeometry.gd")
+const CAMPAIGN_NODE_SIZE: int = MapGeometry.NODE_DIAMETER
 const CAMPAIGN_NODE_MIN_DISTANCE: float = 120.0
 const CAMPAIGN_BOTTOM_PAD: float = 180.0
 const CAMPAIGN_TOP_PAD: float = 120.0

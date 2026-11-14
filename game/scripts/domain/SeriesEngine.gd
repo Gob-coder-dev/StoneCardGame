@@ -10,8 +10,8 @@ const NEXT_PREPARATION := "preparation"
 const NEXT_COMPLETE := "complete"
 
 
-static func begin(series_id: String, rules: Dictionary, seed: int) -> SeriesState:
-	return SeriesState.create(series_id, rules, seed)
+static func begin(series_id: String, rules: Dictionary, generation_seed: int) -> SeriesState:
+	return SeriesState.create(series_id, rules, generation_seed)
 
 
 ## Enregistre le verdict d'une manche. Une égalité ne marque aucun point et
@@ -139,7 +139,7 @@ static func public_state(series: SeriesState) -> Dictionary:
 		"finished": series.finished,
 		"winner": series.winner,
 		"abandoned": series.abandoned,
-		"seed": series.seed,
+		"seed": series.generation_seed,
 		"keeps_loadouts": series.keeps_loadouts(),
 	}
 

@@ -112,7 +112,7 @@ func _prepare_card(stone_id: String) -> void:
 
 ## Prépare la ligne d'une case indépendamment des cartes envisagées.
 func _prepare_line(index: int) -> void:
-	var row := index / _state.board_size
+	var row := floori(float(index) / _state.board_size)
 	var col := index % _state.board_size
 	var per_side: Array = []
 	for side in StoneSide.ALL:

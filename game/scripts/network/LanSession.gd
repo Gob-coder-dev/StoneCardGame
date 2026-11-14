@@ -139,7 +139,7 @@ func local_peer_id() -> int:
 
 
 func peer_ids() -> Array:
-	return multiplayer.get_peers() if _peer != null else []
+	return Array(multiplayer.get_peers()) if _peer != null else []
 
 
 func leave_with_notice(message: String) -> void:

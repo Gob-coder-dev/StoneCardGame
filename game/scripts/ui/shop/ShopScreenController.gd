@@ -214,7 +214,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _on_tick() -> void:
 	var duration := int(EconomyConfig.get_config().get("shop_rotation_seconds", 10800))
-	var current_rotation := int(Time.get_unix_time_from_system()) / duration
+	var current_rotation := floori(Time.get_unix_time_from_system() / duration)
 	if current_rotation != _rotation_id:
 		_refresh()
 	else:
@@ -224,7 +224,7 @@ func _on_tick() -> void:
 func _update_countdown() -> void:
 	var remaining := maxi(0, _ends_at - int(Time.get_unix_time_from_system()))
 	rotation_label.text = "NOUVELLES CARTES DANS %02d:%02d:%02d" % [
-		remaining / 3600, (remaining % 3600) / 60, remaining % 60]
+		floori(float(remaining) / 3600.0), floori(float(remaining % 3600) / 60.0), remaining % 60]
 
 
 func _show_status(message: String, error: bool) -> void:

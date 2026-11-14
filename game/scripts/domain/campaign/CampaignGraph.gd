@@ -40,14 +40,14 @@ static func build(definition: Dictionary) -> CampaignGraph:
 		for raw in raw_nodes:
 			if not raw is Dictionary:
 				continue
-			var node: CampaignNode = NodeModel.from_dict(raw)
-			if node.id == "":
+			var campaign_node: CampaignNode = NodeModel.from_dict(raw)
+			if campaign_node.id == "":
 				continue
-			if not graph._nodes.has(node.id):
-				graph._node_order.append(node.id)
-			graph._nodes[node.id] = node
-			graph._outgoing[node.id] = []
-			graph._incoming[node.id] = []
+			if not graph._nodes.has(campaign_node.id):
+				graph._node_order.append(campaign_node.id)
+			graph._nodes[campaign_node.id] = campaign_node
+			graph._outgoing[campaign_node.id] = []
+			graph._incoming[campaign_node.id] = []
 	var raw_edges: Variant = definition.get("edges", [])
 	if raw_edges is Array:
 		for raw in raw_edges:

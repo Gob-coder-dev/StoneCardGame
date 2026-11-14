@@ -27,6 +27,15 @@ et le retrait d'une carte ; les boutons ordinaires héritent de l'ardoise.
 Le thème définit également les états désactivés, le focus clavier, les champs
 de saisie et les barres de défilement.
 
+La ressource de thème enregistrée ne contient aucun script ; elle est utilisable
+avant la création de l'arbre et donne un aperçu fidèle dans l'éditeur.
+`InterfaceTheme` actualise les styles au démarrage du jeu depuis la même fabrique.
+Pour régénérer l'aperçu après modification de la palette :
+
+```sh
+godot --headless --path game --script res://tools/BakeInterfaceTheme.gd
+```
+
 ## Fonds et illustrations
 
 `MenuBackground.gd` dessine un fond de pierre sombre avec quelques formes

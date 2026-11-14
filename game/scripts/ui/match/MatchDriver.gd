@@ -10,12 +10,16 @@ class_name MatchDriver
 extends Node
 
 ## Partie interrompue : déconnexion, désynchronisation ou erreur réseau.
+## Ces signaux appartiennent au contrat ; les drivers concrets les émettent.
+@warning_ignore("unused_signal")
 signal aborted(message: String)
 ## Fin normale. Le driver campagne ne l'émet pas : il laisse le résultat de
 ## campagne s'afficher comme avant.
+@warning_ignore("unused_signal")
 signal finished(winner: int, score_one: int, score_two: int)
 ## La possibilité de jouer du joueur local vient de changer. En PVP, le tour
 ## n'est ouvert qu'une fois l'hôte satisfait des deux empreintes d'état.
+@warning_ignore("unused_signal")
 signal interaction_changed
 
 var turn_manager: TurnManager = null

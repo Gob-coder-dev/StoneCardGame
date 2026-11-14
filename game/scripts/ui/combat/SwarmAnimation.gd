@@ -161,11 +161,11 @@ func _draw_broken_links() -> void:
 		var first_end := middle.lerp(start, break_value * 0.72)
 		var second_start := middle.lerp(end, break_value * 0.72)
 		var fade := 1.0 - break_value
-		var seed := absi(hash(str(link.get("key", "")))) % 97
+		var generation_seed := absi(hash(str(link.get("key", "")))) % 97
 		VineStyle.draw_vine(self, start, first_end, _base_square,
-			fade, seed, progress * 7.0, true)
+			fade, generation_seed, progress * 7.0, true)
 		VineStyle.draw_vine(self, second_start, end, _base_square,
-			fade, seed + 3, -progress * 7.0, true)
+			fade, generation_seed + 3, -progress * 7.0, true)
 		var normal := (end - start).normalized()
 		var tangent := Vector2(-normal.y, normal.x)
 		var crack := PackedVector2Array([
@@ -205,13 +205,13 @@ func _draw_living_links() -> void:
 			var swap := start
 			start = end
 			end = swap
-		var seed := absi(hash(str(link.get("key", index)))) % 97
+		var generation_seed := absi(hash(str(link.get("key", index)))) % 97
 		var points := VineStyle.draw_vine(self, start, end, _base_square,
-			reveal, seed, progress * 8.0, true)
-		_draw_link_impulse(points, index)
+			reveal, generation_seed, progress * 8.0, true)
+		_draw_link_impulse(points)
 
 
-func _draw_link_impulse(points: PackedVector2Array, index: int) -> void:
+func _draw_link_impulse(points: PackedVector2Array) -> void:
 	var travel := clampf(inverse_lerp(0.22, 0.70, progress), 0.0, 1.0)
 	if travel <= 0.0 or travel >= 1.0:
 		return

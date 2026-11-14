@@ -12,7 +12,7 @@ class_name LanMatchCoordinator
 extends RefCounted
 
 signal command_accepted(command: Dictionary)
-signal turn_confirmed(sequence: int)
+signal turn_confirmed(turn_sequence: int)
 signal match_finished(winner: int, score_one: int, score_two: int)
 ## L'adversaire a demandé le lancement de la partie.
 signal start_pending()
@@ -58,12 +58,12 @@ var _pending_result: Dictionary = {}
 
 
 ## Branche le coordinateur. `client_peer` n'est utile qu'à l'hôte.
-func attach(transport: LanTransportLink, match_id: String, is_host: bool,
+func attach(transport: LanTransportLink, session_match_id: String, is_host: bool,
 		local_side: int, client_peer: int = 0) -> void:
 	close()
 	_closed = false
 	_transport = transport
-	_match_id = match_id
+	_match_id = session_match_id
 	_is_host = is_host
 	_local_side = local_side
 	_client_peer = client_peer
@@ -220,8 +220,8 @@ func _accept(command: Dictionary) -> void:
 func _on_turn_ack(from_peer: int, payload: Dictionary) -> void:
 	if not _is_host or from_peer != _client_peer:
 		return
-	var sequence := int(payload.get("sequence", -1))
-	if sequence != _sequence or sequence != _pending_ack_sequence:
+	var turn_sequence := int(payload.get("sequence", -1))
+	if turn_sequence != _sequence or turn_sequence != _pending_ack_sequence:
 		return
 	_remote_fingerprint = str(payload.get("fingerprint", ""))
 	_confirm_if_ready()
@@ -267,10 +267,10 @@ func _fail_desync() -> void:
 ## ─── Preuve d'état des deux appareils ───────────────────────────────────────
 
 ## Appelé par le driver après la résolution et la présentation du tour local.
-func report_local_state(fingerprint: String, sequence: int) -> void:
+func report_local_state(fingerprint: String, turn_sequence: int) -> void:
 	if _closed or _desynced or not _started:
 		return
-	if sequence != _sequence:
+	if turn_sequence != _sequence:
 		return
 	_local_fingerprint = fingerprint
 	if _is_host:
@@ -278,7 +278,7 @@ func report_local_state(fingerprint: String, sequence: int) -> void:
 	else:
 		_transport.send_to(HOST_PEER, LanProtocol.KIND_TURN_ACK, {
 			"match_id": _match_id,
-			"sequence": sequence,
+			"sequence": turn_sequence,
 			"fingerprint": fingerprint,
 		})
 
@@ -445,8 +445,8 @@ func _on_accepted(from_peer: int, payload: Dictionary) -> void:
 
 
 func _on_turn_confirmed(payload: Dictionary) -> void:
-	var sequence := int(payload.get("sequence", -1))
-	if sequence != _sequence:
+	var turn_sequence := int(payload.get("sequence", -1))
+	if turn_sequence != _sequence:
 		return
 	if str(payload.get("fingerprint", "")) != _local_fingerprint:
 		_desynced = true
@@ -455,7 +455,7 @@ func _on_turn_confirmed(payload: Dictionary) -> void:
 		return
 	_pending_ack_sequence = -1
 	_set_can_submit(true)
-	turn_confirmed.emit(sequence)
+	turn_confirmed.emit(turn_sequence)
 
 
 func _on_rejected(payload: Dictionary) -> void:

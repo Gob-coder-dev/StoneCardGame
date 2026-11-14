@@ -1,8 +1,8 @@
 ## Applique le thème commun à tout l'arbre, une fois que le SceneTree existe.
 ##
-## Le thème déclaré par `gui/theme/custom` est chargé avant l'arbre : son script
-## ne peut donc pas le remplir sans faire remonter des erreurs au débogueur.
-## Il arrive vide ici et reçoit tous ses styles maintenant.
+## `gui/theme/custom` charge une ressource sans script avant l'arbre. Ses styles
+## enregistrés servent à l'aperçu de l'éditeur ; la même fabrique les actualise
+## ici, après création du SceneTree, sans exécuter de code au chargement précoce.
 extends Node
 
 const THEME_PATH: String = "res://assets/ui/samstone_theme.tres"

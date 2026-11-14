@@ -199,9 +199,9 @@ func _release_step() -> void:
 ## Attend le bon événement, sans limite de temps : le joueur peut lire,
 ## réfléchir ou laisser l'application en arrière-plan, l'étape reste en place.
 ## Un geste qui ne correspond pas à `expect` ne consomme pas l'étape.
-func _wait_for_expected(name: String) -> Dictionary:
+func _wait_for_expected(event_name: String) -> Dictionary:
 	while _running and not _canceled:
-		var event: Dictionary = await _service.wait_for_event([name])
+		var event: Dictionary = await _service.wait_for_event([event_name])
 		if not _running or _canceled:
 			return {}
 		if event.is_empty():

@@ -32,7 +32,7 @@ func _init(service: ModePreparationService = null) -> void:
 
 
 func configure(config: Dictionary, player_profile: Dictionary,
-		opponent_profile: Dictionary, seed: int) -> Dictionary:
+		opponent_profile: Dictionary, generation_seed: int) -> Dictionary:
 	var mode_config := GameModeRules.normalized(config)
 	_rules = {
 		"mode": mode_config["mode"],
@@ -45,7 +45,7 @@ func configure(config: Dictionary, player_profile: Dictionary,
 	}
 	_profile_one = _profile_snapshot(player_profile)
 	_profile_two = _profile_snapshot(opponent_profile)
-	_series = SeriesEngine.begin("campaign-%d" % seed, _rules, seed)
+	_series = SeriesEngine.begin("campaign-%d" % generation_seed, _rules, generation_seed)
 	return prepare_round()
 
 
@@ -184,7 +184,7 @@ func _install_loadouts(one: GameLoadout, two: GameLoadout) -> void:
 
 
 func _round_seed() -> int:
-	return _series.seed + _series.round_index * 104729
+	return _series.generation_seed + _series.round_index * 104729
 
 
 static func _profile_snapshot(profile: Dictionary) -> Dictionary:
@@ -195,11 +195,11 @@ static func _profile_snapshot(profile: Dictionary) -> Dictionary:
 	}
 
 
-static func _default_ai_choice(offers: Array, _state: Dictionary, seed: int) -> String:
+static func _default_ai_choice(offers: Array, _state: Dictionary, generation_seed: int) -> String:
 	if offers.is_empty():
 		return ""
 	var rng := RandomNumberGenerator.new()
-	rng.seed = seed
+	rng.seed = generation_seed
 	return str(offers[rng.randi_range(0, offers.size() - 1)])
 
 

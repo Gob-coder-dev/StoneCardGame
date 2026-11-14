@@ -24,7 +24,7 @@ combat, l'équilibrage de la campagne et les illustrations originales sont conse
 | La progression des illustrations ne fonctionnait pas pour un profil sans dieu | L'activité du préchauffage est explicite et le catalogue neutre est pris en charge. |
 | Le test tactile supposait toujours une offre achetable | La fixture de défilement prépare un profil de départ et vérifie la présence des offres avant de les manipuler. Une collection historique complète pouvait légitimement produire une boutique vide. |
 | La fermeture pouvait signaler des playbacks audio encore actifs | Arrêt des lecteurs et court délai réel avant fermeture. Les tests vérifient aussi les diagnostics de sortie. |
-| Le tout premier import pouvait échouer sur le thème | `RefugeTheme` précharge explicitement sa palette, disponible avant le scan du registre global des classes. |
+| Le tout premier import pouvait échouer sur le thème | La palette est préchargée explicitement. La correction complémentaire ci-dessous supprime aussi tout script de la ressource chargée avant l'arbre. |
 
 ## Architecture et code
 
@@ -148,3 +148,36 @@ profil et de campagne restent distincts. Une garantie de transaction unique
 durable entre ces fichiers demanderait un journal de reprise persistant séparé.
 Les tests présents couvrent les échecs d'écriture et réessais dans la session,
 pas toutes les interruptions matérielles possibles.
+
+## Complément : diagnostics visibles dans l'éditeur
+
+Le lancement avec le débogueur connecté a révélé une lacune des vérifications
+précédentes : Godot transmet les avertissements de compilation directement au
+débogueur, sans les envoyer au logger des suites. Une exécution headless seule
+ne permettait donc pas d'annoncer l'absence de ces avertissements.
+
+La ressource de thème est maintenant constituée de données sans script. La
+fabrique ne travaille qu'après création du SceneTree ; l'aperçu de l'éditeur
+est généré par `BakeInterfaceTheme`, avec UID et identifiants de styles stables.
+Cela supprime le code exécuté pendant le chargement précoce du thème.
+
+Les avertissements réels ont été traités : variables et paramètres ne masquent
+plus une fonction, une classe ou une propriété ; les divisions entières sont
+explicites ; les branches de types incompatibles et les conversions vers `Error`
+sont clarifiées ; les paramètres et variables réellement inutilisés sont retirés.
+Les clés JSON et réseau, notamment `seed`, restent inchangées. Quelques signaux
+de contrat utilisés par leurs collaborateurs ont une annotation ciblée et documentée.
+
+Le lanceur connecte désormais un débogueur local avant le chargement du jeu,
+compile les 238 scripts de production et vérifie l'accueil. Il échoue sur tout
+diagnostic d'application et conserve les messages reçus en JSON. Le diagnostic
+de certificats natif Windows reste visible et identifié séparément.
+
+Validation de ce complément depuis une nouvelle copie sans cache : import
+réussi, **0 diagnostic d'application** avec débogueur connecté, 2 088
+vérifications principales et 108 tactiles réussies, export de contrôle conforme.
+Une injection volontaire de paramètre masquant la fonction `seed` dans cette
+copie temporaire fait bien échouer le contrôle ; le fichier de test est ensuite
+retiré. Deux régénérations successives du thème donnent le même contenu.
+Les journaux sont dans `.tmp/quality/debugger-fix/clean/` ; le refus attendu
+du test de garde est conservé séparément dans `expected-warning/`.

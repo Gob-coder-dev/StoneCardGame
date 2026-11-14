@@ -61,12 +61,12 @@ func _persist_victory() -> Error:
 	if not _reward_saved:
 		var granted := Reward.apply_victory(_service, _node_id, _first_victory, _attempt)
 		if not bool(granted.get("ok", false)):
-			return int(granted.get("error", ERR_FILE_CANT_WRITE))
+			return int(granted.get("error", ERR_FILE_CANT_WRITE)) as Error
 		reward = granted.duplicate(true)
 		_reward_saved = true
 	if not _completion_saved:
 		var completion := Completion.apply_victory(_service, _node_id)
-		var error := int(completion.get("error", OK))
+		var error := int(completion.get("error", OK)) as Error
 		if error != OK:
 			return error
 		_completion_saved = true

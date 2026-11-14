@@ -18,42 +18,42 @@ func _init(pool: Array = [], god_ids: Array = []) -> void:
 ## Les contraintes sont optionnelles : les appels PVP historiques gardent leurs
 ## dieux aléatoires et leurs decks miroirs générés. La campagne les renseigne
 ## pour un dieu imposé, une pureté de deck ou un deck miroir exact.
-func prepare_immediate(mode: String, seed: int, max_tier: int,
+func prepare_immediate(mode: String, generation_seed: int, max_tier: int,
 		profile_one: Dictionary, profile_two: Dictionary,
 		constraints: Dictionary = {}) -> Dictionary:
 	match mode:
 		GameModeRules.MODE_CLASSIC:
 			return _classic(profile_one, profile_two)
 		GameModeRules.MODE_RANDOM:
-			return _random(seed, max_tier, constraints)
+			return _random(generation_seed, max_tier, constraints)
 		GameModeRules.MODE_MIRROR:
-			return _mirror(seed, max_tier, constraints)
+			return _mirror(generation_seed, max_tier, constraints)
 		GameModeRules.MODE_DRAFT:
 			return {"ok": false, "reason": "Le mode Sélection exige une session de draft."}
 	return {"ok": false, "reason": "Mode de jeu inconnu."}
 
 
-func create_draft(seed: int, max_tier: int, profile_one: Dictionary,
+func create_draft(generation_seed: int, max_tier: int, profile_one: Dictionary,
 		profile_two: Dictionary, duration_seconds: float = DraftEngine.DEFAULT_DURATION_SECONDS) -> Dictionary:
 	var god_one := str(profile_one.get("god_id", ""))
 	var god_two := str(profile_two.get("god_id", ""))
 	if god_one == "" or god_two == "":
 		return {"ok": false, "reason": "Dieu manquant pour le mode Sélection."}
 	var draft := DraftEngine.new()
-	var started := draft.start(seed, god_one, god_two, max_tier, duration_seconds)
+	var started := draft.start(generation_seed, god_one, god_two, max_tier, duration_seconds)
 	if not bool(started.get("ok", false)):
 		return {"ok": false, "reason": str(started.get("reason", "Draft impossible."))}
 	return {"ok": true, "reason": "", "draft": draft}
 
 
-func loadouts_from_draft(draft: DraftEngine, seed: int) -> Dictionary:
+func loadouts_from_draft(draft: DraftEngine, generation_seed: int) -> Dictionary:
 	if draft == null or not draft.is_complete():
 		return {"ok": false, "reason": "Le draft n'est pas terminé."}
 	var result := draft.result()
 	if not bool(result.get("ok", false)):
 		return {"ok": false, "reason": str(result.get("reason", "Draft invalide."))}
-	var one := GameLoadout.create(str(result["god_one"]), result["deck_one"], seed)
-	var two := GameLoadout.create(str(result["god_two"]), result["deck_two"], seed)
+	var one := GameLoadout.create(str(result["god_one"]), result["deck_one"], generation_seed)
+	var two := GameLoadout.create(str(result["god_two"]), result["deck_two"], generation_seed)
 	return _success(one, two)
 
 
@@ -67,7 +67,7 @@ func _classic(profile_one: Dictionary, profile_two: Dictionary) -> Dictionary:
 	return _success(one, two)
 
 
-func _random(seed: int, max_tier: int, constraints: Dictionary = {}) -> Dictionary:
+func _random(generation_seed: int, max_tier: int, constraints: Dictionary = {}) -> Dictionary:
 	var god_id := str(constraints.get("generator_god_id", ""))
 	var min_god_cards := int(constraints.get("generator_min_god_cards", 0))
 	var constraint_problem := _generation_constraint_problem(god_id, min_god_cards)
@@ -78,16 +78,16 @@ func _random(seed: int, max_tier: int, constraints: Dictionary = {}) -> Dictiona
 	if god_id != "":
 		generator = _generator_for_god(god_id, min_god_cards)
 		god_ids = [god_id]
-	var generated := generator.generate_random(seed, god_ids, max_tier, min_god_cards)
+	var generated := generator.generate_random(generation_seed, god_ids, max_tier, min_god_cards)
 	if not bool(generated.get("ok", false)):
 		return generated
 	return _success(
-		GameLoadout.create(str(generated["god_one"]), generated["deck_one"], seed),
-		GameLoadout.create(str(generated["god_two"]), generated["deck_two"], seed)
+		GameLoadout.create(str(generated["god_one"]), generated["deck_one"], generation_seed),
+		GameLoadout.create(str(generated["god_two"]), generated["deck_two"], generation_seed)
 	)
 
 
-func _mirror(seed: int, max_tier: int, constraints: Dictionary = {}) -> Dictionary:
+func _mirror(generation_seed: int, max_tier: int, constraints: Dictionary = {}) -> Dictionary:
 	var god_id := str(constraints.get("generator_god_id", ""))
 	var min_god_cards := int(constraints.get("generator_min_god_cards", 0))
 	var constraint_problem := _generation_constraint_problem(god_id, min_god_cards)
@@ -98,21 +98,21 @@ func _mirror(seed: int, max_tier: int, constraints: Dictionary = {}) -> Dictiona
 	if not fixed_deck.is_empty():
 		if god_id == "":
 			return {"ok": false, "reason": "Un deck miroir imposé exige un dieu."}
-		var one := GameLoadout.create(god_id, fixed_deck, seed)
-		if not one.is_valid():
+		var fixed_loadout := GameLoadout.create(god_id, fixed_deck, generation_seed)
+		if not fixed_loadout.is_valid():
 			return {"ok": false, "reason": "Le deck miroir imposé est invalide."}
 		if DeckRules.affinity_count(fixed_deck, god_id) < min_god_cards:
 			return {"ok": false, "reason": "Le deck miroir imposé ne respecte pas le minimum de cartes du dieu."}
-		return _success(one, one.copy())
+		return _success(fixed_loadout, fixed_loadout.copy())
 	var generator := _generator
 	var god_ids := _god_ids
 	if god_id != "":
 		generator = _generator_for_god(god_id, min_god_cards)
 		god_ids = [god_id]
-	var generated := generator.generate_mirror(seed, god_ids, max_tier, min_god_cards)
+	var generated := generator.generate_mirror(generation_seed, god_ids, max_tier, min_god_cards)
 	if not bool(generated.get("ok", false)):
 		return generated
-	var one := GameLoadout.create(str(generated["god_id"]), generated["deck"], seed)
+	var one := GameLoadout.create(str(generated["god_id"]), generated["deck"], generation_seed)
 	return _success(one, one.copy())
 
 

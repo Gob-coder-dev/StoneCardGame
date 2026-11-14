@@ -610,10 +610,10 @@ func _fill_player(role_label: Label, name_label: Label, god_label: Label,
 		status_label.text = "EN PARTIE"
 		status_label.add_theme_color_override("font_color", UITheme.COL_WARNING)
 		return
-	var ready := bool(profile.get("ready", false))
-	status_label.text = "PRÊT" if ready else "PAS PRÊT"
+	var is_ready := bool(profile.get("ready", false))
+	status_label.text = "PRÊT" if is_ready else "PAS PRÊT"
 	status_label.add_theme_color_override("font_color",
-		UITheme.COL_SUCCESS if ready else UITheme.COL_ERROR)
+		UITheme.COL_SUCCESS if is_ready else UITheme.COL_ERROR)
 
 
 func _update_ready_button(lobby: Dictionary) -> void:

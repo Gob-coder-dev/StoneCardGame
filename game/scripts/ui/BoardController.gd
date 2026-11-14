@@ -43,7 +43,10 @@ func _ready() -> void:
 	## fournit la géométrie du plateau et ses cases bloquées.
 	if BattleContext.campaign_node_id != "":
 		StoryService.start_tutorial_for_node(BattleContext.campaign_node_id)
-	_driver = (LanDriver.new() if PvpMatchContext.is_active() else CampaignDriver.new()) as MatchDriver
+	if PvpMatchContext.is_active():
+		_driver = LanDriver.new()
+	else:
+		_driver = CampaignDriver.new()
 	add_child(_driver)
 	_driver.setup(turn_manager)
 	_driver.aborted.connect(_on_match_aborted)

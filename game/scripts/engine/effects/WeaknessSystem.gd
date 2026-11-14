@@ -37,7 +37,7 @@ static func update_miasma(state: GameState, source_row: int, source_col: int) ->
 		var stone := Board.stone_at(cell)
 		if stone == null:
 			continue
-		var row := index / state.board_size
+		var row := floori(float(index) / state.board_size)
 		var col := index % state.board_size
 		var aura := 0
 		var aura_source := -1
@@ -59,7 +59,7 @@ static func update_miasma(state: GameState, source_row: int, source_col: int) ->
 		if increased:
 			events.append(CombatEvents.weakness(CombatEvents.WEAKEN, row, col,
 				weakness_before, stone.weakness(),
-				aura_source / state.board_size, aura_source % state.board_size, "adjacent"))
+				floori(float(aura_source) / state.board_size), aura_source % state.board_size, "adjacent"))
 		else:
 			events.append(CombatEvents.weakness(CombatEvents.WEAKNESS_EXPIRED, row, col,
 				weakness_before, stone.weakness(), -1, -1, "adjacent"))
@@ -98,6 +98,6 @@ static func expire_for_player(state: GameState, player: int) -> Array:
 			stone.temporary_weakness = 0
 			stone.temporary_weakness_owner = GameState.PLAYER_NONE
 			events.append(CombatEvents.weakness(CombatEvents.WEAKNESS_EXPIRED,
-				index / state.board_size, index % state.board_size,
+				floori(float(index) / state.board_size), index % state.board_size,
 				weakness_before, stone.weakness()))
 	return events

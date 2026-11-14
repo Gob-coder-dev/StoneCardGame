@@ -560,7 +560,13 @@ déplace donc jamais le plateau. `CARD_HAND`, `CARD_DECK` et
 
 L'habillage du refuge est commun aux écrans : `UITheme` fournit la palette et
 les fabriques de styles, `RefugeTheme` construit le thème global depuis ces
-constantes. `MenuBackground` dessine les fonds sans recevoir d'entrée et
+constantes après création du SceneTree, via l'autoload `InterfaceTheme`.
+La ressource `samstone_theme.tres` ne porte aucun script : son chargement précoce
+ne peut donc pas exécuter un constructeur avant l'arbre. Ses styles enregistrés
+servent aussi d'aperçu dans l'éditeur. Après un changement de palette, les
+régénérer avec `--script res://tools/BakeInterfaceTheme.gd` ; les identifiants
+de sous-ressources et l'UID du thème restent stables.
+`MenuBackground` dessine les fonds sans recevoir d'entrée et
 remplace l'ancien `ParchmentBackground`. Les motifs centrés utilisent le
 canevas de référence ; BOARD et PVP dessinent leurs rails plein cadre avec une
 échelle fondée sur la largeur et une hauteur visible dynamique. Les variations de boutons sont

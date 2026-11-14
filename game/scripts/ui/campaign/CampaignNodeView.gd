@@ -100,12 +100,12 @@ func _refresh() -> void:
 	style.shadow_offset = Vector2(0.0, 6.0)
 	var hover := style.duplicate() as StyleBoxFlat
 	hover.bg_color = fill.lightened(0.07)
-	var pressed := style.duplicate() as StyleBoxFlat
-	pressed.bg_color = fill.darkened(0.12)
+	var pressed_style := style.duplicate() as StyleBoxFlat
+	pressed_style.bg_color = fill.darkened(0.12)
 	add_theme_stylebox_override("normal", style)
 	add_theme_stylebox_override("hover", hover)
-	add_theme_stylebox_override("pressed", pressed)
-	add_theme_stylebox_override("hover_pressed", pressed)
+	add_theme_stylebox_override("pressed", pressed_style)
+	add_theme_stylebox_override("hover_pressed", pressed_style)
 	add_theme_stylebox_override("disabled", style)
 	add_theme_stylebox_override("focus", StyleBoxEmpty.new())
 	queue_redraw()

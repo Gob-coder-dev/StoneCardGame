@@ -8,11 +8,11 @@ var unlocked_gates: Dictionary = {}
 var unlocked_rarities: Dictionary = {}
 
 
-static func build(gates: Dictionary, rarities: Dictionary,
+static func build(gates: Dictionary, allowed_rarities: Dictionary,
 		value_revision: int) -> ContentAccessState:
 	var state := ContentAccessState.new()
 	state.unlocked_gates = gates.duplicate()
-	state.unlocked_rarities = rarities.duplicate()
+	state.unlocked_rarities = allowed_rarities.duplicate()
 	state.revision = maxi(0, value_revision)
 	return state
 

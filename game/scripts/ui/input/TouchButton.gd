@@ -48,7 +48,10 @@ func _set_touch_mode(enabled: bool) -> void:
 		for key in ["hover", "hover_pressed", "focus"]:
 			_mouse_styles[key] = get_theme_stylebox(key) if has_theme_stylebox_override(key) else null
 		for key in ["font_hover_color", "font_hover_pressed_color"]:
-			_mouse_colors[key] = get_theme_color(key) if has_theme_color_override(key) else null
+			var previous: Variant = null
+			if has_theme_color_override(key):
+				previous = get_theme_color(key)
+			_mouse_colors[key] = previous
 		add_theme_stylebox_override("hover", get_theme_stylebox("normal"))
 		add_theme_stylebox_override("hover_pressed", get_theme_stylebox("pressed"))
 		add_theme_stylebox_override("focus", StyleBoxEmpty.new())

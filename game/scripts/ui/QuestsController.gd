@@ -141,9 +141,9 @@ func _build() -> void:
 	var daily: Array = view.get("daily", [])
 	var unique: Array = view.get("unique", [])
 	for entry in daily:
-		daily_list.add_child(_quest_card(entry, true))
+		daily_list.add_child(_quest_card(entry))
 	for entry in unique:
-		unique_list.add_child(_quest_card(entry, false))
+		unique_list.add_child(_quest_card(entry))
 	var finished := 0
 	for entry in unique:
 		if bool(entry.get("finished", false)):
@@ -161,7 +161,7 @@ func _update_countdown() -> void:
 	_daily_subtitle.text = "Nouvelles quêtes dans %d h %02d" % [hours, minutes]
 
 
-func _quest_card(entry: Dictionary, daily: bool) -> PanelContainer:
+func _quest_card(entry: Dictionary) -> PanelContainer:
 	var panel := PanelContainer.new()
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.add_theme_stylebox_override("panel", UITheme.panel_style(
@@ -172,21 +172,21 @@ func _quest_card(entry: Dictionary, daily: bool) -> PanelContainer:
 	row.add_theme_constant_override("separation", 18)
 	panel.add_child(row)
 
-	var content := VBoxContainer.new()
-	content.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	content.add_theme_constant_override("separation", 8)
-	row.add_child(content)
-	content.add_child(_label(str(entry["title"]), UITheme.FONT_SUBTITLE - 6,
+	var card_content := VBoxContainer.new()
+	card_content.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	card_content.add_theme_constant_override("separation", 8)
+	row.add_child(card_content)
+	card_content.add_child(_label(str(entry["title"]), UITheme.FONT_SUBTITLE - 6,
 		UITheme.COL_ACCENT_LIGHT))
 	var description := _label(str(entry["description"]), UITheme.FONT_SMALL - 4,
 		UITheme.COL_TEXT_DIM)
 	description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	content.add_child(description)
-	content.add_child(_gauge(entry))
+	card_content.add_child(description)
+	card_content.add_child(_gauge(entry))
 	var rewards := _reward_row(entry)
 	if rewards.get_child_count() > 0:
-		content.add_child(rewards)
+		card_content.add_child(rewards)
 
 	var action := VBoxContainer.new()
 	action.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -228,12 +228,12 @@ func _gauge(entry: Dictionary) -> HBoxContainer:
 	bar.max_value = threshold
 	bar.value = current
 	bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var background := StyleBoxFlat.new()
-	background.bg_color = Color("#111016")
-	background.border_color = UITheme.COL_BORDER
-	background.set_border_width_all(2)
-	background.set_corner_radius_all(9)
-	bar.add_theme_stylebox_override("background", background)
+	var bar_background := StyleBoxFlat.new()
+	bar_background.bg_color = Color("#111016")
+	bar_background.border_color = UITheme.COL_BORDER
+	bar_background.set_border_width_all(2)
+	bar_background.set_corner_radius_all(9)
+	bar.add_theme_stylebox_override("background", bar_background)
 	var fill := StyleBoxFlat.new()
 	fill.bg_color = UITheme.COL_SUCCESS if bool(entry["claimable"]) else UITheme.COL_ACCENT
 	fill.set_corner_radius_all(7)
@@ -370,12 +370,12 @@ func _god_name(god_id: String) -> String:
 	return str(StoneLoader.get_god(god_id).get("name", god_id))
 
 
-func _label(text: String, size: int, color: Color,
+func _label(text: String, font_size: int, color: Color,
 		alignment: HorizontalAlignment = HORIZONTAL_ALIGNMENT_LEFT) -> Label:
 	var label := Label.new()
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	label.text = text
-	label.add_theme_font_size_override("font_size", size)
+	label.add_theme_font_size_override("font_size", font_size)
 	label.add_theme_color_override("font_color", color)
 	label.horizontal_alignment = alignment
 	return label

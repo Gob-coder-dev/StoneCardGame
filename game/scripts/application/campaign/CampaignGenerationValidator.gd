@@ -32,10 +32,10 @@ static func _node_problems(node: CampaignNode, version: int,
 		result: Array[String]) -> void:
 	var mode := node.game_mode()
 	var tier := node.max_power_tier()
-	var seed := node.resolved_seed(version, 0)
+	var generation_seed := node.resolved_seed(version, 0)
 	if mode == GameModeRules.MODE_RANDOM or mode == GameModeRules.MODE_MIRROR:
 		var service := ModePreparationServiceModel.new()
-		var prepared := service.prepare_immediate(mode, seed, tier, {}, {},
+		var prepared := service.prepare_immediate(mode, generation_seed, tier, {}, {},
 			node.generation_constraints())
 		if not bool(prepared.get("ok", false)):
 			result.append("génération impossible sur '%s' : %s." % [
@@ -60,7 +60,7 @@ static func _node_problems(node: CampaignNode, version: int,
 		for god in StoneLoader.get_all_gods():
 			var player_god := str(god.get("id", ""))
 			var target_god := opponent_god if opponent_god != "" else player_god
-			var created := service.create_draft(seed, tier,
+			var created := service.create_draft(generation_seed, tier,
 				{"god_id": player_god}, {"god_id": target_god})
 			if not bool(created.get("ok", false)):
 				result.append("draft impossible sur '%s' pour le dieu '%s' : %s." % [
@@ -69,9 +69,9 @@ static func _node_problems(node: CampaignNode, version: int,
 		return
 	if node.opponent_deck_policy() != NodeModel.DECK_GENERATED:
 		return
-	var god_id := node.fixed_god_id()
-	if node.opponent_god_policy() == NodeModel.GOD_FIXED and god_id != "":
-		var generated := LoadoutGeneratorModel.new().generate_for_god(seed, god_id, tier)
+	var fixed_god_id := node.fixed_god_id()
+	if node.opponent_god_policy() == NodeModel.GOD_FIXED and fixed_god_id != "":
+		var generated := LoadoutGeneratorModel.new().generate_for_god(generation_seed, fixed_god_id, tier)
 		if not bool(generated.get("ok", false)):
 			result.append("deck généré impossible sur '%s' : %s." % [
 				node.id, str(generated.get("reason", ""))])
@@ -79,7 +79,7 @@ static func _node_problems(node: CampaignNode, version: int,
 	if node.opponent_god_policy() == NodeModel.GOD_PROFILE:
 		var generator := LoadoutGeneratorModel.new()
 		for god in StoneLoader.get_all_gods():
-			var generated := generator.generate_for_god(seed, str(god.get("id", "")), tier)
+			var generated := generator.generate_for_god(generation_seed, str(god.get("id", "")), tier)
 			if not bool(generated.get("ok", false)):
 				result.append("deck généré impossible sur '%s' pour '%s'." % [
 					node.id, str(god.get("id", ""))])

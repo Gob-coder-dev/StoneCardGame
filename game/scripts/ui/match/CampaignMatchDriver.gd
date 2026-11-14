@@ -22,15 +22,15 @@ func start() -> bool:
 		push_error("CampaignMatchDriver: adversaire '%s' introuvable." % BattleContext.selected_npc_id)
 		return false
 	var story := StoryService.match_setup_for_node(BattleContext.campaign_node_id)
-	var setup: Dictionary = _npc_data.get("match_setup", {})
-	var board_size := clampi(int(story.get("board_size", setup.get("board_size",
+	var encounter_setup: Dictionary = _npc_data.get("match_setup", {})
+	var board_size := clampi(int(story.get("board_size", encounter_setup.get("board_size",
 		GameState.DEFAULT_BOARD_SIZE))), GameState.MIN_BOARD_SIZE, GameState.MAX_BOARD_SIZE)
 	var player_god_id := BattleContext.effective_player_god_id()
 	var opponent_god_id := BattleContext.effective_opponent_god_id()
-	var hands := _prepare_hands(story, setup, player_god_id)
+	var hands := _prepare_hands(story, encounter_setup, player_god_id)
 	if hands.is_empty():
 		return false
-	var board := _prepare_board(story, setup, board_size)
+	var board := _prepare_board(story, encounter_setup, board_size)
 	local_side = GameState.PLAYER_ONE
 	records_campaign_stats = true
 	local_name = PlayerData.player_name
@@ -50,16 +50,16 @@ func start() -> bool:
 
 ## Les scénarios peuvent fournir des mains courtes ; les rencontres ordinaires
 ## conservent la validation complète du deck et les tailles déclarées.
-func _prepare_hands(story: Dictionary, setup: Dictionary, player_god_id: String) -> Dictionary:
+func _prepare_hands(story: Dictionary, encounter_setup: Dictionary, player_god_id: String) -> Dictionary:
 	var story_match := not story.is_empty()
 	var deck: Array = BattleContext.effective_player_deck()
 	if story_match and story.get("player_deck") is Array:
 		deck = (story.get("player_deck") as Array).duplicate()
 	var player_hand_size := clampi(int(story.get("player_hand_size",
-		setup.get("player_hand_size", DeckRules.DECK_SIZE))), 1, DeckRules.DECK_SIZE)
+		encounter_setup.get("player_hand_size", DeckRules.DECK_SIZE))), 1, DeckRules.DECK_SIZE)
 	var opponent_hand_size := clampi(int(story.get("opponent_hand_size",
-		setup.get("opponent_hand_size", DeckRules.DECK_SIZE))), 1, DeckRules.DECK_SIZE)
-	var allow_incomplete := bool(setup.get("allow_incomplete_player_deck", false))
+		encounter_setup.get("opponent_hand_size", DeckRules.DECK_SIZE))), 1, DeckRules.DECK_SIZE)
+	var allow_incomplete := bool(encounter_setup.get("allow_incomplete_player_deck", false))
 	if story_match:
 		player_hand_size = mini(player_hand_size, deck.size())
 		if player_hand_size <= 0:
@@ -81,12 +81,12 @@ func _prepare_hands(story: Dictionary, setup: Dictionary, player_god_id: String)
 	return {"player": deck, "opponent": opponent_deck}
 
 
-func _prepare_board(story: Dictionary, setup: Dictionary, board_size: int) -> Dictionary:
+func _prepare_board(story: Dictionary, encounter_setup: Dictionary, board_size: int) -> Dictionary:
 	var story_match := not story.is_empty()
-	var blocked: Array = (setup.get("blocked_cells", []) as Array).duplicate(true)
+	var blocked: Array = (encounter_setup.get("blocked_cells", []) as Array).duplicate(true)
 	if story_match and story.get("blocked_cells") is Array:
 		blocked = (story.get("blocked_cells") as Array).duplicate(true)
-	elif not story_match and bool(setup.get("random_blocked_cells", true)):
+	elif not story_match and bool(encounter_setup.get("random_blocked_cells", true)):
 		blocked = BoardSetupGenerator.generate(board_size)
 	var first_player := BattleContext.forced_first_player
 	if story_match:

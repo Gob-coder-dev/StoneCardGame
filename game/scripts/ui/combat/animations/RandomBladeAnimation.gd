@@ -35,10 +35,10 @@ func _draw_spiral(value: float) -> void:
 		# Traînée contrastée, puis symbole opaque au premier plan.
 		for trail in range(1, 9):
 			var previous := maxf(0.0, value - float(trail) * 0.012)
-			var point := _spiral_position(previous, index)
+			var trail_point := _spiral_position(previous, index)
 			var trail_color := color.lerp(Color("#8d43ff"), float(trail) / 9.0)
 			trail_color.a = 0.75 * (1.0 - float(trail) / 10.0)
-			draw_circle(point, _square * (0.025 - trail * 0.0016), trail_color)
+			draw_circle(trail_point, _square * (0.025 - trail * 0.0016), trail_color)
 		var point := _spiral_position(value, index)
 		var symbol_size := _square * 0.062
 		draw_circle(point, symbol_size * 0.88, Color("#29142bba"))

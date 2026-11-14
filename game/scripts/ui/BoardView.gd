@@ -186,23 +186,23 @@ func _mark_blocked(slot: Panel) -> void:
 
 ## La capture est montrée à l'impact, avant que le moteur ne publie son état
 ## final. Cette méthode ne change que l'habillage de la case concernée.
-func reveal_cell_owner(row: int, col: int, owner: int) -> void:
+func reveal_cell_owner(row: int, col: int, stone_owner: int) -> void:
 	if not _in_bounds(row, col):
 		return
-	_apply_cell_style(_index(row, col), owner)
+	_apply_cell_style(_index(row, col), stone_owner)
 
 
-func _apply_cell_style(index: int, owner: int, blocked: bool = false) -> void:
+func _apply_cell_style(index: int, stone_owner: int, blocked: bool = false) -> void:
 	var slot: Panel = _slots[index]
-	var style := _cell_style(owner, blocked)
+	var style := _cell_style(stone_owner, blocked)
 	if _drop_target != Vector2i(-1, -1) and index == _index(_drop_target.x, _drop_target.y):
 		_drop_previous_style = style
 		return
 	slot.add_theme_stylebox_override("panel", style)
 
 
-func _cell_style(owner: int, blocked: bool = false) -> StyleBoxFlat:
-	var shown := owner if blocked else _display_owner(owner)
+func _cell_style(stone_owner: int, blocked: bool = false) -> StyleBoxFlat:
+	var shown := stone_owner if blocked else _display_owner(stone_owner)
 	var key := "blocked" if blocked else str(shown)
 	if _cell_styles.has(key):
 		return _cell_styles[key]
@@ -237,14 +237,14 @@ func _cell_style(owner: int, blocked: bool = false) -> StyleBoxFlat:
 
 
 ## Le camp local reste bleu sur son propre téléphone ; l'adversaire reste rouge.
-func _display_owner(owner: int) -> int:
+func _display_owner(stone_owner: int) -> int:
 	if local_owner == GameState.PLAYER_ONE:
-		return owner
-	if owner == GameState.PLAYER_ONE:
+		return stone_owner
+	if stone_owner == GameState.PLAYER_ONE:
 		return GameState.PLAYER_AI
-	if owner == GameState.PLAYER_AI:
+	if stone_owner == GameState.PLAYER_AI:
 		return GameState.PLAYER_HUMAN
-	return owner
+	return stone_owner
 
 
 

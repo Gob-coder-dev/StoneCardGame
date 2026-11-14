@@ -22,7 +22,6 @@ var scene_changer: Callable = Callable()
 var _flow: LanSeriesCoordinator = null
 var _leaving := false
 var _state: Dictionary = {}
-var _observed_phase := ""
 var _pending_choice_step := -1
 var _pending_choice_id := ""
 

@@ -25,13 +25,13 @@ var _load_error: Error = OK
 const NAVIGATION_OFFSET_WRITE_THRESHOLD: float = 4.0
 
 
-func _init(graph: CampaignGraph = null, progress: CampaignProgress = null,
-		store: CampaignProgressStore = null,
-		problems: Array[String] = []) -> void:
-	_graph = graph if graph != null else GraphModel.build({})
-	_progress = progress if progress != null else ProgressModel.from_dict({})
-	_store = store if store != null else StoreModel.new()
-	_problems = problems.duplicate()
+func _init(initial_graph: CampaignGraph = null, initial_progress: CampaignProgress = null,
+		initial_store: CampaignProgressStore = null,
+		diagnostics: Array[String] = []) -> void:
+	_graph = initial_graph if initial_graph != null else GraphModel.build({})
+	_progress = initial_progress if initial_progress != null else ProgressModel.from_dict({})
+	_store = initial_store if initial_store != null else StoreModel.new()
+	_problems = diagnostics.duplicate()
 
 
 ## Chargement de production : contenu, validation puis progression et migration.
@@ -41,13 +41,13 @@ static func create_default(store_path: String = StoreModel.DEFAULT_PATH,
 		legacy_stats: Dictionary = {}) -> CampaignService:
 	var content := ContentLoaderModel.read()
 	var definition: Dictionary = content.get("definition", {})
-	var graph: CampaignGraph = GraphModel.build(definition)
-	var problems: Array[String] = []
+	var campaign_graph: CampaignGraph = GraphModel.build(definition)
+	var diagnostics: Array[String] = []
 	for problem in content.get("problems", []):
-		problems.append(str(problem))
-	var service := CampaignService.new(graph, ProgressModel.from_dict({}),
-		StoreModel.new(store_path), problems)
-	if problems.is_empty():
+		diagnostics.append(str(problem))
+	var service := CampaignService.new(campaign_graph, ProgressModel.from_dict({}),
+		StoreModel.new(store_path), diagnostics)
+	if diagnostics.is_empty():
 		service._load_progress(legacy_stats)
 	return service
 

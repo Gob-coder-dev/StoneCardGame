@@ -164,11 +164,11 @@ func _draw_segment(index: int, accent: Color) -> void:
 	var locked := int(_path[index + 1].get("state", EncounterPathModel.State.LOCKED)) \
 		== EncounterPathModel.State.LOCKED
 	if locked:
-		var trace := UITheme.COL_PATH_TRACE
-		trace.a = 0.42
-		draw_polyline(points, trace, 3.0, true)
+		var locked_trace := UITheme.COL_PATH_TRACE
+		locked_trace.a = 0.42
+		draw_polyline(points, locked_trace, 3.0, true)
 		for step in range(1, 12, 2):
-			draw_circle(points[step], 3.0, trace)
+			draw_circle(points[step], 3.0, locked_trace)
 		return
 	var glow := accent
 	glow.a = 0.10

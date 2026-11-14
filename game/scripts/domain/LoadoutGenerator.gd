@@ -50,7 +50,7 @@ func _ingest(source: Array) -> void:
 		var tier := PowerTierRules.effective_tier(definition)
 		if tier < PowerTierRules.MIN_TIER or tier > PowerTierRules.MAX_TIER:
 			continue
-		var card := {
+		var card_data := {
 			"id": id,
 			"lineage": str(definition.get("lineage_id", id)),
 			"god_id": str(definition.get("god_id", "neutral")),
@@ -59,10 +59,10 @@ func _ingest(source: Array) -> void:
 			"tier": tier,
 			"cost_q": _cost_quarters(definition),
 		}
-		if int(card["cost_q"]) < 0:
+		if int(card_data["cost_q"]) < 0:
 			continue
-		_cards.append(card)
-		_cards_by_id[id] = card
+		_cards.append(card_data)
+		_cards_by_id[id] = card_data
 
 
 func _cost_quarters(definition: Dictionary) -> int:
@@ -86,13 +86,13 @@ func cards_for_god(god_id: String, max_tier: int) -> Array:
 	if _available_cache.has(key):
 		return (_available_cache[key] as Array).duplicate()
 	var result: Array = []
-	for card in _cards:
-		if int(card["tier"]) > max_tier:
+	for card_data in _cards:
+		if int(card_data["tier"]) > max_tier:
 			continue
-		var affinity := str(card["god_id"])
+		var affinity := str(card_data["god_id"])
 		if affinity != "neutral" and affinity != god_id:
 			continue
-		result.append((card as Dictionary).duplicate())
+		result.append((card_data as Dictionary).duplicate())
 	result.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 		return str(a["id"]) < str(b["id"]))
 	_available_cache[key] = result
@@ -104,11 +104,11 @@ func lineages_for_god(god_id: String, max_tier: int) -> Dictionary:
 	if _lineage_cache.has(key):
 		return (_lineage_cache[key] as Dictionary).duplicate(true)
 	var options := {}
-	for card in cards_for_god(god_id, max_tier):
-		var lineage := str(card["lineage"])
+	for card_data in cards_for_god(god_id, max_tier):
+		var lineage := str(card_data["lineage"])
 		if not options.has(lineage):
 			options[lineage] = []
-		(options[lineage] as Array).append(card)
+		(options[lineage] as Array).append(card_data)
 	for lineage in options:
 		(options[lineage] as Array).sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 			var cost_a := int(a["cost_q"])
@@ -181,14 +181,14 @@ static func _common_totals(first: Array, second: Array) -> Array:
 ## ─── Modes Aléatoire et Miroir ──────────────────────────────────────────────
 
 ## Choisit deux dieux puis deux decks légaux ayant exactement le même total.
-func generate_random(seed: int, god_ids: Array, max_tier: int,
+func generate_random(generation_seed: int, god_ids: Array, max_tier: int,
 		min_god_cards: int = 0) -> Dictionary:
 	if min_god_cards < 0 or min_god_cards > deck_size:
 		return _fail("Le minimum de cartes du dieu est hors bornes.")
 	var valid := _valid_gods(god_ids, max_tier)
 	if valid.is_empty():
 		return _fail("Aucun dieu ne permet un deck complet avec cette limite.")
-	var rng := _rng(seed)
+	var rng := _rng(generation_seed)
 	# Tirer les dieux avant de vérifier leur intersection rendait le palier 1
 	# aléatoirement impossible. On tire désormais parmi les couples jouables.
 	var pairs: Array = []
@@ -225,17 +225,17 @@ func generate_random(seed: int, god_ids: Array, max_tier: int,
 				"deck_two": deck_two,
 				"total_quarters": target,
 				"total_points": float(target) / float(StoneCostRules.COST_SCALE),
-				"seed": seed,
+				"seed": generation_seed,
 			}
 	return _fail("Aucun couple de decks légaux n'atteint un total commun.")
 
 
 ## Deck déterministe pour un dieu imposé, sans changer de dieu. Utilisé par la
 ## campagne quand un niveau fixe le dieu adverse mais génère son deck.
-func generate_for_god(seed: int, god_id: String, max_tier: int) -> Dictionary:
+func generate_for_god(generation_seed: int, god_id: String, max_tier: int) -> Dictionary:
 	if not _valid_gods([god_id], max_tier).has(god_id):
 		return _fail("Ce dieu ne permet pas un deck complet avec cette limite.")
-	var rng := _rng(seed)
+	var rng := _rng(generation_seed)
 	var totals := reachable_totals(god_id, max_tier)
 	for target_value in _randomized_rich_targets(totals, rng):
 		var target := int(target_value)
@@ -249,21 +249,21 @@ func generate_for_god(seed: int, god_id: String, max_tier: int) -> Dictionary:
 			"deck": deck,
 			"total_quarters": target,
 			"total_points": float(target) / float(StoneCostRules.COST_SCALE),
-			"seed": seed,
+			"seed": generation_seed,
 		}
 	return _fail("Aucun deck légal pour ce dieu.")
 
 
 ## Un seul loadout légal, dupliqué en profondeur par l'appelant. Le premier
 ## joueur n'est jamais déduit de ce loadout : il reste un tirage séparé.
-func generate_mirror(seed: int, god_ids: Array, max_tier: int,
+func generate_mirror(generation_seed: int, god_ids: Array, max_tier: int,
 		min_god_cards: int = 0) -> Dictionary:
 	if min_god_cards < 0 or min_god_cards > deck_size:
 		return _fail("Le minimum de cartes du dieu est hors bornes.")
 	var valid := _valid_gods(god_ids, max_tier)
 	if valid.is_empty():
 		return _fail("Aucun dieu ne permet un deck complet avec cette limite.")
-	var rng := _rng(seed)
+	var rng := _rng(generation_seed)
 	var god_id := str(valid[rng.randi_range(0, valid.size() - 1)])
 	var totals := reachable_totals(god_id, max_tier)
 	if totals.is_empty():
@@ -280,7 +280,7 @@ func generate_mirror(seed: int, god_ids: Array, max_tier: int,
 			"deck": deck,
 			"total_quarters": target,
 			"total_points": float(target) / float(StoneCostRules.COST_SCALE),
-			"seed": seed,
+			"seed": generation_seed,
 		}
 	return _fail("Aucun deck légal pour le dieu tiré.")
 
@@ -342,7 +342,9 @@ func _search_exact(order: Array, candidates: Dictionary, index: int, count: int,
 		remaining: int, god_count: int, god_id: String, min_god_cards: int,
 		memo: Dictionary) -> Variant:
 	if count == deck_size:
-		return [] if remaining == 0 and god_count >= min_god_cards else null
+		if remaining == 0 and god_count >= min_god_cards:
+			return []
+		return null
 	if index >= order.size() or order.size() - index < deck_size - count:
 		return null
 	if god_count + deck_size - count < min_god_cards:
@@ -350,7 +352,9 @@ func _search_exact(order: Array, candidates: Dictionary, index: int, count: int,
 	var key := "%d|%d|%d|%d" % [index, count, remaining, god_count]
 	if memo.has(key):
 		var cached: Variant = memo[key]
-		return (cached as Array).duplicate() if cached is Array else null
+		if cached is Array:
+			return (cached as Array).duplicate()
+		return null
 	var lineage := str(order[index])
 	for card_value in candidates[lineage]:
 		var card_data: Dictionary = card_value

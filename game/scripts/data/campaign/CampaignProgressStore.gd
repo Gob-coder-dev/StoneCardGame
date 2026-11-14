@@ -14,8 +14,8 @@ var _path: String = DEFAULT_PATH
 
 
 ## Le chemin est injectable pour isoler les tests du fichier du joueur.
-func _init(path: String = DEFAULT_PATH) -> void:
-	_path = path
+func _init(save_path: String = DEFAULT_PATH) -> void:
+	_path = save_path
 
 
 func path() -> String:

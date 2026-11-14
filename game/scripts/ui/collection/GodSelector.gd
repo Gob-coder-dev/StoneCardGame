@@ -59,7 +59,6 @@ func _setup_god_menu() -> void:
 		option.set_meta("god_id", str(god.get("id", "")))
 		option.add_child(_make_option_content(god))
 		option.pressed.connect(god_selected.emit.bind(str(god.get("id", ""))))
-		var god_id := str(god.get("id", ""))
 		god_options.add_child(option)
 		_option_buttons[str(god.get("id", ""))] = option
 		_option_gods[str(god.get("id", ""))] = god

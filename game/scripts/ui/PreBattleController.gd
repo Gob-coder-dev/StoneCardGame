@@ -128,13 +128,13 @@ func _setup_god_identity(portrait: GodPortrait, name_label: Label, family_label:
 ## adversaires historiques de npcs.json n'ont pas ces champs.
 func _opponent_subtitle(npc: Dictionary) -> String:
 	var bracket_label := str(npc.get("bracket_label", ""))
-	var difficulty_label := str(npc.get("difficulty_label", ""))
+	var difficulty_text := str(npc.get("difficulty_label", ""))
 	var stars := str(npc.get("difficulty_stars_text", ""))
-	if bracket_label == "" and difficulty_label == "":
+	if bracket_label == "" and difficulty_text == "":
 		return ""
-	var level_text := difficulty_label
-	if stars != "" and difficulty_label != "":
-		level_text = "%s %s" % [stars, difficulty_label]
+	var level_text := difficulty_text
+	if stars != "" and difficulty_text != "":
+		level_text = "%s %s" % [stars, difficulty_text]
 	if bracket_label == "":
 		return level_text
 	if level_text == "":

@@ -16,8 +16,8 @@ static func build(node: CampaignNode, campaign_version: int, player_god_id: Stri
 		return _failure("Nœud de campagne absent.")
 	var mode := node.game_mode()
 	var tier := node.max_power_tier()
-	var seed := node.resolved_seed(campaign_version, attempt)
-	var resolved := _resolve_mode(node, player_god_id, player_deck, seed, tier)
+	var generation_seed := node.resolved_seed(campaign_version, attempt)
+	var resolved := _resolve_mode(node, player_god_id, player_deck, generation_seed, tier)
 	if not bool(resolved.get("ok", false)):
 		return _failure(str(resolved.get("reason", "Rencontre invalide.")))
 	resolved = _resolve_identity(resolved)
@@ -36,7 +36,7 @@ static func build(node: CampaignNode, campaign_version: int, player_god_id: Stri
 			"generator_min_god_cards": node.generator_min_god_cards(),
 			"mirror_fixed_deck": node.mirror_fixed_deck(),
 		},
-		"seed": seed,
+		"seed": generation_seed,
 		"requires_preparation": node.needs_preparation(),
 		"needs_series_session": node.needs_series_session(),
 		"match_setup": node.match_setup(),
@@ -44,7 +44,7 @@ static func build(node: CampaignNode, campaign_version: int, player_god_id: Stri
 
 
 static func _resolve_mode(node: CampaignNode, player_god_id: String,
-		player_deck: Array, seed: int, tier: int) -> Dictionary:
+		player_deck: Array, generation_seed: int, tier: int) -> Dictionary:
 	var result := {
 		"ok": true, "reason": "", "god_id": "", "deck": [],
 		"name": "", "description": "", "portrait": "",
@@ -80,7 +80,7 @@ static func _resolve_mode(node: CampaignNode, player_god_id: String,
 				else node.fixed_god_id()
 			if result.god_id == "" and deck_policy != CampaignNode.DECK_FIXED:
 				return _mode_failure("Le niveau Classique n'a pas de dieu adverse.")
-			var deck_result := _classic_deck(node, player_deck, seed, tier, result.god_id)
+			var deck_result := _classic_deck(node, player_deck, generation_seed, tier, result.god_id)
 			if not bool(deck_result.get("ok", false)):
 				return deck_result
 			result.deck = deck_result.get("deck", [])
@@ -90,14 +90,14 @@ static func _resolve_mode(node: CampaignNode, player_god_id: String,
 
 
 static func _classic_deck(node: CampaignNode, player_deck: Array,
-		seed: int, tier: int, god_id: String) -> Dictionary:
+		generation_seed: int, tier: int, god_id: String) -> Dictionary:
 	match node.opponent_deck_policy():
 		CampaignNode.DECK_FIXED:
 			return {"ok": true, "deck": node.fixed_deck()}
 		CampaignNode.DECK_GENERATED:
 			if god_id == "":
 				return _mode_failure("Un deck généré exige un dieu adverse.")
-			var generated := GeneratorModel.new().generate_for_god(seed, god_id, tier)
+			var generated := GeneratorModel.new().generate_for_god(generation_seed, god_id, tier)
 			if not bool(generated.get("ok", false)):
 				return _mode_failure(str(generated.get("reason", "Deck généré impossible.")))
 			return {"ok": true, "deck": (generated.get("deck", []) as Array).duplicate()}

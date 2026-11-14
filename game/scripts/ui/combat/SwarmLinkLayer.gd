@@ -40,6 +40,6 @@ func _draw() -> void:
 	keys.sort()
 	for key in keys:
 		var link: Dictionary = _links[key]
-		var seed := absi(hash(key)) % 97
+		var generation_seed := absi(hash(key)) % 97
 		VineStyle.draw_vine(self, link["start"], link["end"],
-			float(link.get("square", 100.0)), RESTING_OPACITY, seed)
+			float(link.get("square", 100.0)), RESTING_OPACITY, generation_seed)

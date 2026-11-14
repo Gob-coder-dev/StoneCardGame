@@ -286,9 +286,9 @@ func _queue_position_save() -> void:
 ## Instantané relatif : le centre visible est ramené à un nœud ancre. Le pixel
 ## absolu n'est conservé que comme secours pour une version future du layout.
 func _current_navigation() -> Dictionary:
-	var scale := maxf(0.001, map_view.scale_factor())
-	var logical_top := float(scroll.scroll_vertical) / scale
-	var logical_height := float(scroll.size.y) / scale
+	var map_scale := maxf(0.001, map_view.scale_factor())
+	var logical_top := float(scroll.scroll_vertical) / map_scale
+	var logical_height := float(scroll.size.y) / map_scale
 	var center := Vector2(UITheme.CAMPAIGN_MAP_WIDTH * 0.5,
 		logical_top + logical_height * 0.5)
 	var anchor := map_view.nearest_node_id(center)

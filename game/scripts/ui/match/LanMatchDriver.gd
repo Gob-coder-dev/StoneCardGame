@@ -65,7 +65,7 @@ func start() -> bool:
 		PvpMatchContext.starting_player,
 		str(one.get("god_id", "")),
 		str(two.get("god_id", "")),
-		PvpMatchContext.seed
+		PvpMatchContext.generation_seed
 	)
 	_coordinator.begin(PvpMatchContext.starting_player)
 	return true

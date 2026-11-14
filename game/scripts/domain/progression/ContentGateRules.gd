@@ -14,15 +14,15 @@ static func resolve(config: Dictionary, completed: Dictionary) -> ContentAccessS
 	for raw in config.get("gates", []):
 		if not raw is Dictionary:
 			continue
-		var gate: Dictionary = raw
-		var required := str(gate.get("required_campaign_node", ""))
+		var gate_definition: Dictionary = raw
+		var required := str(gate_definition.get("required_campaign_node", ""))
 		if required == "" or not bool(completed.get(required, false)):
 			continue
-		var gate_id := str(gate.get("id", ""))
+		var gate_id := str(gate_definition.get("id", ""))
 		if gate_id != "":
 			gates[gate_id] = true
 			revision += 1
-		for rarity in gate.get("unlocked_rarities", []):
+		for rarity in gate_definition.get("unlocked_rarities", []):
 			rarities[str(rarity)] = true
 	return AccessState.build(gates, rarities, revision)
 

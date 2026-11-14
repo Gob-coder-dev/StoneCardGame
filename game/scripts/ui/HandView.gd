@@ -56,10 +56,10 @@ func _notification(what: int) -> void:
 			var child := get_child(first + column) as Control
 			if child == null:
 				continue
-			var position := Vector2(
+			var card_position := Vector2(
 				start_x + float(column) * (_card_size + UITheme.GAP_MEDIUM),
 				float(row) * (_card_size + UITheme.GAP_MEDIUM))
-			fit_child_in_rect(child, Rect2(position, Vector2.ONE * _card_size))
+			fit_child_in_rect(child, Rect2(card_position, Vector2.ONE * _card_size))
 
 
 ## Synchronise la main avec la liste de stone_id du moteur. Pendant un match,

@@ -13,7 +13,7 @@ static func generate(board_size: int = GameState.DEFAULT_BOARD_SIZE) -> Array:
 	var count := 0 if roll < CHANCE_NO_BLOCK else (1 if roll < CHANCE_NO_BLOCK + CHANCE_ONE_BLOCK else 2)
 	var cells: Array = []
 	for index in range(board_size * board_size):
-		cells.append([index / board_size, index % board_size])
+		cells.append([floori(float(index) / board_size), index % board_size])
 	var blocked: Array = []
 	for i in range(count):
 		blocked.append(cells.pop_at(randi() % cells.size()))

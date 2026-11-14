@@ -501,7 +501,7 @@ func _draw_edges() -> void:
 		var from_state := int(_states.get(edge.from_id, UnlockRulesModel.State.LOCKED))
 		var to_state := int(_states.get(edge.to_id, UnlockRulesModel.State.LOCKED))
 		var active := from_state == UnlockRulesModel.State.COMPLETED
-		var visible := to_state != UnlockRulesModel.State.LOCKED
+		var visible_region := to_state != UnlockRulesModel.State.LOCKED
 		if active:
 			var accent := _edge_color(_graph.node(edge.to_id))
 			var glow := accent
@@ -511,7 +511,7 @@ func _draw_edges() -> void:
 			draw_polyline(points, glow, 8.0, true)
 			accent.a = 0.88
 			draw_polyline(points, accent, 4.0, true)
-		elif visible:
+		elif visible_region:
 			var trace := UITheme.COL_CAMPAIGN_EDGE
 			trace.a = 0.62
 			draw_polyline(points, trace, 3.0, true)

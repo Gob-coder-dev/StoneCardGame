@@ -269,7 +269,7 @@ func _test_context_mapping() -> void:
 		and context.remote_side() == GameState.PLAYER_ONE,
 		"le contexte connaît le camp local et le camp distant")
 	_check(context.local_name == "Client" and context.remote_name == "Hote"
-		and context.seed == 99 and context.starting_player == GameState.PLAYER_TWO,
+		and context.generation_seed == 99 and context.starting_player == GameState.PLAYER_TWO,
 		"le contexte prend les identités autoritaires de la manche, la graine et le premier joueur")
 	_check(context.local_god_id == "veskar" and context.remote_god_id == "veskar"
 		and context.local_deck == _deck() and context.remote_deck == _deck(),

@@ -43,7 +43,7 @@ static func _connected_components(state: GameState, members: Dictionary) -> Arra
 		while not pending.is_empty():
 			var current: int = pending.pop_back()
 			component.append(current)
-			var row := current / state.board_size
+			var row := floori(float(current) / state.board_size)
 			var col := current % state.board_size
 			for adjacent in state.adjacent_positions(row, col):
 				var next_index := state.index_of(adjacent["row"], adjacent["col"])
@@ -93,7 +93,7 @@ static func _add_ally_blades(member: BattleStoneModel, start: int, contributor: 
 
 static func snapshot(state: GameState) -> Dictionary:
 	var members := {}
-	var links := {}
+	var component_links := {}
 	for index in range(state.board.size()):
 		var cell: Dictionary = state.board[index]
 		if not Board.has_active_power(state, cell, Effects.SWARM):
@@ -102,7 +102,7 @@ static func snapshot(state: GameState) -> Dictionary:
 		var instance_id := int(stone.instance_id)
 		members[instance_id] = {
 			"instance_id": instance_id,
-			"row": index / state.board_size,
+			"row": floori(float(index) / state.board_size),
 			"col": index % state.board_size,
 			"owner": int(cell["owner"]),
 			"blades": stone.swarm_blades.duplicate(true)
@@ -120,13 +120,13 @@ static func snapshot(state: GameState) -> Dictionary:
 			var other := Board.stone_at(other_cell)
 			var other_id := int(other.instance_id)
 			var key := _swarm_link_key(int(instance_id), other_id)
-			links[key] = {
+			component_links[key] = {
 				"key": key,
 				"a_instance": int(instance_id), "b_instance": other_id,
 				"a_row": int(member["row"]), "a_col": int(member["col"]),
 				"b_row": next_row, "b_col": next_col
 			}
-	return {"members": members, "links": links}
+	return {"members": members, "links": component_links}
 
 
 ## Description publique et immuable du réseau courant, destinée au
@@ -135,12 +135,12 @@ static func snapshot(state: GameState) -> Dictionary:
 
 
 static func links(state: GameState) -> Array:
-	var links: Dictionary = snapshot(state)["links"]
-	var keys: Array = links.keys()
+	var component_links: Dictionary = snapshot(state)["links"]
+	var keys: Array = component_links.keys()
 	keys.sort()
 	var result: Array = []
 	for key in keys:
-		result.append(links[key].duplicate(true))
+		result.append(component_links[key].duplicate(true))
 	return result
 
 
@@ -199,9 +199,9 @@ static func _expand_affected_component(affected: Dictionary, before_links: Dicti
 	var expanded := true
 	while expanded:
 		expanded = false
-		for links in [before_links, after_links]:
-			for key in links:
-				var link: Dictionary = links[key]
+		for component_links in [before_links, after_links]:
+			for key in component_links:
+				var link: Dictionary = component_links[key]
 				var a = link["a_instance"]
 				var b = link["b_instance"]
 				if affected.has(a) and not affected.has(b):
@@ -220,22 +220,22 @@ static func _member_transitions(affected: Dictionary, before_members: Dictionary
 	for instance_id in member_ids:
 		var old_member: Dictionary = before_members.get(instance_id, {})
 		var new_member: Dictionary = after_members.get(instance_id, {})
-		var reference: Dictionary = new_member if not new_member.is_empty() else old_member
+		var reference_stone: Dictionary = new_member if not new_member.is_empty() else old_member
 		result.append({
 			"instance_id": instance_id,
-			"row": int(reference["row"]), "col": int(reference["col"]),
+			"row": int(reference_stone["row"]), "col": int(reference_stone["col"]),
 			"before": old_member.get("blades", _empty_side_map()).duplicate(true),
 			"after": new_member.get("blades", _empty_side_map()).duplicate(true)
 		})
 	return result
 
 
-static func _visible_links(affected: Dictionary, links: Dictionary) -> Array:
+static func _visible_links(affected: Dictionary, component_links: Dictionary) -> Array:
 	var result: Array = []
-	var keys: Array = links.keys()
+	var keys: Array = component_links.keys()
 	keys.sort()
 	for key in keys:
-		var link: Dictionary = links[key]
+		var link: Dictionary = component_links[key]
 		if affected.has(link["a_instance"]) and affected.has(link["b_instance"]):
 			result.append(link.duplicate(true))
 	return result

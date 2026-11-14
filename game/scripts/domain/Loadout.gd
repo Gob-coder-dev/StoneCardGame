@@ -35,7 +35,7 @@ static func from_dict(data: Dictionary) -> Loadout:
 	loadout.deck = (data.get("deck", []) as Array).duplicate()
 	loadout.total_quarters = int(data.get("total_quarters",
 		DeckRules.deck_quarters(loadout.deck)))
-	loadout.seed = int(data.get("seed", 0))
+	loadout.generation_seed = int(data.get("seed", 0))
 	return loadout
 
 
@@ -53,7 +53,7 @@ func to_dict() -> Dictionary:
 		"god_id": god_id,
 		"deck": deck.duplicate(),
 		"total_quarters": total_quarters,
-		"seed": seed,
+		"seed": generation_seed,
 	}
 
 

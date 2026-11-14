@@ -334,6 +334,8 @@ python -m unittest discover -s tools/tests -v
 Le lanceur isole `user://` pour chaque processus, contrôle la fermeture et
 conserve ses journaux dans `../.tmp/quality/`. L'export ZIP vérifie les données
 embarquées sans nécessiter de SDK Android ; il ne produit pas un APK installable.
+Un débogueur local capture aussi les erreurs et avertissements de compilation
+dès le lancement, puis vérifie tous les scripts de production et l'accueil.
 La CI exécute ces mêmes contrôles. Les commandes Godot directes ci-dessous
 restent disponibles pour le diagnostic ; elles utilisent le profil local du poste.
 

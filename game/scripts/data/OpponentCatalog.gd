@@ -249,7 +249,7 @@ static func neutral_deck_for(bracket_id: String) -> Array:
 	)
 
 
-static func _make_deck(lineages: Array, tier: Dictionary, seed: int,
+static func _make_deck(lineages: Array, tier: Dictionary, generation_seed: int,
 		neutral_only: bool) -> Array:
 	var minimum := int(tier["min_level"])
 	var maximum := int(tier["max_level"])
@@ -266,7 +266,7 @@ static func _make_deck(lineages: Array, tier: Dictionary, seed: int,
 	family.sort()
 	neutral.sort()
 	var rng := RandomNumberGenerator.new()
-	rng.seed = seed
+	rng.seed = generation_seed
 	family = _shuffled(family, rng)
 	neutral = _shuffled(neutral, rng)
 	var selected_lineages: Array = []

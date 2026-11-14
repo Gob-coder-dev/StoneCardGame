@@ -103,7 +103,7 @@ func _remote_in_game() -> bool:
 	return _remote_presence != "" and _remote_presence != LanPvpPresence.LOBBY
 
 
-func _on_presence_changed(_local: String, remote: String) -> void:
+func _on_presence_changed(_local_state: String, remote: String) -> void:
 	_remote_presence = remote
 	if remote != "" and remote != LanPvpPresence.LOBBY:
 		_needs_return_reset = true
@@ -177,7 +177,7 @@ func detach_network() -> void:
 ## recréé, les deux profils et les règles sont déjà connus. Les deux joueurs
 ## repartent PAS PRÊT et l'hôte retrouve des règles modifiables.
 func resume(local_profile: Dictionary, remote_profile: Dictionary,
-		rules: Dictionary, client_peer: int = 0) -> void:
+		series_rules: Dictionary, client_peer: int = 0) -> void:
 	if _transport == null:
 		return
 	_started = false
@@ -189,7 +189,7 @@ func resume(local_profile: Dictionary, remote_profile: Dictionary,
 	_error = ""
 	_local = _resumed_profile(local_profile)
 	_remote = _resumed_profile(remote_profile)
-	_rules = MatchRules.normalized(rules)
+	_rules = MatchRules.normalized(series_rules)
 	_rules["locked"] = false
 	_rules["ready_one"] = false
 	_rules["ready_two"] = false

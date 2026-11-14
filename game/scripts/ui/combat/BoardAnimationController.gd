@@ -130,7 +130,7 @@ func animate_placement(row: int, col: int) -> void:
 		_batch.track(tween.finished)
 
 
-func animate_attacks(row: int, col: int, attacks: Array, owner: int, duration: float) -> void:
+func animate_attacks(row: int, col: int, attacks: Array, stone_owner: int, duration: float) -> void:
 	var card: StoneCard = _board.card_at(row, col)
 	if card == null or attacks.is_empty():
 		return
@@ -141,12 +141,12 @@ func animate_attacks(row: int, col: int, attacks: Array, owner: int, duration: f
 	add_child(animation)
 	_track(animation)
 	animation.target_hit.connect(_on_attack_hit)
-	animation.play(card, paths, attacks, owner, duration)
+	animation.play(card, paths, attacks, stone_owner, duration)
 
 
-func _on_attack_hit(row: int, col: int, success: bool, owner: int) -> void:
+func _on_attack_hit(row: int, col: int, success: bool, stone_owner: int) -> void:
 	if success:
-		animate_capture(row, col, owner)
+		animate_capture(row, col, stone_owner)
 	else:
 		Audio.play_sfx(AudioCatalog.SFX_ATTACK_MISS)
 

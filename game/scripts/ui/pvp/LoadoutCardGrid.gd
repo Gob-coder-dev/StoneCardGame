@@ -27,13 +27,13 @@ func _ready() -> void:
 
 
 func show_cards(stone_ids: Array, card_size: int, columns_count: int,
-		selectable: bool, selected_id: String = "", max_card_size: int = -1) -> void:
+		selectable: bool, selected_stone_id: String = "", max_card_size: int = -1) -> void:
 	columns = columns_count
 	_desired_card_size = card_size
 	_max_card_size = max_card_size if max_card_size > 0 else card_size
 	_card_size = card_size
 	_selectable = selectable
-	_selected_id = selected_id
+	_selected_id = selected_stone_id
 	_resize_pool(stone_ids.size(), card_size)
 	for index in range(stone_ids.size()):
 		var raw_id: Variant = stone_ids[index]
@@ -96,9 +96,9 @@ func _relayout() -> void:
 			wrapper.custom_minimum_size = Vector2(0, _card_size)
 
 
-func lock(selected_id: String) -> void:
+func lock(selected_stone_id: String) -> void:
 	_selectable = false
-	_selected_id = selected_id
+	_selected_id = selected_stone_id
 	for card in _cards:
 		card.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		var wrapper := card.get_parent() as Control

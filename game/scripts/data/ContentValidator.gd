@@ -47,7 +47,9 @@ static func lineage_problems(lineage: Dictionary) -> Array[String]:
 static func _check_evolution_shape(stone: Dictionary, problems: Array[String]) -> bool:
 	var valid := true
 	for field in ["blades", "shields", "long_blades"]:
-		var sides = stone.get(field, {} if field != "blades" else null)
+		var sides: Variant = {}
+		if field == "blades" or stone.has(field):
+			sides = stone.get(field)
 		if not sides is Dictionary:
 			valid = false
 			continue

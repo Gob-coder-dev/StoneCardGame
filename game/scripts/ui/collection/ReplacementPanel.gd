@@ -104,11 +104,11 @@ func _rebuild() -> void:
 	status_label.add_theme_color_override("font_color", UITheme.COL_WARNING)
 
 
-func _make_card(stone: Dictionary, owner: int, height: float) -> StoneCard:
+func _make_card(stone: Dictionary, stone_owner: int, height: float) -> StoneCard:
 	var card := StoneCard.new()
 	card.custom_minimum_size = Vector2(0, height)
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	card.setup(stone, owner)
+	card.setup(stone, stone_owner)
 	card.set_show_cost(true)
 	return card
 

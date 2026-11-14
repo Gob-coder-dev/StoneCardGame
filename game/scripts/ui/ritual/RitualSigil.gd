@@ -60,11 +60,11 @@ func _draw() -> void:
 		_draw_candle(center + direction * radius * 1.12, color, pulse)
 
 
-func _draw_candle(position: Vector2, color: Color, pulse: float) -> void:
-	var body := Rect2(position + Vector2(-9, -2), Vector2(18, 29))
+func _draw_candle(touch_position: Vector2, color: Color, pulse: float) -> void:
+	var body := Rect2(touch_position + Vector2(-9, -2), Vector2(18, 29))
 	draw_rect(body, color.darkened(0.28), true)
 	draw_rect(body, color.lightened(0.18), false, 3.0)
-	var flame_center := position + Vector2(0, -15)
+	var flame_center := touch_position + Vector2(0, -15)
 	draw_circle(flame_center, 18.0 * pulse, Color(color, 0.12))
 	var flame := PackedVector2Array([
 		flame_center + Vector2(0, -15), flame_center + Vector2(9, 4),

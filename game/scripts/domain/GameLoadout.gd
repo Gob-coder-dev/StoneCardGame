@@ -5,7 +5,7 @@ extends RefCounted
 var god_id: String = ""
 var deck: Array = []
 var total_quarters: int = 0
-var seed: int = 0
+var generation_seed: int = 0
 
 
 static func create(p_god_id: String, p_deck: Array, p_seed: int = 0) -> GameLoadout:
@@ -13,7 +13,7 @@ static func create(p_god_id: String, p_deck: Array, p_seed: int = 0) -> GameLoad
 	loadout.god_id = p_god_id
 	loadout.deck = p_deck.duplicate()
 	loadout.total_quarters = DeckRules.deck_quarters(loadout.deck)
-	loadout.seed = p_seed
+	loadout.generation_seed = p_seed
 	return loadout
 
 
@@ -23,7 +23,7 @@ static func from_dict(data: Dictionary) -> GameLoadout:
 	loadout.deck = (data.get("deck", []) as Array).duplicate()
 	loadout.total_quarters = int(data.get("total_quarters",
 		DeckRules.deck_quarters(loadout.deck)))
-	loadout.seed = int(data.get("seed", 0))
+	loadout.generation_seed = int(data.get("seed", 0))
 	return loadout
 
 
@@ -36,7 +36,7 @@ func to_dict() -> Dictionary:
 		"god_id": god_id,
 		"deck": deck.duplicate(),
 		"total_quarters": total_quarters,
-		"seed": seed,
+		"seed": generation_seed,
 	}
 
 

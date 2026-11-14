@@ -45,13 +45,13 @@ func setup(value: Dictionary) -> void:
 	price_row.alignment = BoxContainer.ALIGNMENT_CENTER
 	price_row.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	price_row.add_theme_constant_override("separation", 9)
-	var icon := TextureRect.new()
-	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	icon.custom_minimum_size = Vector2(64, 64)
-	icon.texture = CandleIcon
-	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	price_row.add_child(icon)
+	var portrait := TextureRect.new()
+	portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	portrait.custom_minimum_size = Vector2(64, 64)
+	portrait.texture = CandleIcon
+	portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	price_row.add_child(portrait)
 	var price := Label.new()
 	price.name = "Amount"
 	price.mouse_filter = Control.MOUSE_FILTER_IGNORE
