@@ -6,13 +6,13 @@
                          "name":  "Longuépine",
                          "rarity":  "common",
                          "god_id":  "ilyr",
-                         "description":  "Ligne droite principale ; les autres faces gagnent des lames de contact.",
+                         "description":  "Son avant-bras s'est allongé en lance de cartilage. Il la porte basse et attend qu'on soit à portée de contact.",
                          "body_color":  "#6c93c4",
                          "asset":  "res://assets/cards/h/h01_n1.png",
                          "effects":  [
 
                                      ],
-                         "power_text":  "Les lames bleues attaquent Ã  distance, traversent les alliÃ©es et les ennemies capturÃ©es ; une rÃ©sistance ou une case bloquÃ©e arrÃªte le tir.",
+                         "power_text":  "Les lames bleues attaquent à distance, traversent les alliées et les ennemies capturées ; une résistance ou une case bloquée arrête le tir.",
                          "levels":  [
                                         {
                                             "id":  "longuepine_n1",
@@ -72,13 +72,13 @@
                          "name":  "Pique-en-haut",
                          "rarity":  "common",
                          "god_id":  "ilyr",
-                         "description":  "Ligne haute principale ; base tournÃ©e vers le haut du plateau.",
+                         "description":  "Un torse vivant avec une hampe plantée au-dessus du crâne. La hampe descend un peu plus chaque nuit.",
                          "body_color":  "#6c93c4",
                          "asset":  "res://assets/cards/h/h02_n1.png",
                          "effects":  [
 
                                      ],
-                         "power_text":  "Les lames bleues attaquent Ã  distance, traversent les alliÃ©es et les ennemies capturÃ©es ; une rÃ©sistance ou une case bloquÃ©e arrÃªte le tir.",
+                         "power_text":  "Les lames bleues attaquent à distance, traversent les alliées et les ennemies capturées ; une résistance ou une case bloquée arrête le tir.",
                          "levels":  [
                                         {
                                             "id":  "pique_en_haut_n1",
@@ -138,13 +138,13 @@
                          "name":  "Fauche-fond",
                          "rarity":  "common",
                          "god_id":  "ilyr",
-                         "description":  "Ligne basse principale, appui gauche et faible protection Ã  droite.",
+                         "description":  "Il est monté sur des jambes trop hautes. Une pique descend sous son corps et cherche le sol, ou ce qui s'y trouve.",
                          "body_color":  "#6c93c4",
                          "asset":  "res://assets/cards/h/h03_n1.png",
                          "effects":  [
 
                                      ],
-                         "power_text":  "Les lames bleues attaquent Ã  distance, traversent les alliÃ©es et les ennemies capturÃ©es ; une rÃ©sistance ou une case bloquÃ©e arrÃªte le tir.",
+                         "power_text":  "Les lames bleues attaquent à distance, traversent les alliées et les ennemies capturées ; une résistance ou une case bloquée arrête le tir.",
                          "levels":  [
                                         {
                                             "id":  "fauche_fond_n1",
@@ -204,13 +204,13 @@
                          "name":  "Bouche-arbalète",
                          "rarity":  "common",
                          "god_id":  "ilyr",
-                         "description":  "Ligne gauche principale ; les lames normales couvrent les autres directions.",
+                         "description":  "Sa bouche est un tube de chair tendu. Il la bande en inspirant et projette de l'os à travers la pièce.",
                          "body_color":  "#6c93c4",
                          "asset":  "res://assets/cards/h/h04_n1.png",
                          "effects":  [
 
                                      ],
-                         "power_text":  "Les lames bleues attaquent Ã  distance, traversent les alliÃ©es et les ennemies capturÃ©es ; une rÃ©sistance ou une case bloquÃ©e arrÃªte le tir.",
+                         "power_text":  "Les lames bleues attaquent à distance, traversent les alliées et les ennemies capturées ; une résistance ou une case bloquée arrête le tir.",
                          "levels":  [
                                         {
                                             "id":  "bouche_arbalete_n1",
@@ -270,13 +270,13 @@
                          "name":  "Échassier des brumes",
                          "rarity":  "rare",
                          "god_id":  "ilyr",
-                         "description":  "Droite mixte : plus fort au contact quâ€™Ã  distance.",
+                         "description":  "Un chasseur sur échasses, aux avant-bras en lames empilées. Il avance dans la brume et n'en sort que pour frapper.",
                          "body_color":  "#6c93c4",
                          "asset":  "res://assets/cards/h/h05_n1.png",
                          "effects":  [
 
                                      ],
-                         "power_text":  "Les lames bleues attaquent Ã  distance, traversent les alliÃ©es et les ennemies capturÃ©es ; une rÃ©sistance ou une case bloquÃ©e arrÃªte le tir.",
+                         "power_text":  "Les lames bleues attaquent à distance, traversent les alliées et les ennemies capturées ; une résistance ou une case bloquée arrête le tir.",
                          "levels":  [
                                         {
                                             "id":  "echassier_des_brumes_n1",
@@ -323,13 +323,13 @@
                          "name":  "Veilleur bifurqué",
                          "rarity":  "rare",
                          "god_id":  "ilyr",
-                         "description":  "Deux directions de tir opposÃ©es, avec prioritÃ© gauche.",
+                         "description":  "Deux dards latéraux ont poussé de ses flancs. Ils divergent, puis se referment l'un vers l'autre quand il vise.",
                          "body_color":  "#6c93c4",
                          "asset":  "res://assets/cards/h/h06_n1.png",
                          "effects":  [
 
                                      ],
-                         "power_text":  "Les lames bleues attaquent Ã  distance, traversent les alliÃ©es et les ennemies capturÃ©es ; une rÃ©sistance ou une case bloquÃ©e arrÃªte le tir.",
+                         "power_text":  "Les lames bleues attaquent à distance, traversent les alliées et les ennemies capturées ; une résistance ou une case bloquée arrête le tir.",
                          "levels":  [
                                         {
                                             "id":  "veilleur_bifurque_n1",
@@ -379,13 +379,13 @@
                          "name":  "Perce-voûte",
                          "rarity":  "rare",
                          "god_id":  "ilyr",
-                         "description":  "Haut longue portÃ©e et protection basse de contact.",
+                         "description":  "Il se dresse, bec vers le haut, et perce les voûtes pour passer. Les gravats tombent après lui.",
                          "body_color":  "#6c93c4",
                          "asset":  "res://assets/cards/h/h07_n1.png",
                          "effects":  [
 
                                      ],
-                         "power_text":  "Les lames bleues attaquent Ã  distance, traversent les alliÃ©es et les ennemies capturÃ©es ; une rÃ©sistance ou une case bloquÃ©e arrÃªte le tir.",
+                         "power_text":  "Les lames bleues attaquent à distance, traversent les alliées et les ennemies capturées ; une résistance ou une case bloquée arrête le tir.",
                          "levels":  [
                                         {
                                             "id":  "perce_voute_n1",
@@ -432,13 +432,13 @@
                          "name":  "Dard de traverse",
                          "rarity":  "rare",
                          "god_id":  "ilyr",
-                         "description":  "Gauche longue portÃ©e, puis mÃ©lange normal/long au dernier niveau.",
+                         "description":  "Il frappe en oblique, d'une hampe plus longue que lui. La griffe qui reste au sol sert à le retenir.",
                          "body_color":  "#6c93c4",
                          "asset":  "res://assets/cards/h/h08_n1.png",
                          "effects":  [
 
                                      ],
-                         "power_text":  "Les lames bleues attaquent Ã  distance, traversent les alliÃ©es et les ennemies capturÃ©es ; une rÃ©sistance ou une case bloquÃ©e arrÃªte le tir.",
+                         "power_text":  "Les lames bleues attaquent à distance, traversent les alliées et les ennemies capturées ; une résistance ou une case bloquée arrête le tir.",
                          "levels":  [
                                         {
                                             "id":  "dard_de_traverse_n1",
@@ -485,13 +485,13 @@
                          "name":  "L’Œil empalé",
                          "rarity":  "epic",
                          "god_id":  "ilyr",
-                         "description":  "Deux lignes de tir perpendiculaires haut/droite ; angle bas/gauche faible.",
+                         "description":  "Un œil central, énorme, porté par deux membres en croix. Il voit dans quatre directions et ne cligne jamais.",
                          "body_color":  "#6c93c4",
                          "asset":  "res://assets/cards/h/h09_n1.png",
                          "effects":  [
 
                                      ],
-                         "power_text":  "Les lames bleues attaquent Ã  distance, traversent les alliÃ©es et les ennemies capturÃ©es ; une rÃ©sistance ou une case bloquÃ©e arrÃªte le tir.",
+                         "power_text":  "Les lames bleues attaquent à distance, traversent les alliées et les ennemies capturées ; une résistance ou une case bloquée arrête le tir.",
                          "levels":  [
                                         {
                                             "id":  "lil_empale_n1",
@@ -527,13 +527,13 @@
                          "name":  "Le Guetteur trifide",
                          "rarity":  "epic",
                          "god_id":  "ilyr",
-                         "description":  "Trois lignes de tir ; la face basse reste une attaque de contact.",
+                         "description":  "Trois bras en lance, et un appui court qui le tient debout. Il choisit sa cible en la regardant avec les trois à la fois.",
                          "body_color":  "#6c93c4",
                          "asset":  "res://assets/cards/h/h10_n1.png",
                          "effects":  [
 
                                      ],
-                         "power_text":  "Les lames bleues attaquent Ã  distance, traversent les alliÃ©es et les ennemies capturÃ©es ; une rÃ©sistance ou une case bloquÃ©e arrÃªte le tir.",
+                         "power_text":  "Les lames bleues attaquent à distance, traversent les alliées et les ennemies capturées ; une résistance ou une case bloquée arrête le tir.",
                          "levels":  [
                                         {
                                             "id":  "le_guetteur_trifide_n1",
@@ -571,13 +571,13 @@
                          "name":  "Le Traverse-nuit",
                          "rarity":  "legendary",
                          "god_id":  "ilyr",
-                         "description":  "Haut maximal et gauche longue portÃ©e ; bas ouvert, droite de contact.",
+                         "description":  "Une silhouette traversée par deux lances inégales. Elles le dépassent de chaque côté, et la nuit les rend invisibles.",
                          "body_color":  "#6c93c4",
                          "asset":  "res://assets/cards/h/h11_n1.png",
                          "effects":  [
 
                                      ],
-                         "power_text":  "Les lames bleues attaquent Ã  distance, traversent les alliÃ©es et les ennemies capturÃ©es ; une rÃ©sistance ou une case bloquÃ©e arrÃªte le tir.",
+                         "power_text":  "Les lames bleues attaquent à distance, traversent les alliées et les ennemies capturées ; une résistance ou une case bloquée arrête le tir.",
                          "levels":  [
                                         {
                                             "id":  "le_traverse_nuit_n1",
@@ -599,13 +599,13 @@
                          "name":  "La Croisée des regards",
                          "rarity":  "legendary",
                          "god_id":  "ilyr",
-                         "description":  "Tirs dans les quatre directions, mais aucune face Ã  quatre lames longues.",
+                         "description":  "Quatre organes de visée, quatre membres en croix. Rien ne l'approche sans être vu d'au moins deux d'entre eux.",
                          "body_color":  "#6c93c4",
                          "asset":  "res://assets/cards/h/h12_n1.png",
                          "effects":  [
 
                                      ],
-                         "power_text":  "Les lames bleues attaquent Ã  distance, traversent les alliÃ©es et les ennemies capturÃ©es ; une rÃ©sistance ou une case bloquÃ©e arrÃªte le tir.",
+                         "power_text":  "Les lames bleues attaquent à distance, traversent les alliées et les ennemies capturées ; une résistance ou une case bloquée arrête le tir.",
                          "levels":  [
                                         {
                                             "id":  "la_croisee_des_regards_n1",

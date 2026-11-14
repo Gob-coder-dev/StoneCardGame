@@ -6,13 +6,13 @@
                          "name":  "Nœud vivant",
                          "rarity":  "common",
                          "god_id":  "sylkha",
-                         "description":  "Petit membre de liaison, avec beaucoup de place pour recevoir lâ€™aura.",
+                         "description":  "Un nœud de fibres qui a appris à marcher. Les liens qui le composent se resserrent quand quelque chose approche.",
                          "body_color":  "#7d9f53",
                          "asset":  "res://assets/cards/e/e01_n1.png",
                          "effects":  [
                                          "swarm"
                                      ],
-                         "power_text":  "Essaim : +2 lames dâ€™aura par autre membre connectÃ©, jusquâ€™Ã  +4 par carte et dans la place disponible.",
+                         "power_text":  "Essaim : +2 lames d’aura par autre membre connecté, jusqu’à +4 par carte et dans la place disponible.",
                          "levels":  [
                                         {
                                             "id":  "nud_vivant_n1",
@@ -60,13 +60,13 @@
                          "name":  "Larve d’ancrage",
                          "rarity":  "common",
                          "god_id":  "sylkha",
-                         "description":  "Bas fort, autres faces ouvertes aux renforts du groupe.",
+                         "description":  "Une larve à l'abdomen armé, qui s'accroche aux racines. Elle ne lâche que ce qu'elle a déjà mangé.",
                          "body_color":  "#7d9f53",
                          "asset":  "res://assets/cards/e/e02_n1.png",
                          "effects":  [
                                          "swarm"
                                      ],
-                         "power_text":  "Essaim : +2 lames dâ€™aura par autre membre connectÃ©, jusquâ€™Ã  +4 par carte et dans la place disponible.",
+                         "power_text":  "Essaim : +2 lames d’aura par autre membre connecté, jusqu’à +4 par carte et dans la place disponible.",
                          "levels":  [
                                         {
                                             "id":  "larve_dancrage_n1",
@@ -114,13 +114,13 @@
                          "name":  "Tisse-griffe",
                          "rarity":  "common",
                          "god_id":  "sylkha",
-                         "description":  "Flancs dâ€™abord actifs, puis prioritÃ© gauche ; bonne rÃ©serve de croissance.",
+                         "description":  "Elle avance sur des griffes de longueurs différentes. Le fil qu'elle tisse reste accroché à ce qu'elle a touché.",
                          "body_color":  "#7d9f53",
                          "asset":  "res://assets/cards/e/e03_n1.png",
                          "effects":  [
                                          "swarm"
                                      ],
-                         "power_text":  "Essaim : +2 lames dâ€™aura par autre membre connectÃ©, jusquâ€™Ã  +4 par carte et dans la place disponible.",
+                         "power_text":  "Essaim : +2 lames d’aura par autre membre connecté, jusqu’à +4 par carte et dans la place disponible.",
                          "levels":  [
                                         {
                                             "id":  "tisse_griffe_n1",
@@ -168,13 +168,13 @@
                          "name":  "Bourgeon mordant",
                          "rarity":  "common",
                          "god_id":  "sylkha",
-                         "description":  "Haut/gauche offensifs, droite laissÃ©e aux lames dâ€™aura.",
+                         "description":  "Une pousse dentée, avec un bourgeon immense au sommet. Le bourgeon s'ouvre en mâchoire quand la sève monte.",
                          "body_color":  "#7d9f53",
                          "asset":  "res://assets/cards/e/e04_n1.png",
                          "effects":  [
                                          "swarm"
                                      ],
-                         "power_text":  "Essaim : +2 lames dâ€™aura par autre membre connectÃ©, jusquâ€™Ã  +4 par carte et dans la place disponible.",
+                         "power_text":  "Essaim : +2 lames d’aura par autre membre connecté, jusqu’à +4 par carte et dans la place disponible.",
                          "levels":  [
                                         {
                                             "id":  "bourgeon_mordant_n1",
@@ -222,13 +222,13 @@
                          "name":  "Mante des racines",
                          "rarity":  "rare",
                          "god_id":  "sylkha",
-                         "description":  "Deux faces haut/gauche trÃ¨s fortes ; six emplacements encore libres au maximum.",
+                         "description":  "Une mante enracinée, aux pinces devenues énormes. Ses racines la retiennent, ses pinces vont chercher le reste.",
                          "body_color":  "#7d9f53",
                          "asset":  "res://assets/cards/e/e05_n1.png",
                          "effects":  [
                                          "swarm"
                                      ],
-                         "power_text":  "Essaim : +2 lames dâ€™aura par autre membre connectÃ©, jusquâ€™Ã  +4 par carte et dans la place disponible.",
+                         "power_text":  "Essaim : +2 lames d’aura par autre membre connecté, jusqu’à +4 par carte et dans la place disponible.",
                          "levels":  [
                                         {
                                             "id":  "mante_des_racines_n1",
@@ -266,13 +266,13 @@
                          "name":  "Porte-nid",
                          "rarity":  "rare",
                          "god_id":  "sylkha",
-                         "description":  "Membre polyvalent et assez symÃ©trique, apte Ã  recevoir lâ€™aura sur toutes ses faces.",
+                         "description":  "Un termite qui porte son nid sur le dos. Le nid est vivant, et il descend la nuit pour se nourrir.",
                          "body_color":  "#7d9f53",
                          "asset":  "res://assets/cards/e/e06_n1.png",
                          "effects":  [
                                          "swarm"
                                      ],
-                         "power_text":  "Essaim : +2 lames dâ€™aura par autre membre connectÃ©, jusquâ€™Ã  +4 par carte et dans la place disponible.",
+                         "power_text":  "Essaim : +2 lames d’aura par autre membre connecté, jusqu’à +4 par carte et dans la place disponible.",
                          "levels":  [
                                         {
                                             "id":  "porte_nid_n1",
@@ -310,13 +310,13 @@
                          "name":  "Fourmilion des nerfs",
                          "rarity":  "rare",
                          "god_id":  "sylkha",
-                         "description":  "Bas/droite forts ; haut dâ€™abord ouvert pour les renforts.",
+                         "description":  "Un fouisseur aux nerfs visibles sous la peau. L'abdomen a pris toute la place, et il creuse sans remonter entier.",
                          "body_color":  "#7d9f53",
                          "asset":  "res://assets/cards/e/e07_n1.png",
                          "effects":  [
                                          "swarm"
                                      ],
-                         "power_text":  "Essaim : +2 lames dâ€™aura par autre membre connectÃ©, jusquâ€™Ã  +4 par carte et dans la place disponible.",
+                         "power_text":  "Essaim : +2 lames d’aura par autre membre connecté, jusqu’à +4 par carte et dans la place disponible.",
                          "levels":  [
                                         {
                                             "id":  "fourmilion_des_nerfs_n1",
@@ -354,13 +354,13 @@
                          "name":  "Ronce rampante",
                          "rarity":  "rare",
                          "god_id":  "sylkha",
-                         "description":  "Haut/bas orientÃ©s, gauche faiblement dÃ©veloppÃ©e.",
+                         "description":  "Une ronce sur pattes, aux racines épaissies. Elle s'enroule autour des jambes et se referme lentement.",
                          "body_color":  "#7d9f53",
                          "asset":  "res://assets/cards/e/e08_n1.png",
                          "effects":  [
                                          "swarm"
                                      ],
-                         "power_text":  "Essaim : +2 lames dâ€™aura par autre membre connectÃ©, jusquâ€™Ã  +4 par carte et dans la place disponible.",
+                         "power_text":  "Essaim : +2 lames d’aura par autre membre connecté, jusqu’à +4 par carte et dans la place disponible.",
                          "levels":  [
                                         {
                                             "id":  "ronce_rampante_n1",
@@ -398,13 +398,13 @@
                          "name":  "La Nourrice nouée",
                          "rarity":  "epic",
                          "god_id":  "sylkha",
-                         "description":  "Trois faces de base solides ; rÃ©serve Ã  gauche pour la pousse.",
+                         "description":  "Une matrice vivante, pleine de poches. Trois membres principaux la portent, et les poches remuent quand elle a faim.",
                          "body_color":  "#7d9f53",
                          "asset":  "res://assets/cards/e/e09_n1.png",
                          "effects":  [
                                          "swarm"
                                      ],
-                         "power_text":  "Essaim : +2 lames dâ€™aura par autre membre connectÃ©, jusquâ€™Ã  +4 par carte et dans la place disponible.",
+                         "power_text":  "Essaim : +2 lames d’aura par autre membre connecté, jusqu’à +4 par carte et dans la place disponible.",
                          "levels":  [
                                         {
                                             "id":  "la_nourrice_nouee_n1",
@@ -432,13 +432,13 @@
                          "name":  "Le Tisseur de meutes",
                          "rarity":  "epic",
                          "god_id":  "sylkha",
-                         "description":  "Bas/gauche offensifs ; haut et droite reÃ§oivent facilement lâ€™aura.",
+                         "description":  "Un tisseur ailé qui relie ses membres par des fibres tendues. Le fil mène toujours à une meute qui attend.",
                          "body_color":  "#7d9f53",
                          "asset":  "res://assets/cards/e/e10_n1.png",
                          "effects":  [
                                          "swarm"
                                      ],
-                         "power_text":  "Essaim : +2 lames dâ€™aura par autre membre connectÃ©, jusquâ€™Ã  +4 par carte et dans la place disponible.",
+                         "power_text":  "Essaim : +2 lames d’aura par autre membre connecté, jusqu’à +4 par carte et dans la place disponible.",
                          "levels":  [
                                         {
                                             "id":  "le_tisseur_de_meutes_n1",
@@ -466,13 +466,13 @@
                          "name":  "Le Cœur de la colonie",
                          "rarity":  "legendary",
                          "god_id":  "sylkha",
-                         "description":  "Quatre faces actives et six places libres avant lâ€™aura.",
+                         "description":  "Une foule d'insectes agrippés à un cœur végétal. Quand le cœur bat, la foule entière avance d'un pas.",
                          "body_color":  "#7d9f53",
                          "asset":  "res://assets/cards/e/e11_n1.png",
                          "effects":  [
                                          "swarm"
                                      ],
-                         "power_text":  "Essaim : +2 lames dâ€™aura par autre membre connectÃ©, jusquâ€™Ã  +4 par carte et dans la place disponible.",
+                         "power_text":  "Essaim : +2 lames d’aura par autre membre connecté, jusqu’à +4 par carte et dans la place disponible.",
                          "levels":  [
                                         {
                                             "id":  "le_cur_de_la_colonie_n1",
@@ -490,13 +490,13 @@
                          "name":  "La Mante-cathédrale",
                          "rarity":  "legendary",
                          "god_id":  "sylkha",
-                         "description":  "Haut/gauche maximaux ; bas trÃ¨s vulnÃ©rable avant les renforts.",
+                         "description":  "Une mante immense dont les ailes et les racines dessinent une nef. L'office se célèbre sous elle, et l'on n'en sort pas.",
                          "body_color":  "#7d9f53",
                          "asset":  "res://assets/cards/e/e12_n1.png",
                          "effects":  [
                                          "swarm"
                                      ],
-                         "power_text":  "Essaim : +2 lames dâ€™aura par autre membre connectÃ©, jusquâ€™Ã  +4 par carte et dans la place disponible.",
+                         "power_text":  "Essaim : +2 lames d’aura par autre membre connecté, jusqu’à +4 par carte et dans la place disponible.",
                          "levels":  [
                                         {
                                             "id":  "la_mante_cathedrale_n1",

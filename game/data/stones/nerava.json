@@ -6,13 +6,13 @@
                          "name":  "Porte-fièvre",
                          "rarity":  "common",
                          "god_id":  "nerava",
-                         "description":  "Petit support dâ€™aura ; les quatre faces sâ€™Ã©toffent lentement.",
+                         "description":  "Il porte la fièvre comme d'autres portent un enfant. Ses cloches de spores tintent quand il tousse, et il tousse sans arrêt.",
                          "body_color":  "#9671aa",
                          "asset":  "res://assets/cards/d/d01_n1.png",
                          "effects":  [
                                          "weaken_adjacent"
                                      ],
-                         "power_text":  "Miasme : aprÃ¨s les captures, chaque voisine adverse perd 1 force par face tant que lâ€™aura est active.",
+                         "power_text":  "Miasme : après les captures, chaque voisine adverse perd 1 force par face tant que l’aura est active.",
                          "levels":  [
                                         {
                                             "id":  "porte_fievre_n1",
@@ -60,13 +60,13 @@
                          "name":  "Crache-cendre",
                          "rarity":  "common",
                          "god_id":  "nerava",
-                         "description":  "Attaque basse qui prÃ©pare une cible rÃ©sistante pour un prochain coup.",
+                         "description":  "Sa gorge est gonflée de cendre. Il crache sur ce qui bouge, la cendre reste sur la peau et la peau part avec.",
                          "body_color":  "#9671aa",
                          "asset":  "res://assets/cards/d/d02_n1.png",
                          "effects":  [
                                          "weaken_on_failed_attack"
                                      ],
-                         "power_text":  "Ã‰chec corrosif : les adversaires qui rÃ©sistent Ã  une attaque perdent 2 force par face jusquâ€™Ã  la fin du prochain coup du lanceur.",
+                         "power_text":  "Échec corrosif : les adversaires qui résistent à une attaque perdent 2 force par face jusqu’à la fin du prochain coup du lanceur.",
                          "levels":  [
                                         {
                                             "id":  "crache_cendre_n1",
@@ -114,13 +114,13 @@
                          "name":  "Clochelet malade",
                          "rarity":  "common",
                          "god_id":  "nerava",
-                         "description":  "Aura de proximitÃ© avec haut toujours ouvert ; renforce surtout sa protection basse.",
+                         "description":  "Une silhouette courbée sous ses propres cloches. Elles ont poussé dans sa chair et sonnent à chaque pas qu'il fait.",
                          "body_color":  "#9671aa",
                          "asset":  "res://assets/cards/d/d03_n1.png",
                          "effects":  [
                                          "weaken_adjacent"
                                      ],
-                         "power_text":  "Miasme : aprÃ¨s les captures, chaque voisine adverse perd 1 force par face tant que lâ€™aura est active.",
+                         "power_text":  "Miasme : après les captures, chaque voisine adverse perd 1 force par face tant que l’aura est active.",
                          "levels":  [
                                         {
                                             "id":  "clochelet_malade_n1",
@@ -168,13 +168,13 @@
                          "name":  "Mâchoire moisie",
                          "rarity":  "common",
                          "god_id":  "nerava",
-                         "description":  "Deux directions dâ€™Ã©chec possibles, haut/gauche ; Ã©largissement tardif vers la droite.",
+                         "description":  "Un prédateur couvert de moisissure, avec deux gueules de travers. La mousse qui le recouvre pousse entre les dents.",
                          "body_color":  "#9671aa",
                          "asset":  "res://assets/cards/d/d04_n1.png",
                          "effects":  [
                                          "weaken_on_failed_attack"
                                      ],
-                         "power_text":  "Ã‰chec corrosif : les adversaires qui rÃ©sistent Ã  une attaque perdent 2 force par face jusquâ€™Ã  la fin du prochain coup du lanceur.",
+                         "power_text":  "Échec corrosif : les adversaires qui résistent à une attaque perdent 2 force par face jusqu’à la fin du prochain coup du lanceur.",
                          "levels":  [
                                         {
                                             "id":  "machoire_moisie_n1",
@@ -222,13 +222,13 @@
                          "name":  "Veuve des spores",
                          "rarity":  "rare",
                          "god_id":  "nerava",
-                         "description":  "Aura sur un corps orientÃ© bas/droite ; faible protection de lâ€™autre angle.",
+                         "description":  "Elle traîne un voile qui n'est pas du tissu. La traîne se défait derrière elle en nuage, et le nuage la suit.",
                          "body_color":  "#9671aa",
                          "asset":  "res://assets/cards/d/d05_n1.png",
                          "effects":  [
                                          "weaken_adjacent"
                                      ],
-                         "power_text":  "Miasme : aprÃ¨s les captures, chaque voisine adverse perd 1 force par face tant que lâ€™aura est active.",
+                         "power_text":  "Miasme : après les captures, chaque voisine adverse perd 1 force par face tant que l’aura est active.",
                          "levels":  [
                                         {
                                             "id":  "veuve_des_spores_n1",
@@ -266,13 +266,13 @@
                          "name":  "Sonneur pestiféré",
                          "rarity":  "rare",
                          "god_id":  "nerava",
-                         "description":  "Support assez polyvalent, avec faiblesse basse au dÃ©but.",
+                         "description":  "Il porte une cloche creuse à la place du torse. Quand elle sonne, ceux qui l'entendent se mettent à saigner du nez.",
                          "body_color":  "#9671aa",
                          "asset":  "res://assets/cards/d/d06_n1.png",
                          "effects":  [
                                          "weaken_adjacent"
                                      ],
-                         "power_text":  "Miasme : aprÃ¨s les captures, chaque voisine adverse perd 1 force par face tant que lâ€™aura est active.",
+                         "power_text":  "Miasme : après les captures, chaque voisine adverse perd 1 force par face tant que l’aura est active.",
                          "levels":  [
                                         {
                                             "id":  "sonneur_pestifere_n1",
@@ -310,13 +310,13 @@
                          "name":  "Griffe septique",
                          "rarity":  "rare",
                          "god_id":  "nerava",
-                         "description":  "Gauche forte, autres attaques secondaires pour contaminer plusieurs cibles rÃ©sistantes.",
+                         "description":  "Un bras plus long que l'autre, terminé par une griffe noire. Ce qu'elle touche suppure le lendemain, et la plaie parle.",
                          "body_color":  "#9671aa",
                          "asset":  "res://assets/cards/d/d07_n1.png",
                          "effects":  [
                                          "weaken_on_failed_attack"
                                      ],
-                         "power_text":  "Ã‰chec corrosif : les adversaires qui rÃ©sistent Ã  une attaque perdent 2 force par face jusquâ€™Ã  la fin du prochain coup du lanceur.",
+                         "power_text":  "Échec corrosif : les adversaires qui résistent à une attaque perdent 2 force par face jusqu’à la fin du prochain coup du lanceur.",
                          "levels":  [
                                         {
                                             "id":  "griffe_septique_n1",
@@ -354,13 +354,13 @@
                          "name":  "Ronge-chair",
                          "rarity":  "rare",
                          "god_id":  "nerava",
-                         "description":  "Quatre faces modestes ; peut appliquer la corrosion sur plusieurs attaques ratÃ©es.",
+                         "description":  "Une bête couverte de morsures qui ne cicatrisent pas. Les mâchoires repoussent sur son dos et mangent ce qui reste d'elle.",
                          "body_color":  "#9671aa",
                          "asset":  "res://assets/cards/d/d08_n1.png",
                          "effects":  [
                                          "weaken_on_failed_attack"
                                      ],
-                         "power_text":  "Ã‰chec corrosif : les adversaires qui rÃ©sistent Ã  une attaque perdent 2 force par face jusquâ€™Ã  la fin du prochain coup du lanceur.",
+                         "power_text":  "Échec corrosif : les adversaires qui résistent à une attaque perdent 2 force par face jusqu’à la fin du prochain coup du lanceur.",
                          "levels":  [
                                         {
                                             "id":  "ronge_chair_n1",
@@ -398,13 +398,13 @@
                          "name":  "Le Porte-cercueil",
                          "rarity":  "epic",
                          "god_id":  "nerava",
-                         "description":  "Aura sur une base rÃ©sistante en bas, avec gauche dâ€™abord ouverte.",
+                         "description":  "Il a fusionné avec son propre cercueil. L'enveloppe spongieuse pend sur ses épaules et il marche en la portant.",
                          "body_color":  "#9671aa",
                          "asset":  "res://assets/cards/d/d09_n1.png",
                          "effects":  [
                                          "weaken_adjacent"
                                      ],
-                         "power_text":  "Miasme : aprÃ¨s les captures, chaque voisine adverse perd 1 force par face tant que lâ€™aura est active.",
+                         "power_text":  "Miasme : après les captures, chaque voisine adverse perd 1 force par face tant que l’aura est active.",
                          "levels":  [
                                         {
                                             "id":  "le_porte_cercueil_n1",
@@ -432,13 +432,13 @@
                          "name":  "Le Prêcheur des fièvres",
                          "rarity":  "epic",
                          "god_id":  "nerava",
-                         "description":  "Haut et gauche offensifs ; corrosion sur les cibles quâ€™il ne capture pas.",
+                         "description":  "Son visage a été cousu. La voix sort du torse, par des mâchoires ouvertes dans la poitrine, et elle prêche la contagion.",
                          "body_color":  "#9671aa",
                          "asset":  "res://assets/cards/d/d10_n1.png",
                          "effects":  [
                                          "weaken_on_failed_attack"
                                      ],
-                         "power_text":  "Ã‰chec corrosif : les adversaires qui rÃ©sistent Ã  une attaque perdent 2 force par face jusquâ€™Ã  la fin du prochain coup du lanceur.",
+                         "power_text":  "Échec corrosif : les adversaires qui résistent à une attaque perdent 2 force par face jusqu’à la fin du prochain coup du lanceur.",
                          "levels":  [
                                         {
                                             "id":  "le_precheur_des_fievres_n1",
@@ -466,13 +466,13 @@
                          "name":  "La Cathédrale malade",
                          "rarity":  "legendary",
                          "god_id":  "nerava",
-                         "description":  "Aura sur un profil Ã  trois faces moyennes et une face faible.",
+                         "description":  "Une nef de chair sèche avance sur des jambes. Les cloches fongiques au sommet sonnent les offices d'une paroisse morte.",
                          "body_color":  "#9671aa",
                          "asset":  "res://assets/cards/d/d11_n1.png",
                          "effects":  [
                                          "weaken_adjacent"
                                      ],
-                         "power_text":  "Miasme : aprÃ¨s les captures, chaque voisine adverse perd 1 force par face tant que lâ€™aura est active.",
+                         "power_text":  "Miasme : après les captures, chaque voisine adverse perd 1 force par face tant que l’aura est active.",
                          "levels":  [
                                         {
                                             "id":  "la_cathedrale_malade_n1",
@@ -490,13 +490,13 @@
                          "name":  "Le Dernier Souffle",
                          "rarity":  "legendary",
                          "god_id":  "nerava",
-                         "description":  "Gauche maximale, haut fort, bas faible ; attaque ou prÃ©paration dâ€™une dÃ©fense difficile.",
+                         "description":  "Il n'a plus de chair, seulement un souffle. Quand il expire, un voile de cendre violette se lève et la pièce refroidit.",
                          "body_color":  "#9671aa",
                          "asset":  "res://assets/cards/d/d12_n1.png",
                          "effects":  [
                                          "weaken_on_failed_attack"
                                      ],
-                         "power_text":  "Ã‰chec corrosif : les adversaires qui rÃ©sistent Ã  une attaque perdent 2 force par face jusquâ€™Ã  la fin du prochain coup du lanceur.",
+                         "power_text":  "Échec corrosif : les adversaires qui résistent à une attaque perdent 2 force par face jusqu’à la fin du prochain coup du lanceur.",
                          "levels":  [
                                         {
                                             "id":  "le_dernier_souffle_n1",

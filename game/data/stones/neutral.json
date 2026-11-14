@@ -6,7 +6,7 @@
                          "name":  "Avortons des caves",
                          "rarity":  "common",
                          "god_id":  "neutral",
-                         "description":  "Profil Ã©quilibrÃ© ; rÃ©fÃ©rence simple pour comparer les coÃ»ts.",
+                         "description":  "Ils sortent des caves par grappes, à quatre pattes, et mordent tout ce qui saigne encore. Le plus petit lâche toujours en dernier.",
                          "body_color":  "#8c8172",
                          "asset":  "res://assets/cards/n/n01_n1.png",
                          "effects":  [
@@ -59,7 +59,7 @@
                          "name":  "Mordeur des combles",
                          "rarity":  "common",
                          "god_id":  "neutral",
-                         "description":  "Attaque vers le haut Ã  trÃ¨s petit budget ; trois faces ouvertes.",
+                         "description":  "Il dort au plafond des combles, tête en bas. Quand sa mâchoire s'ouvre, on voit qu'il en a deux, l'une derrière l'autre.",
                          "body_color":  "#8c8172",
                          "asset":  "res://assets/cards/n/n02_n1.png",
                          "effects":  [
@@ -112,7 +112,7 @@
                          "name":  "Rampant des fosses",
                          "rarity":  "common",
                          "god_id":  "neutral",
-                         "description":  "Attaque vers le bas ; complÃ©ment directionnel de N02.",
+                         "description":  "Un ver long comme un bras, puis comme un homme. Il ne sort de la fosse que pour mordre, et il mord en remontant.",
                          "body_color":  "#8c8172",
                          "asset":  "res://assets/cards/n/n03_n1.png",
                          "effects":  [
@@ -165,7 +165,7 @@
                          "name":  "Gueule-de-travers",
                          "rarity":  "common",
                          "god_id":  "neutral",
-                         "description":  "Attaque Ã  droite ; flancs trÃ¨s exposÃ©s.",
+                         "description":  "Sa mâchoire a glissé sur le côté et n'a jamais repris sa place. Il attaque de biais, sans regarder ce qu'il mord.",
                          "body_color":  "#8c8172",
                          "asset":  "res://assets/cards/n/n04_n1.png",
                          "effects":  [
@@ -218,7 +218,7 @@
                          "name":  "Ogre droitier",
                          "rarity":  "common",
                          "god_id":  "neutral",
-                         "description":  "Attaque Ã  gauche ; pendant de N04 sans rotation manuelle.",
+                         "description":  "Un ogre dont un seul bras a continué de grandir. Il frappe sans lever les yeux, et le sol tremble après.",
                          "body_color":  "#8c8172",
                          "asset":  "res://assets/cards/n/n05_n1.png",
                          "effects":  [
@@ -271,7 +271,7 @@
                          "name":  "Le Drapé du seuil",
                          "rarity":  "common",
                          "god_id":  "neutral",
-                         "description":  "Deux faces opposÃ©es haut/bas ; contrÃ´le dâ€™un axe.",
+                         "description":  "Un drap debout sur le seuil. Sous le drap, une ouverture qui ne finit pas, et il ne bouge que quand on cesse de le regarder.",
                          "body_color":  "#8c8172",
                          "asset":  "res://assets/cards/n/n06_n1.png",
                          "effects":  [
@@ -324,7 +324,7 @@
                          "name":  "Mâche-mur",
                          "rarity":  "common",
                          "god_id":  "neutral",
-                         "description":  "Deux faces opposÃ©es gauche/droite ; deux directions de capture.",
+                         "description":  "Une masse sans forme, hérissée d'yeux. Chaque bouche qu'elle ouvre réclame, et elle en ouvre de nouvelles chaque nuit.",
                          "body_color":  "#8c8172",
                          "asset":  "res://assets/cards/n/n07_n1.png",
                          "effects":  [
@@ -377,7 +377,7 @@
                          "name":  "Écorche-angle",
                          "rarity":  "common",
                          "god_id":  "neutral",
-                         "description":  "Deux faces adjacentes haut/droite ; bon placement en angle.",
+                         "description":  "Il se plie aux angles des murs et s'y accroche par les coudes. On ne le voit qu'une fois qu'il est passé au-dessus de nous.",
                          "body_color":  "#8c8172",
                          "asset":  "res://assets/cards/n/n08_n1.png",
                          "effects":  [
@@ -431,7 +431,7 @@
                          "name":  "Le Sac à murmures",
                          "rarity":  "common",
                          "god_id":  "neutral",
-                         "description":  "Trois faces asymÃ©triques, saturation progressive Ã  quatre, haut toujours ouvert.",
+                         "description":  "Une besace de peau, gonflée, qui respire. Elle murmure des prénoms quand on s'approche, et se penche vers la voix.",
                          "body_color":  "#8c8172",
                          "asset":  "res://assets/cards/n/n24_n1.png",
                          "effects":  [
@@ -484,7 +484,7 @@
                          "name":  "Charognard courbe",
                          "rarity":  "rare",
                          "god_id":  "neutral",
-                         "description":  "Angle bas/gauche ; protÃ¨ge deux directions Ã  faible coÃ»t.",
+                         "description":  "Un croissant d'os qui marche sur des pointes fines. Il suit les mourants de loin et attend qu'ils aient fini.",
                          "body_color":  "#8c8172",
                          "asset":  "res://assets/cards/n/n09_n1.png",
                          "effects":  [
@@ -527,7 +527,7 @@
                          "name":  "Tricorne errant",
                          "rarity":  "rare",
                          "god_id":  "neutral",
-                         "description":  "Trois faces actives, faiblesse conservÃ©e en bas.",
+                         "description":  "Trois cornes, pas d'yeux, et des épaules qui s'alourdissent à chaque charogne. Il cherche quelqu'un de plus lent que lui.",
                          "body_color":  "#8c8172",
                          "asset":  "res://assets/cards/n/n10_n1.png",
                          "effects":  [
@@ -571,7 +571,7 @@
                          "name":  "Dos-fendu",
                          "rarity":  "rare",
                          "god_id":  "neutral",
-                         "description":  "Trois faces actives, faiblesse conservÃ©e en haut.",
+                         "description":  "Son dos s'est fendu et des cornes ont poussé dans la plaie. Il charge tête basse, en grognant comme un porc qu'on égorge.",
                          "body_color":  "#8c8172",
                          "asset":  "res://assets/cards/n/n11_n1.png",
                          "effects":  [
@@ -614,7 +614,7 @@
                          "name":  "Le Nœud hurlant",
                          "rarity":  "rare",
                          "god_id":  "neutral",
-                         "description":  "Haut dominant, flancs secondaires, bas Ã  zÃ©ro.",
+                         "description":  "Une bande de chair nouée sur elle-même. Le nœud hurle sans reprendre souffle, et le hurlement vient de l'intérieur.",
                          "body_color":  "#8c8172",
                          "asset":  "res://assets/cards/n/n12_n1.png",
                          "effects":  [
@@ -657,7 +657,7 @@
                          "name":  "La Veuve suspendue",
                          "rarity":  "rare",
                          "god_id":  "neutral",
-                         "description":  "Bas dominant, gauche Ã  zÃ©ro ; trois forces diffÃ©rentes.",
+                         "description":  "Elle pend par les cheveux dans l'encadrement des portes. Ses mains ne lâchent pas le sol, même quand le reste monte.",
                          "body_color":  "#8c8172",
                          "asset":  "res://assets/cards/n/n13_n1.png",
                          "effects":  [
@@ -700,7 +700,7 @@
                          "name":  "Ogre à deux bouches",
                          "rarity":  "rare",
                          "god_id":  "neutral",
-                         "description":  "Gauche dominante, haut/bas secondaires, droite ouverte.",
+                         "description":  "La seconde bouche lui a poussé dans le dos. Quand il mange, l'autre mâche aussi, et il lui faut deux repas.",
                          "body_color":  "#8c8172",
                          "asset":  "res://assets/cards/n/n14_n1.png",
                          "effects":  [
@@ -743,7 +743,7 @@
                          "name":  "Fouisseur aveugle",
                          "rarity":  "rare",
                          "god_id":  "neutral",
-                         "description":  "Flancs puissants ; attaque secondaire en bas et aucune en haut.",
+                         "description":  "Il creuse sans lumière et sans yeux. On l'entend venir sous la terre, et l'on n'a que le temps de retirer ses pieds.",
                          "body_color":  "#8c8172",
                          "asset":  "res://assets/cards/n/n15_n1.png",
                          "effects":  [
@@ -786,7 +786,7 @@
                          "name":  "Dévoreur de lanternes",
                          "rarity":  "rare",
                          "god_id":  "neutral",
-                         "description":  "Quatre faces actives, avec prioritÃ© bas/droite.",
+                         "description":  "Il avale les lanternes et garde la flamme dans sa poitrine. La nuit, on le repère à cette lueur qui marche dans les couloirs.",
                          "body_color":  "#8c8172",
                          "asset":  "res://assets/cards/n/n16_n1.png",
                          "effects":  [
@@ -829,7 +829,7 @@
                          "name":  "Mille-gueules",
                          "rarity":  "epic",
                          "god_id":  "neutral",
-                         "description":  "Gauche dominante et haut secondaire ; bas Ã  zÃ©ro.",
+                         "description":  "Un tas de petites bouches sans corps, collées les unes aux autres. Elles finissent toujours par se mettre d'accord.",
                          "body_color":  "#8c8172",
                          "asset":  "res://assets/cards/n/n17_n1.png",
                          "effects":  [
@@ -862,7 +862,7 @@
                          "name":  "L’Affamé du puits",
                          "rarity":  "epic",
                          "god_id":  "neutral",
-                         "description":  "Haut trÃ¨s fort et flanc gauche de soutien ; droite ouverte.",
+                         "description":  "Un visage remonte du puits, sans corps. Il s'accroche au rebord avec ce qui lui reste de doigts et attend qu'on se penche.",
                          "body_color":  "#8c8172",
                          "asset":  "res://assets/cards/n/n18_n1.png",
                          "effects":  [
@@ -895,7 +895,7 @@
                          "name":  "Le Porte-visages",
                          "rarity":  "epic",
                          "god_id":  "neutral",
-                         "description":  "Bas trÃ¨s fort, droite secondaire ; gauche ouverte.",
+                         "description":  "Il n'a pas de visage sur la tête. Il en porte un sur la poitrine et deux sur les épaules, qui regardent ailleurs.",
                          "body_color":  "#8c8172",
                          "asset":  "res://assets/cards/n/n19_n1.png",
                          "effects":  [
@@ -928,7 +928,7 @@
                          "name":  "Le Replié",
                          "rarity":  "epic",
                          "god_id":  "neutral",
-                         "description":  "Droite trÃ¨s forte et haut/gauche secondaires ; bas Ã  zÃ©ro.",
+                         "description":  "Son corps s'est replié jusqu'à ne plus laisser de place. Le visage est resté au fond du pli, et il faut se pencher pour l'entendre.",
                          "body_color":  "#8c8172",
                          "asset":  "res://assets/cards/n/n20_n1.png",
                          "effects":  [
@@ -961,7 +961,7 @@
                          "name":  "Le Voyeur",
                          "rarity":  "legendary",
                          "god_id":  "neutral",
-                         "description":  "Profil 3/4/2/1 complet et asymÃ©trique ; aucune face sans dÃ©fense.",
+                         "description":  "Une tache noire sur le mur, pleine d'yeux ouverts. Elle ne cligne pas, et elle change de mur quand la pièce est vide.",
                          "body_color":  "#8c8172",
                          "asset":  "res://assets/cards/n/n21_n1.png",
                          "effects":  [
@@ -984,7 +984,7 @@
                          "name":  "La Gueule sous le lit",
                          "rarity":  "legendary",
                          "god_id":  "neutral",
-                         "description":  "Haut maximal, deux flancs inÃ©gaux, bas totalement ouvert.",
+                         "description":  "Il ne reste presque plus de corps : une peau tendue entre les lattes, et une mâchoire trop large qui s'ouvre quand le plancher craque.",
                          "body_color":  "#8c8172",
                          "asset":  "res://assets/cards/n/n22_n1.png",
                          "effects":  [
@@ -1007,7 +1007,7 @@
                          "name":  "Le Roi des oubliettes",
                          "rarity":  "legendary",
                          "god_id":  "neutral",
-                         "description":  "Bas et gauche au maximum ; droite faible.",
+                         "description":  "Un géant assis dans le noir, sans armure et sans chaîne à briser. Il tend la main quand on descend, et il ne demande rien.",
                          "body_color":  "#8c8172",
                          "asset":  "res://assets/cards/n/n23_n1.png",
                          "effects":  [

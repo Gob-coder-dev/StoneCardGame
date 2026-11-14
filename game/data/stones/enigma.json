@@ -6,13 +6,13 @@
                          "name":  "Collecteur de dents",
                          "rarity":  "common",
                          "god_id":  "enigma",
-                         "description":  "Haut offensif et autres faces disponibles pour les boucliers volÃ©s.",
+                         "description":  "Une machine de récupération aux mâchoires industrielles. Elle arrache les dents et les range une par une, sans se tromper.",
                          "body_color":  "#bf8b58",
                          "asset":  "res://assets/cards/p/p01_n1.png",
                          "effects":  [
                                          "shield_theft"
                                      ],
-                         "power_text":  "Pillage : les symboles actifs de la face vaincue deviennent des boucliers rÃ©partis sur les autres faces, selon la place restante.",
+                         "power_text":  "Pillage : les symboles actifs de la face vaincue deviennent des boucliers répartis sur les autres faces, selon la place restante.",
                          "levels":  [
                                         {
                                             "id":  "collecteur_de_dents_n1",
@@ -60,13 +60,13 @@
                          "name":  "Scie boiteuse",
                          "rarity":  "common",
                          "god_id":  "enigma",
-                         "description":  "Droite offensive ; gauche vide pour accueillir les dÃ©fenses acquises.",
+                         "description":  "Une roue unique, une scie, une pince en face. Elle roule de travers et coupe ce qu'elle croise en passant.",
                          "body_color":  "#bf8b58",
                          "asset":  "res://assets/cards/p/p02_n1.png",
                          "effects":  [
                                          "shield_theft"
                                      ],
-                         "power_text":  "Pillage : les symboles actifs de la face vaincue deviennent des boucliers rÃ©partis sur les autres faces, selon la place restante.",
+                         "power_text":  "Pillage : les symboles actifs de la face vaincue deviennent des boucliers répartis sur les autres faces, selon la place restante.",
                          "levels":  [
                                         {
                                             "id":  "scie_boiteuse_n1",
@@ -114,13 +114,13 @@
                          "name":  "Pince-carcasse",
                          "rarity":  "common",
                          "god_id":  "enigma",
-                         "description":  "Bas/gauche de contact ; renforce progressivement ses cÃ´tÃ©s faibles par capture.",
+                         "description":  "Une carcasse mécanique aux grandes pinces. La cage ouverte au milieu sert à garder ce qu'elle prélève.",
                          "body_color":  "#bf8b58",
                          "asset":  "res://assets/cards/p/p03_n1.png",
                          "effects":  [
                                          "shield_theft"
                                      ],
-                         "power_text":  "Pillage : les symboles actifs de la face vaincue deviennent des boucliers rÃ©partis sur les autres faces, selon la place restante.",
+                         "power_text":  "Pillage : les symboles actifs de la face vaincue deviennent des boucliers répartis sur les autres faces, selon la place restante.",
                          "levels":  [
                                         {
                                             "id":  "pince_carcasse_n1",
@@ -168,13 +168,13 @@
                          "name":  "Dépeceur rampant",
                          "rarity":  "common",
                          "god_id":  "enigma",
-                         "description":  "Haut/gauche puissants, droite toujours ouverte aux boucliers gagnÃ©s.",
+                         "description":  "Une machine basse sur quatre pattes, avec de lourdes lames. Elle travaille à hauteur de cheville et ne remonte jamais plus haut.",
                          "body_color":  "#bf8b58",
                          "asset":  "res://assets/cards/p/p04_n1.png",
                          "effects":  [
                                          "shield_theft"
                                      ],
-                         "power_text":  "Pillage : les symboles actifs de la face vaincue deviennent des boucliers rÃ©partis sur les autres faces, selon la place restante.",
+                         "power_text":  "Pillage : les symboles actifs de la face vaincue deviennent des boucliers répartis sur les autres faces, selon la place restante.",
                          "levels":  [
                                         {
                                             "id":  "depeceur_rampant_n1",
@@ -222,13 +222,13 @@
                          "name":  "Recycleur thoracique",
                          "rarity":  "rare",
                          "god_id":  "enigma",
-                         "description":  "Haut/gauche forts ; bas et droite rÃ©servent les logements de protection.",
+                         "description":  "Un torse de récupération devenu châssis. Ses bras démontent, et il se reconstruit avec ce qu'il vient de démonter.",
                          "body_color":  "#bf8b58",
                          "asset":  "res://assets/cards/p/p05_n1.png",
                          "effects":  [
                                          "shield_theft"
                                      ],
-                         "power_text":  "Pillage : les symboles actifs de la face vaincue deviennent des boucliers rÃ©partis sur les autres faces, selon la place restante.",
+                         "power_text":  "Pillage : les symboles actifs de la face vaincue deviennent des boucliers répartis sur les autres faces, selon la place restante.",
                          "levels":  [
                                         {
                                             "id":  "recycleur_thoracique_n1",
@@ -266,13 +266,13 @@
                          "name":  "Préleveur de plaques",
                          "rarity":  "rare",
                          "god_id":  "enigma",
-                         "description":  "Bas/droite offensifs ; haut/gauche de soutien.",
+                         "description":  "Il découpe des plaques et les empile. La mâchoire basse reste ouverte pour ce qui ne se démonte pas.",
                          "body_color":  "#bf8b58",
                          "asset":  "res://assets/cards/p/p06_n1.png",
                          "effects":  [
                                          "shield_theft"
                                      ],
-                         "power_text":  "Pillage : les symboles actifs de la face vaincue deviennent des boucliers rÃ©partis sur les autres faces, selon la place restante.",
+                         "power_text":  "Pillage : les symboles actifs de la face vaincue deviennent des boucliers répartis sur les autres faces, selon la place restante.",
                          "levels":  [
                                         {
                                             "id":  "preleveur_de_plaques_n1",
@@ -310,13 +310,13 @@
                          "name":  "Chirurgien d’acier",
                          "rarity":  "rare",
                          "god_id":  "enigma",
-                         "description":  "Attaque haute trÃ¨s spÃ©cialisÃ©e, puis gauche secondaire.",
+                         "description":  "Une colonne d'instruments avec un bras tendu. Il opère sans anesthésie et ne referme jamais.",
                          "body_color":  "#bf8b58",
                          "asset":  "res://assets/cards/p/p07_n1.png",
                          "effects":  [
                                          "shield_theft"
                                      ],
-                         "power_text":  "Pillage : les symboles actifs de la face vaincue deviennent des boucliers rÃ©partis sur les autres faces, selon la place restante.",
+                         "power_text":  "Pillage : les symboles actifs de la face vaincue deviennent des boucliers répartis sur les autres faces, selon la place restante.",
                          "levels":  [
                                         {
                                             "id":  "chirurgien_dacier_n1",
@@ -354,13 +354,13 @@
                          "name":  "Porte-greffes",
                          "rarity":  "rare",
                          "god_id":  "enigma",
-                         "description":  "Profil plus polyvalent, avec faiblesse persistante Ã  droite.",
+                         "description":  "Une carcasse chargée de membres et d'outils. Chaque pièce qu'il porte vient de quelqu'un, et elle bouge encore.",
                          "body_color":  "#bf8b58",
                          "asset":  "res://assets/cards/p/p08_n1.png",
                          "effects":  [
                                          "shield_theft"
                                      ],
-                         "power_text":  "Pillage : les symboles actifs de la face vaincue deviennent des boucliers rÃ©partis sur les autres faces, selon la place restante.",
+                         "power_text":  "Pillage : les symboles actifs de la face vaincue deviennent des boucliers répartis sur les autres faces, selon la place restante.",
                          "levels":  [
                                         {
                                             "id":  "porte_greffes_n1",
@@ -398,13 +398,13 @@
                          "name":  "Le Démonteur",
                          "rarity":  "epic",
                          "god_id":  "enigma",
-                         "description":  "Deux directions de capture majeures, haut/gauche ; deux faces pour stocker les dÃ©fenses.",
+                         "description":  "Un atelier sur pattes, avec deux pinces dominantes. Le châssis est creux, et ce qui y entre ne ressort pas monté.",
                          "body_color":  "#bf8b58",
                          "asset":  "res://assets/cards/p/p09_n1.png",
                          "effects":  [
                                          "shield_theft"
                                      ],
-                         "power_text":  "Pillage : les symboles actifs de la face vaincue deviennent des boucliers rÃ©partis sur les autres faces, selon la place restante.",
+                         "power_text":  "Pillage : les symboles actifs de la face vaincue deviennent des boucliers répartis sur les autres faces, selon la place restante.",
                          "levels":  [
                                         {
                                             "id":  "le_demonteur_n1",
@@ -432,13 +432,13 @@
                          "name":  "La Broyeuse d’empreintes",
                          "rarity":  "epic",
                          "god_id":  "enigma",
-                         "description":  "Bas trÃ¨s fort, gauche secondaire ; renforts rÃ©cupÃ©rÃ©s utiles sur les deux autres faces.",
+                         "description":  "Un broyeur dont les plaques gardent les marques. Chaque empreinte est un visage, et il en manque toujours une.",
                          "body_color":  "#bf8b58",
                          "asset":  "res://assets/cards/p/p10_n1.png",
                          "effects":  [
                                          "shield_theft"
                                      ],
-                         "power_text":  "Pillage : les symboles actifs de la face vaincue deviennent des boucliers rÃ©partis sur les autres faces, selon la place restante.",
+                         "power_text":  "Pillage : les symboles actifs de la face vaincue deviennent des boucliers répartis sur les autres faces, selon la place restante.",
                          "levels":  [
                                         {
                                             "id":  "la_broyeuse_dempreintes_n1",
@@ -466,13 +466,13 @@
                          "name":  "Le Collecteur Zéro",
                          "rarity":  "legendary",
                          "god_id":  "enigma",
-                         "description":  "Haut maximal, bas ouvert et deux flancs inÃ©gaux ; sept logements encore libres.",
+                         "description":  "Un automate cérémoniel aux plaques récupérées. Il compte ce qu'il prend et ne s'arrête qu'au dernier nom.",
                          "body_color":  "#bf8b58",
                          "asset":  "res://assets/cards/p/p11_n1.png",
                          "effects":  [
                                          "shield_theft"
                                      ],
-                         "power_text":  "Pillage : les symboles actifs de la face vaincue deviennent des boucliers rÃ©partis sur les autres faces, selon la place restante.",
+                         "power_text":  "Pillage : les symboles actifs de la face vaincue deviennent des boucliers répartis sur les autres faces, selon la place restante.",
                          "levels":  [
                                         {
                                             "id":  "le_collecteur_zero_n1",
@@ -490,13 +490,13 @@
                          "name":  "La Machine aux mille dépouilles",
                          "rarity":  "legendary",
                          "god_id":  "enigma",
-                         "description":  "Trois faces de contact fortes et une faiblesse basse ; cinq places libres pour les prises.",
+                         "description":  "Une machine basse autour d'un noyau. Les dépouilles pendent à ses flancs et tournent lentement quand elle avance.",
                          "body_color":  "#bf8b58",
                          "asset":  "res://assets/cards/p/p12_n1.png",
                          "effects":  [
                                          "shield_theft"
                                      ],
-                         "power_text":  "Pillage : les symboles actifs de la face vaincue deviennent des boucliers rÃ©partis sur les autres faces, selon la place restante.",
+                         "power_text":  "Pillage : les symboles actifs de la face vaincue deviennent des boucliers répartis sur les autres faces, selon la place restante.",
                          "levels":  [
                                         {
                                             "id":  "la_machine_aux_mille_depouilles_n1",

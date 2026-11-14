@@ -6,13 +6,13 @@
                          "name":  "Éclat cuirassé",
                          "rarity":  "common",
                          "god_id":  "kharun",
-                         "description":  "Flancs dÃ©fensifs sans attaque ; haut/bas gagnent leurs lames.",
+                         "description":  "Un éclat d'armure qui a poussé autour d'un noyau de chair. Les flancs sont épais, et dessous, ça respire.",
                          "body_color":  "#83a6ad",
                          "asset":  "res://assets/cards/r/r01_n1.png",
                          "effects":  [
 
                                      ],
-                         "power_text":  "Les boucliers renforcent la dÃ©fense sans augmenter lâ€™attaque.",
+                         "power_text":  "Les boucliers renforcent la défense sans augmenter l’attaque.",
                          "levels":  [
                                         {
                                             "id":  "eclat_cuirasse_n1",
@@ -76,13 +76,13 @@
                          "name":  "Heaume errant",
                          "rarity":  "common",
                          "god_id":  "kharun",
-                         "description":  "Face haute trÃ¨s dÃ©fensive, attaque gauche secondaire ; droite toujours vide.",
+                         "description":  "Un heaume vide qui marche, avec un bras d'armure en trop. Ce qu'il y a dedans ne sort jamais, mais la visière est chaude.",
                          "body_color":  "#83a6ad",
                          "asset":  "res://assets/cards/r/r02_n1.png",
                          "effects":  [
 
                                      ],
-                         "power_text":  "Les boucliers renforcent la dÃ©fense sans augmenter lâ€™attaque.",
+                         "power_text":  "Les boucliers renforcent la défense sans augmenter l’attaque.",
                          "levels":  [
                                         {
                                             "id":  "heaume_errant_n1",
@@ -142,13 +142,13 @@
                          "name":  "Carapace vide",
                          "rarity":  "common",
                          "god_id":  "kharun",
-                         "description":  "DÃ©fenseur pur : aucune tentative de capture, mÃªme au dernier niveau.",
+                         "description":  "Une coque refermée sur rien. Elle se fissure par endroits, et quand la fissure s'ouvre, on entend un souffle.",
                          "body_color":  "#83a6ad",
                          "asset":  "res://assets/cards/r/r03_n1.png",
                          "effects":  [
 
                                      ],
-                         "power_text":  "Les boucliers renforcent la dÃ©fense sans augmenter lâ€™attaque.",
+                         "power_text":  "Les boucliers renforcent la défense sans augmenter l’attaque.",
                          "levels":  [
                                         {
                                             "id":  "carapace_vide_n1",
@@ -220,13 +220,13 @@
                          "name":  "Osselet blindé",
                          "rarity":  "common",
                          "god_id":  "kharun",
-                         "description":  "Bas protÃ©gÃ© et droite offensive ; couverture gauche tardive.",
+                         "description":  "Un os qui a grandi en golem, avec une jambe blindée et un bras trop lourd. Il avance en boitant du côté qui protège.",
                          "body_color":  "#83a6ad",
                          "asset":  "res://assets/cards/r/r04_n1.png",
                          "effects":  [
 
                                      ],
-                         "power_text":  "Les boucliers renforcent la dÃ©fense sans augmenter lâ€™attaque.",
+                         "power_text":  "Les boucliers renforcent la défense sans augmenter l’attaque.",
                          "levels":  [
                                         {
                                             "id":  "osselet_blinde_n1",
@@ -288,13 +288,13 @@
                          "name":  "Chevalier sans visage",
                          "rarity":  "rare",
                          "god_id":  "kharun",
-                         "description":  "Haut/gauche attaquent et dÃ©fendent ; autres cÃ´tÃ©s plus lÃ©gers.",
+                         "description":  "Une armure spectrale debout, sans tête et sans visage. Elle salue avant de frapper, et le geste est parfait.",
                          "body_color":  "#83a6ad",
                          "asset":  "res://assets/cards/r/r05_n1.png",
                          "effects":  [
 
                                      ],
-                         "power_text":  "Les boucliers renforcent la dÃ©fense sans augmenter lâ€™attaque.",
+                         "power_text":  "Les boucliers renforcent la défense sans augmenter l’attaque.",
                          "levels":  [
                                         {
                                             "id":  "chevalier_sans_visage_n1",
@@ -344,13 +344,13 @@
                          "name":  "Golem de faïence",
                          "rarity":  "rare",
                          "god_id":  "kharun",
-                         "description":  "DÃ©fense basse pure et flancs capables de capturer.",
+                         "description":  "Des tessons de céramique assemblés en masse. Il se brise en marchant et se recolle avec ce qu'il trouve au sol.",
                          "body_color":  "#83a6ad",
                          "asset":  "res://assets/cards/r/r06_n1.png",
                          "effects":  [
 
                                      ],
-                         "power_text":  "Les boucliers renforcent la dÃ©fense sans augmenter lâ€™attaque.",
+                         "power_text":  "Les boucliers renforcent la défense sans augmenter l’attaque.",
                          "levels":  [
                                         {
                                             "id":  "golem_de_faience_n1",
@@ -403,13 +403,13 @@
                          "name":  "Portail d’os",
                          "rarity":  "rare",
                          "god_id":  "kharun",
-                         "description":  "Axe haut/bas fortifiÃ© ; deux faces secondaires modestes.",
+                         "description":  "Une arche vivante faite d'os et de montants d'armure. Ce qui passe dessous ne ressort pas du même côté.",
                          "body_color":  "#83a6ad",
                          "asset":  "res://assets/cards/r/r07_n1.png",
                          "effects":  [
 
                                      ],
-                         "power_text":  "Les boucliers renforcent la dÃ©fense sans augmenter lâ€™attaque.",
+                         "power_text":  "Les boucliers renforcent la défense sans augmenter l’attaque.",
                          "levels":  [
                                         {
                                             "id":  "portail_dos_n1",
@@ -459,13 +459,13 @@
                          "name":  "Colosse riveté",
                          "rarity":  "rare",
                          "god_id":  "kharun",
-                         "description":  "Haut offensif, gauche de protection, droite mixte ; bas faible.",
+                         "description":  "Un colosse de pierre couvert de plaques rivetées. Les rivets sont enfoncés dans de la chair, et la chair tient les plaques.",
                          "body_color":  "#83a6ad",
                          "asset":  "res://assets/cards/r/r08_n1.png",
                          "effects":  [
 
                                      ],
-                         "power_text":  "Les boucliers renforcent la dÃ©fense sans augmenter lâ€™attaque.",
+                         "power_text":  "Les boucliers renforcent la défense sans augmenter l’attaque.",
                          "levels":  [
                                         {
                                             "id":  "colosse_rivete_n1",
@@ -516,13 +516,13 @@
                          "name":  "Le Reliquaire ambulant",
                          "rarity":  "epic",
                          "god_id":  "kharun",
-                         "description":  "Trois cÃ´tÃ©s trÃ¨s protecteurs et une droite qui reste accessible.",
+                         "description":  "Un reliquaire sur pattes, qui avance en procession. Il porte les os des autres et ne s'en sépare jamais.",
                          "body_color":  "#83a6ad",
                          "asset":  "res://assets/cards/r/r09_n1.png",
                          "effects":  [
 
                                      ],
-                         "power_text":  "Les boucliers renforcent la dÃ©fense sans augmenter lâ€™attaque.",
+                         "power_text":  "Les boucliers renforcent la défense sans augmenter l’attaque.",
                          "levels":  [
                                         {
                                             "id":  "le_reliquaire_ambulant_n1",
@@ -560,13 +560,13 @@
                          "name":  "Le Bastion fendu",
                          "rarity":  "epic",
                          "god_id":  "kharun",
-                         "description":  "Haut/gauche offensifs ; dÃ©fense droite sans attaque et faiblesse basse.",
+                         "description":  "Une masse de pierre fendue sur un angle. Deux avant-bras d'armure la portent, et la fente laisse voir l'intérieur.",
                          "body_color":  "#83a6ad",
                          "asset":  "res://assets/cards/r/r10_n1.png",
                          "effects":  [
 
                                      ],
-                         "power_text":  "Les boucliers renforcent la dÃ©fense sans augmenter lâ€™attaque.",
+                         "power_text":  "Les boucliers renforcent la défense sans augmenter l’attaque.",
                          "levels":  [
                                         {
                                             "id":  "le_bastion_fendu_n1",
@@ -603,13 +603,13 @@
                          "name":  "Le Sarcophage debout",
                          "rarity":  "legendary",
                          "god_id":  "kharun",
-                         "description":  "Quatre cÃ´tÃ©s protÃ©gÃ©s, mais peu dâ€™attaque ; capture possible sur les dÃ©fenses Ã  trois.",
+                         "description":  "Un sarcophage debout, ouvert sur le vide. Il est vide depuis toujours, et pourtant le couvercle gratte de l'intérieur.",
                          "body_color":  "#83a6ad",
                          "asset":  "res://assets/cards/r/r11_n1.png",
                          "effects":  [
 
                                      ],
-                         "power_text":  "Les boucliers renforcent la dÃ©fense sans augmenter lâ€™attaque.",
+                         "power_text":  "Les boucliers renforcent la défense sans augmenter l’attaque.",
                          "levels":  [
                                         {
                                             "id":  "le_sarcophage_debout_n1",
@@ -633,13 +633,13 @@
                          "name":  "Le Gardien des décombres",
                          "rarity":  "legendary",
                          "god_id":  "kharun",
-                         "description":  "Deux faces trÃ¨s solides, gauche secondaire, droite entiÃ¨rement vulnÃ©rable.",
+                         "description":  "Un golem d'os et d'armures brisées, auquel il manque tout un côté. L'absence est nette, comme arrachée, et ne se referme pas.",
                          "body_color":  "#83a6ad",
                          "asset":  "res://assets/cards/r/r12_n1.png",
                          "effects":  [
 
                                      ],
-                         "power_text":  "Les boucliers renforcent la dÃ©fense sans augmenter lâ€™attaque.",
+                         "power_text":  "Les boucliers renforcent la défense sans augmenter l’attaque.",
                          "levels":  [
                                         {
                                             "id":  "le_gardien_des_decombres_n1",

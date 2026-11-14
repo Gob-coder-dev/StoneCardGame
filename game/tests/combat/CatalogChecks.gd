@@ -9,6 +9,7 @@ func run() -> void:
 	await _test_immutable_catalog()
 	_test_content_validation()
 	_test_active_power_rule()
+	_test_card_texts()
 
 
 func _test_active_power_rule() -> void:
@@ -42,6 +43,33 @@ func _test_active_power_rule() -> void:
 	neutral["owner"] = GameState.PLAYER_NONE
 	_check(not Board.has_active_power(state, neutral, Effects.WEAKEN_ADJACENT),
 		"sans propriétaire, même une pierre neutre n'active pas son pouvoir")
+
+
+## Les fiches de pierre sont la seule vitrine du bestiaire : un texte vide,
+## double-encodé ou trop long se verrait immédiatement dans le jeu.
+func _test_card_texts() -> void:
+	var seen := {}
+	var broken: Array[String] = []
+	var missing := 0
+	var longest := 0
+	for stone in StoneLoader.get_all_stones():
+		var lineage := StoneLoader.stone_lineage(str(stone["id"]))
+		if seen.has(lineage):
+			continue
+		seen[lineage] = true
+		var text := str(stone.get("description", ""))
+		longest = maxi(longest, text.length())
+		if text.strip_edges() == "":
+			missing += 1
+		for candidate in [text, str(stone.get("power_text", ""))]:
+			var encoded: bool = candidate.contains("Ã") or candidate.contains("Â") or candidate.contains("â€")
+			if encoded:
+				broken.append(lineage)
+	_check(seen.size() == 96 and missing == 0,
+		"les 96 lignées racontent leur monstre")
+	_check(broken.is_empty(),
+		"aucun texte de carte n'est double-encodé (%s)" % ", ".join(broken))
+	_check(longest <= 140, "une description tient en deux lignes (%d signes)" % longest)
 
 
 func _test_content_validation() -> void:

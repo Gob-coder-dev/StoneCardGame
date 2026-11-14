@@ -6,13 +6,13 @@
                          "name":  "Dévoracle",
                          "rarity":  "common",
                          "god_id":  "veskar",
-                         "description":  "Hasard pur et trÃ¨s bon marchÃ© ; aucune direction garantie avant la pose.",
+                         "description":  "Un dé de chair qui respire. Ses six faces se sont ouvertes en gueules, et des yeux poussent entre les points.",
                          "body_color":  "#c9659e",
                          "asset":  "res://assets/cards/f/f01_n1.png",
                          "effects":  [
 
                                      ],
-                         "power_text":  "Fortune : les lames roses sont rÃ©parties au hasard Ã  la pose.",
+                         "power_text":  "Fortune : les lames roses sont réparties au hasard à la pose.",
                          "levels":  [
                                         {
                                             "id":  "devoracle_n1",
@@ -64,13 +64,13 @@
                          "name":  "Griffe à jetons",
                          "rarity":  "common",
                          "god_id":  "veskar",
-                         "description":  "Droite garantie, autres renforts alÃ©atoires ; le cÃ´tÃ© droit finit saturÃ©.",
+                         "description":  "Une pièce fendue sur la tranche, d'où sort une griffe. Elle compte ce qu'elle arrache et ne le rend jamais.",
                          "body_color":  "#c9659e",
                          "asset":  "res://assets/cards/f/f02_n1.png",
                          "effects":  [
 
                                      ],
-                         "power_text":  "Fortune : les lames roses sont rÃ©parties au hasard Ã  la pose.",
+                         "power_text":  "Fortune : les lames roses sont réparties au hasard à la pose.",
                          "levels":  [
                                         {
                                             "id":  "griffe_a_jetons_n1",
@@ -122,13 +122,13 @@
                          "name":  "Dé boiteux",
                          "rarity":  "common",
                          "god_id":  "veskar",
-                         "description":  "Haut garanti et rÃ©serve alÃ©atoire croissante ; trois autres faces ouvertes au tirage.",
+                         "description":  "Il marche de travers sur des pattes de longueurs différentes. Sa mâchoire s'ouvre à la verticale, en deux temps.",
                          "body_color":  "#c9659e",
                          "asset":  "res://assets/cards/f/f03_n1.png",
                          "effects":  [
 
                                      ],
-                         "power_text":  "Fortune : les lames roses sont rÃ©parties au hasard Ã  la pose.",
+                         "power_text":  "Fortune : les lames roses sont réparties au hasard à la pose.",
                          "levels":  [
                                         {
                                             "id":  "de_boiteux_n1",
@@ -180,13 +180,13 @@
                          "name":  "Sou ricanant",
                          "rarity":  "common",
                          "god_id":  "veskar",
-                         "description":  "Pile ou face vertical ; lâ€™attaque principale peut basculer du haut vers le bas.",
+                         "description":  "Une pièce debout sur la tranche, avec un visage d'homme. Quand elle rit, la tranche se fend jusqu'à devenir une bouche.",
                          "body_color":  "#c9659e",
                          "asset":  "res://assets/cards/f/f04_n1.png",
                          "effects":  [
 
                                      ],
-                         "power_text":  "Pile ou face vertical : une chance sur deux dâ€™Ã©changer le haut et le bas.",
+                         "power_text":  "Pile ou face vertical : une chance sur deux d’échanger le haut et le bas.",
                          "coin_flip":  "vertical",
                          "levels":  [
                                         {
@@ -235,13 +235,13 @@
                          "name":  "Croupier manchot",
                          "rarity":  "rare",
                          "god_id":  "veskar",
-                         "description":  "Gauche/droite fiables ; au maximum les lames roses ne peuvent aller quâ€™en haut/bas.",
+                         "description":  "Il distribue des cartes avec des moignons. Deux mâchoires s'ouvrent sur ses flancs à chaque main donnée.",
                          "body_color":  "#c9659e",
                          "asset":  "res://assets/cards/f/f05_n1.png",
                          "effects":  [
 
                                      ],
-                         "power_text":  "Fortune : les lames roses sont rÃ©parties au hasard Ã  la pose.",
+                         "power_text":  "Fortune : les lames roses sont réparties au hasard à la pose.",
                          "levels":  [
                                         {
                                             "id":  "croupier_manchot_n1",
@@ -282,13 +282,13 @@
                          "name":  "Roulette vorace",
                          "rarity":  "rare",
                          "god_id":  "veskar",
-                         "description":  "Base Ã©quilibrÃ©e, renforts incertains ; le tirage ne remplit jamais tous les emplacements.",
+                         "description":  "Une roulette de chair tourne encore sur son axe. La couronne est dentée, et elle s'arrête toujours sur la case où quelqu'un se tient.",
                          "body_color":  "#c9659e",
                          "asset":  "res://assets/cards/f/f06_n1.png",
                          "effects":  [
 
                                      ],
-                         "power_text":  "Fortune : les lames roses sont rÃ©parties au hasard Ã  la pose.",
+                         "power_text":  "Fortune : les lames roses sont réparties au hasard à la pose.",
                          "levels":  [
                                         {
                                             "id":  "roulette_vorace_n1",
@@ -329,13 +329,13 @@
                          "name":  "Jumeau de cuivre",
                          "rarity":  "rare",
                          "god_id":  "veskar",
-                         "description":  "Pile ou face horizontal ; gros Ã©cart entre gauche et droite.",
+                         "description":  "Deux hommes fondus dos à dos dans le même cuivre. L'un avance, l'autre recule, et les deux regardent de chaque côté.",
                          "body_color":  "#c9659e",
                          "asset":  "res://assets/cards/f/f07_n1.png",
                          "effects":  [
 
                                      ],
-                         "power_text":  "Pile ou face horizontal : une chance sur deux dâ€™Ã©changer la gauche et la droite.",
+                         "power_text":  "Pile ou face horizontal : une chance sur deux d’échanger la gauche et la droite.",
                          "coin_flip":  "horizontal",
                          "levels":  [
                                         {
@@ -374,13 +374,13 @@
                          "name":  "Valet à l’envers",
                          "rarity":  "rare",
                          "god_id":  "veskar",
-                         "description":  "Pile ou face vertical ; dÃ©part avec une forte face basse et un haut vide.",
+                         "description":  "Un valet de carte suspendu la tête en bas. Ses deux torses respirent l'un contre l'autre et ses mains sortent du mauvais côté.",
                          "body_color":  "#c9659e",
                          "asset":  "res://assets/cards/f/f08_n1.png",
                          "effects":  [
 
                                      ],
-                         "power_text":  "Pile ou face vertical : une chance sur deux dâ€™Ã©changer le haut et le bas.",
+                         "power_text":  "Pile ou face vertical : une chance sur deux d’échanger le haut et le bas.",
                          "coin_flip":  "vertical",
                          "levels":  [
                                         {
@@ -419,13 +419,13 @@
                          "name":  "La Machine à malchance",
                          "rarity":  "epic",
                          "god_id":  "veskar",
-                         "description":  "Haut toujours maximal, renforts roses ailleurs ; casino organique plutÃ´t que robot de Pillage.",
+                         "description":  "Une machine à sous dont les rouleaux sont des dents. Le levier est un bras, et il faut tirer dessus pour qu'elle cesse de mordre.",
                          "body_color":  "#c9659e",
                          "asset":  "res://assets/cards/f/f09_n1.png",
                          "effects":  [
 
                                      ],
-                         "power_text":  "Fortune : les lames roses sont rÃ©parties au hasard Ã  la pose.",
+                         "power_text":  "Fortune : les lames roses sont réparties au hasard à la pose.",
                          "levels":  [
                                         {
                                             "id":  "la_machine_a_malchance_n1",
@@ -455,13 +455,13 @@
                          "name":  "La Dame aux deux visages",
                          "rarity":  "epic",
                          "god_id":  "veskar",
-                         "description":  "Pile ou face horizontal ; bas solide, une attaque latÃ©rale forte mais incertaine.",
+                         "description":  "Une dame de jeu avec un profil sur chaque face. Les deux refusent de se voir, et c'est toujours celui de derrière qui parle.",
                          "body_color":  "#c9659e",
                          "asset":  "res://assets/cards/f/f10_n1.png",
                          "effects":  [
 
                                      ],
-                         "power_text":  "Pile ou face horizontal : une chance sur deux dâ€™Ã©changer la gauche et la droite.",
+                         "power_text":  "Pile ou face horizontal : une chance sur deux d’échanger la gauche et la droite.",
                          "coin_flip":  "horizontal",
                          "levels":  [
                                         {
@@ -490,13 +490,13 @@
                          "name":  "La Banque vivante",
                          "rarity":  "legendary",
                          "god_id":  "veskar",
-                         "description":  "Haut/bas fixes au maximum ; six lames roses se rÃ©partissent uniquement entre gauche et droite.",
+                         "description":  "Un coffre de peau, avec un œil à la place de la serrure. Les loges du fond sont occupées, et certaines respirent encore.",
                          "body_color":  "#c9659e",
                          "asset":  "res://assets/cards/f/f11_n1.png",
                          "effects":  [
 
                                      ],
-                         "power_text":  "Fortune : les lames roses sont rÃ©parties au hasard Ã  la pose.",
+                         "power_text":  "Fortune : les lames roses sont réparties au hasard à la pose.",
                          "levels":  [
                                         {
                                             "id":  "la_banque_vivante_n1",
@@ -515,13 +515,13 @@
                          "name":  "Le Dernier Pari",
                          "rarity":  "legendary",
                          "god_id":  "veskar",
-                         "description":  "Profil complet et asymÃ©trique ; le haut fort et le bas faible peuvent sâ€™inverser.",
+                         "description":  "Une table de jeu dont le tapis est un homme allongé. Les mises restent posées sur lui, et la partie n'a jamais de fin.",
                          "body_color":  "#c9659e",
                          "asset":  "res://assets/cards/f/f12_n1.png",
                          "effects":  [
 
                                      ],
-                         "power_text":  "Pile ou face vertical : une chance sur deux dâ€™Ã©changer le haut et le bas.",
+                         "power_text":  "Pile ou face vertical : une chance sur deux d’échanger le haut et le bas.",
                          "coin_flip":  "vertical",
                          "levels":  [
                                         {
