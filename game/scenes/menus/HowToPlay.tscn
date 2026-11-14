@@ -22,7 +22,7 @@ mouse_filter = 2
 script = ExtResource("2_background")
 room = 2
 
-[node name="Content" type="VBoxContainer" parent="."]
+[node name="Content" type="VBoxContainer" parent="." groups=["safe_area_top"]]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -30,7 +30,7 @@ anchor_bottom = 1.0
 offset_left = 40.0
 offset_top = 56.0
 offset_right = -40.0
-offset_bottom = -174.0
+offset_bottom = -186.0
 theme_override_constants/separation = 24
 
 [node name="Header" type="HBoxContainer" parent="Content"]

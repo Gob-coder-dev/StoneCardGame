@@ -16,6 +16,7 @@ func run() -> void:
 	await _test_god_selector_ui()
 	await _test_deck_slots()
 	await _test_deck_clear()
+	await _test_safe_area()
 	await _test_home_portraits()
 	await _test_sound_settings()
 	await _test_menu_modes()
@@ -460,6 +461,48 @@ func _test_deck_slots() -> void:
 	page.queue_free()
 	await get_tree().process_frame
 	await _test_battle_uses_selected_deck()
+
+
+## La zone sûre ne décale que les conteneurs déclarés, uniquement quand une
+## valeur est fournie : appliquer deux fois la même marge ne la cumule jamais.
+func _test_safe_area() -> void:
+	SafeArea.set_insets_for_tests({"top": 60.0, "left": 0.0, "right": 0.0})
+	var page: Control = (load("res://scenes/menus/CollectionScreen.tscn") as PackedScene).instantiate()
+	add_child(page)
+	await get_tree().process_frame
+	var content: Control = page.get_node("Content")
+	_check(is_equal_approx(content.offset_top, 42.0 + 60.0),
+		"zone sûre : le contenu descend de l'inset supérieur mesuré")
+	_check(is_equal_approx(page.get_node("BottomNav").offset_top, -176.0),
+		"zone sûre : la barre de navigation garde sa hauteur propre")
+	SafeArea.set_insets_for_tests({"top": 60.0, "left": 0.0, "right": 0.0})
+	_check(is_equal_approx(content.offset_top, 42.0 + 60.0),
+		"zone sûre : une valeur identique ne cumule pas la marge")
+	SafeArea.set_insets_for_tests({"top": 0.0, "left": 0.0, "right": 0.0})
+	_check(is_equal_approx(content.offset_top, 42.0),
+		"zone sûre : un appareil sans découpe retrouve la mise en page d'origine")
+	var menu: Control = (load("res://scenes/menus/MainMenu.tscn") as PackedScene).instantiate()
+	add_child(menu)
+	await get_tree().process_frame
+	SafeArea.set_insets_for_tests({"top": 84.0, "left": 0.0, "right": 0.0})
+	_check(is_equal_approx(menu.get_node("Content").offset_top, 64.0 + 84.0),
+		"zone sûre : une scène déjà ouverte suit un changement de zone")
+	menu.queue_free()
+	page.queue_free()
+	await get_tree().process_frame
+	SafeArea.set_insets_for_tests(null)
+	_check(SafeArea.insets()["top"] == 0.0,
+		"zone sûre : hors mobile, aucune marge n'est appliquée")
+	_check(is_equal_approx(SafeArea.cutout_depth([Rect2i(500, 26, 80, 48)], 2562.0), 74.0),
+		"zone sûre : seule l'emprise de la caméra compte, pas la barre d'état")
+	_check(is_equal_approx(SafeArea.cutout_depth([Rect2i(0, 2400, 80, 60)], 2562.0), 0.0),
+		"zone sûre : une découpe basse ne pousse jamais le haut")
+	_check(is_equal_approx(SafeArea.cutout_depth([], 2562.0), 0.0),
+		"zone sûre : sans découpe, aucune profondeur")
+	_check(is_equal_approx(SafeArea.clamp_top(115.0), 36.0),
+		"zone sûre : la bande haute complète ne pousse pas l'interface")
+	_check(is_equal_approx(SafeArea.clamp_top(8.0), 8.0),
+		"zone sûre : une petite découpe garde sa valeur")
 
 
 ## Vider un deck est une action destructive confirmée : elle ne touche que

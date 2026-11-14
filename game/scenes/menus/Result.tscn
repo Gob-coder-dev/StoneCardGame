@@ -41,7 +41,7 @@ mouse_filter = 2
 script = ExtResource("3_background")
 room = 6
 
-[node name="VBoxCenter" type="VBoxContainer" parent="."]
+[node name="VBoxCenter" type="VBoxContainer" parent="." groups=["safe_area_top"]]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0

@@ -34,6 +34,7 @@ StoryService="*res://scripts/application/story/StoryService.gd"
 StoryLayer="*res://scripts/ui/story/StoryLayer.gd"
 RitualOpeningContext="*res://scripts/application/economy/RitualOpeningContext.gd"
 Audio="*res://scripts/application/audio/AudioService.gd"
+SafeArea="*res://scripts/ui/SafeArea.gd"
 
 [display]
 

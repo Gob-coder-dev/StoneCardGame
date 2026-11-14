@@ -26,7 +26,7 @@ room = 5
 [node name="TurnManager" type="Node" parent="."]
 script = ExtResource("2_turnmgr")
 
-[node name="Root" type="VBoxContainer" parent="."]
+[node name="Root" type="VBoxContainer" parent="." groups=["safe_area_top"]]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
