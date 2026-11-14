@@ -6,6 +6,7 @@ const GodIdentityModel := preload("res://scripts/data/GodIdentity.gd")
 func run() -> void:
 	_test_catalogue_images()
 	_test_art_cache()
+	_test_godless_warmup()
 	_test_shared_texture_and_missing_artwork()
 	_test_illustration_layout()
 	_test_level_badge_layout()
@@ -62,6 +63,16 @@ func _test_shared_texture_and_missing_artwork() -> void:
 		"une carte illustrée continue de laisser défiler le conteneur tactile")
 	first.free()
 	second.free()
+
+
+func _test_godless_warmup() -> void:
+	var events: Array = []
+	var callback := func(god: String, loaded: int, total: int): events.append([god, loaded, total])
+	CardArtCache.warmup_progress.connect(callback)
+	CardArtCache.activate_god("", 1)
+	CardArtCache.warmup_progress.disconnect(callback)
+	_check(not events.is_empty() and events.back()[0] == "" and int(events.back()[2]) == 24,
+		"illustrations : le profil sans dieu publie la progression de ses 24 lignées neutres")
 
 
 func _test_illustration_layout() -> void:

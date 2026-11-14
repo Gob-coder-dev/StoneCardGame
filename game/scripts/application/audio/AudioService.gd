@@ -29,7 +29,7 @@ var _jingle_player: AudioStreamPlayer = null
 var _jingle_scene: Node = null
 var _streams: Dictionary = {}
 var _warned_paths: Dictionary = {}
-var _current_scene: Node = null
+var _quitting := false
 var _volume_percent: Dictionary = {
 	MUSIC_BUS: DEFAULT_VOLUME_PERCENT,
 	SFX_BUS: DEFAULT_VOLUME_PERCENT,
@@ -46,20 +46,45 @@ func _ready() -> void:
 	_create_music_player()
 	_create_jingle_player()
 	get_tree().node_added.connect(_on_node_added)
+	get_tree().scene_changed.connect(_sync_scene_music)
+	get_tree().auto_accept_quit = false
 	_bind_existing_buttons(get_tree().root)
+	_sync_scene_music.call_deferred()
 
 
-## La scène courante est le seul signal de navigation dont la musique a besoin.
-## Un changement de scène libère l'ancienne avant d'installer la nouvelle : le
-## passage par `null` ne doit pas couper la piste en cours.
-func _process(_delta: float) -> void:
-	var scene := get_tree().current_scene
-	if scene == _current_scene:
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		quit_game()
+
+
+## Le serveur audio libère ses playbacks sur son propre thread. Une courte
+## phase de fermeture lui laisse terminer avant la destruction du moteur.
+## L'horloge réelle conserve ce contrat dans les tests à --fixed-fps.
+func quit_game(exit_code: int = 0) -> void:
+	if _quitting:
 		return
-	_current_scene = scene
-	if scene == null:
-		return
-	_sync_scene_music()
+	_quitting = true
+	flush_volume_settings()
+	stop_all()
+	var deadline := Time.get_ticks_msec() + 200
+	while Time.get_ticks_msec() < deadline:
+		await get_tree().process_frame
+	get_tree().quit(exit_code)
+
+
+func stop_all() -> void:
+	_jingle_scene = null
+	for player in _sfx_players + [_music_player, _jingle_player]:
+		if is_instance_valid(player):
+			player.stop()
+			player.stream = null
+	_streams.clear()
+	_music_id = ""
+
+
+func _exit_tree() -> void:
+	flush_volume_settings()
+	stop_all()
 
 
 ## ─── Bus ─────────────────────────────────────────────────────────────────────
@@ -179,6 +204,8 @@ func _save_volume_settings() -> void:
 ## ─── Effets sonores ──────────────────────────────────────────────────────────
 
 func play_sfx(id: String) -> void:
+	if _quitting:
+		return
 	# Un jingle de résultat est un morceau complet : il passe par le lecteur
 	# dédié pour couper la musique, même si l'appelant utilise play_sfx.
 	if Catalog.is_jingle(id):
@@ -224,7 +251,7 @@ func current_music_id() -> String:
 
 
 func play_music(id: String) -> void:
-	if id == "":
+	if _quitting or id == "":
 		return
 	var path := Catalog.music_path(id)
 	if path == "":
@@ -256,6 +283,8 @@ func _create_music_player() -> void:
 ## complets. Ils prennent la place de la musique : la piste de fond s'arrête, le
 ## jingle joue seul, puis la musique de l'écran reprend à la fin.
 func play_jingle(id: String) -> void:
+	if _quitting:
+		return
 	var path := Catalog.sfx_path(id)
 	if path == "":
 		push_warning("Audio: jingle inconnu '%s'." % id)

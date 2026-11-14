@@ -5,6 +5,7 @@
 class_name ShopService
 extends RefCounted
 
+const Transaction := preload("res://scripts/application/economy/EconomyTransaction.gd")
 const InventoryModel := preload("res://scripts/domain/economy/PlayerInventory.gd")
 const ConfigModel := preload("res://scripts/data/economy/EconomyConfig.gd")
 const AccessService := preload("res://scripts/application/progression/ProgressionAccessService.gd")
@@ -64,7 +65,7 @@ func buy_offer(offer_id: String, now_unix: int = 0) -> Dictionary:
 	next.add_copies(lineage_id, amount)
 	purchased[offer_id] = true
 	next.shop_state["purchased_offer_ids"] = purchased
-	var error := PlayerData.commit_inventory(next)
+	var error := Transaction.commit(next, "shop_purchase", {"copies": amount, "souls": price})
 	if error != OK:
 		return {"ok": false, "reason": "Achat non enregistré (%s)." % error_string(error)}
 	return {"ok": true, "reason": "", "price": price,

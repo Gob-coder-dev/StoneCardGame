@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://ilwe78287lsp"
+path="res://.godot/imported/Witchcraft(loop - fantasy - guitar - piano).wav-70c26abda26b94230c8952098ed6944e.sample"
+
+[deps]
+
+source_file="res://data/audio/sources/Witchcraft_wav/Witchcraft(loop - fantasy - guitar - piano).wav"
+dest_files=["res://.godot/imported/Witchcraft(loop - fantasy - guitar - piano).wav-70c26abda26b94230c8952098ed6944e.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

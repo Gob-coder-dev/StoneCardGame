@@ -1,20 +1,6 @@
-# Godot : caches et imports générés. Les fichiers source *.uid restent suivis.
+# Godot : caches générés. Les réglages <asset>.import et les *.uid sont suivis.
 **/.godot/
 **/.import/
-*.png.import
-*.jpg.import
-*.jpeg.import
-*.webp.import
-*.svg.import
-*.tga.import
-*.bmp.import
-*.hdr.import
-*.exr.import
-*.ktx.import
-*.ogg.import
-*.mp3.import
-*.wav.import
-*.fontdata.import
 *.translation
 *.remap
 export_credentials.cfg
@@ -88,6 +74,10 @@ Thumbs.db
 Desktop.ini
 
 # Journaux et fichiers temporaires.
+/.tmp/
+# Captures produites par les scènes de validation visuelle.
+/game/tests/_*.png
+/game/tests/_*.png.import
 *.log
 *.tmp
 *.temp

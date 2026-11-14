@@ -6,6 +6,8 @@
 class_name CampaignContentLoader
 extends RefCounted
 
+const Json := preload("res://scripts/data/JsonFile.gd")
+
 const DEFAULT_PATH := "res://data/campaign/campaign_v2.json"
 const REGION_DIR := "res://data/campaign/"
 const ValidatorModel := preload("res://scripts/domain/campaign/CampaignValidator.gd")
@@ -21,7 +23,7 @@ const GraphModel := preload("res://scripts/domain/campaign/CampaignGraph.gd")
 ## secondes, alors que la suite de tests couvre déjà ce même contenu.
 static func read(path: String = DEFAULT_PATH,
 		validate_delivery: bool = false) -> Dictionary:
-	var parsed: Variant = _parse(path)
+	var parsed: Variant = Json.read(path)
 	if not parsed is Dictionary:
 		return {
 			"ok": false,
@@ -40,7 +42,7 @@ static func read(path: String = DEFAULT_PATH,
 			var region_name := str(raw_region)
 			var region_path := region_name if region_name.begins_with("res://") \
 				else REGION_DIR + region_name
-			var region: Variant = _parse(region_path)
+			var region: Variant = Json.read(region_path)
 			if not region is Dictionary:
 				problems.append("Région de campagne illisible : %s." % region_path)
 				continue
@@ -63,15 +65,3 @@ static func read(path: String = DEFAULT_PATH,
 		"definition": definition,
 		"problems": problems,
 	}
-
-
-static func _parse(path: String):
-	var file := FileAccess.open(path, FileAccess.READ)
-	if file == null:
-		return null
-	var text := file.get_as_text()
-	file.close()
-	var json := JSON.new()
-	if json.parse(text) != OK:
-		return null
-	return json.data

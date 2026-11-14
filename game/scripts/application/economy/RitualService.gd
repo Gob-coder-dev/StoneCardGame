@@ -6,7 +6,8 @@ extends RefCounted
 const InventoryModel := preload("res://scripts/domain/economy/PlayerInventory.gd")
 const Generator := preload("res://scripts/domain/economy/RitualRewardGenerator.gd")
 const Rituals := preload("res://scripts/data/economy/RitualConfig.gd")
-const Compensation := preload("res://scripts/domain/economy/CardCompensation.gd")
+const CardGrant := preload("res://scripts/domain/economy/CardRewardGrant.gd")
+const Transaction := preload("res://scripts/application/economy/EconomyTransaction.gd")
 const AccessService := preload("res://scripts/application/progression/ProgressionAccessService.gd")
 const AccessRules := preload("res://scripts/domain/economy/RitualAccessRules.gd")
 
@@ -51,7 +52,7 @@ func purchase(ritual_id: String, seed_override: Variant = null) -> Dictionary:
 	if not bool(prepared.get("ok", false)):
 		return prepared
 	next.candles -= price
-	var error := PlayerData.commit_inventory(next)
+	var error := Transaction.commit(next, "ritual_purchase", {})
 	if error != OK:
 		return _save_fail(error)
 	return {"ok": true, "reason": "", "price_candles": price,
@@ -92,25 +93,10 @@ static func _apply(definition: Dictionary, inventory: PlayerInventory, seed: int
 			"souls":
 				inventory.souls += maxi(0, int(reward.get("amount", 0)))
 			"card":
-				var lineage_id := str(reward.get("lineage_id", ""))
-				var copies := maxi(0, int(reward.get("copies", 0)))
-				if lineage_id == "" or copies <= 0:
-					return _fail("Carte de Rituel invalide.")
-				var stone_id := StoneLoader.variant_id(lineage_id, 1)
-				var affinity := StoneLoader.stone_affinity(stone_id)
-				var entry := inventory.entry(lineage_id)
-				if int(entry.get("unlocked_level", 0)) >= StoneLoader.lineage_max_level(lineage_id):
-					var compensation := Compensation.souls_for(lineage_id, copies)
-					inventory.souls += compensation
-					reward["maxed"] = true
-					reward["compensation_souls"] = compensation
-				elif affinity != "neutral" and not inventory.has_god(affinity):
-					if not inventory.defer_copies(lineage_id, copies):
-						return _fail("Impossible de mettre la carte '%s' au coffre." % lineage_id)
-					reward["deferred"] = true
-					reward["god_id"] = affinity
-				elif not inventory.add_copies(lineage_id, copies):
-					return _fail("Impossible d'ajouter la carte '%s'." % lineage_id)
+				var applied := CardGrant.apply(inventory, reward)
+				if not bool(applied.get("ok", false)):
+					return applied
+				reward = applied["reward"]
 			_:
 				return _fail("Type de récompense inconnu.")
 		resolved.append(reward)

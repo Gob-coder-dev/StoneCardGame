@@ -104,37 +104,9 @@ const MODE_JOIN := FlowModel.MODE_JOIN
 ## Point d'injection réservé aux tests : le jeu réel utilise toujours GameRoutes.
 var scene_changer: Callable = Callable()
 var _flow: PvpLobbyFlow = FlowModel.new()
-## Compatibilité de lecture pour les vues et les tests ; l'état appartient au flow.
-var _mode: String:
-	get: return _flow.mode
-	set(value): _flow.mode = value
-var _discovery: LanDiscovery:
-	get: return _flow.discovery
-	set(value): _flow.discovery = value
-var _link: LanSessionLink:
-	get: return _flow.link
-	set(value): _flow.link = value
-var _lobby: LanLobbyCoordinator:
-	get: return _flow.lobby
-	set(value): _flow.lobby = value
 var _notice := ""
 var _leaving := false
 var _resumed := false
-var _connection_attempt_pending: bool:
-	get: return _flow.connection_attempt_pending
-	set(value): _flow.connection_attempt_pending = value
-var _attempted_address: String:
-	get: return _flow.attempted_address
-	set(value): _flow.attempted_address = value
-var _attempted_host_name: String:
-	get: return _flow.attempted_host_name
-	set(value): _flow.attempted_host_name = value
-var _connection_elapsed: float:
-	get: return _flow.connection_elapsed
-	set(value): _flow.connection_elapsed = value
-var _displayed_connection_seconds: int:
-	get: return _flow.displayed_connection_seconds
-	set(value): _flow.displayed_connection_seconds = value
 
 
 func _ready() -> void:
@@ -287,7 +259,7 @@ func _join_address(address: String) -> void:
 
 func _join_address_with_name(address: String, host_name: String = "") -> void:
 	if _flow.join_address(address, host_name):
-		address_input.text = _attempted_address
+		address_input.text = _flow.attempted_address
 		_notice = ""
 
 
@@ -311,10 +283,10 @@ func _press_ready() -> void:
 func _go_back() -> void:
 	if _leaving:
 		return
-	if _connection_attempt_pending:
+	if _flow.connection_attempt_pending:
 		_dismiss_connection()
 		return
-	if _mode == MODE_NONE and _lobby == null:
+	if _flow.mode == MODE_NONE and _flow.lobby == null:
 		_leaving = true
 		_reset_session()
 		Routes.go_with_override(get_tree(), scene_changer, Routes.MAIN_MENU)
@@ -332,17 +304,6 @@ func _on_session_state(session_state: int) -> void:
 	_flow.handle_session_state(session_state)
 
 
-func _stop_discovery() -> void:
-	_flow.stop_discovery()
-
-
-func _close_lobby() -> void:
-	_flow.close_lobby()
-	if is_node_ready():
-		ready_button.disabled = true
-		ready_button.text = "PRÊT"
-
-
 func _reset_session() -> void:
 	_flow.reset()
 	_notice = ""
@@ -353,9 +314,9 @@ func _on_lobby_state(_state: Dictionary) -> void:
 
 
 func _on_match_started(config: Dictionary) -> void:
-	if _leaving or _lobby == null:
+	if _leaving or _flow.lobby == null:
 		return
-	var is_host := bool(_lobby.state()["is_host"])
+	var is_host := bool(_flow.lobby.state()["is_host"])
 	var side := GameState.PLAYER_ONE if is_host else GameState.PLAYER_TWO
 	var local_profile := {}
 	var remote_profile := {}
@@ -368,9 +329,9 @@ func _on_match_started(config: Dictionary) -> void:
 	if local_profile.is_empty() or remote_profile.is_empty():
 		_show_notice("Configuration de partie invalide.")
 		return
-	var series_flow := _lobby.series_coordinator()
+	var series_flow := _flow.lobby.series_coordinator()
 	var kept_link: LanSessionLink = null
-	var rules := _lobby.rules()
+	var rules := _flow.lobby.rules()
 	if series_flow != null:
 		PvpMatchContext.set_series(series_flow.public_state())
 		kept_link = _flow.release_for_series()
@@ -393,16 +354,16 @@ func _on_match_started(config: Dictionary) -> void:
 ## Le salon se démonte sans fermer la connexion : le lien et le coordinateur de
 ## série sont confiés au contexte, puis la scène de préparation prend le relais.
 func _on_series_ready(_rules: Dictionary) -> void:
-	if _leaving or _lobby == null or _lobby.series_coordinator() == null:
+	if _leaving or _flow.lobby == null or _flow.lobby.series_coordinator() == null:
 		return
-	var series_flow := _lobby.series_coordinator()
+	var series_flow := _flow.lobby.series_coordinator()
 	# Classique FT2/FT3 ne passe pas par une préparation vide : son client doit
 	# toutefois recevoir `prepare_start` avant `round_start`. Le salon reste donc
 	# affiché jusqu'à ce que le coordinateur émette `match_started` sur la
 	# configuration de manche, via son branchement `round_ready`.
 	if str(series_flow.rules().get("mode", "")) == RulesModel.MODE_CLASSIC:
 		return
-	var side := int(_lobby.state()["local_side"])
+	var side := int(_flow.lobby.state()["local_side"])
 	var local_profile := series_flow.local_profile()
 	var remote_profile := series_flow.remote_profile()
 	var flow_rules := series_flow.rules()
@@ -434,11 +395,11 @@ static func _profile_of(participant: Dictionary) -> Dictionary:
 ## ─── Affichage ───────────────────────────────────────────────────────────────
 
 func _refresh_status() -> void:
-	if _lobby != null:
+	if _flow.lobby != null:
 		background.room = MenuBackground.Room.PVP
 		_fill_lobby()
 		_show_screen(lobby_screen)
-	elif _mode == MODE_JOIN:
+	elif _flow.mode == MODE_JOIN:
 		_reset_ready_button()
 		background.room = MenuBackground.Room.PVP
 		background.set_god(GodIdentityModel.player(PlayerData.player_god_id))
@@ -479,15 +440,15 @@ func _fill_join() -> void:
 func _fill_connection_overlay() -> void:
 	var connecting := LanSession.state == LanSession.State.CONNECTING
 	var failed := LanSession.state == LanSession.State.DISCONNECTED
-	connection_overlay.visible = _mode == MODE_JOIN \
-		and _connection_attempt_pending and (connecting or failed)
+	connection_overlay.visible = _flow.mode == MODE_JOIN \
+		and _flow.connection_attempt_pending and (connecting or failed)
 	if not connection_overlay.visible:
 		return
 
-	var host := host_only(_attempted_address)
+	var host := host_only(_flow.attempted_address)
 	var target := "%s:%d" % [host, LanProtocol.GAME_PORT]
-	connection_target.text = "Hôte : %s\n%s" % [_attempted_host_name, target] \
-		if _attempted_host_name != "" else "Cible : %s" % target
+	connection_target.text = "Hôte : %s\n%s" % [_flow.attempted_host_name, target] \
+		if _flow.attempted_host_name != "" else "Cible : %s" % target
 	connection_progress.visible = connecting
 	connection_error.visible = failed
 	cancel_connection_button.visible = connecting
@@ -495,7 +456,7 @@ func _fill_connection_overlay() -> void:
 	close_connection_button.visible = failed
 	if connecting:
 		connection_progress.text = "Connexion en cours… %d s" \
-			% int(_connection_elapsed)
+			% int(_flow.connection_elapsed)
 	else:
 		var reason := LanSession.last_notice
 		connection_error.text = reason if reason != "" \
@@ -503,31 +464,31 @@ func _fill_connection_overlay() -> void:
 
 
 func _update_connection_progress(delta: float) -> void:
-	if not _connection_attempt_pending or LanSession.state != LanSession.State.CONNECTING:
+	if not _flow.connection_attempt_pending or LanSession.state != LanSession.State.CONNECTING:
 		return
-	_connection_elapsed += delta
-	var seconds := int(_connection_elapsed)
-	if seconds == _displayed_connection_seconds:
+	_flow.connection_elapsed += delta
+	var seconds := int(_flow.connection_elapsed)
+	if seconds == _flow.displayed_connection_seconds:
 		return
-	_displayed_connection_seconds = seconds
+	_flow.displayed_connection_seconds = seconds
 	connection_progress.text = "Connexion en cours… %d s" % seconds
 
 
 func _retry_connection() -> void:
-	if not _connection_attempt_pending or _attempted_address == "":
+	if not _flow.connection_attempt_pending or _flow.attempted_address == "":
 		return
-	_join_address_with_name(_attempted_address, _attempted_host_name)
+	_join_address_with_name(_flow.attempted_address, _flow.attempted_host_name)
 
 
 func _dismiss_connection() -> void:
-	if not _connection_attempt_pending:
+	if not _flow.connection_attempt_pending:
 		return
-	address_input.text = _attempted_address
+	address_input.text = _flow.attempted_address
 	_flow.dismiss_connection()
 
 
 func _fill_lobby() -> void:
-	var lobby := _lobby.state()
+	var lobby := _flow.lobby.state()
 	var is_host := bool(lobby["is_host"])
 	var local: Dictionary = lobby["host"] if is_host else lobby["client"]
 	var remote: Dictionary = lobby["client"] if is_host else lobby["host"]
@@ -602,9 +563,9 @@ func _select_rule(option: OptionButton, value: Variant) -> void:
 
 
 func _apply_rule(key: String, value: Variant) -> void:
-	if _lobby == null:
+	if _flow.lobby == null:
 		return
-	var result := _lobby.set_rule(key, value)
+	var result := _flow.lobby.set_rule(key, value)
 	if not bool(result.get("ok", false)):
 		_show_notice(str(result.get("reason", "Option indisponible.")))
 	_fill_lobby()
@@ -656,7 +617,7 @@ func _fill_player(role_label: Label, name_label: Label, god_label: Label,
 
 
 func _update_ready_button(lobby: Dictionary) -> void:
-	var ready_local := _lobby.is_ready_local()
+	var ready_local := _flow.lobby.is_ready_local()
 	var both_ready := bool(lobby["both_ready"])
 	var remote_in_game := bool(lobby.get("remote_in_game", false))
 	ready_button.disabled = not bool(lobby["can_ready"]) or ready_local or both_ready \

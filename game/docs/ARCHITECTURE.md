@@ -213,7 +213,7 @@ Les déclencheurs détaillés, les fichiers et les règles d'extension sont dans
 | `GameLoadout` | `create`, `copy`, `to_dict`, `from_dict` | Dieu, deck et total génériques, sans métadonnée de transport |
 | `Loadout` | `create`, `copy`, `to_dict`, `from_dict` | Enveloppe PVP ajoutant camp et identifiants de préparation |
 | `SeriesState`, `SeriesEngine` | `begin`, `record_round`, `remember_loadouts`, `public_state` | Score de série, égalités et conservation des loadouts dans les deux environnements |
-| `LoadoutGenerator` | `generate_random`, `generate_mirror`, `generate_uniform_pair` | Dieux et decks légaux au même total, solveur exact et plan de draft |
+| `LoadoutGenerator` | `generate_random`, `generate_mirror`, `reachable_totals` | Dieux et decks légaux au même total, solveur exact et contraintes de draft |
 | `DraftEngine` | `start`, `choose`, `advance`, `public_state` | Draft parallèle de 60 s, plan de huit paires vérifié, choix privés et complétion indépendante |
 | `BotCardTierRules` | `effective_level` | Adaptateur historique des bots : niveau de forme et plancher de rareté, sans changer leur niveau de jeu |
 | `StoneLoader` | `get_stone`, `has_stone`, `has_effect`, `stone_affinity`, `stone_rarity`, `get_neutral_lineages`, `get_god`, `get_npc` | Charge les catalogues, fournit des copies et des lectures sans copie |
@@ -241,10 +241,11 @@ renomme : une coupure ne laisse jamais un profil à moitié écrit. Un fichier
 illisible est renommé `savegame.json.unreadable` au lieu d'être écrasé, et un
 remplacement interrompu est récupéré au chargement suivant.
 
-Le format version 8 contient `decks_by_god` (trois tableaux d'identifiants de formes par dieu),
+Le format version 11 contient `decks_by_god` (trois tableaux d'identifiants de formes par dieu),
 `selected_deck_by_god` (indices de 0 à 2), `player_god_id`, `player_name` et
 `stats`, ainsi que `inventory` (âmes, bougies, dieux débloqués, copies, niveaux,
-achats de boutique et récompenses divines en attente). Une éventuelle ouverture
+achats de boutique, récompenses divines en attente et curseurs de transaction),
+ainsi que `quests` (jour, tirage, compteurs, paliers et activations). Une éventuelle ouverture
 de Rituel issue d'une version 7 est ignorée, car ses récompenses avaient déjà été
 attribuées. La banque `neutral`
 permet un deck sans dieu. Il ne conserve plus
@@ -253,6 +254,19 @@ migre les profils sans version et la version 1 : l'ancien `player_deck` devient
 l'emplacement 1 du dieu équipé, ou du dieu déduit des cartes si nécessaire.
 Chaque emplacement est nettoyé dans sa propre famille ; les autres emplacements
 commencent vides. Un chargement seul ne réécrit pas le fichier.
+
+`EconomyTransaction` prépare les compteurs via `QuestJournal` avant de confier
+l'inventaire et les quêtes à une unique écriture `PlayerData.commit_economy()`.
+Les écrans ne publient plus d'événement d'achat séparé. `CardRewardGrant`
+centralise les copies, le coffre et la compensation des cartes au niveau maximal ;
+la campagne choisit explicitement de conserver les copies plutôt que de compenser.
+
+`CampaignResultPersistence` reçoit un résultat immuable. Il mémorise les étapes
+réussies (statistiques, récompense, progression, quêtes) lors d'un réessai dans
+la session. L'identité première victoire/replay et le numéro de tentative ne
+sont pas recalculés après une écriture partielle. La clé des quêtes inclut la
+manche ; un FT2 compte donc chacune de ses captures et sa victoire finale.
+Ces étapes ne constituent pas une transaction disque commune aux deux fichiers.
 
 `user://campaign_progress.json` est indépendant du profil. Il contient
 `campaign_version`, `completed_node_ids`, `attempts_by_node`,
@@ -336,7 +350,11 @@ actifs sont acceptés par le catalogue et les sauvegardes. Les champs historique
 `catalogue_ref` et `kind` ont été retirés : ils étaient redondants et aucun
 système de jeu ne les lisait.
 
-La version 9 conserve les profils structurés par banques de decks. Les très
+La version 11 conserve les banques de decks, les quêtes et un registre compact
+des transactions de campagne. Un curseur ordonné par niveau remplace l'historique
+de chaque replay et manche ; les récompenses uniques gardent leur clé permanente.
+Cette compaction suppose le traitement séquentiel des manches et tentatives.
+Les profils de versions futures ne sont jamais réécrits. Les très
 anciens profils à deck unique peuvent toujours être lus si leurs cartes et leur
 dieu utilisent les identifiants actifs ; `PlayerSaveCodec` choisit alors la
 famille qui contient le plus de cartes valides. Aucune table d'alias de contenu

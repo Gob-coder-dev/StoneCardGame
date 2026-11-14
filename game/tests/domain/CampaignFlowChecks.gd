@@ -89,6 +89,8 @@ func _test_classic_result_once() -> void:
 
 func _test_series_defers_completion() -> void:
 	_enter(SERIES_NODE)
+	var captures_before := int(PlayerData.quests_dict().get("counters", {}).get("captures", 0))
+	var wins_before := int(PlayerData.quests_dict().get("counters", {}).get("series_ft2_wins", 0))
 	_check(BattleContext.campaign_series_pending(),
 		"flux campagne : Aléatoire FT2 ouvre une série non terminée")
 	BattleContext.record_mode_round(GameState.PLAYER_HUMAN, 9, 4)
@@ -111,6 +113,9 @@ func _test_series_defers_completion() -> void:
 		and _service.is_completed(SERIES_NODE)
 		and not BattleContext.campaign_series_pending(),
 		"flux campagne : la victoire du nœud n'est publiée qu'à la fin de la série")
+	_check(int(PlayerData.quests_dict().get("counters", {}).get("captures", 0)) == captures_before + 3
+		and int(PlayerData.quests_dict().get("counters", {}).get("series_ft2_wins", 0)) == wins_before + 1,
+		"flux campagne : chaque manche compte ses captures et la finale compte une série FT2")
 	BattleContext.clear_campaign_node()
 
 

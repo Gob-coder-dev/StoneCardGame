@@ -1138,9 +1138,9 @@ func _test_pvp_lobby_screens() -> void:
 		"la saisie d'adresse reste disponible sur le même écran que la liste")
 	_check(page.join_refresh.visible and page.join_refresh.text == "RELANCER",
 		"la recherche conserve un bouton pour relancer l'écoute")
-	page._attempted_address = "192.0.2.44"
-	page._attempted_host_name = "Hôte de test"
-	page._connection_attempt_pending = true
+	page._flow.attempted_address = "192.0.2.44"
+	page._flow.attempted_host_name = "Hôte de test"
+	page._flow.connection_attempt_pending = true
 	LanSession.state = LanSession.State.CONNECTING
 	page._refresh_status()
 	_check(page.connection_overlay.visible and page.cancel_connection_button.visible
@@ -1162,7 +1162,7 @@ func _test_pvp_lobby_screens() -> void:
 	waiting_lobby._local["name"] = "Hôte"
 	waiting_lobby._local["god_id"] = "kharun"
 	waiting_lobby._local["deck_valid"] = true
-	page._lobby = waiting_lobby
+	page._flow.lobby = waiting_lobby
 	page._fill_lobby()
 	_check(page.mode_option.item_count == 4 and page.series_option.item_count == 3
 		and page.tier_option.item_count == 4,
@@ -1212,11 +1212,11 @@ func _test_pvp_lobby_screens() -> void:
 		and page.background.neon_secondary_color
 			== Color(str(StoneLoader.get_god("veskar")["color"])),
 		"le salon adopte les deux couleurs une fois le dieu adverse reçu")
-	page._lobby = null
+	page._flow.lobby = null
 	page._refresh_status()
-	page._attempted_address = "192.0.2.44"
-	page._attempted_host_name = "Hôte de test"
-	page._connection_attempt_pending = true
+	page._flow.attempted_address = "192.0.2.44"
+	page._flow.attempted_host_name = "Hôte de test"
+	page._flow.connection_attempt_pending = true
 	LanSession.state = LanSession.State.DISCONNECTED
 	LanSession.last_notice = "Délai de connexion dépassé."
 	page._refresh_status()
@@ -1233,7 +1233,7 @@ func _test_pvp_lobby_screens() -> void:
 	abandoned_lobby._connected = true
 	abandoned_lobby._local["deck_valid"] = true
 	abandoned_lobby._status = LobbyCoordinator.STATUS_CONNECTED
-	page._lobby = abandoned_lobby
+	page._flow.lobby = abandoned_lobby
 	page._refresh_status()
 	_check(not page.ready_button.disabled
 		and page.background.room == MenuBackground.Room.PVP,
@@ -1241,7 +1241,7 @@ func _test_pvp_lobby_screens() -> void:
 	LanSession.last_notice = "L'hôte a quitté le salon."
 	LanSession.state = LanSession.State.DISCONNECTED
 	page._on_session_state(LanSession.State.DISCONNECTED)
-	_check(page._lobby == null and page.join_screen.visible and page.ready_button.disabled
+	_check(page._flow.lobby == null and page.join_screen.visible and page.ready_button.disabled
 		and page.background.room == MenuBackground.Room.PVP
 		and page.notice_label.visible
 		and page.notice_label.text == "L'hôte a quitté le salon."

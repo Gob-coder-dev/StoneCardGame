@@ -191,12 +191,6 @@ func _full_bleed_offset_for_size(viewport_size: Vector2, scale: float) -> Vector
 	return Vector2(0.0, (viewport_size.y - 1920.0 * scale) * 0.5)
 
 
-func _artwork_bottom_for_size(viewport_size: Vector2) -> float:
-	var scale := _artwork_scale_for_size(viewport_size)
-	var offset := _artwork_offset_for_size(viewport_size, scale)
-	return (viewport_size.y - offset.y) / scale
-
-
 ## Le bestiaire (personnalisation de deck), la campagne, la boutique, le profil
 ## et les règles partagent le même décor : deux néons verticaux d'un bord à
 ## l'autre. Dessinés en espace écran, hors de la zone d'artwork, ils couvrent

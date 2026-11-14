@@ -33,6 +33,7 @@ var _blockers: Array[Control] = []
 
 
 func _ready() -> void:
+	set_process(false)
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	visible = false
@@ -99,6 +100,7 @@ func show_target(target: Control, prompt: String, show_advance: bool = false) ->
 	_banner.visible = prompt != "" or show_advance
 	_target_blocker.visible = show_advance
 	visible = true
+	set_process(true)
 	_time = 0.0
 	_update_geometry()
 	queue_redraw()
@@ -110,6 +112,7 @@ func hide_spotlight() -> void:
 	_target_blocker.visible = false
 	_advance_button.visible = false
 	visible = false
+	set_process(false)
 
 
 func _process(delta: float) -> void:

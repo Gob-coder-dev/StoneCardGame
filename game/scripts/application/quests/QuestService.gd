@@ -12,7 +12,6 @@ extends RefCounted
 const ConfigModel := preload("res://scripts/data/quests/QuestConfig.gd")
 const StateModel := preload("res://scripts/domain/quests/QuestState.gd")
 const Rules := preload("res://scripts/domain/quests/QuestRules.gd")
-const DrawModel := preload("res://scripts/domain/quests/QuestDraw.gd")
 const Calendar := preload("res://scripts/domain/quests/QuestCalendar.gd")
 const MetricsModel := preload("res://scripts/application/quests/QuestMetrics.gd")
 const RitualServiceModel := preload("res://scripts/application/economy/RitualService.gd")
@@ -21,21 +20,23 @@ const Compensation := preload("res://scripts/domain/economy/CardCompensation.gd"
 const InventoryModel := preload("res://scripts/domain/economy/PlayerInventory.gd")
 const AccessServiceModel := preload("res://scripts/application/progression/ProgressionAccessService.gd")
 
+const Journal := preload("res://scripts/application/quests/QuestJournal.gd")
+const CardGrant := preload("res://scripts/domain/economy/CardRewardGrant.gd")
 const TRANSACTION_PREFIX := "quest:"
-## La manche parfaite exige le score maximal du jeu : 16 à 0 sur un plateau
-## complet de 4 × 4. Les plateaux réduits du tutoriel ne comptent jamais.
-const PERFECT_SCORE := 16
-const PERFECT_BOARD_SIZE := 4
 
 var _metrics := MetricsModel.new()
+var _journal: Journal
+
+
+func _init(day_override: int = -1) -> void:
+	_journal = Journal.new(day_override)
 
 
 ## Projection complète consommée par l'écran et par la pastille de navigation.
 func view() -> Dictionary:
 	_metrics = MetricsModel.new()
 	var state := StateModel.from_dict(PlayerData.quests_dict())
-	var changed := _sync_gate_activations(state)
-	changed = _ensure_daily(state) or changed
+	var changed := _journal.sync(state)
 	if changed:
 		var rollover_error := _commit(state)
 		if rollover_error != OK:
@@ -74,22 +75,10 @@ func claimable_count() -> int:
 ## `kind` identifie l'action déjà acceptée par le jeu. `key` est l'identifiant
 ## d'idempotence de cette action : une nouvelle tentative ne compte pas deux fois.
 func record_event(kind: String, payload: Dictionary, key: String = "") -> Error:
-	_metrics = MetricsModel.new()
 	var state := StateModel.from_dict(PlayerData.quests_dict())
-	var rolled := _sync_gate_activations(state)
-	rolled = _ensure_daily(state) or rolled
-	var increments := _event_counters(kind, payload)
-	if increments.is_empty() and not rolled:
-		return OK
 	var next := InventoryModel.from_dict(PlayerData.inventory_dict())
-	var transaction := TRANSACTION_PREFIX + key
-	if key != "" and next.has_transaction(transaction):
+	if not _journal.stage_event(state, next, kind, payload, key):
 		return OK
-	for metric in increments:
-		state.bump(str(metric), int(increments[metric]), false)
-		state.bump(str(metric), int(increments[metric]), true)
-	if key != "":
-		next.mark_transaction(transaction)
 	return PlayerData.commit_economy(next, null, state.to_dict())
 
 
@@ -101,8 +90,7 @@ func claim(quest_id: String) -> Dictionary:
 		return _fail("Cette quête n'est pas encore accessible.")
 	_metrics = MetricsModel.new()
 	var state := StateModel.from_dict(PlayerData.quests_dict())
-	_sync_gate_activations(state)
-	_ensure_daily(state)
+	_journal.sync(state)
 	var daily := state.daily_ids.has(quest_id)
 	if not daily and _in_daily_pool(quest_id):
 		return _fail("Cette quête n'est pas active aujourd'hui.")
@@ -117,7 +105,7 @@ func claim(quest_id: String) -> Dictionary:
 	var reward := Rules.reward(definition, tier, bonus)
 	var next := InventoryModel.from_dict(PlayerData.inventory_dict())
 	var transaction := "%s%s:%d" % [TRANSACTION_PREFIX, quest_id, tier]
-	var already_paid := next.has_transaction(transaction)
+	var already_paid := not daily and next.has_transaction(transaction)
 	var granted: Array = []
 	var opening: Dictionary = {}
 	if not already_paid:
@@ -135,7 +123,10 @@ func claim(quest_id: String) -> Dictionary:
 				return _fail(str(prepared.get("reason", "Rituel indisponible.")))
 			opening = (prepared.get("opening", {}) as Dictionary).duplicate(true)
 			opening["return_to"] = "quests"
-		next.mark_transaction(transaction)
+		# daily_claimed et day_index forment ensemble la preuve atomique du paiement.
+		# Les anciennes clés sans date ne doivent jamais bloquer un nouveau jour.
+		if not daily:
+			next.mark_transaction(transaction)
 	state.mark_claimed(quest_id, tier + 1, daily)
 	var error := PlayerData.commit_economy(next, null, state.to_dict())
 	if error != OK:
@@ -164,36 +155,7 @@ static func _unique_rank(entry: Dictionary) -> int:
 	return 2 if bool(entry.get("finished", false)) else 1
 
 
-## ─── Journal quotidien ───────────────────────────────────────────────────────
-
-func _ensure_daily(state: StateModel) -> bool:
-	var today := Calendar.today()
-	if state.day_index == today:
-		return false
-	var eligible := Callable(self, "_eligible")
-	var previous: Array = DrawModel.draw(ConfigModel.dailies(), today - 1,
-		ConfigModel.daily_count(), eligible, []).get("ids", [])
-	var drawn := DrawModel.draw(ConfigModel.dailies(), today,
-		ConfigModel.daily_count(), eligible, previous)
-	state.reset_daily(today, _string_array(drawn.get("ids", [])),
-		str(drawn.get("carrier", "")))
-	return true
-
-
-## Le tirage ne propose jamais une quête que le joueur ne peut pas réaliser
-## aujourd'hui : ni mode non atteint, ni Rituel sans bougies, ni achat sans âmes.
-func _eligible(quest: Dictionary) -> bool:
-	if not _is_accessible(quest):
-		return false
-	if PlayerData.souls() < int(quest.get("min_souls", 0)):
-		return false
-	if PlayerData.candles() < int(quest.get("min_candles", 0)):
-		return false
-	if PlayerData.unlocked_god_ids().size() < int(quest.get("min_gods", 0)):
-		return false
-	return _metrics.value("campaign_nodes") >= int(quest.get("min_nodes", 0))
-
-
+## Projection d'une quête et de son prochain palier pour l'interface.
 func _entry(definition: Dictionary, state: StateModel, daily: bool,
 		inventory: PlayerInventory) -> Dictionary:
 	var quest_id := str(definition.get("id", ""))
@@ -256,22 +218,6 @@ func _is_accessible(definition: Dictionary) -> bool:
 ## Active chaque défi conditionnel une seule fois et photographie sa métrique.
 ## Les statistiques historiques restent partagées, mais ne peuvent pas remplir
 ## rétroactivement un objectif qui n'existait pas encore pour le joueur.
-func _sync_gate_activations(state: StateModel) -> bool:
-	var changed := false
-	for raw in ConfigModel.uniques():
-		if not raw is Dictionary:
-			continue
-		var definition: Dictionary = raw
-		var quest_id := str(definition.get("id", ""))
-		if str(definition.get("progress_policy", "lifetime")) != "since_gate" \
-				or state.is_activated(quest_id) or not _is_accessible(definition):
-			continue
-		var metric := str(definition.get("metric", ""))
-		var baseline := _metrics.value(metric) if MetricsModel.is_derived(metric) \
-			else state.counter(metric, false)
-		state.activate(quest_id, baseline)
-		changed = true
-	return changed
 
 
 func _in_daily_pool(quest_id: String) -> bool:
@@ -279,14 +225,6 @@ func _in_daily_pool(quest_id: String) -> bool:
 		if quest is Dictionary and str(quest.get("id", "")) == quest_id:
 			return true
 	return false
-
-
-static func _string_array(raw: Variant) -> Array[String]:
-	var result: Array[String] = []
-	if raw is Array:
-		for value in raw:
-			result.append(str(value))
-	return result
 
 
 func _commit(state: StateModel, inventory: Variant = null) -> Error:
@@ -341,99 +279,14 @@ func _grant_cards(inventory: PlayerInventory, raw_cards: Variant) -> Dictionary:
 	if not raw_cards is Array:
 		return {"ok": true, "cards": granted}
 	for raw in raw_cards:
-		if not raw is Dictionary:
-			return {"ok": false, "reason": "Récompense de carte invalide."}
-		var lineage_id := str((raw as Dictionary).get("lineage_id", ""))
-		var copies := maxi(0, int((raw as Dictionary).get("copies", 0)))
-		if lineage_id == "" or copies <= 0:
-			return {"ok": false, "reason": "Récompense de carte invalide."}
-		var stone_id := StoneLoader.variant_id(lineage_id, 1)
-		if stone_id == "":
-			return {"ok": false, "reason": "Carte inconnue : %s." % lineage_id}
-		var affinity := StoneLoader.stone_affinity(stone_id)
-		var resolved: Dictionary = (raw as Dictionary).duplicate(true)
-		resolved["name"] = str(StoneLoader.get_stone(stone_id).get("name", lineage_id))
-		if inventory.unlocked_level(lineage_id) >= StoneLoader.lineage_max_level(lineage_id):
-			var compensation := Compensation.souls_for(lineage_id, copies)
-			inventory.souls += compensation
-			resolved["maxed"] = true
-			resolved["compensation_souls"] = compensation
-		elif affinity != "neutral" and not inventory.has_god(affinity):
-			if not inventory.defer_copies(lineage_id, copies):
-				return {"ok": false, "reason": "Carte impossible à réserver : %s." % lineage_id}
-			resolved["deferred"] = true
-			resolved["god_id"] = affinity
-		elif not inventory.add_copies(lineage_id, copies):
-			return {"ok": false, "reason": "Carte impossible à ajouter : %s." % lineage_id}
-		granted.append(resolved)
+		var result := CardGrant.apply(inventory, raw)
+		if not bool(result.get("ok", false)):
+			return result
+		var reward: Dictionary = result["reward"]
+		var first := StoneLoader.variant_id(str(reward["lineage_id"]), 1)
+		reward["name"] = str(StoneLoader.get_stone(first).get("name", ""))
+		granted.append(reward)
 	return {"ok": true, "cards": granted}
-
-
-## ─── Traduction des actions du jeu en métriques ──────────────────────────────
-
-func _event_counters(kind: String, payload: Dictionary) -> Dictionary:
-	var result := {}
-	match kind:
-		"campaign_result":
-			_add(result, "captures", int(payload.get("captures", 0)))
-			if int(payload.get("winner", 0)) != GameState.PLAYER_HUMAN:
-				return result
-			_add(result, "campaign_wins", 1)
-			if str(payload.get("opponent_god_id", "")) != "":
-				_add(result, "god_wins", 1)
-			if bool(payload.get("boss", false)):
-				_add(result, "boss_wins", 1)
-			if int(payload.get("score_local", 0)) \
-					- int(payload.get("score_opponent", 0)) >= 6:
-				_add(result, "high_diff_wins", 1)
-			if bool(payload.get("series_complete", false)):
-				var series := str(payload.get("series", ""))
-				if series == SeriesRules.SERIES_FT2:
-					_add(result, "series_ft2_wins", 1)
-				elif series == SeriesRules.SERIES_FT3:
-					_add(result, "series_ft3_wins", 1)
-			_add(result, _mode_wins_metric(str(payload.get("mode", ""))), 1)
-			if _is_perfect(payload):
-				_add(result, "perfect_rounds", 1)
-		"pvp_result":
-			_add(result, "pvp_matches", 1)
-			if _is_perfect(payload):
-				_add(result, "perfect_rounds", 1)
-		"shop_purchase":
-			_add(result, "shop_offers", 1)
-			_add(result, "copies_gained", int(payload.get("copies", 0)))
-			_add(result, "souls_spent", int(payload.get("souls", 0)))
-		"ritual_purchase":
-			_add(result, "rituals", 1)
-		"upgrade_purchase":
-			_add(result, "upgrades", 1)
-			_add(result, "souls_spent", int(payload.get("souls", 0)))
-	return result
-
-
-static func _mode_wins_metric(mode: String) -> String:
-	if mode == GameModeRules.MODE_CLASSIC:
-		return "mode_wins_classic"
-	if mode == GameModeRules.MODE_RANDOM:
-		return "mode_wins_random"
-	if mode == GameModeRules.MODE_MIRROR:
-		return "mode_wins_mirror"
-	if mode == GameModeRules.MODE_DRAFT:
-		return "mode_wins_draft"
-	return ""
-
-
-static func _is_perfect(payload: Dictionary) -> bool:
-	if int(payload.get("board_size", PERFECT_BOARD_SIZE)) != PERFECT_BOARD_SIZE:
-		return false
-	return int(payload.get("score_local", 0)) == PERFECT_SCORE \
-		and int(payload.get("score_opponent", 0)) == 0
-
-
-static func _add(target: Dictionary, metric: String, amount: int) -> void:
-	if metric == "" or amount <= 0:
-		return
-	target[metric] = int(target.get(metric, 0)) + amount
 
 
 static func _fail(reason: String) -> Dictionary:

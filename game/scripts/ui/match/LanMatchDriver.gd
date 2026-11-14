@@ -94,7 +94,8 @@ func can_submit() -> bool:
 
 
 func request_move(row: int, col: int, stone_id: String) -> bool:
-	if _coordinator == null:
+	if _coordinator == null or not can_submit() \
+			or not _validate_move(local_side, row, col, stone_id):
 		return false
 	return _coordinator.request_move(row, col, stone_id)
 
@@ -132,8 +133,12 @@ func shutdown() -> void:
 ## L'hôte confirme le tour après avoir comparé les deux états : c'est le seul
 ## moment où le joueur suivant peut toucher le plateau.
 func _on_ready_changed(_can_submit: bool) -> void:
-	if _can_submit and _confirmation_timer != null:
-		_confirmation_timer.stop()
+	if _confirmation_timer != null:
+		if _can_submit:
+			_confirmation_timer.stop()
+		elif not _leaving:
+			# Couvre aussi l'intention envoyée avant toute acceptation de l'hôte.
+			_confirmation_timer.start(LanProtocol.TURN_CONFIRM_TIMEOUT_SECONDS)
 	interaction_changed.emit()
 
 func _on_command_accepted(command: Dictionary) -> void:

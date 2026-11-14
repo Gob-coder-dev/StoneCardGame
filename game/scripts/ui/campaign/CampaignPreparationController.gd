@@ -27,13 +27,14 @@ func _process(delta: float) -> void:
 	if BattleContext.campaign_mode_session == null:
 		return
 	var completed := BattleContext.advance_mode_preparation(delta)
-	var state := BattleContext.mode_state()
-	preparation_view.set_remaining_seconds(float(state.get("remaining_seconds", 0.0)))
+	preparation_view.set_remaining_seconds(BattleContext.campaign_mode_session.remaining_seconds())
 	if completed:
 		_refresh()
 
 
 func _refresh() -> void:
+	set_process(BattleContext.campaign_mode_session != null \
+		and BattleContext.campaign_mode_session.is_drafting())
 	var state := BattleContext.mode_state()
 	if state.is_empty():
 		_show_missing_session()

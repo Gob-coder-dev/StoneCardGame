@@ -21,6 +21,7 @@ signal match_ready(config: Dictionary)
 signal desync(reason: String)
 signal aborted(message: String)
 signal ready_changed(can_submit: bool)
+signal move_rejected(reason: String)
 
 const HOST_PEER: int = LanProtocol.SERVER_ID
 const DUPLICATE_MESSAGE: String = "Coup déjà reçu."
@@ -52,6 +53,8 @@ var _last_command: Dictionary = {}
 var _local_fingerprint := ""
 var _remote_fingerprint := ""
 var _pending_ack_sequence := -1
+var _intent_pending := false
+var _pending_result: Dictionary = {}
 
 
 ## Branche le coordinateur. `client_peer` n'est utile qu'à l'hôte.
@@ -112,6 +115,10 @@ func begin(starting_player: int) -> void:
 	_closed = false
 	_sequence = 0
 	_pending_ack_sequence = -1
+	_intent_pending = false
+	_pending_result = {}
+	_desynced = false
+	_finished = false
 	_active_player = starting_player
 	_last_command = {}
 	_local_fingerprint = ""
@@ -128,7 +135,7 @@ func match_id() -> String:
 
 
 func can_submit() -> bool:
-	return _can_submit and not _closed and not _desynced
+	return _can_submit and not _closed and not _desynced and not _finished
 
 
 func active_player() -> int:
@@ -153,8 +160,10 @@ func request_move(row: int, col: int, stone_id: String) -> bool:
 	}
 	if _is_host:
 		return _host_accept(intent)
+	_intent_pending = true
 	_set_can_submit(false)
 	if not _transport.send_to(HOST_PEER, LanProtocol.KIND_MOVE_INTENT, intent):
+		_intent_pending = false
 		_set_can_submit(true)
 		return false
 	return true
@@ -164,7 +173,7 @@ func request_move(row: int, col: int, stone_id: String) -> bool:
 
 ## Applique et diffuse une commande validée. Refuse les doublons par le silence.
 func _host_accept(intent: Dictionary) -> bool:
-	if _closed or _desynced:
+	if not can_submit():
 		return false
 	if _is_duplicate(intent):
 		return false
@@ -191,6 +200,7 @@ func _host_accept(intent: Dictionary) -> bool:
 
 
 func _accept(command: Dictionary) -> void:
+	_intent_pending = false
 	_sequence = int(command["sequence"])
 	_last_command = {
 		"player": int(command["player"]),
@@ -236,12 +246,14 @@ func _confirm_if_ready() -> void:
 			"fingerprint": fingerprint,
 		})
 	turn_confirmed.emit(_sequence)
+	_publish_result_if_ready()
 
 
 func _fail_desync() -> void:
 	if _desynced:
 		return
 	_desynced = true
+	_pending_result = {}
 	_set_can_submit(false)
 	if _transport != null and _is_host:
 		_transport.broadcast(LanProtocol.KIND_DESYNC, {
@@ -287,9 +299,22 @@ func finish_match(winner: int, score_one: int, score_two: int) -> void:
 	}
 	if not LanProtocol.validate(LanProtocol.KIND_MATCH_END, payload)["ok"]:
 		return
+	_pending_result = payload
+	_publish_result_if_ready()
+
+
+## Le dernier tour suit le même accord d'empreintes que tous les autres.
+## Un verdict calculé localement reste en attente tant que son tour n'est pas confirmé.
+func _publish_result_if_ready() -> void:
+	if _pending_result.is_empty() or _pending_ack_sequence >= 0 \
+			or _closed or _desynced or _finished:
+		return
+	var result := _pending_result
+	_pending_result = {}
 	_finished = true
-	_transport.broadcast(LanProtocol.KIND_MATCH_END, payload)
-	match_finished.emit(winner, score_one, score_two)
+	_set_can_submit(false)
+	_transport.broadcast(LanProtocol.KIND_MATCH_END, result)
+	match_finished.emit(int(result["winner"]), int(result["score_one"]), int(result["score_two"]))
 
 
 ## Chaque appareil doit toucher COMMENCER (ou REVANCHE) : l'hôte ne lance le
@@ -332,6 +357,8 @@ func _maybe_start() -> void:
 func abort(message: String) -> void:
 	if _closed:
 		return
+	_closed = true
+	_pending_result = {}
 	_can_submit = false
 	aborted.emit(message)
 
@@ -351,6 +378,8 @@ func _on_message(from_peer: int, kind: String, payload: Dictionary) -> void:
 		if not _is_host:
 			_on_start_confirmed(from_peer, payload)
 		return
+	if _finished:
+		return
 	if kind == LanProtocol.KIND_MOVE_INTENT:
 		if _is_host:
 			_on_intent(from_peer, payload)
@@ -361,6 +390,9 @@ func _on_message(from_peer: int, kind: String, payload: Dictionary) -> void:
 		LanProtocol.KIND_MOVE_ACCEPTED:
 			if not _is_host:
 				_on_accepted(from_peer, payload)
+		LanProtocol.KIND_MOVE_REJECTED:
+			if not _is_host:
+				_on_rejected(payload)
 		LanProtocol.KIND_TURN_ACK:
 			_on_turn_ack(from_peer, payload)
 		LanProtocol.KIND_TURN_CONFIRMED:
@@ -421,8 +453,17 @@ func _on_turn_confirmed(payload: Dictionary) -> void:
 		_set_can_submit(false)
 		desync.emit(DESYNC_MESSAGE)
 		return
+	_pending_ack_sequence = -1
 	_set_can_submit(true)
 	turn_confirmed.emit(sequence)
+
+
+func _on_rejected(payload: Dictionary) -> void:
+	if not _intent_pending or int(payload.get("sequence", -1)) != _sequence:
+		return
+	_intent_pending = false
+	_set_can_submit(true)
+	move_rejected.emit(str(payload.get("reason", "Coup refusé.")))
 
 
 func _on_start_request(from_peer: int, payload: Dictionary) -> void:

@@ -114,6 +114,14 @@ func advance(delta: float) -> bool:
 	return true
 
 
+func is_drafting() -> bool:
+	return _draft != null and not _draft.is_complete()
+
+
+func remaining_seconds() -> float:
+	return _draft.remaining_seconds() if _draft != null else 0.0
+
+
 func confirm_local() -> bool:
 	if _loadout_one == null or _loadout_two == null:
 		return false

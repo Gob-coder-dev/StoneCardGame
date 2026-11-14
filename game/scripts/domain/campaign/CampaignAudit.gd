@@ -13,6 +13,34 @@ static func build(graph: CampaignGraph) -> Dictionary:
 		return {}
 	var depth := _depths(graph)
 	var order := _topological_order(graph)
+	var max_depth := 0
+	for value in depth.values():
+		max_depth = maxi(max_depth, int(value))
+	var mode_run := _longest_equal_run(graph, order, "game_mode")
+	var theme_run := _longest_equal_run(graph, order, "theme_god_id")
+	var result := {
+		"total_nodes": graph.node_count(),
+		"total_edges": graph.edge_count(),
+		"start_node_id": graph.start_node_id,
+		"final_node_id": graph.final_node_id,
+		"map_size": graph.map_size,
+		"min_depth": 0,
+		"max_depth": max_depth,
+		"max_mode_run": int(mode_run["length"]),
+		"max_mode_chain": mode_run["chain"],
+		"max_theme_run": int(theme_run["length"]),
+		"max_theme_chain": theme_run["chain"],
+		"depth_by_node": depth,
+		"has_cycle": graph.has_cycle(),
+	}
+	result.merge(_distribution(graph))
+	result.merge(_precision_metrics(graph, depth))
+	result.merge(_topology(graph))
+	result.merge(_decks(graph))
+	return result
+
+
+static func _distribution(graph: CampaignGraph) -> Dictionary:
 	var mode_counts := {}
 	var tier_counts := {}
 	var series_counts := {}
@@ -23,30 +51,7 @@ static func build(graph: CampaignGraph) -> Dictionary:
 	var generator_god_counts := {}
 	var forced_generators: Array[String] = []
 	var mirror_fixed_decks: Array[String] = []
-	var precision_values: Array[float] = []
-	var precision_bands := {}
-	var non_quarter := 0
-	var optional_minis: Array[String] = []
-	var mandatory_minis: Array[String] = []
-	var mini_not_ft2: Array[String] = []
-	var optional_with_exit: Array[String] = []
-	var mandatory_bypassable: Array[String] = []
-	var dead_ends: Array[String] = []
-	var multi_exit: Array[String] = []
-	var three_way: Array[String] = []
-	var four_way: Array[String] = []
-	var merges: Array[String] = []
-	var tutorials: Array[String] = []
-	var fixed_decks: Array = []
-	var fixed_god_deck_counts := {}
-	var fixed_decks_below_three: Array[String] = []
-	var exact_duplicates: Array = []
-	var near_duplicates: Array = []
-	var min_node_distance := INF
-	var nodes := graph.nodes()
-
-	for index in range(nodes.size()):
-		var node: CampaignNode = nodes[index]
+	for node in graph.nodes():
 		_bump(mode_counts, node.game_mode())
 		_bump(tier_counts, str(node.max_power_tier()))
 		_bump(series_counts, node.series_format())
@@ -61,6 +66,33 @@ static func build(graph: CampaignGraph) -> Dictionary:
 			forced_generators.append(node.id)
 		if not node.mirror_fixed_deck().is_empty():
 			mirror_fixed_decks.append(node.id)
+	var theme_values: Array = theme_counts.values()
+	var theme_min := int(theme_values.min()) if not theme_values.is_empty() else 0
+	var theme_max := int(theme_values.max()) if not theme_values.is_empty() else 0
+	return {
+		"mode_counts": mode_counts,
+		"tier_counts": tier_counts,
+		"series_counts": series_counts,
+		"type_counts": type_counts,
+		"chapter_counts": chapter_counts,
+		"chapter_count": chapter_counts.size(),
+		"theme_counts": theme_counts,
+		"fixed_god_counts": fixed_god_counts,
+		"generator_god_counts": generator_god_counts,
+		"forced_generators": forced_generators,
+		"forced_generator_count": forced_generators.size(),
+		"mirror_fixed_decks": mirror_fixed_decks,
+		"mirror_fixed_deck_count": mirror_fixed_decks.size(),
+		"theme_min": theme_min,
+		"theme_max": theme_max,
+	}
+
+
+static func _precision_metrics(graph: CampaignGraph, depth: Dictionary) -> Dictionary:
+	var precision_values: Array[float] = []
+	var precision_bands := {}
+	var non_quarter := 0
+	for node in graph.nodes():
 		var precision := float(node.ai_profile().get("precision", 0.0))
 		precision_values.append(precision)
 		if int(round(precision * 100.0)) % 25 != 0:
@@ -75,33 +107,102 @@ static func build(graph: CampaignGraph) -> Dictionary:
 		band_stats["max"] = maxf(float(band_stats["max"]), precision)
 		band_stats["sum"] = float(band_stats["sum"]) + precision
 		precision_bands[band_key] = band_stats
+	var precision_min := 0.0
+	var precision_max := 0.0
+	if not precision_values.is_empty():
+		precision_values.sort()
+		precision_min = precision_values[0]
+		precision_max = precision_values[precision_values.size() - 1]
+	for key in precision_bands:
+		var stats: Dictionary = precision_bands[key]
+		stats["average"] = float(stats["sum"]) / maxi(1, int(stats["count"]))
+		precision_bands[key] = stats
+	return {
+		"precision_min": precision_min,
+		"precision_max": precision_max,
+		"precision_unique": _unique_count(precision_values),
+		"precision_non_quarter": non_quarter,
+		"precision_bands": precision_bands,
+	}
 
+
+static func _branch_nodes(graph: CampaignGraph) -> Dictionary:
+	var result := {}
+	for key in ["optional_minis", "mandatory_minis", "mini_not_ft2", "optional_with_exit",
+			"mandatory_bypassable", "dead_ends", "multi_exit", "three_way", "four_way",
+			"merges", "tutorials"]:
+		result[key] = []
+	for node in graph.nodes():
 		if node.is_tutorial():
-			tutorials.append(node.id)
+			result["tutorials"].append(node.id)
 		if node.is_optional_mini_boss():
-			optional_minis.append(node.id)
+			result["optional_minis"].append(node.id)
 			if not graph.is_dead_end(node.id):
-				optional_with_exit.append(node.id)
+				result["optional_with_exit"].append(node.id)
 		if node.is_mandatory_mini_boss():
-			mandatory_minis.append(node.id)
+			result["mandatory_minis"].append(node.id)
 			if graph.is_dead_end(node.id):
-				mandatory_bypassable.append(node.id)
+				result["mandatory_bypassable"].append(node.id)
 			elif graph.reachable_from(graph.start_node_id, node.id).has(graph.final_node_id):
-				mandatory_bypassable.append(node.id)
+				result["mandatory_bypassable"].append(node.id)
 		if node.is_mini_boss() and node.series_format() != SeriesRules.SERIES_FT2:
-			mini_not_ft2.append(node.id)
+			result["mini_not_ft2"].append(node.id)
 		if graph.is_dead_end(node.id) and node.id != graph.final_node_id:
-			dead_ends.append(node.id)
+			result["dead_ends"].append(node.id)
 		var outgoing_count := graph.successors(node.id).size()
 		if outgoing_count >= 2:
-			multi_exit.append(node.id)
+			result["multi_exit"].append(node.id)
 		if outgoing_count >= 3:
-			three_way.append(node.id)
+			result["three_way"].append(node.id)
 		if outgoing_count >= 4:
-			four_way.append(node.id)
+			result["four_way"].append(node.id)
 		if graph.predecessors(node.id).size() >= 2:
-			merges.append(node.id)
+			result["merges"].append(node.id)
+	return result
 
+
+static func _topology(graph: CampaignGraph) -> Dictionary:
+	var result := _branch_nodes(graph)
+	result["tutorial_count"] = result["tutorials"].size()
+	result["optional_mini_count"] = result["optional_minis"].size()
+	result["mandatory_mini_count"] = result["mandatory_minis"].size()
+	result["dead_end_count"] = result["dead_ends"].size()
+	result["multi_exit_count"] = result["multi_exit"].size()
+	result["three_way_count"] = result["three_way"].size()
+	result["four_way_count"] = result["four_way"].size()
+	result["merge_count"] = result["merges"].size()
+	var unreachable: Array[String] = []
+	var reachable := graph.reachable_from(graph.start_node_id)
+	for node_id in graph.node_ids():
+		if not reachable.has(node_id):
+			unreachable.append(node_id)
+	var duplicate_edges: Array[String] = []
+	var seen_pairs := {}
+	for edge in graph.edges():
+		var pair := "%s>%s" % [edge.from_id, edge.to_id]
+		if seen_pairs.has(pair):
+			duplicate_edges.append(pair)
+		seen_pairs[pair] = true
+	result["unreachable"] = unreachable
+	result["duplicate_edges"] = duplicate_edges
+	result["min_node_distance"] = _min_node_distance(graph.nodes())
+	return result
+
+
+static func _min_node_distance(nodes: Array) -> float:
+	var min_node_distance := INF
+	for index in range(nodes.size()):
+		var first_node: CampaignNode = nodes[index]
+		for other_index in range(index + 1, nodes.size()):
+			var second_node: CampaignNode = nodes[other_index]
+			var distance: float = first_node.position.distance_to(second_node.position)
+			min_node_distance = minf(min_node_distance, distance)
+	return min_node_distance
+
+
+static func _fixed_decks(graph: CampaignGraph) -> Array:
+	var fixed_decks: Array = []
+	for node in graph.nodes():
 		if not node.fixed_deck().is_empty():
 			var sorted_cards: Array = node.fixed_deck()
 			sorted_cards.sort()
@@ -113,22 +214,40 @@ static func build(graph: CampaignGraph) -> Dictionary:
 				"identity": identity,
 				"lineages": _lineages(node.fixed_deck()),
 			})
-			if node.fixed_god_id() != "":
-				var same_god := 0
-				for card in node.fixed_deck():
-					if StoneLoader.stone_affinity(str(card)) == node.fixed_god_id():
-						same_god += 1
-				fixed_god_deck_counts[node.id] = same_god
-				if same_god < MIN_GOD_CARDS:
-					fixed_decks_below_three.append(node.id)
+	return fixed_decks
 
-	for index in range(nodes.size()):
-		var first_node: CampaignNode = nodes[index]
-		for other_index in range(index + 1, nodes.size()):
-			var second_node: CampaignNode = nodes[other_index]
-			var distance: float = first_node.position.distance_to(second_node.position)
-			min_node_distance = minf(min_node_distance, distance)
 
+static func _deck_affinity(graph: CampaignGraph) -> Dictionary:
+	var fixed_god_deck_counts := {}
+	var fixed_decks_below_three: Array[String] = []
+	for node in graph.nodes():
+		if node.fixed_deck().is_empty():
+			continue
+		if node.fixed_god_id() != "":
+			var same_god := 0
+			for card in node.fixed_deck():
+				if StoneLoader.stone_affinity(str(card)) == node.fixed_god_id():
+					same_god += 1
+			fixed_god_deck_counts[node.id] = same_god
+			if same_god < MIN_GOD_CARDS:
+				fixed_decks_below_three.append(node.id)
+	var min_fixed_god_cards := 0
+	if not fixed_god_deck_counts.is_empty():
+		var god_counts: Array = fixed_god_deck_counts.values()
+		god_counts.sort()
+		min_fixed_god_cards = int(god_counts[0])
+	return {
+		"fixed_god_deck_counts": fixed_god_deck_counts,
+		"fixed_god_deck_count": fixed_god_deck_counts.size(),
+		"min_fixed_god_cards": min_fixed_god_cards,
+		"fixed_decks_below_three": fixed_decks_below_three,
+	}
+
+
+static func _decks(graph: CampaignGraph) -> Dictionary:
+	var fixed_decks := _fixed_decks(graph)
+	var exact_duplicates: Array = []
+	var near_duplicates: Array = []
 	var seen_decks := {}
 	for entry in fixed_decks:
 		if seen_decks.has(entry["identity"]):
@@ -152,114 +271,14 @@ static func build(graph: CampaignGraph) -> Dictionary:
 					"second": second["node_id"],
 					"common_lineages": common,
 				})
-
-	var unreachable: Array[String] = []
-	var reachable := graph.reachable_from(graph.start_node_id)
-	for node_id in graph.node_ids():
-		if not reachable.has(node_id):
-			unreachable.append(node_id)
-	var duplicate_edges: Array[String] = []
-	var seen_pairs := {}
-	for edge in graph.edges():
-		var pair := "%s>%s" % [edge.from_id, edge.to_id]
-		if seen_pairs.has(pair):
-			duplicate_edges.append(pair)
-		seen_pairs[pair] = true
-
-	var precision_min := 0.0
-	var precision_max := 0.0
-	if not precision_values.is_empty():
-		precision_values.sort()
-		precision_min = precision_values[0]
-		precision_max = precision_values[precision_values.size() - 1]
-	for key in precision_bands:
-		var stats: Dictionary = precision_bands[key]
-		stats["average"] = float(stats["sum"]) / maxi(1, int(stats["count"]))
-		precision_bands[key] = stats
-
-	var min_fixed_god_cards := 0
-	if not fixed_god_deck_counts.is_empty():
-		var god_counts: Array = fixed_god_deck_counts.values()
-		god_counts.sort()
-		min_fixed_god_cards = int(god_counts[0])
-	var theme_min := 0
-	var theme_max := 0
-	if not theme_counts.is_empty():
-		var theme_values: Array = theme_counts.values()
-		theme_values.sort()
-		theme_min = int(theme_values[0])
-		theme_max = int(theme_values[theme_values.size() - 1])
-	var max_depth := 0
-	for value in depth.values():
-		max_depth = maxi(max_depth, int(value))
-	var mode_run := _longest_equal_run(graph, order, "game_mode")
-	var theme_run := _longest_equal_run(graph, order, "theme_god_id")
-
-	return {
-		"total_nodes": graph.node_count(),
-		"total_edges": graph.edge_count(),
-		"start_node_id": graph.start_node_id,
-		"final_node_id": graph.final_node_id,
-		"map_size": graph.map_size,
-		"mode_counts": mode_counts,
-		"tier_counts": tier_counts,
-		"series_counts": series_counts,
-		"type_counts": type_counts,
-		"chapter_counts": chapter_counts,
-		"chapter_count": chapter_counts.size(),
-		"theme_counts": theme_counts,
-		"fixed_god_counts": fixed_god_counts,
-		"generator_god_counts": generator_god_counts,
-		"forced_generators": forced_generators,
-		"forced_generator_count": forced_generators.size(),
-		"mirror_fixed_decks": mirror_fixed_decks,
-		"mirror_fixed_deck_count": mirror_fixed_decks.size(),
-		"theme_min": theme_min,
-		"theme_max": theme_max,
-		"tutorials": tutorials,
-		"tutorial_count": tutorials.size(),
-		"optional_minis": optional_minis,
-		"mandatory_minis": mandatory_minis,
-		"optional_mini_count": optional_minis.size(),
-		"mandatory_mini_count": mandatory_minis.size(),
-		"mini_not_ft2": mini_not_ft2,
-		"optional_with_exit": optional_with_exit,
-		"mandatory_bypassable": mandatory_bypassable,
-		"dead_ends": dead_ends,
-		"dead_end_count": dead_ends.size(),
-		"multi_exit": multi_exit,
-		"multi_exit_count": multi_exit.size(),
-		"three_way": three_way,
-		"three_way_count": three_way.size(),
-		"four_way": four_way,
-		"four_way_count": four_way.size(),
-		"merges": merges,
-		"merge_count": merges.size(),
-		"min_depth": 0,
-		"max_depth": max_depth,
-		"max_mode_run": int(mode_run["length"]),
-		"max_mode_chain": mode_run["chain"],
-		"max_theme_run": int(theme_run["length"]),
-		"max_theme_chain": theme_run["chain"],
-		"depth_by_node": depth,
-		"precision_min": precision_min,
-		"precision_max": precision_max,
-		"precision_unique": _unique_count(precision_values),
-		"precision_non_quarter": non_quarter,
-		"precision_bands": precision_bands,
+	var result := {
 		"fixed_deck_count": fixed_decks.size(),
 		"unique_fixed_decks": seen_decks.size(),
-		"fixed_god_deck_counts": fixed_god_deck_counts,
-		"fixed_god_deck_count": fixed_god_deck_counts.size(),
-		"min_fixed_god_cards": min_fixed_god_cards,
-		"fixed_decks_below_three": fixed_decks_below_three,
 		"exact_duplicate_decks": exact_duplicates,
 		"near_duplicate_decks": near_duplicates,
-		"unreachable": unreachable,
-		"duplicate_edges": duplicate_edges,
-		"has_cycle": graph.has_cycle(),
-		"min_node_distance": min_node_distance,
 	}
+	result.merge(_deck_affinity(graph))
+	return result
 
 
 static func _depths(graph: CampaignGraph) -> Dictionary:

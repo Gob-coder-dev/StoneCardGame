@@ -60,6 +60,14 @@ static func problems(definition: Dictionary) -> Array[String]:
 		result.append("liste d'arêtes invalide.")
 		return result
 
+	var nodes := _node_problems(raw_nodes, map_size, result)
+	_edge_problems(raw_edges, nodes["ids"], nodes["positions"], map_size, result)
+	_graph_problems(GraphModel.build(definition), nodes["ids"].size(), result)
+	return result
+
+
+static func _node_problems(raw_nodes: Array, map_size: Vector2,
+		result: Array[String]) -> Dictionary:
 	var seen_nodes := {}
 	var seen_positions := {}
 	var tutorial_count := 0
@@ -82,26 +90,7 @@ static func problems(definition: Dictionary) -> Array[String]:
 		for forbidden in FORBIDDEN_STRUCTURE_KEYS:
 			if raw.has(forbidden):
 				result.append("champ de structure interdit '%s' sur '%s'." % [forbidden, node_id])
-		var raw_position: Variant = raw.get("position", {})
-		if not raw_position is Dictionary:
-			result.append("position absente sur '%s'." % node_id)
-		else:
-			var x_value: Variant = raw_position.get("x")
-			var y_value: Variant = raw_position.get("y")
-			if not _is_number(x_value) or not _is_number(y_value):
-				result.append("position non numérique sur '%s'." % node_id)
-			else:
-				var point := Vector2(float(x_value), float(y_value))
-				if not is_finite(point.x) or not is_finite(point.y) \
-						or not MapGeometryModel.contains_node_center(map_size, point):
-					result.append("position hors de la carte ou de la marge visuelle sur '%s'." % node_id)
-				else:
-					for other_id in seen_positions:
-						if point.distance_to(seen_positions[other_id]) < MIN_NODE_DISTANCE:
-							result.append("nœuds trop proches '%s' et '%s'." % [
-								node_id, other_id])
-							break
-					seen_positions[node_id] = point
+		_node_position_problems(raw, node_id, map_size, seen_positions, result)
 		if node.type == NodeModel.TYPE_TUTORIAL:
 			tutorial_count += 1
 		if node.type == NodeModel.TYPE_MINI_BOSS \
@@ -115,7 +104,35 @@ static func problems(definition: Dictionary) -> Array[String]:
 
 	if tutorial_count < 2:
 		result.append("la campagne doit commencer par au moins deux tutoriels.")
+	return {"ids": seen_nodes, "positions": seen_positions}
 
+
+static func _node_position_problems(raw: Dictionary, node_id: String, map_size: Vector2,
+		seen_positions: Dictionary, result: Array[String]) -> void:
+	var raw_position: Variant = raw.get("position", {})
+	if not raw_position is Dictionary:
+		result.append("position absente sur '%s'." % node_id)
+	else:
+		var x_value: Variant = raw_position.get("x")
+		var y_value: Variant = raw_position.get("y")
+		if not _is_number(x_value) or not _is_number(y_value):
+			result.append("position non numérique sur '%s'." % node_id)
+		else:
+			var point := Vector2(float(x_value), float(y_value))
+			if not is_finite(point.x) or not is_finite(point.y) \
+					or not MapGeometryModel.contains_node_center(map_size, point):
+				result.append("position hors de la carte ou de la marge visuelle sur '%s'." % node_id)
+			else:
+				for other_id in seen_positions:
+					if point.distance_to(seen_positions[other_id]) < MIN_NODE_DISTANCE:
+						result.append("nœuds trop proches '%s' et '%s'." % [
+							node_id, other_id])
+						break
+				seen_positions[node_id] = point
+
+
+static func _edge_problems(raw_edges: Array, seen_nodes: Dictionary, seen_positions: Dictionary,
+		map_size: Vector2, result: Array[String]) -> void:
 	var seen_edge_ids := {}
 	var seen_pairs := {}
 	for raw in raw_edges:
@@ -164,15 +181,17 @@ static func problems(definition: Dictionary) -> Array[String]:
 					or control.x > map_size.x or control.y > map_size.y:
 				result.append("point de contrôle hors carte sur l'arête '%s'." % edge_id)
 
-	var graph: CampaignGraph = GraphModel.build(definition)
-	if graph.node_count() != seen_nodes.size():
+
+static func _graph_problems(graph: CampaignGraph, declared_count: int,
+		result: Array[String]) -> void:
+	if graph.node_count() != declared_count:
 		result.append("le graphe ne contient pas exactement les nœuds déclarés.")
 	if graph.start_node_id == "" or not graph.has_node(graph.start_node_id):
 		result.append("nœud de départ absent ou inconnu.")
 	if graph.final_node_id == "" or not graph.has_node(graph.final_node_id):
 		result.append("objectif final absent ou inconnu.")
 	if not graph.has_node(graph.start_node_id):
-		return result
+		return
 
 	var start: CampaignNode = graph.start_node()
 	if start != null and start.type != NodeModel.TYPE_TUTORIAL:
@@ -211,8 +230,7 @@ static func problems(definition: Dictionary) -> Array[String]:
 			_mini_boss_problems(graph, node, result)
 	if boss_count != 1:
 		result.append("exactement un boss final est attendu (trouvé %d)." % boss_count)
-	return result
-
+	return
 
 static func _mini_boss_problems(graph: CampaignGraph, node: CampaignNode,
 		result: Array[String]) -> void:
@@ -258,6 +276,34 @@ static func _encounter_problems(node: CampaignNode, result: Array[String]) -> vo
 		result.append("seed_policy inconnue sur '%s'." % node.id)
 	elif node.requires_per_attempt_seed() and node.seed_policy() != NodeModel.SEED_PER_ATTEMPT:
 		result.append("seed_policy fixe sur une rencontre générée '%s'." % node.id)
+	_board_problems(node, result)
+	_reward_problems(node, result)
+
+	_generator_problems(node, result)
+
+	for problem in AIProfileModel.problems(node.ai_profile()):
+		result.append("IA de '%s' : %s." % [node.id, problem])
+
+	_mode_policy_problems(node, result)
+
+	var god_id := node.fixed_god_id()
+	if god_policy == NodeModel.GOD_FIXED:
+		if god_id == "":
+			if deck_policy != NodeModel.DECK_FIXED:
+				result.append("dieu vide sur '%s' : un deck fixe neutre est requis." % node.id)
+		elif StoneLoader.get_god(god_id).is_empty():
+			result.append("dieu inconnu '%s' sur '%s'." % [god_id, node.id])
+
+	if deck_policy == NodeModel.DECK_FIXED:
+		_fixed_deck_problems(node, result)
+	if not node.mirror_fixed_deck().is_empty():
+		_mirror_fixed_deck_problems(node, result)
+
+	_tutorial_problems(node, result)
+
+
+static func _board_problems(node: CampaignNode, result: Array[String]) -> void:
+	var encounter := node.encounter
 	var raw_board_size := int(encounter.get("board_size", GameState.DEFAULT_BOARD_SIZE))
 	if raw_board_size < GameState.MIN_BOARD_SIZE or raw_board_size > GameState.MAX_BOARD_SIZE:
 		result.append("taille de plateau hors bornes sur '%s'." % node.id)
@@ -279,8 +325,10 @@ static func _encounter_problems(node: CampaignNode, result: Array[String]) -> vo
 		blocked_seen[key] = true
 	if node.allows_incomplete_player_deck() and node.id != "tuto_01":
 		result.append("deck incomplet autorisé hors du premier tutoriel sur '%s'." % node.id)
-	_reward_problems(node, result)
 
+
+static func _generator_problems(node: CampaignNode, result: Array[String]) -> void:
+	var mode := node.game_mode()
 	var generator_god_id := node.generator_god_id()
 	var generator_min := node.generator_min_god_cards()
 	var mirror_deck := node.mirror_fixed_deck()
@@ -300,9 +348,13 @@ static func _encounter_problems(node: CampaignNode, result: Array[String]) -> vo
 		if generator_god_id == "":
 			result.append("deck miroir fixe sans dieu imposé sur '%s'." % node.id)
 
-	for problem in AIProfileModel.problems(node.ai_profile()):
-		result.append("IA de '%s' : %s." % [node.id, problem])
 
+
+static func _mode_policy_problems(node: CampaignNode, result: Array[String]) -> void:
+	var mode := node.game_mode()
+	var god_policy := node.opponent_god_policy()
+	var deck_policy := node.opponent_deck_policy()
+	var tier := node.max_power_tier()
 	match mode:
 		GameModeRulesModel.MODE_CLASSIC:
 			if not [NodeModel.GOD_FIXED, NodeModel.GOD_PROFILE].has(god_policy):
@@ -337,19 +389,14 @@ static func _encounter_problems(node: CampaignNode, result: Array[String]) -> vo
 	if god_policy == NodeModel.GOD_PROFILE and node.fixed_god_id() != "":
 		result.append("fixed_god_id interdit avec la politique profil sur '%s'." % node.id)
 
+
+
+static func _tutorial_problems(node: CampaignNode, result: Array[String]) -> void:
+	var mode := node.game_mode()
+	var god_policy := node.opponent_god_policy()
+	var deck_policy := node.opponent_deck_policy()
+	var tier := node.max_power_tier()
 	var god_id := node.fixed_god_id()
-	if god_policy == NodeModel.GOD_FIXED:
-		if god_id == "":
-			if deck_policy != NodeModel.DECK_FIXED:
-				result.append("dieu vide sur '%s' : un deck fixe neutre est requis." % node.id)
-		elif StoneLoader.get_god(god_id).is_empty():
-			result.append("dieu inconnu '%s' sur '%s'." % [god_id, node.id])
-
-	if deck_policy == NodeModel.DECK_FIXED:
-		_fixed_deck_problems(node, result)
-	if not mirror_deck.is_empty():
-		_mirror_fixed_deck_problems(node, result)
-
 	if node.is_tutorial():
 		if god_policy != NodeModel.GOD_FIXED or god_id != "":
 			result.append("tutoriel '%s' : Pr.Stone sans dieu requis." % node.id)
@@ -362,6 +409,7 @@ static func _encounter_problems(node: CampaignNode, result: Array[String]) -> vo
 		if float(node.ai_profile().get("precision", 1.0)) != 0.0 \
 				or bool(node.ai_profile().get("anticipation", true)):
 			result.append("tutoriel '%s' : précision 0 et sans anticipation requis." % node.id)
+
 
 
 static func _reward_problems(node: CampaignNode, result: Array[String]) -> void:

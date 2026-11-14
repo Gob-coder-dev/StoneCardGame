@@ -1,13 +1,19 @@
 ## Format de sauvegarde et évolution des profils, sans lecture/écriture disque.
 extends RefCounted
-const VERSION := 10
+const VERSION := 11
+const Integer := preload("res://scripts/domain/IntegerValue.gd")
+const StatsRules := preload("res://scripts/domain/ProfileStatsRules.gd")
 const EconomyConfigModel := preload("res://scripts/data/economy/EconomyConfig.gd")
 const InventoryModel := preload("res://scripts/domain/economy/PlayerInventory.gd")
 const NEUTRAL_DECK_KEY := "neutral"
 
 static func default_stats() -> Dictionary:
-	return {"games_played": 0, "wins": 0, "losses": 0, "draws": 0,
-		"current_streak": 0, "best_streak": 0, "total_captures": 0, "per_npc": {}}
+	return StatsRules.defaults()
+
+
+## Un profil futur est lisible en mode diagnostic, mais ne doit jamais être réécrit.
+static func supports(raw: Dictionary) -> bool:
+	return Integer.read(raw.get("save_version", 0)) <= VERSION
 
 static func encode(decks: Dictionary, selections: Dictionary, god: String,
 		player_name: String, stats: Dictionary, inventory: Dictionary = {},
@@ -32,9 +38,7 @@ static func decode(raw: Dictionary) -> Dictionary:
 	var player_name := str(raw.get("player_name", "Joueur")).strip_edges()
 	if player_name.length() < 2 or player_name.length() > 16:
 		player_name = "Joueur"
-	var stats := default_stats()
-	if raw.get("stats") is Dictionary:
-		stats.merge(raw["stats"].duplicate(true), true)
+	var stats := StatsRules.normalize(raw.get("stats", {}))
 	var decks := _decode_decks(raw, god, legacy_deck)
 	var selections := {}
 	var saved_selections: Dictionary = raw.get("selected_deck_by_god", {}) if raw.get("selected_deck_by_god") is Dictionary else {}

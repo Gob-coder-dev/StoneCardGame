@@ -55,7 +55,7 @@ func _finish() -> void:
 		printerr("ÉCHEC : ", failure)
 	for problem in problems:
 		printerr("ERREUR GODOT : ", problem)
-	get_tree().quit(0 if _failures.is_empty() and problems.is_empty() else 1)
+	Audio.quit_game(0 if _failures.is_empty() and problems.is_empty() else 1)
 
 
 func _run() -> void:
@@ -424,9 +424,20 @@ func _check_main_menu() -> void:
 
 
 func _check_shop_and_quest_scroll() -> void:
+	# La fixture historique possède toutes les formes au maximum. Préparer un
+	# inventaire achetable sans modifier les decks utilisés par les autres tests.
+	var previous_profile := PlayerData.get_profile()
+	var starter := preload("res://scripts/data/PlayerSaveCodec.gd").starter_profile()
+	PlayerData._apply_profile(starter)
 	var shop := await _open_scene("res://scenes/menus/ShopScreen.tscn")
 	var shop_scroll: ScrollContainer = shop.get_node("Content/Scroll")
-	var offer: Control = shop.get_node("Content/Scroll/Page/Offers").get_child(0)
+	var offers: Control = shop.get_node("Content/Scroll/Page/Offers")
+	_check(offers.get_child_count() > 0, "boutique : la fixture propose des offres achetables")
+	if offers.get_child_count() == 0:
+		await _remove(shop)
+		PlayerData._apply_profile(previous_profile)
+		return
+	var offer: Control = offers.get_child(0)
 	var offer_box: Control = offer.get_child(0)
 	var offer_card: Control = offer_box.get_child(0)
 	var buy_button: Button = offer_box.get_child(offer_box.get_child_count() - 1)
@@ -481,6 +492,7 @@ func _check_shop_and_quest_scroll() -> void:
 		and PlayerData.souls() == quest_souls_before,
 		"quêtes : glisser depuis l'action active ou désactivée ne déclenche rien")
 	await _remove(quests)
+	PlayerData._apply_profile(previous_profile)
 
 
 ## Le salon PVP doit rester utilisable au toucher sans ouvrir de socket :
@@ -509,8 +521,8 @@ func _check_pvp_lobby() -> void:
 	var join: Button = page.get_node(
 		"Root/Scroll/Content/ModeScreen/JoinCard/JoinBox/JoinButton")
 	await _tap(_center(join))
-	page._attempted_address = "192.0.2.44"
-	page._connection_attempt_pending = true
+	page._flow.attempted_address = "192.0.2.44"
+	page._flow.connection_attempt_pending = true
 	LanSession.state = LanSession.State.CONNECTING
 	page._refresh_status()
 	await _tap(_center(page.cancel_connection_button))

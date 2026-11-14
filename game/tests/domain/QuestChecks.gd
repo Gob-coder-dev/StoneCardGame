@@ -1,5 +1,5 @@
 ## Contrats des quêtes : horloge locale, tirage déterministe, paliers cumulatifs,
-## réclamation atomique et format de sauvegarde version 10.
+## réclamation atomique et format de sauvegarde courant.
 extends "res://tests/support/CombatTestSuite.gd"
 
 const Codec := preload("res://scripts/data/PlayerSaveCodec.gd")
@@ -29,6 +29,7 @@ func run() -> void:
 	_test_state_round_trip()
 	_test_save_format()
 	_test_daily()
+	_test_recurring_daily_rewards()
 	_test_claim()
 	_test_rewards()
 	_test_sorting()
@@ -145,7 +146,7 @@ func _test_save_format() -> void:
 	var profile := Codec.encode({}, {}, "", "Joueur", Codec.default_stats(),
 		inventory, state.to_dict())
 	_check(int(Codec.decode(profile).get("quests", {}).get("day_index", -1)) == 12,
-		"quêtes : le profil version 10 conserve l'état des quêtes")
+		"quêtes : le profil courant conserve l'état des quêtes")
 	var legacy := profile.duplicate(true)
 	legacy.erase("quests")
 	legacy["save_version"] = 9
@@ -205,6 +206,35 @@ func _test_claim() -> void:
 			entry = candidate
 	_check(int(entry.get("tier_index", -1)) == 1 and not bool(entry.get("claimable", true)),
 		"quêtes : le palier réclamé laisse la place au suivant sans double paiement")
+
+
+## Une clé historique sans date ne doit pas bloquer le même objectif demain.
+func _test_recurring_daily_rewards() -> void:
+	PlayerData._apply_profile(Codec.starter_profile())
+	var before := PlayerData.souls()
+	var candles_before := PlayerData.candles()
+	var paid := 0
+	for day in [40, 41]:
+		var state := StateModel.from_dict({})
+		state.reset_daily(day, ["daily_pvp"], "daily_pvp")
+		state.bump("pvp_matches", 100, true)
+		var inventory := InventoryModel.from_dict(PlayerData.inventory_dict())
+		inventory.mark_transaction("quest:daily_pvp:0")
+		PlayerData.commit_economy(inventory, null, state.to_dict())
+		var service := Service.new(day)
+		var first := service.claim("daily_pvp")
+		paid += int(first.get("souls", 0))
+		_check(bool(first.get("ok", false)) and not bool(first.get("already_paid", true))
+			and int(first.get("souls", 0)) > 0,
+			"quotidiennes : le jour %d verse sa récompense malgré une ancienne clé" % day)
+		PlayerData._apply_profile(Codec.decode(PlayerData.get_profile()))
+		_check(not bool(service.claim("daily_pvp").get("ok", false)),
+			"quotidiennes : recharger le profil ne permet pas un second paiement")
+	_check(PlayerData.souls() == before + paid and PlayerData.candles() == candles_before + 10,
+		"quotidiennes : deux journées paient deux récompenses et deux bonus de bougies")
+	Service.new(40).view()
+	_check(int(PlayerData.quests_dict().get("day_index", -1)) == 41,
+		"quotidiennes : reculer l'horloge ne rouvre pas une journée réclamée")
 
 
 func _test_rewards() -> void:

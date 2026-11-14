@@ -36,6 +36,7 @@ var _hint: Label
 
 
 func _ready() -> void:
+	set_process(false)
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	focus_mode = Control.FOCUS_ALL
@@ -247,6 +248,7 @@ func _show_line() -> void:
 	else:
 		_typing = true
 		_hint.visible = false
+	set_process(_typing)
 
 
 func _dim_portraits(active_side: String) -> void:
@@ -265,6 +267,7 @@ func _process(delta: float) -> void:
 
 func _finish_typing() -> void:
 	_typing = false
+	set_process(false)
 	_text.visible_characters = -1
 	_hint.visible = true
 
@@ -287,6 +290,7 @@ func _close() -> void:
 	if not visible and _session == null:
 		return
 	visible = false
+	set_process(false)
 	_typing = false
 	_lines.clear()
 	_session = null

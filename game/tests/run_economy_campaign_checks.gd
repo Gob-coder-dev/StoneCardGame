@@ -19,6 +19,7 @@ var _log := TestLog.new()
 func _ready() -> void:
 	TestLog.current = _log
 	OS.add_logger(_log)
+	StoryService.auto_start_tutorials = false
 	var passed := 0
 	var failed := 0
 	for path in SUITES:
@@ -39,4 +40,4 @@ func _ready() -> void:
 	var errors := _log.problems()
 	print("ECONOMY_CAMPAIGN_CHECKS: %d passed, %d failed, %d Godot errors" % [
 		passed, failed, errors.size()])
-	get_tree().quit(0 if failed == 0 and errors.is_empty() else 1)
+	Audio.quit_game(0 if failed == 0 and errors.is_empty() else 1)

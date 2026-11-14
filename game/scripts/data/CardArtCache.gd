@@ -20,6 +20,7 @@ var _direct_paths: Dictionary = {}
 var _persistent_paths: Dictionary = {}
 var _warmup_paths: Dictionary = {}
 var _active_god_id := ""
+var _warmup_active := false
 
 
 func _ready() -> void:
@@ -42,6 +43,7 @@ func _exit_tree() -> void:
 ## Prépare la collection visible et les éventuelles formes déjà équipées.
 ## Changer de groupe libère nos références fortes aux anciennes illustrations.
 func activate_god(god_id: String, preview_level: int = 1, deck: Array = []) -> void:
+	_warmup_active = true
 	_active_god_id = god_id
 	_direct_paths.clear()
 	_warmup_paths = _paths_for_god(god_id, preview_level)
@@ -98,24 +100,10 @@ func texture(path: String) -> Texture2D:
 	return _textures.get(path) as Texture2D
 
 
-func preload_stones(stone_ids: Array) -> void:
-	for stone_id in stone_ids:
-		var path := _asset_path(StoneLoader.get_stone(str(stone_id)))
-		if path.is_empty():
-			continue
-		_active_paths[path] = true
-		_request(path, true)
-
-
 func progress_for_god(god_id: String) -> Vector2i:
 	if god_id != _active_god_id:
 		return Vector2i.ZERO
 	return Vector2i(_completed_warmup_count(), _warmup_paths.size())
-
-
-func is_warm_for_god(god_id: String) -> bool:
-	var progress := progress_for_god(god_id)
-	return progress.y > 0 and progress.x >= progress.y
 
 
 func _process(_delta: float) -> void:
@@ -199,7 +187,7 @@ func _store(path: String, loaded: Texture2D) -> void:
 
 
 func _emit_warmup_progress() -> void:
-	if _active_god_id.is_empty():
+	if not _warmup_active:
 		return
 	var loaded := _completed_warmup_count()
 	var total := _warmup_paths.size()
@@ -218,7 +206,9 @@ func _completed_warmup_count() -> int:
 
 func _paths_for_god(god_id: String, preview_level: int) -> Dictionary:
 	var paths := {}
-	for base in StoneLoader.get_lineages_for_god(god_id):
+	var lineages := StoneLoader.get_neutral_lineages() if god_id == "" \
+		else StoneLoader.get_lineages_for_god(god_id)
+	for base in lineages:
 		var stone_id := StoneLoader.preview_variant(str(base["id"]), preview_level)
 		var path := _asset_path(StoneLoader.get_stone(stone_id))
 		if not path.is_empty():

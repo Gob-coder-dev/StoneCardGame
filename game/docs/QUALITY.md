@@ -57,22 +57,39 @@ travail restent hors du code et sont ignorées par Git.
 
 ## Git
 
-Les sources `.gd.uid`, les scènes, ressources, données et
-`export_presets.cfg` sont versionnés. Les caches Godot, imports générés,
-bytecodes Python, builds, APK, secrets de signature, journaux et métadonnées
-locales d'outils sont exclus par le `.gitignore` racine.
+Les sources `.gd.uid`, les fichiers `<asset>.import`, les scènes, ressources,
+données et `export_presets.cfg` sont versionnés. Les `.import` voisins des images
+et sons conservent les réglages d'import ; le contenu généré de `.godot/` et de
+l'ancien dossier `.import/` est exclu. Les bytecodes Python, builds, APK, secrets
+de signature, captures de tests, journaux et métadonnées locales d'outils sont
+également exclus par le `.gitignore` racine.
+
+Les illustrations de cartes et portraits sont importés avec une limite de
+768 pixels, sans modifier les PNG sources. Les mipmaps et les réglages audio
+restent explicites. Les exports excluent tests, outils, sources audio alternatives,
+données de conception et ancienne campagne ; le lanceur inspecte le ZIP obtenu.
 
 ## Validation avant livraison
 
 Depuis la racine du dépôt :
 
 ```powershell
-godot --headless --fixed-fps 60 --path game res://tests/GodSystemChecks.tscn
-godot --headless --fixed-fps 60 --path game res://tests/TouchInputChecks.tscn
+python game/tools/check_quality.py --godot godot --import --export
+python -m unittest discover -s game/tools/tests -v
 git diff --check
 git status --short
 ```
 
+Le lanceur utilise un répertoire utilisateur temporaire par processus, échoue
+sur erreur de script, code de sortie non nul ou ressource encore active à la
+fermeture, et garde les journaux dans `.tmp/quality/`. Les messages attendus des
+tests de panne sont distingués des erreurs réelles par `TestLog`. La CI GitHub
+Actions utilise Godot 4.7.2, réimporte les ressources et vérifie le contenu exporté.
+Elle ne signe ni ne publie d'application.
+
 Les deux suites doivent terminer avec le code `0`. Une vérification visuelle
 reste obligatoire sur téléphone et tablette pour les proportions, gestes,
 transitions et coûts de première ouverture.
+
+Les résultats de la passe corrective sont consignés dans
+[`AUDIT_FOLLOWUP.md`](AUDIT_FOLLOWUP.md).

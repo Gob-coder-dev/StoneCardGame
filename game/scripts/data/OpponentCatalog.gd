@@ -9,6 +9,8 @@
 class_name OpponentCatalog
 extends RefCounted
 
+const Shuffle := preload("res://scripts/domain/SeededShuffle.gd")
+
 const AIProfileModel := preload("res://scripts/ai/AIProfile.gd")
 const BotCardTierRulesModel := preload("res://scripts/domain/BotCardTierRules.gd")
 
@@ -368,11 +370,7 @@ static func _take(target: Array, source: Array, limit: int) -> void:
 
 static func _shuffled(values: Array, rng: RandomNumberGenerator) -> Array:
 	var result := values.duplicate()
-	for index in range(result.size() - 1, 0, -1):
-		var swap := rng.randi_range(0, index)
-		var value = result[index]
-		result[index] = result[swap]
-		result[swap] = value
+	Shuffle.apply(result, rng)
 	return result
 
 

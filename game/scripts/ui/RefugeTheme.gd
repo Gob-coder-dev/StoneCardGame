@@ -9,6 +9,10 @@
 @tool
 extends Theme
 
+## Le thème est chargé avant le scan des classes lors du premier import.
+## Cette dépendance explicite évite de dépendre du cache global de l'éditeur.
+const UITheme := preload("res://scripts/ui/UITheme.gd")
+
 
 func _init() -> void:
 	if not Engine.is_editor_hint():

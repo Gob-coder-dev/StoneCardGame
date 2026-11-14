@@ -27,9 +27,11 @@ godot --editor --path .
 Tests principaux depuis la racine du dépôt :
 
 ```powershell
-godot --headless --fixed-fps 60 --path game res://tests/GodSystemChecks.tscn
-godot --headless --fixed-fps 60 --path game res://tests/TouchInputChecks.tscn
+python game/tools/check_quality.py --godot godot --import --export
 ```
+
+Le lanceur utilise des données utilisateur temporaires et conserve les journaux
+dans `.tmp/quality/`, sans toucher au profil de jeu du poste.
 
 ### Reinforcement learning
 

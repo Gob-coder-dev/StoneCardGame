@@ -11,6 +11,8 @@
 class_name DraftEngine
 extends RefCounted
 
+const Shuffle := preload("res://scripts/domain/SeededShuffle.gd")
+
 const GeneratorModel := preload("res://scripts/domain/LoadoutGenerator.gd")
 
 const DEFAULT_DURATION_SECONDS: float = 60.0
@@ -177,8 +179,8 @@ func _build_plan(costs_one: Dictionary, costs_two: Dictionary,
 		var cost := int(candidates[rng.randi_range(0, pick_limit - 1)])
 		var one := _unused_lineages(costs_one, cost, used_one)
 		var two := _unused_lineages(costs_two, cost, used_two)
-		_shuffle(one, rng)
-		_shuffle(two, rng)
+		Shuffle.apply(one, rng)
+		Shuffle.apply(two, rng)
 		var pair_one := _pair_ids_for_god(god_one, cost, one, 2)
 		var pair_two := _pair_ids_for_god(god_two, cost, two, 2)
 		if pair_one.size() != 2 or pair_two.size() != 2:
@@ -528,11 +530,3 @@ static func _rng(value: int) -> RandomNumberGenerator:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = value
 	return rng
-
-
-static func _shuffle(values: Array, rng: RandomNumberGenerator) -> void:
-	for index in range(values.size() - 1, 0, -1):
-		var swap := rng.randi_range(0, index)
-		var value: Variant = values[index]
-		values[index] = values[swap]
-		values[swap] = value

@@ -1,12 +1,9 @@
 ## Passage entre les écrans d'un combat. Aucun de ces champs n'est sauvegardé.
 extends Node
 
+const ResultPersistence := preload("res://scripts/application/campaign/CampaignResultPersistence.gd")
 const OpponentCatalogModel := preload("res://scripts/data/OpponentCatalog.gd")
-const CompletionModel := preload("res://scripts/application/campaign/CampaignCompletionService.gd")
-const RewardModel := preload("res://scripts/application/campaign/CampaignRewardService.gd")
-const QuestModel := preload("res://scripts/application/quests/QuestService.gd")
 const SeriesEngineModel := preload("res://scripts/domain/SeriesEngine.gd")
-const ContentGateConfig := preload("res://scripts/data/progression/ContentGateConfig.gd")
 
 var selected_npc_id: String = ""
 ## Source du chemin de rencontres ouvert (id de dieu ou Pr.Stone). Elle permet
@@ -39,9 +36,8 @@ var opponent_loadout: GameLoadout = null
 ## champs restent transitoires : le fichier de campagne est la seule vérité.
 var campaign_node_id: String = ""
 var campaign_service: CampaignService = null
-## Le profil et la campagne sont deux écritures indépendantes. Ce drapeau évite
-## de compter deux fois les statistiques si la seconde échoue puis est réessayée.
-var _result_stats_saved: bool = false
+## Conserve les étapes déjà persistées et l'identité de la récompense lors d'un réessai.
+var _result_persistence: ResultPersistence = null
 var last_reward: Dictionary = {}
 
 
@@ -56,7 +52,7 @@ func enter_campaign_node(node_id: String, service: CampaignService) -> void:
 	clear_mode_session()
 	campaign_node_id = node_id
 	campaign_service = service
-	_result_stats_saved = false
+	_result_persistence = null
 
 
 func clear_campaign_node() -> void:
@@ -149,30 +145,6 @@ func current_opponent() -> Dictionary:
 	return StoneLoader.get_npc(selected_npc_id)
 
 
-## Configure les modes partagés pour la rencontre sélectionnée. Le mode
-## Classique est lui aussi représenté par des loadouts temporaires afin que le
-## combat ne dépende plus directement de PlayerData une fois lancé.
-func begin_mode(config: Dictionary, seed: int = 0) -> Dictionary:
-	clear_mode_session()
-	var opponent := current_opponent()
-	if opponent.is_empty():
-		return {"ok": false, "reason": "Adversaire de campagne absent."}
-	var actual_seed := seed if seed != 0 else int(Time.get_unix_time_from_system() * 1000.0)
-	var prepared_session := CampaignModeSession.new()
-	var result := prepared_session.configure(config, {
-		"name": PlayerData.player_name,
-		"god_id": PlayerData.player_god_id,
-		"deck": PlayerData.get_active_deck(),
-	}, {
-		"name": str(opponent.get("name", "Adversaire")),
-		"god_id": str(opponent.get("god_id", "")),
-		"deck": (opponent.get("deck", []) as Array).duplicate(true),
-	}, actual_seed)
-	if bool(result.get("ok", false)):
-		install_mode_session(prepared_session)
-	return result
-
-
 ## Publie une session déjà préparée. CampaignContext utilise cette opération
 ## après l'écriture de la tentative afin qu'un échec de génération ou de disque
 ## ne laisse jamais un demi-contexte de combat visible.
@@ -194,7 +166,8 @@ func advance_mode_preparation(delta: float) -> bool:
 	if campaign_mode_session == null:
 		return false
 	var completed := campaign_mode_session.advance(delta)
-	_sync_mode_loadouts()
+	if completed:
+		_sync_mode_loadouts()
 	return completed
 
 
@@ -278,7 +251,7 @@ func record_result(winner: int, human: int, ai: int) -> void:
 	last_captures_human = 0
 	last_result_npc_id = selected_npc_id
 	last_result_saved = true
-	_result_stats_saved = true
+	_result_persistence = null
 	last_save_error = OK
 
 
@@ -289,78 +262,30 @@ func prepare_result(winner: int, human: int, ai: int, captures_human: int) -> vo
 	last_captures_human = captures_human
 	last_result_npc_id = selected_npc_id
 	last_result_saved = false
-	_result_stats_saved = false
+	_result_persistence = null
 	last_save_error = OK
 	last_reward = {}
 
 
-## Enregistrement en deux temps : statistiques du profil, puis complétion du
-## nœud de campagne. Chaque étape n'est faite qu'une fois, même après un échec
-## de la suivante ; un nouvel essai ne compte donc jamais deux parties.
+## Le service conserve un instantané du résultat et l'avancement de ses écritures.
+## Les manches suivantes ne peuvent pas modifier une récompense en cours de reprise.
 func persist_result() -> Error:
 	if last_result_saved:
 		return OK
-	if not _result_stats_saved:
-		last_save_error = PlayerData.record_game(last_result_npc_id, last_winner,
-			last_score_human, last_score_ai, last_captures_human)
-		if last_save_error != OK:
-			return last_save_error
-		_result_stats_saved = true
-	if last_winner == GameState.PLAYER_HUMAN and campaign_node_id != "" \
-			and campaign_victory_confirmed():
-		if campaign_service == null:
-			last_save_error = ERR_UNCONFIGURED
-			return last_save_error
-		var reward := RewardModel.apply_victory(campaign_service, campaign_node_id)
-		if not bool(reward.get("ok", false)):
-			last_save_error = int(reward.get("error", ERR_FILE_CANT_WRITE))
-			return last_save_error
-		last_reward = reward.duplicate(true)
-		var completion := CompletionModel.apply_victory(campaign_service, campaign_node_id)
-		var error := int(completion.get("error", OK))
-		if error != OK:
-			last_save_error = error
-			return last_save_error
-		if bool(completion.get("applied", false)):
-			last_reward["unlocks"] = _content_unlocks_for(campaign_node_id)
-	if campaign_node_id != "":
-		var quest_error := _record_quest_result()
-		if quest_error != OK:
-			last_save_error = quest_error
-			return last_save_error
-	last_result_saved = true
-	last_save_error = OK
-	return OK
+	if _result_persistence == null:
+		_result_persistence = ResultPersistence.new(_result_snapshot(), campaign_service, campaign_node_id)
+	last_save_error = _result_persistence.persist()
+	last_reward = _result_persistence.reward.duplicate(true)
+	last_result_saved = last_save_error == OK
+	return last_save_error
 
 
-func _content_unlocks_for(node_id: String) -> Array:
-	var result: Array = []
-	var config := ContentGateConfig.get_config()
-	for raw_gate in config.get("gates", []):
-		if raw_gate is Dictionary \
-				and str(raw_gate.get("required_campaign_node", "")) == node_id:
-			result.append({
-				"id": str(raw_gate.get("id", "")),
-				"label": str(raw_gate.get("label", "")),
-				"message": str(raw_gate.get("unlock_message", "")),
-			})
-	return result
-
-
-## Comptabilise la manche pour les quêtes. La clé d'idempotence reprend la
-## tentative : un nouvel essai d'enregistrement ne compte jamais deux fois.
-func _record_quest_result() -> Error:
-	if campaign_service == null:
-		return OK
-	var rules := {}
+func _result_snapshot() -> Dictionary:
 	var mode := mode_state()
-	if mode.get("rules") is Dictionary:
-		rules = mode["rules"]
-	var node = campaign_service.node(campaign_node_id) \
-		if campaign_service.has_node(campaign_node_id) else null
-	var key := "campaign:%d:%s:%d" % [campaign_service.graph().campaign_version,
-		campaign_node_id, campaign_service.progress().attempts_for(campaign_node_id)]
-	return QuestModel.new().record_event("campaign_result", {
+	var rules: Dictionary = mode.get("rules", {})
+	var series: Dictionary = mode.get("series", {})
+	return {
+		"npc_id": last_result_npc_id,
 		"winner": last_winner,
 		"score_local": last_score_human,
 		"score_opponent": last_score_ai,
@@ -368,8 +293,8 @@ func _record_quest_result() -> Error:
 		"board_size": last_board_size,
 		"mode": str(rules.get("mode", GameModeRules.MODE_CLASSIC)),
 		"series": str(rules.get("series", SeriesRules.SERIES_FT1)),
-		"series_complete": campaign_victory_confirmed(),
+		# record_round avance déjà l'index vers la prochaine manche.
+		"round_index": maxi(1, int(series.get("round_index", 2)) - 1),
+		"campaign_victory": campaign_victory_confirmed(),
 		"opponent_god_id": effective_opponent_god_id(),
-		"boss": node != null and (node.is_boss() or node.is_mini_boss()),
-		"tutorial": campaign_node_id.begins_with("tuto_"),
-	}, key)
+	}

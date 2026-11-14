@@ -46,7 +46,7 @@ static func total_cells() -> int:
 
 ## ─── État de la partie ────────────────────────────────────────────────────────
 
-## Le plateau : tableau 1D (index = row * BOARD_SIZE + col)
+## Le plateau : tableau 1D (index = row * board_size + col).
 var board: Array = []
 var board_size: int = DEFAULT_BOARD_SIZE
 
@@ -69,11 +69,15 @@ var ai_god_id: String = ""
 var random_seed: int = 1
 var random_state: int = 1
 var next_instance_id: int = 1
+## Outil de tirage réutilisé ; random_state reste la valeur clonée et sérialisable.
+var _random_generator: RandomNumberGenerator = null
 
 
-func _init(size: int = DEFAULT_BOARD_SIZE) -> void:
+## Le clonage recopie directement les cases ; il n'alloue pas de plateau jetable.
+func _init(size: int = DEFAULT_BOARD_SIZE, initialize_board: bool = true) -> void:
 	board_size = clampi(size, MIN_BOARD_SIZE, MAX_BOARD_SIZE)
-	_reset_board()
+	if initialize_board:
+		_reset_board()
 
 
 ## Remet le plateau à zéro (cases vides).
@@ -134,7 +138,7 @@ func setup_hands(human_stone_ids: Array, ai_stone_ids: Array) -> void:
 
 func set_random_seed(value: int) -> void:
 	random_seed = value if value != 0 else 1
-	var generator := RandomNumberGenerator.new()
+	var generator := _rng()
 	generator.seed = random_seed
 	random_state = generator.state
 
@@ -142,11 +146,17 @@ func set_random_seed(value: int) -> void:
 func draw_random_index(count: int) -> int:
 	if count <= 1:
 		return 0
-	var generator := RandomNumberGenerator.new()
+	var generator := _rng()
 	generator.state = random_state
 	var result := generator.randi_range(0, count - 1)
 	random_state = generator.state
 	return result
+
+
+func _rng() -> RandomNumberGenerator:
+	if _random_generator == null:
+		_random_generator = RandomNumberGenerator.new()
+	return _random_generator
 
 
 func take_instance_id() -> int:
@@ -171,26 +181,6 @@ func index_of(row: int, col: int) -> int:
 
 func in_bounds(row: int, col: int) -> bool:
 	return row >= 0 and row < board_size and col >= 0 and col < board_size
-
-
-## Conversion (row, col) -> index 1D. Source unique de la formule.
-static func cell_index(row: int, col: int) -> int:
-	return row * BOARD_SIZE + col
-
-
-## Voisins directs valides d'une case (jamais les diagonales).
-## Retourne un Array de { "row", "col", "direction" }.
-static func get_adjacent_positions(row: int, col: int) -> Array:
-	var result: Array = []
-	if row > 0:
-		result.append({ "row": row - 1, "col": col, "direction": "top" })
-	if row < BOARD_SIZE - 1:
-		result.append({ "row": row + 1, "col": col, "direction": "bottom" })
-	if col > 0:
-		result.append({ "row": row, "col": col - 1, "direction": "left" })
-	if col < BOARD_SIZE - 1:
-		result.append({ "row": row, "col": col + 1, "direction": "right" })
-	return result
 
 
 func adjacent_positions(row: int, col: int) -> Array:
@@ -246,8 +236,7 @@ func clone() -> GameState:
 
 
 func _clone_common() -> GameState:
-	var copy := GameState.new(board_size)
-	copy.board.clear()
+	var copy := GameState.new(board_size, false)
 	for cell in board:
 		# Une case ne contient que des valeurs simples et sa pierre, copiée à part.
 		var cloned_cell: Dictionary = cell.duplicate()

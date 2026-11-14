@@ -2,8 +2,8 @@
 
 Le script ne fabrique pas de decks : il choisit dans `campaign_deck_library.json`
 des decks déjà produits et validés par Godot. Les identifiants des 20 nœuds de
-la première campagne unifiée sont conservés ; la version passe à 3 pour que la
-migration des sauvegardes soit explicite. Les dix mini-boss facultatifs reçoivent
+la première campagne unifiée sont conservés ; la version 6 rend la
+migration des sauvegardes explicite. Les dix mini-boss facultatifs reçoivent
 2 à 5 niveaux d'approche monochrome, insérés dans leur branche.
 """
 from __future__ import annotations
@@ -1317,8 +1317,6 @@ result = {
 }
 
 out = ROOT / "data" / "campaign" / "campaign_v2.json"
-out.parent.mkdir(parents=True, exist_ok=True)
-out.write_text(json.dumps(result, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
 # ── Rapport de construction ─────────────────────────────────────────────────
 def report() -> None:
@@ -1349,4 +1347,12 @@ def report() -> None:
     print("decks fixes", len(used_decks))
 
 
-report()
+def main() -> None:
+    """Publie la campagne uniquement lors d'une exécution explicite du script."""
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(result, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    report()
+
+
+if __name__ == "__main__":
+    main()

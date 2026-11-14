@@ -327,12 +327,11 @@ func get_stone_ids_for_god(god_id: String) -> Array[String]:
 ## Une seule entrée par monstre ; les formes sont consultées via variant_id().
 func get_lineages_for_god(god_id: String) -> Array:
 	var result: Array = []
-	var seen := {}
-	for stone in get_stones_for_god(god_id):
-		var lineage := stone_lineage(str(stone["id"]))
-		if not seen.has(lineage):
-			seen[lineage] = true
-			result.append(stone)
+	# L'index contient déjà une entrée par lignée : seules ses premières formes
+	# sont copiées, au lieu de copier puis dédupliquer toutes les évolutions.
+	for forms in _lineages.values():
+		if not forms.is_empty() and is_stone_available_to_god(str(forms[0]), god_id):
+			result.append(get_stone(str(forms[0])))
 	return result
 
 

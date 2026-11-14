@@ -4,6 +4,8 @@
 class_name PlayerInventory
 extends RefCounted
 
+const Integer := preload("res://scripts/domain/IntegerValue.gd")
+const Ledger := preload("res://scripts/domain/economy/TransactionLedger.gd")
 const ProgressionRules := preload("res://scripts/domain/economy/CardProgressionRules.gd")
 
 var souls: int = 0
@@ -16,6 +18,7 @@ var cards: Dictionary = {}
 var pending_card_rewards: Dictionary = {}
 var first_god_discount_used: bool = false
 var applied_transactions: Dictionary = {}
+var transaction_cursors: Dictionary = {}
 var shop_state: Dictionary = {}
 var ritual_purchase_counter: int = 0
 
@@ -24,8 +27,8 @@ static func from_dict(raw: Variant) -> PlayerInventory:
 	var result := PlayerInventory.new()
 	if not raw is Dictionary:
 		return result
-	result.souls = maxi(0, int(raw.get("souls", 0)))
-	result.candles = maxi(0, int(raw.get("candles", 0)))
+	result.souls = Integer.read(raw.get("souls"))
+	result.candles = Integer.read(raw.get("candles"))
 	var gods: Variant = raw.get("unlocked_god_ids", [])
 	if gods is Array:
 		for value in gods:
@@ -49,7 +52,7 @@ static func from_dict(raw: Variant) -> PlayerInventory:
 	var raw_pending: Variant = raw.get("pending_card_rewards", {})
 	if raw_pending is Dictionary:
 		for lineage_id in raw_pending:
-			var amount := maxi(0, int(raw_pending[lineage_id]))
+			var amount := Integer.read(raw_pending[lineage_id])
 			var affinity := _lineage_affinity(str(lineage_id))
 			if amount <= 0 or affinity == "":
 				continue
@@ -58,14 +61,14 @@ static func from_dict(raw: Variant) -> PlayerInventory:
 			else:
 				result.defer_copies(str(lineage_id), amount)
 	result.first_god_discount_used = bool(raw.get("first_god_discount_used", false))
-	for field in ["applied_transactions", "shop_state"]:
-		var source: Variant = raw.get(field, {})
-		if source is Dictionary:
-			result.set(field, (source as Dictionary).duplicate(true))
+	var ledger := Ledger.restore(raw.get("applied_transactions"), raw.get("transaction_cursors"))
+	result.applied_transactions = ledger["keys"]
+	result.transaction_cursors = ledger["cursors"]
+	result.shop_state = _clean_shop_state(raw.get("shop_state"))
 	# Les versions 7 et antérieures pouvaient conserver une animation de Rituel.
 	# Les récompenses étaient déjà attribuées : cette présentation obsolète est
 	# volontairement ignorée et ne doit jamais être reprise après redémarrage.
-	result.ritual_purchase_counter = maxi(0, int(raw.get("ritual_purchase_counter", 0)))
+	result.ritual_purchase_counter = Integer.read(raw.get("ritual_purchase_counter"))
 	return result
 
 
@@ -80,6 +83,7 @@ func to_dict() -> Dictionary:
 		"pending_card_rewards": pending_card_rewards.duplicate(true),
 		"first_god_discount_used": first_god_discount_used,
 		"applied_transactions": applied_transactions.duplicate(true),
+		"transaction_cursors": transaction_cursors.duplicate(true),
 		"shop_state": shop_state.duplicate(true),
 		"ritual_purchase_counter": ritual_purchase_counter,
 	}
@@ -176,12 +180,39 @@ func unlock_god(god_id: String) -> bool:
 
 
 func has_transaction(transaction_id: String) -> bool:
-	return transaction_id != "" and applied_transactions.has(transaction_id)
+	return transaction_id != "" and Ledger.contains(applied_transactions, transaction_cursors, transaction_id)
 
 
 func mark_transaction(transaction_id: String) -> void:
-	if transaction_id != "":
-		applied_transactions[transaction_id] = true
+	Ledger.mark(applied_transactions, transaction_cursors, transaction_id)
+
+
+## Une rotation mal formée est régénérée par ShopService, jamais utilisée pour acheter.
+static func _clean_shop_state(raw: Variant) -> Dictionary:
+	if not raw is Dictionary or not raw.get("offers") is Array \
+			or not raw.get("purchased_offer_ids", {}) is Dictionary:
+		return {}
+	var rotation := Integer.read(raw.get("rotation_id"), -1, -1)
+	if rotation < 0:
+		return {}
+	var offers: Array = []
+	for value in raw["offers"]:
+		if not value is Dictionary:
+			return {}
+		var lineage := str(value.get("lineage_id", ""))
+		var stone := StoneLoader.variant_id(lineage, 1)
+		var quantity := Integer.read(value.get("quantity"))
+		var price := Integer.read(value.get("price"))
+		if not value.get("id") is String or stone == "" or quantity <= 0 or price <= 0:
+			return {}
+		offers.append({"id": value["id"], "lineage_id": lineage, "stone_id": stone,
+			"rarity": StoneLoader.stone_rarity(stone), "quantity": quantity, "price": price})
+	var purchased := {}
+	for id in raw.get("purchased_offer_ids", {}):
+		if id is String and raw["purchased_offer_ids"][id] == true:
+			purchased[id] = true
+	return {"rotation_id": rotation, "offers": offers, "purchased_offer_ids": purchased,
+		"access_revision": Integer.read(raw.get("access_revision"), -1, -1)}
 
 
 static func _lineage_affinity(lineage_id: String) -> String:

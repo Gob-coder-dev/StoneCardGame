@@ -5,6 +5,8 @@
 class_name EconomyService
 extends RefCounted
 
+const Transaction := preload("res://scripts/application/economy/EconomyTransaction.gd")
+const CardGrant := preload("res://scripts/domain/economy/CardRewardGrant.gd")
 const InventoryModel := preload("res://scripts/domain/economy/PlayerInventory.gd")
 const ProgressionRules := preload("res://scripts/domain/economy/CardProgressionRules.gd")
 const ConfigModel := preload("res://scripts/data/economy/EconomyConfig.gd")
@@ -22,33 +24,21 @@ func grant_reward(transaction_id: String, souls: int, cards: Array = [],
 	if next.has_transaction(transaction_id):
 		return {"ok": true, "reason": "", "already_applied": true,
 			"souls": 0, "candles": 0, "cards": [], "deferred_cards": []}
-	var normalized: Array = []
-	for raw in cards:
-		if not raw is Dictionary:
-			return _fail("Récompense de carte invalide.")
-		var lineage_id := str(raw.get("lineage_id", ""))
-		var amount := int(raw.get("copies", 0))
-		if StoneLoader.lineage_max_level(lineage_id) <= 0 or amount <= 0:
-			return _fail("Récompense inconnue : %s." % lineage_id)
-		normalized.append({"lineage_id": lineage_id, "copies": amount})
 	next.souls += souls
 	next.candles += candles
 	var granted: Array = []
 	var deferred: Array = []
-	for reward in normalized:
-		var lineage_id := str(reward["lineage_id"])
-		var amount := int(reward["copies"])
-		var first_form := StoneLoader.variant_id(lineage_id, 1)
-		var affinity := StoneLoader.stone_affinity(first_form)
-		if affinity == "neutral" or next.has_god(affinity):
-			next.add_copies(lineage_id, amount)
-			granted.append(reward.duplicate())
-		elif next.defer_copies(lineage_id, amount):
-			var pending: Dictionary = reward.duplicate()
-			pending["god_id"] = affinity
-			deferred.append(pending)
+	for raw in cards:
+		# Les cartes de campagne gardent leurs copies, y compris au niveau maximal.
+		# La compensation des invocations et quetes est une politique explicite.
+		var applied := CardGrant.apply(next, raw, false)
+		if not bool(applied.get("ok", false)):
+			return applied
+		var reward: Dictionary = applied["reward"]
+		if bool(reward.get("deferred", false)):
+			deferred.append(reward)
 		else:
-			return _fail("Récompense de carte invalide : %s." % lineage_id)
+			granted.append(reward)
 	next.mark_transaction(transaction_id)
 	var deck_override: Variant = null
 	if not starter_deck_cards.is_empty() and PlayerData.player_god_id == "":
@@ -75,7 +65,9 @@ func upgrade_card(lineage_id: String) -> Dictionary:
 		return upgraded
 	next.cards[lineage_id] = (upgraded["entry"] as Dictionary).duplicate(true)
 	next.souls = int(upgraded["souls"])
-	var error := PlayerData.commit_inventory(next)
+	var error := Transaction.commit(next, "upgrade_purchase", {
+		"souls": int(upgraded["spent_souls"]),
+	})
 	if error != OK:
 		return _save_fail(error)
 	return upgraded

@@ -8,6 +8,7 @@ class_name QuestState
 extends RefCounted
 
 const VERSION := 2
+const Integer := preload("res://scripts/domain/IntegerValue.gd")
 
 ## Jour local du tirage courant. -1 signifie « jamais initialisé ».
 var day_index: int = -1
@@ -27,7 +28,7 @@ static func from_dict(raw: Variant) -> QuestState:
 	if not raw is Dictionary:
 		return state
 	var data: Dictionary = raw
-	state.day_index = int(data.get("day_index", -1))
+	state.day_index = Integer.read(data.get("day_index"), -1, -1)
 	var daily: Dictionary = data.get("daily", {}) if data.get("daily") is Dictionary else {}
 	var raw_ids: Variant = daily.get("ids", [])
 	if raw_ids is Array:
@@ -51,7 +52,8 @@ static func _clean_counters(raw: Variant) -> Dictionary:
 	if not raw is Dictionary:
 		return result
 	for key in raw:
-		result[str(key)] = maxi(0, int(raw[key]))
+		if key is String:
+			result[key] = Integer.read(raw[key])
 	return result
 
 

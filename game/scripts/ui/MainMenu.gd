@@ -187,7 +187,7 @@ func _notification(what: int) -> void:
 		if is_instance_valid(sound_settings) and sound_settings.is_open():
 			sound_settings.close()
 			return
-		get_tree().quit()
+		Audio.quit_game()
 
 
 func _on_profile_pressed() -> void:

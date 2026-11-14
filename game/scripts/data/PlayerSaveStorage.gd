@@ -3,6 +3,8 @@
 ## garantit seulement qu'un profil n'est jamais perdu par une écriture.
 extends RefCounted
 
+const Json := preload("res://scripts/data/JsonFile.gd")
+
 ## Le nouveau profil est d'abord écrit à côté, puis remplace l'ancien.
 const TEMP_SUFFIX := ".tmp"
 ## Un profil illisible est renommé avec ce suffixe au lieu d'être écrasé.
@@ -30,7 +32,7 @@ static func write(path: String, data: Dictionary) -> Error:
 ## a été interrompu, le nouveau profil resté à côté est récupéré.
 static func read(path: String) -> Dictionary:
 	if FileAccess.file_exists(path):
-		var profile = _parse(path)
+		var profile = Json.read(path)
 		if profile is Dictionary:
 			return profile
 		var aside := path + UNREADABLE_SUFFIX
@@ -40,22 +42,8 @@ static func read(path: String) -> Dictionary:
 		push_warning("Profil illisible mis de côté : %s" % aside)
 	var temp_path := path + TEMP_SUFFIX
 	if FileAccess.file_exists(temp_path):
-		var recovered = _parse(temp_path)
+		var recovered = Json.read(temp_path)
 		if recovered is Dictionary:
 			DirAccess.rename_absolute(temp_path, path)
 			return recovered
 	return {}
-
-
-## Contenu JSON du fichier, ou null s'il ne peut pas être lu ou analysé.
-static func _parse(path: String):
-	var file := FileAccess.open(path, FileAccess.READ)
-	if file == null:
-		return null
-	var text := file.get_as_text()
-	file.close()
-	# JSON.new() signale l'erreur par son code, sans message dans le journal.
-	var json := JSON.new()
-	if json.parse(text) != OK:
-		return null
-	return json.data

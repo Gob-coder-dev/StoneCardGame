@@ -14,6 +14,7 @@ signal inventory_changed
 signal quests_changed
 
 const SaveCodec := preload("res://scripts/data/PlayerSaveCodec.gd")
+const StatsRules := preload("res://scripts/domain/ProfileStatsRules.gd")
 const SaveStorage := preload("res://scripts/data/PlayerSaveStorage.gd")
 const InventoryModel := preload("res://scripts/domain/economy/PlayerInventory.gd")
 const ProgressionRules := preload("res://scripts/domain/economy/CardProgressionRules.gd")
@@ -62,53 +63,19 @@ func win_rate() -> int:
 ## captures_by_human : nombre de captures réalisées par le joueur dans la partie
 func record_game(npc_id: String, winner: int, score_human: int, score_ai: int,
 		captures_by_human: int) -> Error:
-	var previous := stats.duplicate(true)
-	stats["games_played"] = stats.get("games_played", 0) + 1
-	stats["total_captures"] = stats.get("total_captures", 0) + captures_by_human
-
-	match winner:
-		1:  # victoire humaine
-			stats["wins"] = stats.get("wins", 0) + 1
-			stats["current_streak"] = stats.get("current_streak", 0) + 1
-			if stats["current_streak"] > stats.get("best_streak", 0):
-				stats["best_streak"] = stats["current_streak"]
-		2:  # défaite
-			stats["losses"] = stats.get("losses", 0) + 1
-			stats["current_streak"] = 0
-		_:  # égalité
-			stats["draws"] = stats.get("draws", 0) + 1
-			stats["current_streak"] = 0
-
-	## Progression par NPC
-	var per_npc: Dictionary = stats.get("per_npc", {})
-	if not per_npc.has(npc_id):
-		per_npc[npc_id] = { "wins": 0, "games": 0, "best_diff": -99 }
-	per_npc[npc_id]["games"] += 1
-	if winner == 1:
-		per_npc[npc_id]["wins"] += 1
-	var diff: int = score_human - score_ai
-	if diff > per_npc[npc_id]["best_diff"]:
-		per_npc[npc_id]["best_diff"] = diff
-	stats["per_npc"] = per_npc
-
-	var error := save()
-	if error != OK:
-		stats = previous
-	return error
+	return _commit_stats(StatsRules.record_game(stats, npc_id, winner,
+		score_human, score_ai, captures_by_human))
 
 
 ## Un abandon concède une série : le profil compte une défaite, sans capture ni
 ## score. Le meilleur écart contre cet adversaire reste intact.
 func record_forfeit(npc_id: String) -> Error:
-	var previous := stats.duplicate(true)
-	stats["games_played"] = stats.get("games_played", 0) + 1
-	stats["losses"] = stats.get("losses", 0) + 1
-	stats["current_streak"] = 0
-	var per_npc: Dictionary = stats.get("per_npc", {})
-	if not per_npc.has(npc_id):
-		per_npc[npc_id] = { "wins": 0, "games": 0, "best_diff": -99 }
-	per_npc[npc_id]["games"] += 1
-	stats["per_npc"] = per_npc
+	return _commit_stats(StatsRules.record_forfeit(stats, npc_id))
+
+
+func _commit_stats(next: Dictionary) -> Error:
+	var previous := stats
+	stats = next
 	var error := save()
 	if error != OK:
 		stats = previous
@@ -130,6 +97,8 @@ func npc_record(npc_id: String) -> Dictionary:
 
 const SAVE_PATH: String = "user://savegame.json"
 var _save_path: String
+## Une sauvegarde créée par une version future reste intacte, même après un achat.
+var profile_load_error: Error = OK
 
 
 ## Le chemin peut être fourni à une instance isolée pour les tests.
@@ -143,6 +112,8 @@ func get_profile() -> Dictionary:
 
 
 func save() -> Error:
+	if profile_load_error != OK:
+		return profile_load_error
 	var error := SaveStorage.write(_save_path, get_profile())
 	if error != OK:
 		push_error("PlayerData: profil non enregistré (%s)." % error_string(error))
@@ -151,6 +122,9 @@ func save() -> Error:
 
 func load_save() -> void:
 	var raw := SaveStorage.read(_save_path)
+	profile_load_error = OK if SaveCodec.supports(raw) else ERR_UNAVAILABLE
+	if profile_load_error != OK:
+		push_warning("PlayerData: sauvegarde plus récente que cette version ; écriture désactivée.")
 	_apply_profile(SaveCodec.decode(raw))
 
 
@@ -306,10 +280,6 @@ func owns_stone(stone_id: String) -> bool:
 	return _inventory.owns_stone(stone_id)
 
 
-func can_upgrade_card(lineage_id: String) -> bool:
-	return bool(card_upgrade_state(lineage_id).get("can_upgrade", false))
-
-
 ## Projection unique consommée par les jauges, tiroirs et fiches. Les vues ne
 ## relisent ainsi ni la configuration ni la même entrée d'inventaire deux fois.
 func card_upgrade_state(lineage_id: String) -> Dictionary:
@@ -350,6 +320,7 @@ func commit_economy(next: PlayerInventory, neutral_deck_override: Variant = null
 		var candidate: Array = (neutral_deck_override as Array).duplicate()
 		if not bool(DeckRules.validate_deck(candidate, false, "").get("valid", false)):
 			_inventory = previous_inventory
+			_quests = previous_quests
 			return ERR_INVALID_DATA
 		var neutral_key := SaveCodec.NEUTRAL_DECK_KEY
 		var slot := int(_selected_deck_by_god.get(neutral_key, 0))

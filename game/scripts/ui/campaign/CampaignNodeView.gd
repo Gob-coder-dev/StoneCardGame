@@ -3,7 +3,7 @@
 ## progression : aucune règle de déblocage, aucun accès au profil. La forme du
 ## symbole distingue tutoriel, mini-boss et boss en plus de la couleur.
 class_name CampaignNodeView
-extends "res://scripts/ui/input/TouchButton.gd"
+extends "res://scripts/ui/encounters/PathNodeButton.gd"
 
 const NodeModel := preload("res://scripts/domain/campaign/CampaignNode.gd")
 const UnlockRulesModel := preload("res://scripts/domain/campaign/CampaignUnlockRules.gd")
@@ -14,8 +14,6 @@ var chosen: bool = false
 var node_type: String = NodeModel.TYPE_NORMAL
 
 var _accent := UITheme.COL_NEON_PINK
-var _pulse := 0.0
-var _pulse_tween: Tween = null
 var _style_key: String = ""
 
 
@@ -63,30 +61,8 @@ func set_chosen(value: bool) -> void:
 	_refresh()
 
 
-func _process(_delta: float) -> void:
-	queue_redraw()
-
-
 func _on_resized() -> void:
 	_refresh()
-
-
-func _set_pulse(enabled: bool) -> void:
-	if enabled:
-		set_process(true)
-		if _pulse_tween == null:
-			_pulse_tween = create_tween().set_loops()
-			_pulse_tween.tween_property(self, "_pulse", 1.0, 1.3) \
-				.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-			_pulse_tween.tween_property(self, "_pulse", 0.0, 1.3) \
-				.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-		return
-	set_process(false)
-	if _pulse_tween != null:
-		_pulse_tween.kill()
-		_pulse_tween = null
-	_pulse = 0.0
-	queue_redraw()
 
 
 func _refresh() -> void:
@@ -238,15 +214,3 @@ func _draw_book(center: Vector2, radius: float, ink: Color) -> void:
 		bottom + Vector2(-half, radius * 0.02),
 		top + Vector2(-half, radius * 0.04),
 	]), ink, 3.0, true)
-
-
-func _draw_lock(center: Vector2, radius: float) -> void:
-	var ink := UITheme.COL_NODE_LOCKED_TEXT
-	var body := Rect2(
-		center + Vector2(-radius * 0.26, radius * 0.02),
-		Vector2(radius * 0.52, radius * 0.38))
-	draw_rect(body, UITheme.COL_NODE_LOCKED_BG, true)
-	draw_rect(body, ink, false, 3.0)
-	var shackle_center := center + Vector2(0.0, radius * 0.02 - radius * 0.20)
-	draw_arc(shackle_center, radius * 0.18, PI, TAU, 24, ink, 3.0, true)
-	draw_circle(center + Vector2(0.0, radius * 0.17), radius * 0.045, ink)

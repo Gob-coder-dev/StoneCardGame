@@ -17,6 +17,7 @@ func run() -> void:
 	_test_client_command()
 	_test_out_of_turn()
 	_test_invalid_moves()
+	_test_rejected_retry()
 	_test_duplicate_command()
 	_test_sequence_guard()
 	_test_confirmations()
@@ -24,6 +25,8 @@ func run() -> void:
 	_test_disconnect()
 	_test_liveness_timeout()
 	_test_results()
+	_test_result_waits_for_proof()
+	_test_late_messages_after_end()
 	_test_start_handshake()
 	_test_rematch()
 	_test_determinism()
@@ -422,6 +425,62 @@ func _test_results() -> void:
 	host.finish_match(GameState.PLAYER_TWO, 2, 9)
 	_check(pair["client_finished"] == [[GameState.PLAYER_TWO, 2, 9]],
 		"le résultat diffusé par l'hôte arrive au client")
+
+
+func _test_rejected_retry() -> void:
+	var pair := _pair(GameState.PLAYER_TWO)
+	var client: LanMatchCoordinator = pair["client"]
+	var card := _hand_card(pair["state"], GameState.PLAYER_TWO)
+	client.request_move(9, 0, card)
+	_check(client.can_submit() and client.sequence() == 0,
+		"PVP : un refus de l'hôte rend immédiatement la main au client")
+	var cell := _free_cell(pair["state"])
+	_check(client.request_move(cell.x, cell.y, card) and client.sequence() == 1,
+		"PVP : le client peut envoyer un coup valide après un refus")
+
+
+func _test_result_waits_for_proof() -> void:
+	var pair := _pair()
+	var host: LanMatchCoordinator = pair["host"]
+	var client: LanMatchCoordinator = pair["client"]
+	var cell := _free_cell(pair["state"])
+	host.request_move(cell.x, cell.y, _hand_card(pair["state"], GameState.PLAYER_ONE))
+	host.finish_match(GameState.PLAYER_ONE, 9, 4)
+	_check((pair["client_finished"] as Array).is_empty(),
+		"PVP : le résultat attend la preuve du dernier tour")
+	_confirm(pair)
+	_check(pair["client_finished"] == [[GameState.PLAYER_ONE, 9, 4]],
+		"PVP : deux empreintes identiques publient le résultat une seule fois")
+	_check(not client.can_submit() and not host.can_submit(),
+		"PVP : une partie terminée n'accepte plus de coup")
+	var broken := _pair()
+	var broken_host: LanMatchCoordinator = broken["host"]
+	cell = _free_cell(broken["state"])
+	broken_host.request_move(cell.x, cell.y, _hand_card(broken["state"], GameState.PLAYER_ONE))
+	broken_host.finish_match(GameState.PLAYER_ONE, 9, 4)
+	broken_host.report_local_state("a".repeat(LanProtocol.FINGERPRINT_LENGTH), 1)
+	broken["client"].report_local_state("b".repeat(LanProtocol.FINGERPRINT_LENGTH), 1)
+	_check((broken["client_finished"] as Array).is_empty()
+		and (broken["host_desync"] as Array).size() == 1,
+		"PVP : une désynchronisation finale invalide le résultat en attente")
+
+
+func _test_late_messages_after_end() -> void:
+	var pair := _pair()
+	var host: LanMatchCoordinator = pair["host"]
+	host.finish_match(GameState.PLAYER_ONE, 9, 4)
+	pair["host_transport"].push(1, LanProtocol.KIND_MATCH_END, {
+		"match_id": MATCH_ID, "winner": 1, "score_one": 9, "score_two": 4})
+	_check((pair["client_finished"] as Array).size() == 1,
+		"PVP : un résultat reçu deux fois ne déclenche pas deux fins de partie")
+	var aborted := _pair()
+	var aborted_host: LanMatchCoordinator = aborted["host"]
+	var cell := _free_cell(aborted["state"])
+	aborted_host.request_move(cell.x, cell.y, _hand_card(aborted["state"], GameState.PLAYER_ONE))
+	aborted_host.abort("timeout")
+	_confirm(aborted)
+	_check(not aborted_host.can_submit() and (aborted["host_confirmed"] as Array).is_empty(),
+		"PVP : une preuve tardive ne rouvre pas une partie interrompue")
 
 
 ## La revanche se négocie après la fin : chaque appareil la demande, l'hôte

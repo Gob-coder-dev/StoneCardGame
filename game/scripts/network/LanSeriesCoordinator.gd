@@ -1037,10 +1037,6 @@ func _offers_for_client(side: int) -> Array:
 	return (offers as Array).duplicate() if offers is Array else []
 
 
-func _client_own_deck() -> Array:
-	return (_client_draft.get("own_deck", []) as Array).duplicate(true) if not _client_draft.is_empty() else []
-
-
 func _seed_for_round() -> int:
 	return _series.seed + _series.round_index * 104729
 

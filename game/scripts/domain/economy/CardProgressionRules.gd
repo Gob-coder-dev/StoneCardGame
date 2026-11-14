@@ -3,6 +3,7 @@
 class_name CardProgressionRules
 extends RefCounted
 
+const Integer := preload("res://scripts/domain/IntegerValue.gd")
 
 static func default_entry() -> Dictionary:
 	return {"unlocked_level": 0, "copies": 0}
@@ -12,9 +13,9 @@ static func sanitize_entry(lineage_id: String, raw: Variant) -> Dictionary:
 	var result := default_entry()
 	if not raw is Dictionary or StoneLoader.lineage_max_level(lineage_id) <= 0:
 		return result
-	result["unlocked_level"] = clampi(int(raw.get("unlocked_level", 0)), 0,
+	result["unlocked_level"] = Integer.read(raw.get("unlocked_level"), 0, 0,
 		StoneLoader.lineage_max_level(lineage_id))
-	result["copies"] = maxi(0, int(raw.get("copies", 0)))
+	result["copies"] = Integer.read(raw.get("copies"))
 	return result
 
 

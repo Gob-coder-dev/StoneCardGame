@@ -211,13 +211,13 @@ func test_winner_tie() -> void:
 ## ─── Positions adjacentes ────────────────────────────────────────────────────
 
 func test_adjacent_center_has_4_neighbors() -> void:
-	assert_eq(GameState.get_adjacent_positions(1, 1).size(), 4)
+	assert_eq(GameState.new().adjacent_positions(1, 1).size(), 4)
 
 func test_adjacent_corner_has_2_neighbors() -> void:
-	assert_eq(GameState.get_adjacent_positions(0, 0).size(), 2)
+	assert_eq(GameState.new().adjacent_positions(0, 0).size(), 2)
 
 func test_adjacent_edge_has_3_neighbors() -> void:
-	assert_eq(GameState.get_adjacent_positions(0, 1).size(), 3)
+	assert_eq(GameState.new().adjacent_positions(0, 1).size(), 3)
 
 
 ## ─── Coups valides ───────────────────────────────────────────────────────────

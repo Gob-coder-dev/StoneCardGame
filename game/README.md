@@ -15,7 +15,7 @@ mais se lance également sur ordinateur avec Godot.
 
 | Moteur | Version du projet | Cible principale |
 | --- | --- | --- |
-| Godot 4.7 | 0.8.0 | Android, portrait 9:16 |
+| Godot 4.7.2 | 0.8.1 | Android, portrait 9:16 |
 
 ## Aperçu du jeu
 
@@ -76,9 +76,9 @@ La préparation des modes n'est plus liée au réseau. `GameModeRules`,
 `SeriesRules`, `GameLoadout`, `LoadoutGenerator`, `DraftEngine` et
 `ModePreparationService` forment le socle commun ; `CampaignModeSession`
 orchestre localement le même Classique, Aléatoire, Miroir ou Sélection contre
-l'IA, y compris FT1/FT2/FT3. `BattleContext.begin_mode()` constitue le point
-d'entrée de la campagne et les drivers de combat lisent ses loadouts
-temporaires. Les règles d'une rencontre ne sont plus choisies dans un écran
+l'IA, y compris FT1/FT2/FT3. `CampaignContext.enter_node()` prépare la rencontre
+et les drivers de combat lisent les loadouts temporaires installés dans
+`BattleContext`. Les règles d'une rencontre ne sont plus choisies dans un écran
 public séparé : chaque nœud de la carte porte son mode, son dieu, son deck, son
 palier, son IA et son format. Voir [la campagne unifiée](docs/CAMPAIGN.md).
 
@@ -283,10 +283,12 @@ construction hors exécution : elle fournit les 87 decks fixes uniques validés
 dans la campagne.
 
 Le profil local est enregistré dans `user://savegame.json`. Le format actuel est
-la version 9 : il conserve le pseudo, les statistiques, les trois decks de chaque
+la version 11 : il conserve le pseudo, les statistiques, les trois decks de chaque
 dieu et de la banque neutre, le deck sélectionné, les âmes, les bougies, les
 dieux débloqués, les copies et niveaux de cartes, les achats de la rotation et
-les récompenses divines conservées au coffre. Les
+les récompenses divines conservées au coffre, les quêtes et les curseurs des
+transactions de campagne. Un profil d'une version future est protégé contre
+l'écrasement. Les
 écritures passent par un fichier temporaire pour éviter un profil partiellement
 écrit.
 
@@ -322,7 +324,18 @@ contre 1200 × 1920 pour la tablette.
 ## Tests
 
 Les suites sont autonomes : aucune extension de test n'est nécessaire. Depuis la
-racine du projet, avec `godot` disponible dans le `PATH` :
+racine du projet, avec Python 3.10+ et `godot` disponible dans le `PATH` :
+
+```sh
+python tools/check_quality.py --godot godot --import --export
+python -m unittest discover -s tools/tests -v
+```
+
+Le lanceur isole `user://` pour chaque processus, contrôle la fermeture et
+conserve ses journaux dans `../.tmp/quality/`. L'export ZIP vérifie les données
+embarquées sans nécessiter de SDK Android ; il ne produit pas un APK installable.
+La CI exécute ces mêmes contrôles. Les commandes Godot directes ci-dessous
+restent disponibles pour le diagnostic ; elles utilisent le profil local du poste.
 
 ```sh
 godot --headless --fixed-fps 60 --path . res://tests/GodSystemChecks.tscn

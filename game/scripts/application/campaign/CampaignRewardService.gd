@@ -7,13 +7,17 @@ const Economy := preload("res://scripts/application/economy/EconomyService.gd")
 const Config := preload("res://scripts/data/economy/EconomyConfig.gd")
 
 
-static func apply_victory(service: CampaignService, node_id: String) -> Dictionary:
+## Les valeurs explicites figent la récompense d'un résultat pendant ses réessais.
+static func apply_victory(service: CampaignService, node_id: String,
+		first_victory_override: Variant = null, attempt_override: int = 0) -> Dictionary:
 	if service == null or not service.has_node(node_id):
 		return {"ok": false, "reason": "Niveau de campagne inconnu.", "error": ERR_DOES_NOT_EXIST}
 	var node := service.node(node_id)
 	var reward := node.reward_definition()
-	var first_victory := not service.is_completed(node_id)
-	var attempt := maxi(1, service.progress().attempts_for(node_id))
+	var first_victory := not service.is_completed(node_id) if first_victory_override == null \
+		else bool(first_victory_override)
+	var attempt := attempt_override if attempt_override > 0 \
+		else maxi(1, service.progress().attempts_for(node_id))
 	var transaction_id := "campaign:%d:%s:%s" % [service.graph().campaign_version,
 		node_id, "first" if first_victory else "replay:%d" % attempt]
 	var minimum := maxi(0, int(reward.get("souls_min", 0)))

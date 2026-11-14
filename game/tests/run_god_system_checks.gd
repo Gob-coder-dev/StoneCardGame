@@ -27,6 +27,7 @@ const SUITES: Array[String] = [
 	"res://tests/domain/CampaignModeChecks.gd",
 	"res://tests/domain/EconomyChecks.gd",
 	"res://tests/domain/QuestChecks.gd",
+	"res://tests/domain/AuditRegressionChecks.gd",
 	"res://tests/domain/ProgressionAccessChecks.gd",
 	"res://tests/domain/CampaignGraphChecks.gd",
 	"res://tests/domain/CampaignValidatorChecks.gd",
@@ -109,4 +110,4 @@ func _finish() -> void:
 	for problem in problems:
 		printerr("ERREUR GODOT : ", problem)
 	print("GOD_SYSTEM_CHECKS: %d passed, %d failed, %d Godot errors" % [_passed, _failed, problems.size()])
-	get_tree().quit(0 if _failed == 0 and problems.is_empty() else 1)
+	Audio.quit_game(0 if _failed == 0 and problems.is_empty() else 1)
