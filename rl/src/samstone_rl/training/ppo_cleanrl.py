@@ -185,6 +185,7 @@ class PPOTrainer(RolloutMixin, EvaluationMixin, CheckpointMixin):
                 tactical_features=self.tactical_features_enabled,
                 vector_tactical=bool(environment.get("vector_tactical", True)),
                 vector_effects=bool(environment.get("vector_effects", True)),
+                tactical_workers=int(environment.get("tactical_workers", 1)),
             )
             self._resources.callback(self.batch_env.close)
             self.training_envs: list[SamStoneEnv] = []

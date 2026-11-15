@@ -213,6 +213,35 @@ En cas d'artefact incompatible, l'IA utilise le profil existant de précision
 maximale avec anticipation pour que la partie puisse continuer. Le diagnostic
 de chargement reste visible dans Godot.
 
+## Benchmarks des optimisations
+
+Pour mesurer les optimisations CPU et la collecte, depuis `rl/` :
+
+```powershell
+.\.venv311\Scripts\python.exe scripts\benchmark_fast_training.py `
+  --config configs\ppo_phase4_vectorized.yaml --device directml `
+  --num-envs 256 --batch-size 2048 --epochs 1 --stage precision_100_anticipation `
+  --warmup 3 --updates 20 --tactical-workers 2 --output artifacts\benchmark.json
+.\.venv311\Scripts\python.exe scripts\benchmark_tactical.py `
+  --iterations 20 --workers 1 2 4 --output artifacts\tactical-profile.json
+```
+
+`--warmup` exclut les premières mises à jour des mesures. Le JSON conserve la
+configuration et les mesures individuelles. Le profil tactique couvre les six
+dieux en début, milieu et fin de partie, et vérifie l'égalité des résultats
+pour chaque nombre de workers. Ne pas exécuter deux benchmarks simultanément.
+
+Pour activer les workers dans un **nouveau run**, ajouter
+`tactical_workers: 2` sous `environment` dans son YAML. Le défaut est 1 ; les
+petits lots restent séquentiels. Les workers réutilisent leurs propres buffers,
+ce qui augmente la mémoire utilisée. Comparer les résultats sur le poste cible.
+Les temps tactiques détaillés des workers sont cumulés ; le débit global et le
+temps par mise à jour mesurent le temps réellement écoulé.
+
+Changer le nombre d'environnements à batch constant change la longueur des
+rollouts et peut affecter l'apprentissage. Un benchmark de vitesse seul ne
+justifie pas ce changement dans une campagne existante.
+
 ## Plages d'évaluation
 
 Les seeds de collecte restent inférieurs à `2**31`. Les configurations v2

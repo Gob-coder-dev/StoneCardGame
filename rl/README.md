@@ -116,3 +116,6 @@ par défaut. La latence et la mémoire de l'inférence complète doivent égalem
 Les benchmarks précisent matériel, périphérique, configuration, palier,
 échauffement et répétitions. Le débit, le temps complet d'une mise à jour et le
 niveau de jeu à budget égal sont des mesures distinctes.
+
+Les [mesures de la seconde passe d’optimisation](OPTIMISATION.md) décrivent le
+noyau compact, les workers CPU optionnels et leur validation.

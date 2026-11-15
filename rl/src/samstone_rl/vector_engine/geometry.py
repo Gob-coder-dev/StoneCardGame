@@ -51,3 +51,8 @@ for table in (
     POSITION_FEATURES,
 ):
     table.setflags(write=False)
+
+# Immutable board geometry shared by every hypothetical placement.
+NEIGHBORS = tuple(np.flatnonzero(row) for row in ADJACENCY)
+for neighbors in NEIGHBORS:
+    neighbors.setflags(write=False)

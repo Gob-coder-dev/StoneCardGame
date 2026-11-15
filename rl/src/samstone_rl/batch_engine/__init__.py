@@ -7,6 +7,16 @@ changing the observation or action schemas used by existing checkpoints.
 
 from .catalog import NumericStoneCatalog
 from .encoding import DirectStateEncoder
-from .env import BatchSamStoneEnv
+
+
+def __getattr__(name: str):
+    # The numeric catalogue is also consumed by vector_engine. Importing the
+    # environment eagerly would make that dependency circular.
+    if name == "BatchSamStoneEnv":
+        from .env import BatchSamStoneEnv
+
+        return BatchSamStoneEnv
+    raise AttributeError(name)
+
 
 __all__ = ["BatchSamStoneEnv", "DirectStateEncoder", "NumericStoneCatalog"]

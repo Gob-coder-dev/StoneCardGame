@@ -76,9 +76,12 @@ class BatchSamStoneEnv:
         tactical_features: bool = False,
         vector_tactical: bool = True,
         vector_effects: bool = True,
+        tactical_workers: int = 1,
     ) -> None:
         if num_envs <= 0:
             raise ValueError("num_envs doit etre strictement positif")
+        if not 1 <= tactical_workers <= num_envs:
+            raise ValueError("tactical_workers doit etre entre 1 et num_envs")
         self.num_envs = int(num_envs)
         self.reward_scheme = reward_scheme
         self.catalog = StoneCatalog(game_root)
@@ -89,9 +92,15 @@ class BatchSamStoneEnv:
         self.vector_tactical_enabled = bool(vector_tactical and tactical_features)
         self.vector_tactical = (
             VectorTacticalEvaluator(self.numeric_catalog, vector_effects=vector_effects)
-            if self.vector_tactical_enabled
+            if self.vector_tactical_enabled and tactical_workers == 1
             else None
         )
+        if self.vector_tactical_enabled and tactical_workers > 1:
+            from samstone_rl.vector_engine.parallel import ParallelTacticalEvaluator
+
+            self.vector_tactical = ParallelTacticalEvaluator(
+                self.numeric_catalog, workers=tactical_workers, vector_effects=vector_effects
+            )
         self.codec = ActionCodec()
         self.slots: list[_Slot] = []
         for _ in range(self.num_envs):
@@ -396,6 +405,8 @@ class BatchSamStoneEnv:
         return {"enabled": 1.0, **self.vector_tactical.metrics(reset=reset)}
 
     def close(self) -> None:
+        if self.vector_tactical is not None:
+            self.vector_tactical.close()
         self.closed = True
 
     def _slot(self, index: int) -> _Slot:

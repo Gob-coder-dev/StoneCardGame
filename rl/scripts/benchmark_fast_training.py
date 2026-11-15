@@ -3,13 +3,16 @@ from __future__ import annotations
 
 import argparse
 import json
+import platform
 import statistics
 import tempfile
 from pathlib import Path
 
+import torch
 import yaml
 
 from samstone_rl.training.ppo_cleanrl import PPOTrainer
+from samstone_rl.utils.provenance import provenance
 
 
 def main() -> int:
@@ -18,6 +21,8 @@ def main() -> int:
     )
     parser.add_argument("--config", type=Path, default=Path("configs/ppo_phase4_vectorized.yaml"))
     parser.add_argument("--updates", type=int, default=5)
+    parser.add_argument("--warmup", type=int, default=0, help="updates exclues des mesures")
+    parser.add_argument("--output", type=Path, help="rapport JSON reproductible")
     parser.add_argument("--num-envs", type=int)
     parser.add_argument("--batch-size", type=int, default=1024)
     parser.add_argument("--minibatches", type=int)
@@ -35,11 +40,13 @@ def main() -> int:
         help="conserve le noyau mais remet Essaim/Pillage sur le fallback exact",
     )
     parser.add_argument("--stage", help="limite le benchmark a un palier du curriculum")
+    parser.add_argument("--tactical-workers", type=int, default=1)
     args = parser.parse_args()
-    if args.updates <= 0 or args.batch_size <= 0:
+    if args.updates <= 0 or args.batch_size <= 0 or args.warmup < 0:
         parser.error("updates et batch-size doivent etre strictement positifs")
 
     config = yaml.safe_load(args.config.read_text(encoding="utf-8"))
+    config["environment"]["tactical_workers"] = args.tactical_workers
     if args.backend:
         config["environment"]["backend"] = args.backend
     if args.device:
@@ -62,7 +69,7 @@ def main() -> int:
         {
             "num_envs": num_envs,
             "rollout_steps": args.batch_size // num_envs,
-            "total_timesteps": args.batch_size * args.updates,
+            "total_timesteps": args.batch_size * (args.updates + args.warmup),
         }
     )
     if args.minibatches:
@@ -77,7 +84,7 @@ def main() -> int:
         )
     # This benchmark deliberately avoids Godot evaluation and checkpoint I/O.
     config["environment"]["evaluation_backend"] = "python"
-    config["evaluation"]["every_updates"] = args.updates + 1
+    config["evaluation"]["every_updates"] = args.updates + args.warmup + 1
     config["curriculum"]["bootstrap_evaluation"] = {"enabled": False}
     config["monitoring"].update(
         {
@@ -99,10 +106,35 @@ def main() -> int:
             if line
         ]
 
-    metrics = [event["metrics"] for event in events if event["stream"] == "training"]
+    metrics = [event["metrics"] for event in events if event["stream"] == "training"][args.warmup :]
     decisions = statistics.median(float(item["steps_per_second"]) for item in metrics)
     games = statistics.median(float(item["training_games_per_second"]) for item in metrics)
     seconds = statistics.median(float(item["update_seconds"]) for item in metrics)
+    if args.output:
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(
+            json.dumps(
+                {
+                    "schema": 1,
+                    "provenance": provenance(),
+                    "software": {
+                        "python": platform.python_version(),
+                        "torch": str(torch.__version__),
+                        "threads": torch.get_num_threads(),
+                        "platform": platform.platform(),
+                    },
+                    "config": config,
+                    "warmup": args.warmup,
+                    "updates": len(metrics),
+                    "decisions_per_second": decisions,
+                    "games_per_second": games,
+                    "update_seconds": seconds,
+                    "metrics": metrics,
+                },
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
     backend = config["environment"].get("backend", "python")
     tactical = "scalaire" if args.scalar_tactical else "vectorise"
     effects = "scalaire" if not config["environment"].get("vector_effects", True) else "vectorise"
@@ -128,7 +160,7 @@ def main() -> int:
     print(
         "  profil median: "
         + ", ".join(
-            f"{name.removesuffix('_seconds')}={statistics.median(float(item['profile'][name]) for item in metrics):.3f}s"
+            f"{name.removesuffix('_seconds')}={statistics.median(float(item['profile'].get(name, 0.0)) for item in metrics):.3f}s"
             for name in phases
         )
     )

@@ -127,11 +127,13 @@ class PPOOptimizer:
                     "clip_fraction": ((ratio - 1).abs() > ppo["clip_coef"]).float().mean(),
                     "gradient_norm": gradient_norm,
                 }
-                for name, metric in values.items():
-                    collected[name].append(float(metric.detach()))
                 if auxiliary_batch_loss is not None and auxiliary_batch_mae is not None:
-                    collected["auxiliary_margin_loss"].append(float(auxiliary_batch_loss.detach()))
-                    collected["auxiliary_margin_mae"].append(float(auxiliary_batch_mae.detach()))
+                    values["auxiliary_margin_loss"] = auxiliary_batch_loss
+                    values["auxiliary_margin_mae"] = auxiliary_batch_mae
+                # One device synchronization for all minibatch diagnostics.
+                readings = torch.stack([metric.detach().reshape(()) for metric in values.values()])
+                for name, reading in zip(values, readings.cpu().tolist(), strict=True):
+                    collected[name].append(reading)
             epochs_used += 1
             epoch_metrics = len(np.array_split(indices, int(ppo["minibatches"])))
             epoch_kl = float(np.mean(collected["approx_kl"][-epoch_metrics:]))

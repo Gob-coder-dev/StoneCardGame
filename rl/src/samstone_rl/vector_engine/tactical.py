@@ -17,6 +17,7 @@ from .geometry import (
     ADJACENCY,
     BOARD_CELLS,
     MAX_DISTANCE,
+    NEIGHBORS,
     OPPOSITE_SIDES,
     ORIGIN_RAY_TARGETS,
     RAY_TARGETS,
@@ -168,6 +169,9 @@ class VectorTacticalEvaluator:
         if reset:
             self._totals.fill(0.0)
         return result
+
+    def close(self) -> None:
+        """Serial evaluators own no external resources."""
 
     def _extract(self, states: list[FastState], observers: list[int]) -> tuple[np.ndarray, ...]:
         batch = len(states)
@@ -372,7 +376,7 @@ class VectorTacticalEvaluator:
         miasma = self.workspace.view("miasma", batch)
         miasma.fill(0)
         for target in range(BOARD_CELLS):
-            neighbors = np.flatnonzero(ADJACENCY[target])
+            neighbors = NEIGHBORS[target]
             neighbor_active = active_miasma[..., neighbors]
             neighbor_owners = owners_after[..., neighbors]
             miasma[..., target] = np.sum(
@@ -466,42 +470,39 @@ class VectorTacticalEvaluator:
         result: np.ndarray,
         failures: np.ndarray,
     ) -> None:
-        batch = owners.shape[0]
         result.fill(False)
         failures.fill(False)
-        batch_rows = np.arange(batch)[:, None, None]
+        same = np.all(source_attack == source_attack[:, :, :1], axis=(2, 3)) & np.all(
+            source_ranged == source_ranged[:, :, :1], axis=(2, 3)
+        )
+        lanes = np.broadcast_to(legal[..., None], source_attack.shape[:3]).copy()
+        lanes[:, :, 1:] &= ~same[..., None]
+        rows, actions, samples = np.nonzero(lanes)
+        if not len(rows):
+            return
+        attacks = source_attack[rows, actions, samples]
+        ranges = source_ranged[rows, actions, samples]
         for side in range(SIDES):
-            normal = source_attack[..., side]
-            ranged = source_ranged[..., side]
-            active = legal[..., None] & (normal > 0)
+            normal, ranged = attacks[:, side], ranges[:, side]
+            active = normal > 0
             for distance in range(MAX_DISTANCE):
-                targets = RAY_TARGETS[:, side, distance]
-                valid = targets >= 0
-                safe_targets = np.maximum(targets, 0)
-                active &= valid[None, :, None]
-                if distance > 0:
+                targets = RAY_TARGETS[actions, side, distance]
+                active &= targets >= 0
+                targets = np.maximum(targets, 0)
+                if distance:
                     active &= ranged > 0
-                target_blocked = blocked[:, safe_targets][:, :, None]
-                active &= ~target_blocked
-                target_owners = owners[:, safe_targets][:, :, None]
-                enemy = (target_owners != 0) & (target_owners != players[:, None, None])
-                defense = defenses[:, safe_targets, int(OPPOSITE_SIDES[side])][:, :, None]
+                active &= ~blocked[rows, targets]
+                target_owners = owners[rows, targets]
+                enemy = (target_owners != 0) & (target_owners != players[rows])
+                defense = defenses[rows, targets, int(OPPOSITE_SIDES[side])]
                 strength = normal if distance == 0 else ranged
                 success = active & enemy & (strength > defense)
                 failed = active & enemy & ~success
-                result[
-                    batch_rows,
-                    np.arange(ACTION_COUNT)[None, :, None],
-                    np.arange(PREVIEW_SAMPLES)[None, None, :],
-                    safe_targets[None, :, None],
-                ] |= success
-                failures[
-                    batch_rows,
-                    np.arange(ACTION_COUNT)[None, :, None],
-                    np.arange(PREVIEW_SAMPLES)[None, None, :],
-                    safe_targets[None, :, None],
-                ] |= failed
+                result[rows, actions, samples, targets] |= success
+                failures[rows, actions, samples, targets] |= failed
                 active &= ~(enemy & (~success | (ranged <= 0)))
+        for values in (result, failures):
+            values[:, :, 1:] = np.where(same[..., None, None], values[:, :, :1], values[:, :, 1:])
 
     def _reply_threats(
         self,
@@ -528,34 +529,46 @@ class VectorTacticalEvaluator:
             )
             adjacent[index] = profile.adjacent
             ranged[index] = profile.ranged
-        best = self.workspace.view("reply_best", batch)
-        count = self.workspace.view("reply_count", batch)
-        best.fill(0)
-        blocked_expanded = blocked[:, None, None, :]
-        reply_players = (3 - np.asarray(observers, dtype=np.int8))[:, None, None]
+        # Compact legal actions and identical post-move samples. Equality is
+        # checked after all effects: source randomness alone is insufficient.
+        same = np.all(owners == owners[:, :, :1], axis=(2, 3)) & np.all(
+            defenses == defenses[:, :, :1], axis=(2, 3, 4)
+        )
+        lanes = np.broadcast_to(legal[..., None], owners.shape[:3]).copy()
+        lanes[:, :, 1:] &= ~same[..., None]
+        rows, actions, samples = np.nonzero(lanes)
+        result = self.workspace.view("reply_best", batch)
+        result.fill(0)
+        if not len(rows):
+            return result
+        # Structure-of-arrays layout makes each ray's vectors contiguous.
+        own = np.ascontiguousarray(owners[rows, actions, samples].T)
+        defense = np.ascontiguousarray(defenses[rows, actions, samples].transpose(1, 2, 0))
+        walls = np.ascontiguousarray(blocked[rows].T)
+        near, far = adjacent[rows].T, ranged[rows].T
+        players = 3 - np.asarray(observers, dtype=np.int8)[rows]
+        best = np.zeros(len(rows), dtype=np.int8)
+        count = np.empty_like(best)
         for origin in range(BOARD_CELLS):
-            origin_free = (owners[..., origin] == 0) & ~blocked_expanded[..., origin]
+            free = (own[origin] == 0) & ~walls[origin]
             count.fill(0)
             for side in range(SIDES):
-                active = origin_free & legal[..., None] & (adjacent[:, side, None, None] > 0)
+                active = free & (near[side] > 0)
                 for distance in range(MAX_DISTANCE):
                     target = int(ORIGIN_RAY_TARGETS[origin, side, distance])
                     if target < 0:
-                        active[:] = False
                         break
-                    if distance > 0:
-                        active &= ranged[:, side, None, None] > 0
-                    active &= ~blocked_expanded[..., target]
-                    target_owner = owners[..., target]
-                    enemy = (target_owner != 0) & (target_owner != reply_players)
-                    strength = (
-                        adjacent[:, side, None, None]
-                        if distance == 0
-                        else ranged[:, side, None, None]
+                    if distance:
+                        active &= far[side] > 0
+                    active &= ~walls[target]
+                    enemy = (own[target] != 0) & (own[target] != players)
+                    strength = near[side] if distance == 0 else far[side]
+                    success = (
+                        active & enemy & (strength > defense[target, int(OPPOSITE_SIDES[side])])
                     )
-                    defense = defenses[..., target, int(OPPOSITE_SIDES[side])]
-                    success = active & enemy & (strength > defense)
                     count += success
-                    active &= ~(enemy & (~success | (ranged[:, side, None, None] <= 0)))
-            best = np.maximum(best, count)
-        return best
+                    active &= ~(enemy & (~success | (far[side] <= 0)))
+            np.maximum(best, count, out=best)
+        result[rows, actions, samples] = best
+        result[:, :, 1:] = np.where(same[..., None], result[:, :, :1], result[:, :, 1:])
+        return result
