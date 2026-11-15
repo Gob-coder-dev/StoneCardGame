@@ -4,6 +4,7 @@ import os
 import shutil
 import socket
 import subprocess
+import tempfile
 import threading
 import time
 from collections import deque
@@ -20,11 +21,21 @@ class GodotProtocolError(RuntimeError):
 class GodotProcess:
     """Own one Godot simulator and exchange bounded JSON-line requests over TCP."""
 
-    def __init__(self, project_path: str | Path | None = None, godot_path: str | Path | None = None,
-                 startup_timeout: float = 15.0, command_timeout: float = 30.0) -> None:
+    def __init__(
+        self,
+        project_path: str | Path | None = None,
+        godot_path: str | Path | None = None,
+        startup_timeout: float = 15.0,
+        command_timeout: float = 30.0,
+    ) -> None:
         self.project_path = Path(project_path or Path(__file__).resolve().parents[4] / "game")
-        self.godot_path = str(godot_path or os.environ.get("GODOT_BIN") or shutil.which("godot")
-                              or shutil.which("godot4") or "godot")
+        self.godot_path = str(
+            godot_path
+            or os.environ.get("GODOT_BIN")
+            or shutil.which("godot")
+            or shutil.which("godot4")
+            or "godot"
+        )
         self.startup_timeout = startup_timeout
         self.command_timeout = command_timeout
         self.process: subprocess.Popen[str] | None = None
@@ -32,6 +43,8 @@ class GodotProcess:
         self._reader = None
         self._request_id = 0
         self._logs: deque[str] = deque(maxlen=80)
+        self._user_directory = None
+        self._log_threads: list[threading.Thread] = []
 
     def __enter__(self) -> Self:
         self.start()
@@ -45,16 +58,48 @@ class GodotProcess:
         return "\n".join(self._logs)
 
     def start(self) -> None:
+        try:
+            if self.process is not None and self.process.poll() is not None:
+                self.close()
+            self._start()
+        except BaseException:
+            self.close()
+            raise
+
+    def _start(self) -> None:
         if self.process is not None and self.process.poll() is None:
             return
         port = self._free_port()
-        command = [self.godot_path, "--headless", "--path", str(self.project_path),
-                   "res://tools/rl_sim/HeadlessSim.tscn", "--", "--rl-port", str(port)]
-        self.process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                        text=True, encoding="utf-8", errors="replace")
+        command = [
+            self.godot_path,
+            "--headless",
+            "--path",
+            str(self.project_path),
+            "res://tools/rl_sim/HeadlessSim.tscn",
+            "--",
+            "--rl-port",
+            str(port),
+        ]
+        self._user_directory = tempfile.TemporaryDirectory(prefix="samstone-godot-")
+        environment = os.environ.copy()
+        for variable in ("APPDATA", "LOCALAPPDATA", "XDG_DATA_HOME"):
+            environment[variable] = self._user_directory.name
+        self.process = subprocess.Popen(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            env=environment,
+        )
         for stream, label in ((self.process.stdout, "stdout"), (self.process.stderr, "stderr")):
             if stream is not None:
-                threading.Thread(target=self._collect_logs, args=(stream, label), daemon=True).start()
+                thread = threading.Thread(
+                    target=self._collect_logs, args=(stream, label), daemon=True
+                )
+                self._log_threads.append(thread)
+                thread.start()
         deadline = time.monotonic() + self.startup_timeout
         last_error: OSError | None = None
         while time.monotonic() < deadline:
@@ -68,6 +113,12 @@ class GodotProcess:
                     return
             except OSError as exc:
                 last_error = exc
+                if self._reader is not None:
+                    self._reader.close()
+                    self._reader = None
+                if self._socket is not None:
+                    self._socket.close()
+                    self._socket = None
                 time.sleep(0.05)
         self.close()
         raise GodotProtocolError(f"Timeout au demarrage de Godot: {last_error}\n{self.diagnostics}")
@@ -78,16 +129,25 @@ class GodotProcess:
         self._request_id += 1
         request_id = self._request_id
         try:
-            self._socket.sendall(Protocol.encode_request(command, request_id, **payload).encode("utf-8"))
-            line = self._reader.readline()
+            self._socket.sendall(
+                Protocol.encode_request(command, request_id, **payload).encode("utf-8")
+            )
+            line = self._reader.readline(16 * 1024 * 1024 + 1)
+            if len(line) > 16 * 1024 * 1024:
+                raise GodotProtocolError("reponse Godot trop volumineuse")
         except (OSError, TimeoutError) as exc:
-            raise GodotProtocolError(f"Echec de '{command}' (id={request_id}): {exc}\n{self.diagnostics}") from exc
+            raise GodotProtocolError(
+                f"Echec de '{command}' (id={request_id}): {exc}\n{self.diagnostics}"
+            ) from exc
         response = Protocol.decode_response(line)
         if response is None or response.get("id") != request_id:
             raise GodotProtocolError(
-                f"Reponse invalide pour '{command}' (id={request_id}): {line!r}\n{self.diagnostics}")
+                f"Reponse invalide pour '{command}' (id={request_id}): {line!r}\n{self.diagnostics}"
+            )
         if not response.get("ok", False):
-            raise GodotProtocolError(f"Godot refuse '{command}' (id={request_id}): {response.get('error')}")
+            raise GodotProtocolError(
+                f"Godot refuse '{command}' (id={request_id}): {response.get('error')}"
+            )
         return response.get("result", {})
 
     def ping(self) -> bool:
@@ -106,14 +166,18 @@ class GodotProcess:
         return self.send_command("get_state", observer=observer)
 
     def choose_profile_action(self, precision: float, anticipation: bool) -> dict[str, Any]:
-        return self.send_command("choose_profile_action", profile={
-            "precision": float(precision), "anticipation": bool(anticipation)})["action"]
+        return self.send_command(
+            "choose_profile_action",
+            profile={"precision": float(precision), "anticipation": bool(anticipation)},
+        )["action"]
 
     def tactical_action_scores(self, observer: int) -> dict[int, tuple[float, ...]]:
-        values = self.send_command(
-            "tactical_action_scores", observer=int(observer)).get("scores", {})
-        return {int(action): tuple(float(value) for value in score)
-                for action, score in values.items()}
+        values = self.send_command("tactical_action_scores", observer=int(observer)).get(
+            "scores", {}
+        )
+        return {
+            int(action): tuple(float(value) for value in score) for action, score in values.items()
+        }
 
     def deck_catalog(self) -> dict[str, Any]:
         return self.send_command("get_deck_catalog")
@@ -139,11 +203,17 @@ class GodotProcess:
     def batch_choose_profile_action(self, matches: list[dict[str, Any]]) -> list[dict[str, Any]]:
         return self.send_command("batch_choose_profile_action", matches=matches)["results"]
 
+    def batch_tactical_action_scores(self, matches: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        return self.send_command("batch_tactical_action_scores", matches=matches)["results"]
+
     def release_matches(self, match_ids: list[str]) -> int:
         return int(self.send_command("release_matches", match_ids=match_ids)["remaining"])
 
     def close(self) -> None:
         if self.process is None:
+            if self._user_directory is not None:
+                self._user_directory.cleanup()
+                self._user_directory = None
             return
         if self.process.poll() is None and self._socket is not None:
             try:
@@ -165,6 +235,12 @@ class GodotProcess:
         self.process = None
         self._socket = None
         self._reader = None
+        for thread in self._log_threads:
+            thread.join(timeout=2)
+        self._log_threads.clear()
+        if self._user_directory is not None:
+            self._user_directory.cleanup()
+            self._user_directory = None
 
     @staticmethod
     def _free_port() -> int:
@@ -173,5 +249,6 @@ class GodotProcess:
             return int(sock.getsockname()[1])
 
     def _collect_logs(self, stream, label: str) -> None:
-        for line in stream:
-            self._logs.append(f"{label}: {line.rstrip()}")
+        with stream:
+            for line in stream:
+                self._logs.append(f"{label}: {line.rstrip()}")

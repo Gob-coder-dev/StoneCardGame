@@ -63,21 +63,34 @@ class PhaseFourGateReport:
     slices: tuple[EvaluationSlice, ...]
 
     @classmethod
-    def build(cls, slices: Iterable[EvaluationSlice], expected_stages: Iterable[str],
-              expected_gods: Iterable[str],
-              overall_threshold: float = 0.95, confidence_floor: float = 0.90,
-              slice_floor: float = 0.90, minimum_games_per_slice: int = 100,
-              maximum_loss_rate: float | None = None,
-              non_loss_confidence_floor: float | None = None,
-              maximum_slice_loss_rate: float | None = None) -> PhaseFourGateReport:
+    def build(
+        cls,
+        slices: Iterable[EvaluationSlice],
+        expected_stages: Iterable[str],
+        expected_gods: Iterable[str],
+        overall_threshold: float = 0.95,
+        confidence_floor: float = 0.90,
+        slice_floor: float = 0.90,
+        minimum_games_per_slice: int = 100,
+        maximum_loss_rate: float | None = None,
+        non_loss_confidence_floor: float | None = None,
+        maximum_slice_loss_rate: float | None = None,
+    ) -> PhaseFourGateReport:
         collected = tuple(slices)
         expected = tuple(expected_stages)
         gods = tuple(expected_gods)
         present = {item.stage for item in collected}
         missing = tuple(stage for stage in expected if stage not in present)
-        present_slices = {(item.stage, item.god, item.agent_player, item.first_player) for item in collected}
-        expected_slices = ((stage, god, agent, first) for stage in expected for god in gods
-                           for agent in (1, 2) for first in (1, 2))
+        present_slices = {
+            (item.stage, item.god, item.agent_player, item.first_player) for item in collected
+        }
+        expected_slices = (
+            (stage, god, agent, first)
+            for stage in expected
+            for god in gods
+            for agent in (1, 2)
+            for first in (1, 2)
+        )
         missing_slices = tuple(
             f"{stage}:{god}:agent{agent}:first{first}"
             for stage, god, agent, first in expected_slices
@@ -99,25 +112,58 @@ class PhaseFourGateReport:
             if maximum_loss_rate is None or non_loss_confidence_floor is None:
                 passed = games > 0 and win_thresholds_passed
             else:
-                passed = (games > 0 and rate >= overall_threshold
-                          and loss_rate <= maximum_loss_rate
-                          and non_loss_lower >= non_loss_confidence_floor)
-            stage_results.append(StageResult(
-                stage, wins, draws, losses, rate, lower, loss_rate, non_loss_rate,
-                non_loss_lower, passed))
+                passed = (
+                    games > 0
+                    and rate >= overall_threshold
+                    and loss_rate <= maximum_loss_rate
+                    and non_loss_lower >= non_loss_confidence_floor
+                )
+            stage_results.append(
+                StageResult(
+                    stage,
+                    wins,
+                    draws,
+                    losses,
+                    rate,
+                    lower,
+                    loss_rate,
+                    non_loss_rate,
+                    non_loss_lower,
+                    passed,
+                )
+            )
         failed_slices = tuple(
             f"{item.stage}:{item.god}:agent{item.agent_player}:first{item.first_player}"
             for item in collected
-            if (item.games < minimum_games_per_slice or item.win_rate < slice_floor
-                or (maximum_slice_loss_rate is not None
-                    and item.loss_rate > maximum_slice_loss_rate))
+            if (
+                item.games < minimum_games_per_slice
+                or item.win_rate < slice_floor
+                or (
+                    maximum_slice_loss_rate is not None and item.loss_rate > maximum_slice_loss_rate
+                )
+            )
         )
-        passed = not missing and not missing_slices and not failed_slices and all(
-            item.passed for item in stage_results)
-        return cls(passed, overall_threshold, confidence_floor, slice_floor,
-                   maximum_loss_rate, non_loss_confidence_floor, maximum_slice_loss_rate,
-                   minimum_games_per_slice, missing, missing_slices, failed_slices,
-                   tuple(stage_results), collected)
+        passed = (
+            not missing
+            and not missing_slices
+            and not failed_slices
+            and all(item.passed for item in stage_results)
+        )
+        return cls(
+            passed,
+            overall_threshold,
+            confidence_floor,
+            slice_floor,
+            maximum_loss_rate,
+            non_loss_confidence_floor,
+            maximum_slice_loss_rate,
+            minimum_games_per_slice,
+            missing,
+            missing_slices,
+            failed_slices,
+            tuple(stage_results),
+            collected,
+        )
 
     def to_dict(self) -> dict:
         return {
@@ -135,9 +181,16 @@ class PhaseFourGateReport:
             "missing_slices": list(self.missing_slices),
             "failed_slices": list(self.failed_slices),
             "stages": [asdict(item) for item in self.stages],
-            "slices": [{**asdict(item), "games": item.games, "win_rate": item.win_rate,
-                        "loss_rate": item.loss_rate, "non_loss_rate": item.non_loss_rate}
-                       for item in self.slices],
+            "slices": [
+                {
+                    **asdict(item),
+                    "games": item.games,
+                    "win_rate": item.win_rate,
+                    "loss_rate": item.loss_rate,
+                    "non_loss_rate": item.non_loss_rate,
+                }
+                for item in self.slices
+            ],
         }
 
 

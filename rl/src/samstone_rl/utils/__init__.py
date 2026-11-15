@@ -1,2 +1,1 @@
 """Utilitaires partagés du trainer."""
-

@@ -11,12 +11,18 @@ from .godot_process import GodotProcess
 class GodotProcessPool:
     """Route stable match ids over several independent Godot workers."""
 
-    def __init__(self, workers: int, project_path: str | Path | None = None,
-                 godot_path: str | Path | None = None) -> None:
+    def __init__(
+        self,
+        workers: int,
+        project_path: str | Path | None = None,
+        godot_path: str | Path | None = None,
+    ) -> None:
         if workers <= 0:
             raise ValueError("workers doit etre strictement positif")
         self.processes = [GodotProcess(project_path, godot_path) for _ in range(workers)]
         self.routes: dict[str, int] = {}
+        self._executor = ThreadPoolExecutor(max_workers=workers)
+        self._closed = False
 
     def __enter__(self) -> Self:
         self.start()
@@ -26,13 +32,20 @@ class GodotProcessPool:
         self.close()
 
     def start(self) -> None:
-        with ThreadPoolExecutor(max_workers=len(self.processes)) as executor:
-            list(executor.map(lambda process: process.start(), self.processes))
+        try:
+            list(self._executor.map(lambda process: process.start(), self.processes))
+        except BaseException:
+            self.close()
+            raise
 
     def close(self) -> None:
-        with ThreadPoolExecutor(max_workers=len(self.processes)) as executor:
-            list(executor.map(lambda process: process.close(), self.processes))
-        self.routes.clear()
+        if not self._closed:
+            try:
+                list(self._executor.map(lambda process: process.close(), self.processes))
+            finally:
+                self._executor.shutdown(wait=True)
+                self._closed = True
+                self.routes.clear()
 
     def batch_reset(self, matches: list[dict[str, Any]]) -> list[dict[str, Any]]:
         groups: list[list[dict[str, Any]]] = [[] for _ in self.processes]
@@ -44,8 +57,9 @@ class GodotProcessPool:
             seen.add(match_id)
             groups[index % len(groups)].append(match)
         results = self._parallel(groups, lambda process, group: process.batch_reset(group))
-        worker_by_match = {str(match["match_id"]): worker
-                           for worker, group in enumerate(groups) for match in group}
+        worker_by_match = {
+            str(match["match_id"]): worker for worker, group in enumerate(groups) for match in group
+        }
         for result in results:
             if result.get("ok"):
                 self.routes[str(result["match_id"])] = worker_by_match[str(result["match_id"])]
@@ -58,18 +72,27 @@ class GodotProcessPool:
         return self._routed(matches, lambda process, group: process.batch_get_state(group))
 
     def batch_choose_profile_action(self, matches: list[dict[str, Any]]) -> list[dict[str, Any]]:
-        return self._routed(matches, lambda process, group: process.batch_choose_profile_action(group))
+        return self._routed(
+            matches, lambda process, group: process.batch_choose_profile_action(group)
+        )
+
+    def batch_tactical_action_scores(self, matches: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        return self._routed(
+            matches, lambda process, group: process.batch_tactical_action_scores(group)
+        )
 
     def release_matches(self, match_ids: list[str]) -> None:
         groups: list[list[str]] = [[] for _ in self.processes]
         for match_id in match_ids:
             if match_id in self.routes:
                 groups[self.routes.pop(match_id)].append(match_id)
-        with ThreadPoolExecutor(max_workers=len(self.processes)) as executor:
-            futures = [executor.submit(process.release_matches, group)
-                       for process, group in zip(self.processes, groups, strict=True) if group]
-            for future in futures:
-                future.result()
+        futures = [
+            self._executor.submit(process.release_matches, group)
+            for process, group in zip(self.processes, groups, strict=True)
+            if group
+        ]
+        for future in futures:
+            future.result()
 
     def _routed(self, matches: list[dict[str, Any]], call: Callable) -> list[dict[str, Any]]:
         groups: list[list[dict[str, Any]]] = [[] for _ in self.processes]
@@ -81,12 +104,16 @@ class GodotProcessPool:
         return self._ordered(matches, self._parallel(groups, call))
 
     def _parallel(self, groups: list[list], call: Callable) -> list[dict[str, Any]]:
-        with ThreadPoolExecutor(max_workers=len(self.processes)) as executor:
-            futures = [executor.submit(call, process, group)
-                       for process, group in zip(self.processes, groups, strict=True) if group]
-            return [item for future in futures for item in future.result()]
+        futures = [
+            self._executor.submit(call, process, group)
+            for process, group in zip(self.processes, groups, strict=True)
+            if group
+        ]
+        return [item for future in futures for item in future.result()]
 
     @staticmethod
-    def _ordered(requests: list[dict[str, Any]], results: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    def _ordered(
+        requests: list[dict[str, Any]], results: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]:
         by_id = {str(result["match_id"]): result for result in results}
         return [by_id[str(request["match_id"])] for request in requests]

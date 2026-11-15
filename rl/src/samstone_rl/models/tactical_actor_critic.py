@@ -5,13 +5,20 @@ from collections.abc import Mapping
 import torch
 from torch import nn
 from torch.distributions import Categorical
+from torch.nn import functional as F
 
 
 class TacticalActorCritic(nn.Module):
     """PPO model which scores legal placements with shared relational weights."""
 
-    def __init__(self, obs_dim: int, action_dim: int, action_feature_dim: int,
-                 hidden_dim: int = 512, action_hidden_dim: int = 128) -> None:
+    def __init__(
+        self,
+        obs_dim: int,
+        action_dim: int,
+        action_feature_dim: int,
+        hidden_dim: int = 512,
+        action_hidden_dim: int = 128,
+    ) -> None:
         super().__init__()
         if action_feature_dim <= 0 or action_hidden_dim <= 0:
             raise ValueError("les dimensions tactiques doivent etre positives")
@@ -19,11 +26,14 @@ class TacticalActorCritic(nn.Module):
         self.action_feature_dim = int(action_feature_dim)
         self.hidden_dim = int(hidden_dim)
         self.backbone = nn.Sequential(
-            nn.Linear(obs_dim, hidden_dim), nn.Tanh(),
-            nn.Linear(hidden_dim, hidden_dim), nn.Tanh(),
+            nn.Linear(obs_dim, hidden_dim),
+            nn.Tanh(),
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.Tanh(),
         )
         self.action_encoder = nn.Sequential(
-            nn.Linear(action_feature_dim, action_hidden_dim), nn.Tanh(),
+            nn.Linear(action_feature_dim, action_hidden_dim),
+            nn.Tanh(),
         )
         # Residual legacy head preserves a proven checkpoint at initialization;
         # the shared tactical scorer then learns corrections instead of starting
@@ -31,7 +41,8 @@ class TacticalActorCritic(nn.Module):
         self.legacy_actor = nn.Linear(hidden_dim, action_dim)
         scorer_hidden = max(64, hidden_dim // 2)
         self.action_scorer = nn.Sequential(
-            nn.Linear(hidden_dim + action_hidden_dim, scorer_hidden), nn.Tanh(),
+            nn.Linear(hidden_dim + action_hidden_dim, scorer_hidden),
+            nn.Tanh(),
             nn.Linear(scorer_hidden, 1),
         )
         self.critic = nn.Linear(hidden_dim, 1)
@@ -41,39 +52,55 @@ class TacticalActorCritic(nn.Module):
         return self.backbone(observations)
 
     def distribution_and_value(
-            self, observations: torch.Tensor, action_mask: torch.Tensor,
-            action_features: torch.Tensor) -> tuple[Categorical, torch.Tensor]:
+        self, observations: torch.Tensor, action_mask: torch.Tensor, action_features: torch.Tensor
+    ) -> tuple[Categorical, torch.Tensor]:
         self._validate_inputs(observations, action_mask, action_features)
         state = self.encode_state(observations)
         actions = self.action_encoder(action_features)
-        expanded = state.unsqueeze(1).expand(-1, self.action_dim, -1)
-        logits = (self.legacy_actor(state)
-                  + self.action_scorer(torch.cat((expanded, actions), dim=-1)).squeeze(-1))
+        # Factor the shared state projection once per state. Keep the same
+        # parameters/checkpoint keys and nonlinearity as the concatenated MLP.
+        projection = self.action_scorer[0]
+        shared = F.linear(state, projection.weight[:, : self.hidden_dim], projection.bias)
+        per_action = F.linear(actions, projection.weight[:, self.hidden_dim :])
+        scores = self.action_scorer[2](torch.tanh(shared.unsqueeze(1) + per_action))
+        logits = self.legacy_actor(state) + scores.squeeze(-1)
         # A finite sentinel avoids DirectML gradient overflow while remaining
         # exactly zero after softmax at float32 precision.
         logits = logits.masked_fill(~action_mask, -1.0e9)
         return Categorical(logits=logits), self.critic(state).squeeze(-1)
 
-    def act(self, observations: torch.Tensor, action_mask: torch.Tensor,
-            action_features: torch.Tensor, deterministic: bool = False
-            ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    def act(
+        self,
+        observations: torch.Tensor,
+        action_mask: torch.Tensor,
+        action_features: torch.Tensor,
+        deterministic: bool = False,
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         distribution, value = self.distribution_and_value(
-            observations, action_mask, action_features)
+            observations, action_mask, action_features
+        )
         action = distribution.probs.argmax(dim=-1) if deterministic else distribution.sample()
-        selected = (action.long().unsqueeze(-1) == torch.arange(
-            self.action_dim, device=action.device)).to(distribution.logits.dtype)
+        selected = (
+            action.long().unsqueeze(-1) == torch.arange(self.action_dim, device=action.device)
+        ).to(distribution.logits.dtype)
         return action, (distribution.logits * selected).sum(dim=-1), value
 
-    def evaluate_actions(self, observations: torch.Tensor, action_mask: torch.Tensor,
-                         action_features: torch.Tensor, actions: torch.Tensor
-                         ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    def evaluate_actions(
+        self,
+        observations: torch.Tensor,
+        action_mask: torch.Tensor,
+        action_features: torch.Tensor,
+        actions: torch.Tensor,
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         distribution, value = self.distribution_and_value(
-            observations, action_mask, action_features)
+            observations, action_mask, action_features
+        )
         # ``Categorical.log_prob`` backpropagates through a partial scatter,
         # which the DirectML backend does not implement. The one-hot product
         # is mathematically identical and remains fast on CPU as well.
-        selected = (actions.long().unsqueeze(-1) == torch.arange(
-            self.action_dim, device=actions.device)).to(distribution.logits.dtype)
+        selected = (
+            actions.long().unsqueeze(-1) == torch.arange(self.action_dim, device=actions.device)
+        ).to(distribution.logits.dtype)
         log_prob = (distribution.logits * selected).sum(dim=-1)
         entropy = -(distribution.probs * distribution.logits).sum(dim=-1)
         return log_prob, entropy, value
@@ -82,16 +109,17 @@ class TacticalActorCritic(nn.Module):
         return self.critic(self.encode_state(observations)).squeeze(-1)
 
     def import_legacy_state(self, state: Mapping[str, torch.Tensor]) -> tuple[str, ...]:
-        """Transfer the strategic backbone and critic, never the incompatible actor."""
+        """Transfer matching tensors and map the classical actor to the residual head."""
         own = self.state_dict()
         transferred = {
-            name: tensor for name, tensor in state.items()
-            if name.startswith(("backbone.", "critic."))
-            and name in own and own[name].shape == tensor.shape
+            name: tensor
+            for name, tensor in state.items()
+            if name in own and own[name].shape == tensor.shape
         }
         for legacy_name, tactical_name in (
-                ("actor.weight", "legacy_actor.weight"),
-                ("actor.bias", "legacy_actor.bias")):
+            ("actor.weight", "legacy_actor.weight"),
+            ("actor.bias", "legacy_actor.bias"),
+        ):
             tensor = state.get(legacy_name)
             if tensor is not None and own[tactical_name].shape == tensor.shape:
                 transferred[tactical_name] = tensor
@@ -100,8 +128,9 @@ class TacticalActorCritic(nn.Module):
         self.load_state_dict(transferred, strict=False)
         return tuple(sorted(transferred))
 
-    def _validate_inputs(self, observations: torch.Tensor, action_mask: torch.Tensor,
-                         action_features: torch.Tensor) -> None:
+    def _validate_inputs(
+        self, observations: torch.Tensor, action_mask: torch.Tensor, action_features: torch.Tensor
+    ) -> None:
         if action_mask.dtype is not torch.bool:
             raise TypeError("action_mask doit etre un tenseur bool")
         if torch.any(~action_mask.any(dim=-1)):
@@ -109,7 +138,8 @@ class TacticalActorCritic(nn.Module):
         expected = (*observations.shape[:-1], self.action_dim, self.action_feature_dim)
         if tuple(action_features.shape) != expected:
             raise ValueError(
-                f"features tactiques {tuple(action_features.shape)}, attendues {expected}")
+                f"features tactiques {tuple(action_features.shape)}, attendues {expected}"
+            )
 
     def _initialize(self) -> None:
         for layer in self.modules():

@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import argparse
 import csv
-import hashlib
 import json
 from itertools import product
 from pathlib import Path
@@ -24,7 +23,11 @@ from samstone_rl.evaluation.paired import (
 )
 from samstone_rl.models import TacticalActorCritic
 from samstone_rl.models.actor_critic import ActorCritic
+from samstone_rl.models.policy import restore_policy
 from samstone_rl.training.curriculum import stages_from_config
+from samstone_rl.utils.checkpoints import file_checksum, load_checkpoint
+from samstone_rl.utils.device import resolve_torch_device
+from samstone_rl.utils.provenance import provenance
 
 
 def scenario_options(scenario: dict[str, Any]) -> dict[str, Any]:
@@ -42,46 +45,43 @@ def checkpoint_label(path: Path) -> str:
 
 
 def checksum(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as stream:
-        for block in iter(lambda: stream.read(1024 * 1024), b""):
-            digest.update(block)
-    return digest.hexdigest()
+    return file_checksum(path)
 
 
-def load_model(path: Path, observation_size: int, action_size: int,
-               action_feature_size: int, device: torch.device
-               ) -> ActorCritic | TacticalActorCritic:
-    checkpoint = torch.load(path, map_location=device, weights_only=False)
-    state = checkpoint["model"]
-    hidden = int(state["backbone.0.weight"].shape[0])
-    expected_observation = int(state["backbone.0.weight"].shape[1])
-    tactical = "action_encoder.0.weight" in state
-    actor_name = "legacy_actor.weight" if tactical else "actor.weight"
-    expected_actions = int(state[actor_name].shape[0])
-    if expected_observation != observation_size or expected_actions != action_size:
+def load_model(
+    path: Path,
+    observation_size: int,
+    action_size: int,
+    action_feature_size: int,
+    device: torch.device,
+) -> ActorCritic | TacticalActorCritic:
+    checkpoint = load_checkpoint(path)
+    model = restore_policy(checkpoint, device)
+    state = model.state_dict()
+    if (
+        state["backbone.0.weight"].shape[1] != observation_size
+        or state["critic.weight"].shape[0] != 1
+    ):
         raise ValueError(f"checkpoint incompatible: {path}")
-    if tactical:
-        feature_size = int(state["action_encoder.0.weight"].shape[1])
-        action_hidden = int(state["action_encoder.0.weight"].shape[0])
-        if feature_size != action_feature_size:
-            raise ValueError(
-                f"features tactiques incompatibles: {path} ({feature_size} != {action_feature_size})")
-        model = TacticalActorCritic(
-            observation_size, action_size, feature_size, hidden, action_hidden).to(device)
-    else:
-        model = ActorCritic(observation_size, action_size, hidden).to(device)
-    model.load_state_dict(state)
-    model.eval()
+    if action_size != 128 or action_feature_size != 79:
+        raise ValueError("schema d'action incompatible")
     return model
 
 
-def build_cases(env: SamStoneEnv, scenarios: list[dict[str, Any]], games: int,
-                seed_base: int, blocked_counts: tuple[int, ...], max_attempts: int) -> list[ComparisonCase]:
+def build_cases(
+    env: SamStoneEnv,
+    scenarios: list[dict[str, Any]],
+    games: int,
+    seed_base: int,
+    blocked_counts: tuple[int, ...],
+    max_attempts: int,
+) -> list[ComparisonCase]:
     """Resolve a fixed actual seed for every balanced evaluation case."""
     strata = list(product(range(len(scenarios)), (1, 2), (1, 2), blocked_counts))
     if games % len(strata) != 0:
-        raise ValueError(f"--games doit être divisible par {len(strata)} pour un planning équilibré")
+        raise ValueError(
+            f"--games doit être divisible par {len(strata)} pour un planning équilibré"
+        )
     cases: list[ComparisonCase] = []
     for case_id in range(games):
         scenario_index, agent_player, first_player, target_blocked = strata[case_id % len(strata)]
@@ -97,21 +97,30 @@ def build_cases(env: SamStoneEnv, scenarios: list[dict[str, Any]], games: int,
                 break
         if actual_seed is None:
             raise RuntimeError(
-                f"terrain {target_blocked} introuvable pour le cas {case_id} après {max_attempts} seeds")
-        cases.append(ComparisonCase(
-            case_id=case_id,
-            seed=actual_seed,
-            scenario_index=scenario_index,
-            god=str(scenarios[scenario_index]["god"]),
-            agent_player=agent_player,
-            first_player=first_player,
-            blocked_count=target_blocked,
-        ))
+                f"terrain {target_blocked} introuvable pour le cas {case_id} après {max_attempts} seeds"
+            )
+        cases.append(
+            ComparisonCase(
+                case_id=case_id,
+                seed=actual_seed,
+                scenario_index=scenario_index,
+                god=str(scenarios[scenario_index]["god"]),
+                agent_player=agent_player,
+                first_player=first_player,
+                blocked_count=target_blocked,
+            )
+        )
     return cases
 
 
-def play_case(env: SamStoneEnv, model: ActorCritic | TacticalActorCritic, case: ComparisonCase,
-              scenario: dict[str, Any], opponent: Any, device: torch.device) -> ComparisonOutcome:
+def play_case(
+    env: SamStoneEnv,
+    model: ActorCritic | TacticalActorCritic,
+    case: ComparisonCase,
+    scenario: dict[str, Any],
+    opponent: Any,
+    device: torch.device,
+) -> ComparisonOutcome:
     env.opponent = opponent
     env.agent_player = case.agent_player
     options = scenario_options(scenario)
@@ -123,14 +132,18 @@ def play_case(env: SamStoneEnv, model: ActorCritic | TacticalActorCritic, case: 
     while not terminated:
         with torch.no_grad():
             observation_tensor = torch.as_tensor(
-                observation, dtype=torch.float32, device=device).unsqueeze(0)
+                observation, dtype=torch.float32, device=device
+            ).unsqueeze(0)
             mask_tensor = torch.as_tensor(
-                info["action_mask"], dtype=torch.bool, device=device).unsqueeze(0)
+                info["action_mask"], dtype=torch.bool, device=device
+            ).unsqueeze(0)
             if isinstance(model, TacticalActorCritic):
                 features_tensor = torch.as_tensor(
-                    info["action_features"], dtype=torch.float32, device=device).unsqueeze(0)
+                    info["action_features"], dtype=torch.float32, device=device
+                ).unsqueeze(0)
                 action, _, _ = model.act(
-                    observation_tensor, mask_tensor, features_tensor, deterministic=True)
+                    observation_tensor, mask_tensor, features_tensor, deterministic=True
+                )
             else:
                 action, _, _ = model.act(observation_tensor, mask_tensor, deterministic=True)
         observation, _, ended, truncated, info = env.step(int(action.item()))
@@ -152,39 +165,61 @@ def write_json(path: Path, payload: dict[str, Any]) -> None:
     temporary.replace(path)
 
 
-def write_markdown(path: Path, models: dict[str, dict[str, Any]], pairs: dict[str, dict[str, Any]]) -> None:
-    lines = ["# Comparaison appariée des checkpoints", "", "## Résultats globaux", "",
-             "| Modèle | Parties | Win rate | Wilson lower | Loss rate | Marge moyenne |",
-             "|---|---:|---:|---:|---:|---:|"]
+def write_markdown(
+    path: Path, models: dict[str, dict[str, Any]], pairs: dict[str, dict[str, Any]]
+) -> None:
+    lines = [
+        "# Comparaison appariée des checkpoints",
+        "",
+        "## Résultats globaux",
+        "",
+        "| Modèle | Parties | Win rate | Wilson lower | Loss rate | Marge moyenne |",
+        "|---|---:|---:|---:|---:|---:|",
+    ]
     for label, result in models.items():
         overall = result["summary"]["overall"]
         lines.append(
             f"| {label} | {overall['games']} | {overall['win_rate']:.3%} | "
             f"{overall['wilson_lower']:.3%} | {overall['loss_rate']:.3%} | "
-            f"{overall['mean_margin']:.2f} |")
+            f"{overall['mean_margin']:.2f} |"
+        )
     if pairs:
-        lines.extend(["", "## Comparaisons appariées", "",
-                      "| Référence → candidat | Candidat meilleur | Identique | Candidat pire | Delta score moyen | p-value signe |",
-                      "|---|---:|---:|---:|---:|---:|"])
+        lines.extend(
+            [
+                "",
+                "## Comparaisons appariées",
+                "",
+                "| Référence → candidat | Candidat meilleur | Identique | Candidat pire | Delta score moyen | p-value signe |",
+                "|---|---:|---:|---:|---:|---:|",
+            ]
+        )
         for label, result in pairs.items():
             lines.append(
                 f"| {label} | {result['candidate_better']} | {result['same']} | "
                 f"{result['candidate_worse']} | {result['mean_score_delta']:+.4f} | "
-                f"{result['two_sided_sign_p_value']:.4f} |")
+                f"{result['two_sided_sign_p_value']:.4f} |"
+            )
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Compare plusieurs checkpoints sur les mêmes seeds et conditions Godot.")
+        description="Compare plusieurs checkpoints sur les mêmes seeds et conditions Godot."
+    )
     parser.add_argument("checkpoints", nargs="+", type=Path)
-    parser.add_argument("--config", type=Path,
-                        default=Path(__file__).resolve().parents[1]
-                        / "configs" / "ppo_phase4_tactical.yaml")
+    parser.add_argument(
+        "--config",
+        type=Path,
+        default=Path(__file__).resolve().parents[1] / "configs" / "ppo_phase4_vectorized.yaml",
+    )
     parser.add_argument("--stage", default="precision_025")
-    parser.add_argument("--games", type=int, default=720,
-                        help="Multiple de 72 avec les 6 dieux, 2 côtés, 2 départs et 3 terrains.")
-    parser.add_argument("--seed-base", type=int, default=2100000000)
+    parser.add_argument(
+        "--games",
+        type=int,
+        default=720,
+        help="Multiple de 72 avec les 6 dieux, 2 côtés, 2 départs et 3 terrains.",
+    )
+    parser.add_argument("--seed-base", type=int, default=8100000000)
     parser.add_argument("--blocked-counts", default="0,1,2")
     parser.add_argument("--max-terrain-attempts", type=int, default=64)
     parser.add_argument("--output", type=Path, required=True)
@@ -197,7 +232,9 @@ def main() -> int:
     for checkpoint in args.checkpoints:
         if not checkpoint.is_file():
             parser.error(f"checkpoint introuvable: {checkpoint}")
-    blocked_counts = tuple(int(value.strip()) for value in args.blocked_counts.split(",") if value.strip())
+    blocked_counts = tuple(
+        int(value.strip()) for value in args.blocked_counts.split(",") if value.strip()
+    )
     if not blocked_counts or min(blocked_counts) < 0 or args.max_terrain_attempts <= 0:
         parser.error("terrains ou tentatives invalides")
     output = args.output.resolve()
@@ -215,11 +252,12 @@ def main() -> int:
         stage = next(item for item in stages if item.name == args.stage)
     except StopIteration:
         parser.error(
-            f"palier inconnu: {args.stage}; choix: {', '.join(item.name for item in stages)}")
+            f"palier inconnu: {args.stage}; choix: {', '.join(item.name for item in stages)}"
+        )
     backend = str(config["environment"].get("evaluation_backend", "godot"))
     if backend != "godot":
         parser.error("la comparaison officielle doit utiliser evaluation_backend: godot")
-    device = torch.device(config.get("device", "cpu"))
+    device = resolve_torch_device(config.get("device", "cpu"))
     env = SamStoneEnv(
         godot_path=config["environment"].get("godot_path"),
         opponent=stage.opponent(),
@@ -227,8 +265,9 @@ def main() -> int:
         tactical_features=True,
     )
     try:
-        cases = build_cases(env, scenarios, args.games, args.seed_base, blocked_counts,
-                            args.max_terrain_attempts)
+        cases = build_cases(
+            env, scenarios, args.games, args.seed_base, blocked_counts, args.max_terrain_attempts
+        )
         models: dict[str, dict[str, Any]] = {}
         all_outcomes: dict[str, list[ComparisonOutcome]] = {}
         for index, checkpoint in enumerate(args.checkpoints, start=1):
@@ -236,13 +275,27 @@ def main() -> int:
             if label in models:
                 label = f"{label}#{index}"
             model = load_model(
-                checkpoint, env.observation_space.shape[0], env.action_space.n,
-                int(env.tactical_encoder.feature_size), device)
+                checkpoint,
+                env.observation_space.shape[0],
+                env.action_space.n,
+                int(env.tactical_encoder.feature_size),
+                device,
+            )
             outcomes: list[ComparisonOutcome] = []
             for count, case in enumerate(cases, start=1):
-                raw = play_case(env, model, case, scenarios[case.scenario_index], stage.opponent(), device)
-                outcomes.append(ComparisonOutcome(label, str(checkpoint.resolve()), raw.case, raw.winner,
-                                                  raw.margin, raw.turns))
+                raw = play_case(
+                    env, model, case, scenarios[case.scenario_index], stage.opponent(), device
+                )
+                outcomes.append(
+                    ComparisonOutcome(
+                        label,
+                        str(checkpoint.resolve()),
+                        raw.case,
+                        raw.winner,
+                        raw.margin,
+                        raw.turns,
+                    )
+                )
                 if count % 24 == 0 or count == len(cases):
                     print(f"{label}: {count}/{len(cases)}")
             all_outcomes[label] = outcomes
@@ -252,15 +305,20 @@ def main() -> int:
                 "summary": grouped_summary(outcomes),
             }
         reference_label = next(iter(models))
-        pairs = {f"{reference_label} → {label}": paired_delta(all_outcomes[reference_label], outcomes)
-                 for label, outcomes in all_outcomes.items() if label != reference_label}
+        pairs = {
+            f"{reference_label} → {label}": paired_delta(all_outcomes[reference_label], outcomes)
+            for label, outcomes in all_outcomes.items()
+            if label != reference_label
+        }
         rows = [outcome_row(item) for outcomes in all_outcomes.values() for item in outcomes]
         with (output / "outcomes.csv").open("w", newline="", encoding="utf-8") as stream:
             writer = csv.DictWriter(stream, fieldnames=list(rows[0]))
             writer.writeheader()
             writer.writerows(rows)
         report = {
-            "schema_version": 1,
+            "schema_version": 2,
+            "provenance": provenance(),
+            "oracle": env.bridge.engine_manifest(),
             "config": str(args.config.resolve()),
             "stage": args.stage,
             "seed_base": args.seed_base,

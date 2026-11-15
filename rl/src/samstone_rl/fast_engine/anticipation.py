@@ -32,20 +32,20 @@ class StoneThreatSignature:
         adjacent = tuple(normal[index] + ranged[index] + random_bonus for index in range(4))
         axis = str(definition.get("coin_flip", ""))
         if axis:
-            first, second = ((2, 3) if axis == "horizontal" else (0, 1))
+            first, second = (2, 3) if axis == "horizontal" else (0, 1)
             flipped_adjacent = list(adjacent)
             flipped_ranged = list(ranged)
             flipped_adjacent[first], flipped_adjacent[second] = (
-                flipped_adjacent[second], flipped_adjacent[first])
+                flipped_adjacent[second],
+                flipped_adjacent[first],
+            )
             flipped_ranged[first], flipped_ranged[second] = (
-                flipped_ranged[second], flipped_ranged[first])
-            adjacent = tuple(max(adjacent[index], flipped_adjacent[index])
-                             for index in range(4))
-            ranged = tuple(max(ranged[index], flipped_ranged[index])
-                           for index in range(4))
-        return cls(
-            str(definition["lineage_id"]), str(definition["affinity"]),
-            adjacent, ranged)  # type: ignore[arg-type]
+                flipped_ranged[second],
+                flipped_ranged[first],
+            )
+            adjacent = tuple(max(adjacent[index], flipped_adjacent[index]) for index in range(4))
+            ranged = tuple(max(ranged[index], flipped_ranged[index]) for index in range(4))
+        return cls(str(definition["lineage_id"]), str(definition["affinity"]), adjacent, ranged)  # type: ignore[arg-type]
 
 
 @dataclass(frozen=True, slots=True)
@@ -76,16 +76,19 @@ class ReplyThreatCache:
         }
         self.by_god = {
             god_id: tuple(
-                signature for signature in self.signatures.values()
-                if signature.affinity in ("neutral", god_id))
+                signature
+                for signature in self.signatures.values()
+                if signature.affinity in ("neutral", god_id)
+            )
             for god_id in catalog.gods
         }
         # lru_cache is created per catalogue instance: no stale entry can
         # survive a content change or leak into another run.
         self._aggregate = lru_cache(maxsize=maximum_profiles)(self._aggregate_uncached)
 
-    def profile(self, god_id: str, played_lineages: set[str] | tuple[str, ...],
-                hand_size: int) -> ReplyThreatProfile:
+    def profile(
+        self, god_id: str, played_lineages: set[str] | tuple[str, ...], hand_size: int
+    ) -> ReplyThreatProfile:
         lineages = tuple(sorted(set(played_lineages)))
         if hand_size <= 0:
             return ReplyThreatProfile(god_id, lineages, ZERO_SIDES, ZERO_SIDES, False)
@@ -94,8 +97,9 @@ class ReplyThreatCache:
     def cache_info(self):
         return self._aggregate.cache_info()
 
-    def _aggregate_uncached(self, god_id: str,
-                            played_lineages: tuple[str, ...]) -> ReplyThreatProfile:
+    def _aggregate_uncached(
+        self, god_id: str, played_lineages: tuple[str, ...]
+    ) -> ReplyThreatProfile:
         try:
             signatures = self.by_god[god_id]
         except KeyError as exc:
@@ -103,9 +107,7 @@ class ReplyThreatCache:
         excluded = set(played_lineages)
         possible = [item for item in signatures if item.lineage_id not in excluded]
         if not possible:
-            return ReplyThreatProfile(
-                god_id, played_lineages, ZERO_SIDES, ZERO_SIDES, False)
+            return ReplyThreatProfile(god_id, played_lineages, ZERO_SIDES, ZERO_SIDES, False)
         adjacent = tuple(max(item.adjacent[index] for item in possible) for index in range(4))
         ranged = tuple(max(item.ranged[index] for item in possible) for index in range(4))
-        return ReplyThreatProfile(
-            god_id, played_lineages, adjacent, ranged, True)  # type: ignore[arg-type]
+        return ReplyThreatProfile(god_id, played_lineages, adjacent, ranged, True)  # type: ignore[arg-type]

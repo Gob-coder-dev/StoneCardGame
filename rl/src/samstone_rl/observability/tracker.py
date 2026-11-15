@@ -45,9 +45,14 @@ def flatten_metrics(metrics: Mapping[str, Any], prefix: str = "") -> dict[str, f
     return flattened
 
 
-def build_run_manifest(run_type: str, config: Mapping[str, Any], config_path: str | Path,
-                       seed: int, checksums: Mapping[str, str] | None = None,
-                       extra: Mapping[str, Any] | None = None) -> dict[str, Any]:
+def build_run_manifest(
+    run_type: str,
+    config: Mapping[str, Any],
+    config_path: str | Path,
+    seed: int,
+    checksums: Mapping[str, str] | None = None,
+    extra: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
     path = Path(config_path).resolve()
     config_bytes = path.read_bytes()
     git = _git_metadata(path.parent)
@@ -75,8 +80,9 @@ def build_run_manifest(run_type: str, config: Mapping[str, Any], config_path: st
 class RunTracker:
     """Append-only JSONL plus TensorBoard, with atomic manifest updates."""
 
-    def __init__(self, output_directory: str | Path, run_type: str,
-                 tensorboard: bool = True) -> None:
+    def __init__(
+        self, output_directory: str | Path, run_type: str, tensorboard: bool = True
+    ) -> None:
         self.output = Path(output_directory).resolve()
         self.output.mkdir(parents=True, exist_ok=True)
         self.run_type = run_type
@@ -84,10 +90,18 @@ class RunTracker:
         self.alerts_path = self.output / "alerts.jsonl"
         self.manifest_path = self.output / "run_manifest.json"
         self._metrics = self.metrics_path.open("a", encoding="utf-8", buffering=1)
-        self._alerts = self.alerts_path.open("a", encoding="utf-8", buffering=1)
-        self.tensorboard = (SummaryWriter(
-            str(self.output / "tensorboard"), max_queue=1000, flush_secs=10)
-            if tensorboard else None)
+        self.tensorboard = None
+        try:
+            self._alerts = self.alerts_path.open("a", encoding="utf-8", buffering=1)
+            if tensorboard:
+                self.tensorboard = SummaryWriter(
+                    str(self.output / "tensorboard"), max_queue=1000, flush_secs=10
+                )
+        except BaseException:
+            self._metrics.close()
+            if hasattr(self, "_alerts"):
+                self._alerts.close()
+            raise
 
     def __enter__(self) -> Self:
         return self
@@ -101,26 +115,62 @@ class RunTracker:
         temporary.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
         temporary.replace(self.manifest_path)
 
-    def initialize_manifest(self, manifest: Mapping[str, Any]) -> None:
+    def initialize_manifest(
+        self,
+        manifest: Mapping[str, Any],
+        *,
+        mutable_config_paths: tuple[tuple[str, ...], ...] = (),
+    ) -> None:
+        """Open a session, preserving prior configs and rejecting contract changes.
+
+        Callers may allow specific operational fields. Checkpoint loading still
+        checks optimizer compatibility and the authoritative engine identity.
+        """
         incoming = json_value(manifest)
         if not self.manifest_path.is_file():
             incoming["sessions"] = [{"opened_at": utc_now()}]
             self.write_manifest(incoming)
             return
         current = json.loads(self.manifest_path.read_text(encoding="utf-8"))
-        for key in ("run_type", "config_sha256"):
-            if current.get(key) != incoming.get(key):
-                raise ValueError(f"le dossier de run contient un autre {key}")
+        if current.get("run_type") != incoming.get("run_type"):
+            raise ValueError("le dossier de run contient un autre run_type")
+        changed = current.get("config_sha256") != incoming.get("config_sha256")
+        if changed:
+            configs = [json_value(item.get("config", {})) for item in (current, incoming)]
+            for config in configs:
+                for path in mutable_config_paths:
+                    node = config
+                    for key in path[:-1]:
+                        node = node.get(key, {})
+                    node.pop(path[-1], None)
+            if not mutable_config_paths or configs[0] != configs[1]:
+                raise ValueError("le dossier de run contient un autre config_sha256 incompatible")
         current_checksums = current.get("checksums", {})
         for key, value in incoming.get("checksums", {}).items():
             if key in current_checksums and current_checksums[key] != value:
                 raise ValueError(f"le dossier de run contient un autre checksum {key}")
-        current.setdefault("sessions", []).append({"opened_at": utc_now()})
+        if changed:
+            current.setdefault("config_history", []).append(
+                {
+                    "changed_at": utc_now(),
+                    "config_sha256": current["config_sha256"],
+                    "config": current["config"],
+                }
+            )
+            for key in ("config", "config_sha256", "config_path"):
+                current[key] = incoming[key]
+            current.setdefault("extra", {}).update(incoming.get("extra", {}))
+        current.setdefault("sessions", []).append(
+            {"opened_at": utc_now(), "config_sha256": incoming.get("config_sha256")}
+        )
         self.write_manifest(current)
 
     def update_manifest(self, **updates: Any) -> None:
-        current = (json.loads(self.manifest_path.read_text(encoding="utf-8"))
-                   if self.manifest_path.is_file() else {})
+        current = (
+            json.loads(self.manifest_path.read_text(encoding="utf-8"))
+            if self.manifest_path.is_file()
+            else {}
+        )
         clean_updates = json_value(updates)
         for key, value in clean_updates.get("checksums", {}).items():
             existing = current.get("checksums", {}).get(key)
@@ -129,8 +179,13 @@ class RunTracker:
         _deep_update(current, clean_updates)
         self.write_manifest(current)
 
-    def log(self, stream: str, step: int, metrics: Mapping[str, Any],
-            context: Mapping[str, Any] | None = None) -> dict[str, Any]:
+    def log(
+        self,
+        stream: str,
+        step: int,
+        metrics: Mapping[str, Any],
+        context: Mapping[str, Any] | None = None,
+    ) -> dict[str, Any]:
         event = {
             "schema_version": 1,
             "timestamp": utc_now(),
@@ -154,7 +209,9 @@ class RunTracker:
             step = int(payload.get("step", 0))
             self.tensorboard.add_text(
                 f"alerts/{payload.get('severity', 'warning')}/{payload.get('code', 'unknown')}",
-                str(payload.get("message", "")), step)
+                str(payload.get("message", "")),
+                step,
+            )
 
     def close(self) -> None:
         if not self._metrics.closed:
@@ -170,8 +227,8 @@ def _git_metadata(start: Path) -> dict[str, Any]:
     def run(*args: str) -> str:
         try:
             return subprocess.run(
-                ["git", *args], cwd=start, capture_output=True, text=True,
-                timeout=5, check=True).stdout.strip()
+                ["git", *args], cwd=start, capture_output=True, text=True, timeout=5, check=True
+            ).stdout.strip()
         except (OSError, subprocess.SubprocessError):
             return ""
 

@@ -21,6 +21,8 @@ environment:
       deck: [devoracle_n3, griffe_a_jetons_n3, sou_ricanant_n3, croupier_manchot_n2, jumeau_de_cuivre_n2, valet_a_lenvers_n2, avortons_des_caves_n2, le_voyeur_n1]
 
 model:
+  architecture: tactical_actor_critic
+  action_hidden_dim: 128
   hidden_dim: 512
 
 ppo:
@@ -62,6 +64,15 @@ curriculum:
   maximum_loss_rate: 0.07
   non_loss_confidence_floor: 0.90
   replay_probability: 0.0
+  stages:
+    - {name: precision_0, precision: 0.0, anticipation: false}
+    - {name: precision_025, precision: 0.25, anticipation: false}
+    - {name: precision_050, precision: 0.50, anticipation: false}
+    - {name: precision_100, precision: 1.0, anticipation: false}
+    - {name: precision_100_anticipation_25, precision: 1.0, anticipation_probability: 0.25}
+    - {name: precision_100_anticipation_50, precision: 1.0, anticipation_probability: 0.50}
+    - {name: precision_100_anticipation_75, precision: 1.0, anticipation_probability: 0.75}
+    - {name: precision_100_anticipation, precision: 1.0, anticipation_probability: 1.0}
   god_sampling: {enabled: false}
   terrain_sampling: {enabled: false}
 
@@ -69,7 +80,7 @@ evaluation:
   every_updates: 100
   games: 240
   num_envs: 10
-  seed_base: 2600000000
+  seed_base: 7100000000
   anchor_games_per_stage: 0
   final_gate:
     games_per_slice: 1
@@ -82,7 +93,7 @@ specialization:
   output_root: runs/boss_specialists
   mirror_probability: 0.10
   evaluation_games_per_matchup: 4
-  evaluation_seed_base: 2650000000
+  evaluation_seed_base: 7200000000
   selection_specialist_weight: 0.75
   snapshot_every_updates: 100
   max_recent: 6
@@ -96,7 +107,7 @@ specialization:
   validation:
     minimum_updates: 800
     games_per_slice: 24
-    seed_base: 2700000000
+    seed_base: 7900000000
     maximum_godot_regression: 0.06
     maximum_matchup_regression: 0.05
     minimum_score_gain: 0.01

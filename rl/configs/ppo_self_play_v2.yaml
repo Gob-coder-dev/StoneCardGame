@@ -31,6 +31,8 @@ environment:
       deck: [collecteur_de_dents_n4, depeceur_rampant_n4, recycleur_thoracique_n3, porte_greffes_n2, le_demonteur_n2, la_machine_aux_mille_depouilles_n1, avortons_des_caves_n3, le_voyeur_n1]
 
 model:
+  architecture: tactical_actor_critic
+  action_hidden_dim: 128
   hidden_dim: 512
 
 ppo:
@@ -72,6 +74,15 @@ curriculum:
   maximum_loss_rate: 0.07
   non_loss_confidence_floor: 0.90
   replay_probability: 0.20
+  stages:
+    - {name: precision_0, precision: 0.0, anticipation: false}
+    - {name: precision_025, precision: 0.25, anticipation: false}
+    - {name: precision_050, precision: 0.50, anticipation: false}
+    - {name: precision_100, precision: 1.0, anticipation: false}
+    - {name: precision_100_anticipation_25, precision: 1.0, anticipation_probability: 0.25}
+    - {name: precision_100_anticipation_50, precision: 1.0, anticipation_probability: 0.50}
+    - {name: precision_100_anticipation_75, precision: 1.0, anticipation_probability: 0.75}
+    - {name: precision_100_anticipation, precision: 1.0, anticipation_probability: 1.0}
   god_sampling:
     enabled: false
   terrain_sampling:
@@ -81,11 +92,11 @@ evaluation:
   every_updates: 100
   games: 500
   num_envs: 10
-  seed_base: 2300000000
+  seed_base: 5100000000
   anchor_games_per_stage: 0
   final_gate:
     games_per_slice: 100
-    seed_base: 2100000000
+    seed_base: 5990000000
     overall_win_rate: 0.85
     confidence_floor: 0.90
     maximum_loss_rate: 0.05
@@ -99,7 +110,7 @@ phase5:
   league_directory: runs/ppo_self_play_v2/league
   mirror_probability: 0.10
   mixed_eval_games_per_pair: 1
-  mixed_eval_seed_base: 2350000000
+  mixed_eval_seed_base: 5200000000
   selection_mixed_weight: 0.70
   snapshot_every_updates: 100
   max_recent: 6
@@ -114,8 +125,8 @@ phase5:
     minimum_updates: 500
     godot_games_per_slice: 12
     mixed_games_per_slice: 12
-    godot_seed_base: 2400000000
-    mixed_seed_base: 2500000000
+    godot_seed_base: 5800000000
+    mixed_seed_base: 5900000000
     maximum_stage_regression: 0.05
     maximum_god_regression: 0.08
     minimum_head_to_head_score: 0.52

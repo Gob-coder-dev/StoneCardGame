@@ -80,15 +80,33 @@ class MatchStore:
     def close(self) -> None:
         self.connection.close()
 
-    def find(self, engine_checksum: str, catalog_checksum: str, policy_checksum: str,
-             candidate_hash: str, opponent_id: str, opponent_deck: tuple[str, ...], seed: int,
-             agent_player: int, first_player: int) -> MatchRecord | None:
+    def find(
+        self,
+        engine_checksum: str,
+        catalog_checksum: str,
+        policy_checksum: str,
+        candidate_hash: str,
+        opponent_id: str,
+        opponent_deck: tuple[str, ...],
+        seed: int,
+        agent_player: int,
+        first_player: int,
+    ) -> MatchRecord | None:
         row = self.connection.execute(
             """SELECT * FROM matches WHERE engine_checksum=? AND catalog_checksum=?
                AND policy_checksum=? AND candidate_hash=? AND opponent_id=?
                AND seed=? AND agent_player=? AND first_player=?""",
-            (engine_checksum, catalog_checksum, policy_checksum, candidate_hash,
-             opponent_id, seed, agent_player, first_player)).fetchone()
+            (
+                engine_checksum,
+                catalog_checksum,
+                policy_checksum,
+                candidate_hash,
+                opponent_id,
+                seed,
+                agent_player,
+                first_player,
+            ),
+        ).fetchone()
         if row is None or tuple(json.loads(row["opponent_deck"])) != opponent_deck:
             return None
         return self._from_row(row)
@@ -97,27 +115,31 @@ class MatchStore:
         self._insert_record(record)
         self.connection.commit()
 
-    def insert_many(self, records: Iterable[MatchRecord],
-                    actions: Iterable[MatchAction] = ()) -> None:
+    def insert_many(
+        self, records: Iterable[MatchRecord], actions: Iterable[MatchAction] = ()
+    ) -> None:
         with self.connection:
             for record in records:
                 self._insert_record(record)
             for action in actions:
                 self._insert_action(action)
 
-    def records_for(self, engine_checksum: str, catalog_checksum: str,
-                    policy_checksum: str, candidate_hash: str) -> tuple[MatchRecord, ...]:
+    def records_for(
+        self, engine_checksum: str, catalog_checksum: str, policy_checksum: str, candidate_hash: str
+    ) -> tuple[MatchRecord, ...]:
         rows = self.connection.execute(
             """SELECT * FROM matches WHERE engine_checksum=? AND catalog_checksum=?
                AND policy_checksum=? AND candidate_hash=? ORDER BY opponent_id, seed,
                agent_player, first_player""",
-            (engine_checksum, catalog_checksum, policy_checksum, candidate_hash)).fetchall()
+            (engine_checksum, catalog_checksum, policy_checksum, candidate_hash),
+        ).fetchall()
         return tuple(self._from_row(row) for row in rows)
 
     def all_records(self) -> tuple[MatchRecord, ...]:
         rows = self.connection.execute(
             """SELECT * FROM matches ORDER BY policy_checksum, candidate_god,
-               candidate_hash, opponent_id, seed, agent_player, first_player""").fetchall()
+               candidate_hash, opponent_id, seed, agent_player, first_player"""
+        ).fetchall()
         return tuple(self._from_row(row) for row in rows)
 
     def actions_for(self, record: MatchRecord) -> tuple[MatchAction, ...]:
@@ -125,9 +147,17 @@ class MatchStore:
             """SELECT * FROM match_actions WHERE engine_checksum=? AND catalog_checksum=?
                AND policy_checksum=? AND candidate_hash=? AND opponent_id=? AND seed=?
                AND agent_player=? AND first_player=? ORDER BY turn""",
-            (record.engine_checksum, record.catalog_checksum, record.policy_checksum,
-             record.candidate_hash, record.opponent_id, record.seed,
-             record.agent_player, record.first_player)).fetchall()
+            (
+                record.engine_checksum,
+                record.catalog_checksum,
+                record.policy_checksum,
+                record.candidate_hash,
+                record.opponent_id,
+                record.seed,
+                record.agent_player,
+                record.first_player,
+            ),
+        ).fetchall()
         return tuple(self._action_from_row(row) for row in rows)
 
     def has_hand_telemetry(self, record: MatchRecord) -> bool:
@@ -136,23 +166,34 @@ class MatchStore:
             """SELECT 1 FROM match_actions WHERE engine_checksum=? AND catalog_checksum=?
                AND policy_checksum=? AND candidate_hash=? AND opponent_id=? AND seed=?
                AND agent_player=? AND first_player=? AND hand != '[]' LIMIT 1""",
-            (record.engine_checksum, record.catalog_checksum, record.policy_checksum,
-             record.candidate_hash, record.opponent_id, record.seed,
-             record.agent_player, record.first_player)).fetchone()
+            (
+                record.engine_checksum,
+                record.catalog_checksum,
+                record.policy_checksum,
+                record.candidate_hash,
+                record.opponent_id,
+                record.seed,
+                record.agent_player,
+                record.first_player,
+            ),
+        ).fetchone()
         return row is not None
 
     def all_actions(self) -> tuple[MatchAction, ...]:
         rows = self.connection.execute(
             """SELECT * FROM match_actions ORDER BY policy_checksum, candidate_hash,
-               opponent_id, seed, agent_player, first_player, turn""").fetchall()
+               opponent_id, seed, agent_player, first_player, turn"""
+        ).fetchall()
         return tuple(self._action_from_row(row) for row in rows)
 
     def _create_schema(self) -> None:
         self.connection.execute(
             """CREATE TABLE IF NOT EXISTS metadata (
-               key TEXT PRIMARY KEY, value TEXT NOT NULL)""")
+               key TEXT PRIMARY KEY, value TEXT NOT NULL)"""
+        )
         self.connection.execute(
-            "INSERT OR REPLACE INTO metadata (key, value) VALUES ('schema_version', '3')")
+            "INSERT OR REPLACE INTO metadata (key, value) VALUES ('schema_version', '3')"
+        )
         self.connection.execute(
             """CREATE TABLE IF NOT EXISTS matches (
                engine_checksum TEXT NOT NULL,
@@ -176,7 +217,8 @@ class MatchStore:
                opponent_captures INTEGER NOT NULL DEFAULT 0,
                actions_sampled INTEGER NOT NULL DEFAULT 0,
                PRIMARY KEY (engine_checksum, catalog_checksum, policy_checksum,
-                            candidate_hash, opponent_id, seed, agent_player, first_player))""")
+                            candidate_hash, opponent_id, seed, agent_player, first_player))"""
+        )
         columns = {str(row[1]) for row in self.connection.execute("PRAGMA table_info(matches)")}
         migrations = {
             "blocked": "TEXT NOT NULL DEFAULT '[]'",
@@ -209,12 +251,15 @@ class MatchStore:
                hand TEXT NOT NULL DEFAULT '[]',
                PRIMARY KEY (engine_checksum, catalog_checksum, policy_checksum,
                             candidate_hash, opponent_id, seed, agent_player,
-                            first_player, turn))""")
+                            first_player, turn))"""
+        )
         action_columns = {
-            str(row[1]) for row in self.connection.execute("PRAGMA table_info(match_actions)")}
+            str(row[1]) for row in self.connection.execute("PRAGMA table_info(match_actions)")
+        }
         if "hand" not in action_columns:
             self.connection.execute(
-                "ALTER TABLE match_actions ADD COLUMN hand TEXT NOT NULL DEFAULT '[]'")
+                "ALTER TABLE match_actions ADD COLUMN hand TEXT NOT NULL DEFAULT '[]'"
+            )
         self.connection.commit()
 
     def _insert_record(self, record: MatchRecord) -> None:
@@ -222,9 +267,17 @@ class MatchStore:
             """DELETE FROM match_actions WHERE engine_checksum=? AND catalog_checksum=?
                AND policy_checksum=? AND candidate_hash=? AND opponent_id=? AND seed=?
                AND agent_player=? AND first_player=?""",
-            (record.engine_checksum, record.catalog_checksum, record.policy_checksum,
-             record.candidate_hash, record.opponent_id, record.seed,
-             record.agent_player, record.first_player))
+            (
+                record.engine_checksum,
+                record.catalog_checksum,
+                record.policy_checksum,
+                record.candidate_hash,
+                record.opponent_id,
+                record.seed,
+                record.agent_player,
+                record.first_player,
+            ),
+        )
         self.connection.execute(
             """INSERT OR REPLACE INTO matches (
                engine_checksum, catalog_checksum, policy_checksum, candidate_hash,
@@ -232,13 +285,29 @@ class MatchStore:
                seed, agent_player, first_player, winner, score_candidate, score_opponent,
                blocked, turns, candidate_captures, opponent_captures, actions_sampled)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-            (record.engine_checksum, record.catalog_checksum, record.policy_checksum,
-             record.candidate_hash, record.candidate_god, json.dumps(record.candidate_deck),
-             record.opponent_id, record.opponent_god, json.dumps(record.opponent_deck),
-             record.seed, record.agent_player, record.first_player, record.winner,
-             record.score_candidate, record.score_opponent, json.dumps(record.blocked),
-             record.turns, record.candidate_captures, record.opponent_captures,
-             int(record.actions_sampled)))
+            (
+                record.engine_checksum,
+                record.catalog_checksum,
+                record.policy_checksum,
+                record.candidate_hash,
+                record.candidate_god,
+                json.dumps(record.candidate_deck),
+                record.opponent_id,
+                record.opponent_god,
+                json.dumps(record.opponent_deck),
+                record.seed,
+                record.agent_player,
+                record.first_player,
+                record.winner,
+                record.score_candidate,
+                record.score_opponent,
+                json.dumps(record.blocked),
+                record.turns,
+                record.candidate_captures,
+                record.opponent_captures,
+                int(record.actions_sampled),
+            ),
+        )
 
     def _insert_action(self, action: MatchAction) -> None:
         self.connection.execute(
@@ -247,31 +316,70 @@ class MatchStore:
                opponent_id, seed, agent_player, first_player, turn, player,
                stone_id, row, col, captures, effects, placement_effects, hand)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-            (action.engine_checksum, action.catalog_checksum, action.policy_checksum,
-             action.candidate_hash, action.opponent_id, action.seed,
-             action.agent_player, action.first_player, action.turn, action.player,
-             action.stone_id, action.row, action.col, action.captures,
-             json.dumps(action.effects), json.dumps(action.placement_effects),
-             json.dumps(action.hand)))
+            (
+                action.engine_checksum,
+                action.catalog_checksum,
+                action.policy_checksum,
+                action.candidate_hash,
+                action.opponent_id,
+                action.seed,
+                action.agent_player,
+                action.first_player,
+                action.turn,
+                action.player,
+                action.stone_id,
+                action.row,
+                action.col,
+                action.captures,
+                json.dumps(action.effects),
+                json.dumps(action.placement_effects),
+                json.dumps(action.hand),
+            ),
+        )
 
     @staticmethod
     def _from_row(row: sqlite3.Row) -> MatchRecord:
         return MatchRecord(
-            row["engine_checksum"], row["catalog_checksum"], row["policy_checksum"],
-            row["candidate_hash"], row["candidate_god"], tuple(json.loads(row["candidate_deck"])),
-            row["opponent_id"], row["opponent_god"], tuple(json.loads(row["opponent_deck"])),
-            int(row["seed"]), int(row["agent_player"]), int(row["first_player"]),
-            int(row["winner"]), int(row["score_candidate"]), int(row["score_opponent"]),
+            row["engine_checksum"],
+            row["catalog_checksum"],
+            row["policy_checksum"],
+            row["candidate_hash"],
+            row["candidate_god"],
+            tuple(json.loads(row["candidate_deck"])),
+            row["opponent_id"],
+            row["opponent_god"],
+            tuple(json.loads(row["opponent_deck"])),
+            int(row["seed"]),
+            int(row["agent_player"]),
+            int(row["first_player"]),
+            int(row["winner"]),
+            int(row["score_candidate"]),
+            int(row["score_opponent"]),
             tuple(tuple(int(value) for value in cell) for cell in json.loads(row["blocked"])),
-            int(row["turns"]), int(row["candidate_captures"]),
-            int(row["opponent_captures"]), bool(row["actions_sampled"]))
+            int(row["turns"]),
+            int(row["candidate_captures"]),
+            int(row["opponent_captures"]),
+            bool(row["actions_sampled"]),
+        )
 
     @staticmethod
     def _action_from_row(row: sqlite3.Row) -> MatchAction:
         return MatchAction(
-            row["engine_checksum"], row["catalog_checksum"], row["policy_checksum"],
-            row["candidate_hash"], row["opponent_id"], int(row["seed"]),
-            int(row["agent_player"]), int(row["first_player"]), int(row["turn"]),
-            int(row["player"]), row["stone_id"], int(row["row"]), int(row["col"]),
-            int(row["captures"]), tuple(json.loads(row["effects"])),
-            tuple(json.loads(row["placement_effects"])), tuple(json.loads(row["hand"])))
+            row["engine_checksum"],
+            row["catalog_checksum"],
+            row["policy_checksum"],
+            row["candidate_hash"],
+            row["opponent_id"],
+            int(row["seed"]),
+            int(row["agent_player"]),
+            int(row["first_player"]),
+            int(row["turn"]),
+            int(row["player"]),
+            row["stone_id"],
+            int(row["row"]),
+            int(row["col"]),
+            int(row["captures"]),
+            tuple(json.loads(row["effects"])),
+            tuple(json.loads(row["placement_effects"])),
+            tuple(json.loads(row["hand"])),
+        )

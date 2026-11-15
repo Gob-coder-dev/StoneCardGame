@@ -24,12 +24,20 @@ def test_action_codec_round_trip_and_boolean_mask():
 
 def test_tactically_different_cards_have_different_features():
     encoder = ObservationEncoder()
-    base = {"level": 1, "blades": {}, "long_blades": {}, "shields": {},
-            "random_blades": 0, "effects": [], "affinity": "neutral", "coin_flip": ""}
+    base = {
+        "level": 1,
+        "blades": {},
+        "long_blades": {},
+        "shields": {},
+        "random_blades": 0,
+        "effects": [],
+        "affinity": "neutral",
+        "coin_flip": "",
+    }
     random_card = {**base, "random_blades": 4}
     shield_card = {**base, "shields": {"top": 4}}
-    assert encoder._card(base) != encoder._card(random_card)
-    assert encoder._card(random_card) != encoder._card(shield_card)
+    assert encoder.encode_card(base) != encoder.encode_card(random_card)
+    assert encoder.encode_card(random_card) != encoder.encode_card(shield_card)
 
 
 def test_capture_reward_is_small_and_symmetric():

@@ -43,10 +43,14 @@ class FastEngineBridge:
         return self.simulator.tactical_action_scores(observer)
 
     def engine_manifest(self) -> dict[str, Any]:
-        return {"protocol_version": 2, "observation_schema": 1,
-                "catalogue_checksum": self.catalog.checksum,
-                "game_version": "fast-python-1", "godot_version": "in-process",
-                "backend": "python"}
+        return {
+            "protocol_version": 2,
+            "observation_schema": 1,
+            "catalogue_checksum": self.catalog.checksum,
+            "game_version": "fast-python-1",
+            "godot_version": "in-process",
+            "backend": "python",
+        }
 
     def close(self) -> None:
         self.process = None

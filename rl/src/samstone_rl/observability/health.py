@@ -57,47 +57,78 @@ class HealthMonitor:
 
     def check(self, step: int, metrics: dict[str, Any]) -> tuple[HealthAlert, ...]:
         alerts: list[HealthAlert] = []
-        numeric = {key: float(value) for key, value in metrics.items()
-                   if isinstance(value, (bool, int, float))}
+        numeric = {
+            key: float(value)
+            for key, value in metrics.items()
+            if isinstance(value, (bool, int, float))
+        }
         for key, value in numeric.items():
             if not math.isfinite(value):
-                alerts.append(HealthAlert(
-                    step, "critical", "non_finite_metric",
-                    f"La métrique {key} n'est pas finie.",
-                    "Arrêter le run, restaurer le dernier checkpoint sain et vérifier récompenses et gradients."))
+                alerts.append(
+                    HealthAlert(
+                        step,
+                        "critical",
+                        "non_finite_metric",
+                        f"La métrique {key} n'est pas finie.",
+                        "Arrêter le run, restaurer le dernier checkpoint sain et vérifier récompenses et gradients.",
+                    )
+                )
         illegal = numeric.get("illegal_actions", 0.0)
         if illegal > 0:
-            alerts.append(HealthAlert(
-                step, "critical", "illegal_action",
-                "Une action illégale a été observée.",
-                "Vérifier immédiatement le masque d'actions et le codec Python/Godot.", illegal, 0.0))
+            alerts.append(
+                HealthAlert(
+                    step,
+                    "critical",
+                    "illegal_action",
+                    "Une action illégale a été observée.",
+                    "Vérifier immédiatement le masque d'actions et le codec Python/Godot.",
+                    illegal,
+                    0.0,
+                )
+            )
         if "episode_return_mean" in numeric:
             self.last_training_return = numeric["episode_return_mean"]
 
         self._consecutive_warning(
-            alerts, step, "high_kl", numeric.get("approx_kl"),
+            alerts,
+            step,
+            "high_kl",
+            numeric.get("approx_kl"),
             lambda value: value > float(self.settings["target_kl"]),
             float(self.settings["target_kl"]),
             "La divergence KL est durablement trop élevée.",
-            "Réduire le learning rate ou le nombre d'époques PPO.")
+            "Réduire le learning rate ou le nombre d'époques PPO.",
+        )
         self._consecutive_warning(
-            alerts, step, "high_clip_fraction", numeric.get("clip_fraction"),
+            alerts,
+            step,
+            "high_clip_fraction",
+            numeric.get("clip_fraction"),
             lambda value: value > float(self.settings["maximum_clip_fraction"]),
             float(self.settings["maximum_clip_fraction"]),
             "Une part trop importante des mises à jour PPO est tronquée.",
-            "Réduire le learning rate, les époques PPO ou augmenter la taille des rollouts.")
+            "Réduire le learning rate, les époques PPO ou augmenter la taille des rollouts.",
+        )
         self._consecutive_warning(
-            alerts, step, "entropy_collapse", numeric.get("normalized_entropy"),
+            alerts,
+            step,
+            "entropy_collapse",
+            numeric.get("normalized_entropy"),
             lambda value: value < float(self.settings["minimum_normalized_entropy"]),
             float(self.settings["minimum_normalized_entropy"]),
             "L'exploration de la politique s'est effondrée.",
-            "Augmenter légèrement entropy_coef et vérifier que la promotion n'est pas trop rapide.")
+            "Augmenter légèrement entropy_coef et vérifier que la promotion n'est pas trop rapide.",
+        )
         self._consecutive_warning(
-            alerts, step, "poor_value_fit", numeric.get("explained_variance"),
+            alerts,
+            step,
+            "poor_value_fit",
+            numeric.get("explained_variance"),
             lambda value: value < float(self.settings["minimum_explained_variance"]),
             float(self.settings["minimum_explained_variance"]),
             "Le critique prédit mal les retours.",
-            "Vérifier l'échelle des récompenses, value_coef et la longueur des rollouts.")
+            "Vérifier l'échelle des récompenses, value_coef et la longueur des rollouts.",
+        )
 
         sps = numeric.get("steps_per_second")
         if sps is not None and sps > 0:
@@ -107,11 +138,17 @@ class HealthMonitor:
                 baseline = median(self.sps_baseline)
                 floor = baseline * (1.0 - float(self.settings["maximum_throughput_drop"]))
                 if sps < floor:
-                    alerts.append(HealthAlert(
-                        step, "warning", "throughput_drop",
-                        "Le débit du simulateur a fortement baissé.",
-                        "Contrôler les processus Godot, la mémoire, la température CPU et la taille des logs.",
-                        sps, floor))
+                    alerts.append(
+                        HealthAlert(
+                            step,
+                            "warning",
+                            "throughput_drop",
+                            "Le débit du simulateur a fortement baissé.",
+                            "Contrôler les processus Godot, la mémoire, la température CPU et la taille des logs.",
+                            sps,
+                            floor,
+                        )
+                    )
 
         eval_rate = numeric.get("evaluation_win_rate")
         if eval_rate is not None:
@@ -123,36 +160,63 @@ class HealthMonitor:
                 self.no_improvement += 1
             regression = self.best_eval - eval_rate
             if regression > float(self.settings["maximum_eval_regression"]):
-                alerts.append(HealthAlert(
-                    step, "warning", "evaluation_regression",
-                    "La politique régresse sur les seeds d'évaluation.",
-                    "Comparer au meilleur checkpoint et réintroduire davantage d'adversaires historiques.",
-                    regression, float(self.settings["maximum_eval_regression"])))
+                alerts.append(
+                    HealthAlert(
+                        step,
+                        "warning",
+                        "evaluation_regression",
+                        "La politique régresse sur les seeds d'évaluation.",
+                        "Comparer au meilleur checkpoint et réintroduire davantage d'adversaires historiques.",
+                        regression,
+                        float(self.settings["maximum_eval_regression"]),
+                    )
+                )
             if self.no_improvement >= int(self.settings["plateau_evaluations"]):
-                alerts.append(HealthAlert(
-                    step, "warning", "evaluation_plateau",
-                    "Le taux de victoire d'évaluation ne progresse plus.",
-                    "Inspecter entropie, KL et matchups avant d'augmenter la durée du run.",
-                    float(self.no_improvement), float(self.settings["plateau_evaluations"])))
+                alerts.append(
+                    HealthAlert(
+                        step,
+                        "warning",
+                        "evaluation_plateau",
+                        "Le taux de victoire d'évaluation ne progresse plus.",
+                        "Inspecter entropie, KL et matchups avant d'augmenter la durée du run.",
+                        float(self.no_improvement),
+                        float(self.settings["plateau_evaluations"]),
+                    )
+                )
                 self.no_improvement = 0
-            if (self.last_training_return is not None and self.return_at_best_eval is not None
-                    and self.last_training_return - self.return_at_best_eval
-                    > float(self.settings["maximum_reward_divergence"])
-                    and eval_rate < self.best_eval + 1e-12):
-                alerts.append(HealthAlert(
-                    step, "warning", "reward_misalignment",
-                    "La récompense d'entraînement augmente sans gain d'évaluation.",
-                    "Inspecter séparément captures et victoire; réduire le shaping s'il est exploité.",
-                    self.last_training_return - self.return_at_best_eval,
-                    float(self.settings["maximum_reward_divergence"])))
+            if (
+                self.last_training_return is not None
+                and self.return_at_best_eval is not None
+                and self.last_training_return - self.return_at_best_eval
+                > float(self.settings["maximum_reward_divergence"])
+                and eval_rate < self.best_eval + 1e-12
+            ):
+                alerts.append(
+                    HealthAlert(
+                        step,
+                        "warning",
+                        "reward_misalignment",
+                        "La récompense d'entraînement augmente sans gain d'évaluation.",
+                        "Inspecter séparément captures et victoire; réduire le shaping s'il est exploité.",
+                        self.last_training_return - self.return_at_best_eval,
+                        float(self.settings["maximum_reward_divergence"]),
+                    )
+                )
         anchor_rate = numeric.get("historical_win_rate")
-        if (anchor_rate is not None
-                and anchor_rate < float(self.settings["minimum_anchor_win_rate"])):
-            alerts.append(HealthAlert(
-                step, "warning", "historical_regression",
-                "La politique oublie au moins un ancien palier.",
-                "Augmenter replay_probability ou le poids des adversaires historiques.",
-                anchor_rate, float(self.settings["minimum_anchor_win_rate"])))
+        if anchor_rate is not None and anchor_rate < float(
+            self.settings["minimum_anchor_win_rate"]
+        ):
+            alerts.append(
+                HealthAlert(
+                    step,
+                    "warning",
+                    "historical_regression",
+                    "La politique oublie au moins un ancien palier.",
+                    "Augmenter replay_probability ou le poids des adversaires historiques.",
+                    anchor_rate,
+                    float(self.settings["minimum_anchor_win_rate"]),
+                )
+            )
         self._save()
         return tuple(alerts)
 
@@ -160,15 +224,24 @@ class HealthMonitor:
     def critical(alerts: tuple[HealthAlert, ...]) -> tuple[HealthAlert, ...]:
         return tuple(alert for alert in alerts if alert.severity == "critical")
 
-    def _consecutive_warning(self, alerts: list[HealthAlert], step: int, code: str,
-                             value: float | None, predicate, threshold: float,
-                             message: str, recommendation: str) -> None:
+    def _consecutive_warning(
+        self,
+        alerts: list[HealthAlert],
+        step: int,
+        code: str,
+        value: float | None,
+        predicate,
+        threshold: float,
+        message: str,
+        recommendation: str,
+    ) -> None:
         if value is None:
             return
         self.consecutive[code] = self.consecutive.get(code, 0) + 1 if predicate(value) else 0
         if self.consecutive[code] >= int(self.settings["consecutive_updates"]):
-            alerts.append(HealthAlert(step, "warning", code, message, recommendation,
-                                      value, threshold))
+            alerts.append(
+                HealthAlert(step, "warning", code, message, recommendation, value, threshold)
+            )
             self.consecutive[code] = 0
 
     def _load(self) -> None:
@@ -181,8 +254,9 @@ class HealthMonitor:
             self.best_eval = float(payload.get("best_eval", -1.0))
             self.no_improvement = int(payload.get("no_improvement", 0))
             self.sps_baseline = [float(value) for value in payload.get("sps_baseline", [])]
-            self.consecutive = {str(key): int(value)
-                                for key, value in payload.get("consecutive", {}).items()}
+            self.consecutive = {
+                str(key): int(value) for key, value in payload.get("consecutive", {}).items()
+            }
             raw_return = payload.get("last_training_return")
             self.last_training_return = None if raw_return is None else float(raw_return)
             raw_best_return = payload.get("return_at_best_eval")

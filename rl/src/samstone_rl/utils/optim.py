@@ -12,16 +12,19 @@ class DirectMLAdam(torch.optim.Optimizer):
     can be resumed on DirectML and conversely.
     """
 
-    def __init__(self, params, lr: float = 1e-3,
-                 betas: tuple[float, float] = (0.9, 0.999),
-                 eps: float = 1e-8) -> None:
+    def __init__(
+        self, params, lr: float = 1e-3, betas: tuple[float, float] = (0.9, 0.999), eps: float = 1e-8
+    ) -> None:
         if lr < 0 or eps < 0 or not 0 <= betas[0] < 1 or not 0 <= betas[1] < 1:
             raise ValueError("parametres Adam invalides")
         super().__init__(params, {"lr": lr, "betas": betas, "eps": eps})
 
     @torch.no_grad()
     def step(self, closure=None):
-        loss = None if closure is None else closure()
+        loss = None
+        if closure is not None:
+            with torch.enable_grad():
+                loss = closure()
         for group in self.param_groups:
             beta1, beta2 = group["betas"]
             for parameter in group["params"]:
@@ -43,8 +46,7 @@ class DirectMLAdam(torch.optim.Optimizer):
                 average = state["exp_avg"]
                 square_average = state["exp_avg_sq"]
                 average.mul_(beta1).add_(gradient, alpha=1.0 - beta1)
-                square_average.mul_(beta2).addcmul_(
-                    gradient, gradient, value=1.0 - beta2)
+                square_average.mul_(beta2).addcmul_(gradient, gradient, value=1.0 - beta2)
                 bias1 = 1.0 - beta1**step
                 bias2 = 1.0 - beta2**step
                 denominator = square_average.sqrt().div_(math.sqrt(bias2)).add_(group["eps"])

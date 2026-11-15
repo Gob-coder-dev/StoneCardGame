@@ -2,132 +2,22 @@ from __future__ import annotations
 
 import math
 import random
-from dataclasses import dataclass, field
 from typing import Any
 
 from .anticipation import ReplyThreatProfile
 from .catalog import StoneCatalog
 from .geometry import BOARD_SIZE, DELTAS, OPPOSITE, RAYS, SIDE_INDEX, SIDES
-
-PLAYER_NONE, PLAYER_HUMAN, PLAYER_AI = 0, 1, 2
-CELL_EMPTY, CELL_BLOCKED = 0, -1
-MAX_MARKERS = 4
-
-
-@dataclass(slots=True)
-class BattleStone:
-    stone_id: str
-    instance_id: int
-    base: list[int]
-    random_blades: list[int]
-    long: list[int]
-    shields: list[int]
-    swarm: list[int]
-    miasma_weakness: int = 0
-    temporary_weakness: int = 0
-    temporary_weakness_owner: int = 0
-    coin_flipped: bool = False
-
-    @classmethod
-    def from_definition(cls, stone_id: str, definition: dict[str, Any],
-                        instance_id: int = 0) -> BattleStone:
-        return cls(stone_id, instance_id, _sides(definition.get("blades", {})), [0] * 4,
-                   _sides(definition.get("long_blades", {})),
-                   _sides(definition.get("shields", {})), [0] * 4)
-
-    def clone(self) -> BattleStone:
-        return BattleStone(self.stone_id, self.instance_id, self.base.copy(),
-                           self.random_blades.copy(), self.long.copy(), self.shields.copy(),
-                           self.swarm.copy(), self.miasma_weakness,
-                           self.temporary_weakness, self.temporary_weakness_owner,
-                           self.coin_flipped)
-
-    def normal(self, side: int) -> int:
-        return self.base[side] + self.random_blades[side] + self.swarm[side]
-
-    def marker_count(self, side: int) -> int:
-        return self.normal(side) + self.long[side] + self.shields[side]
-
-    def free_slots(self, side: int) -> int:
-        return max(0, MAX_MARKERS - self.marker_count(side))
-
-    @property
-    def weakness(self) -> int:
-        return self.miasma_weakness + self.temporary_weakness
-
-    def attack(self, side: int) -> int:
-        return max(0, self.normal(side) + self.long[side] - self.weakness)
-
-    def ranged_attack(self, side: int) -> int:
-        return max(0, self.long[side] - self.weakness)
-
-    def defense(self, side: int) -> int:
-        return self.attack(side) + self.shields[side]
-
-    def defending_marker_indices(self, side: int) -> list[int]:
-        effective = self.attack(side)
-        result: list[int] = []
-        marker_index = 0
-        for count, always in ((self.base[side], False), (self.random_blades[side], False),
-                              (self.swarm[side], False), (self.long[side], False),
-                              (self.shields[side], True)):
-            for _ in range(count):
-                if always or marker_index < effective:
-                    result.append(marker_index)
-                marker_index += 1
-        return result
-
-
-@dataclass(slots=True)
-class Cell:
-    cell_type: int = CELL_EMPTY
-    stone_id: str = ""
-    stone: BattleStone | None = None
-    owner: int = PLAYER_NONE
-    placed_by: int = PLAYER_NONE
-
-    def clone(self) -> Cell:
-        return Cell(self.cell_type, self.stone_id,
-                    self.stone.clone() if self.stone else None, self.owner, self.placed_by)
-
-
-@dataclass(slots=True)
-class FastState:
-    catalog: StoneCatalog
-    board: list[Cell] = field(default_factory=lambda: [Cell() for _ in range(16)])
-    hands: dict[int, list[str]] = field(default_factory=lambda: {1: [], 2: []})
-    gods: dict[int, str] = field(default_factory=lambda: {1: "", 2: ""})
-    current_player: int = PLAYER_HUMAN
-    empty_playable_cells: int = 16
-    score_human: int = 0
-    score_ai: int = 0
-    is_game_over: bool = False
-    winner: int = PLAYER_NONE
-    next_instance_id: int = 1
-    rng: random.Random = field(default_factory=random.Random)
-    random_draws: int = 0
-
-    def clone(self) -> FastState:
-        result = FastState(self.catalog)
-        result.board = [cell.clone() for cell in self.board]
-        result.hands = {1: self.hands[1].copy(), 2: self.hands[2].copy()}
-        result.gods = self.gods.copy()
-        result.current_player = self.current_player
-        result.empty_playable_cells = self.empty_playable_cells
-        result.score_human = self.score_human
-        result.score_ai = self.score_ai
-        result.is_game_over = self.is_game_over
-        result.winner = self.winner
-        result.next_instance_id = self.next_instance_id
-        result.rng.setstate(self.rng.getstate())
-        result.random_draws = self.random_draws
-        return result
-
-    def draw_index(self, count: int) -> int:
-        if count <= 1:
-            return 0
-        self.random_draws += 1
-        return self.rng.randrange(count)
+from .preview import PreviewRandom
+from .preview import preview_seed as seed_for_preview
+from .state import (
+    CELL_BLOCKED,
+    PLAYER_AI,
+    PLAYER_HUMAN,
+    PLAYER_NONE,
+    BattleStone,
+    Cell,
+    FastState,
+)
 
 
 class FastSimulator:
@@ -146,10 +36,15 @@ class FastSimulator:
         setup_rng = random.Random(seed)
         state = FastState(self.catalog)
         state.rng.seed(seed)
+        if config.get("portable_rng", False):
+            state.rng = PreviewRandom(seed)
         state.hands = {1: list(config["human_deck"]), 2: list(config["ai_deck"])}
         state.gods = {1: str(config["human_god"]), 2: str(config["ai_god"])}
-        blocked = ([list(item) for item in config["blocked"]]
-                   if "blocked" in config else self._draw_blocked(setup_rng))
+        blocked = (
+            [list(item) for item in config["blocked"]]
+            if "blocked" in config
+            else self._draw_blocked(setup_rng)
+        )
         self._validate_blocked(blocked)
         for row, col in blocked:
             state.board[_index(int(row), int(col))].cell_type = CELL_BLOCKED
@@ -183,14 +78,23 @@ class FastSimulator:
         if state.is_game_over:
             raise ValueError("la partie est terminee")
         player = state.current_player
-        result = self.apply_move(state, int(action.get("row", -1)),
-                                 int(action.get("col", -1)),
-                                 str(action.get("stone_id", "")), player)
+        result = self.apply_move(
+            state,
+            int(action.get("row", -1)),
+            int(action.get("col", -1)),
+            str(action.get("stone_id", "")),
+            player,
+        )
         self._update_outcome()
         if not state.is_game_over:
             state.current_player = _other(player)
-        return {"success": True, "player": player, "done": state.is_game_over,
-                "winner": state.winner, **result}
+        return {
+            "success": True,
+            "player": player,
+            "done": state.is_game_over,
+            "winner": state.winner,
+            **result,
+        }
 
     def choose_profile_action(self, precision: float, anticipation: bool) -> dict[str, Any]:
         state = self._require_state()
@@ -200,21 +104,27 @@ class FastSimulator:
         if precision <= 0.0:
             return dict(moves[self.opponent_rng.randrange(len(moves))])
         plays_best = self.opponent_rng.random() < precision
-        reply_profile = (self._reply_threat_profile(state, _other(state.current_player))
-                         if anticipation else None)
-        scored = [(move, self._move_value(state, move, anticipation, reply_profile))
-                  for move in moves]
+        reply_profile = (
+            self._reply_threat_profile(state, _other(state.current_player))
+            if anticipation
+            else None
+        )
+        scored = [
+            (move, self._move_value(state, move, anticipation, reply_profile)) for move in moves
+        ]
         best = max(value for _move, value in scored)
         temperature = (1.0 - precision) / precision
         weights = [1.0 if best - value <= 1e-6 else 0.0 for _move, value in scored]
         if not plays_best:
-            weights = [math.exp(-(best - value) / temperature) if temperature > 0 else 0.0
-                       for _move, value in scored]
+            weights = [
+                math.exp(-(best - value) / temperature) if temperature > 0 else 0.0
+                for _move, value in scored
+            ]
         return dict(scored[_weighted_index(weights, self.opponent_rng)][0])
 
     def tactical_action_scores(
-            self, observer: int, action_filter: set[int] | None = None
-            ) -> dict[int, tuple[float, ...]]:
+        self, observer: int, action_filter: set[int] | None = None
+    ) -> dict[int, tuple[float, ...]]:
         """Return deterministic public consequences for every legal action.
 
         Values use the same one-reply evaluator as the strongest profile bot,
@@ -235,23 +145,24 @@ class FastSimulator:
             action = hand_slot * 16 + int(move["row"]) * 4 + int(move["col"])
             if action_filter is not None and action not in action_filter:
                 continue
-            immediate, anticipated = self._anticipated_consequences(
-                state, move, reply_profile)
+            immediate, anticipated = self._anticipated_consequences(state, move, reply_profile)
             definition = self.catalog.definition(stone_id)
-            stochastic = bool(definition.get("random_blades", 0)
-                              or definition.get("coin_flip", ""))
+            stochastic = bool(definition.get("random_blades", 0) or definition.get("coin_flip", ""))
             reply_threat = max(0.0, immediate - anticipated)
             # Placement is +1 material; converting an enemy owner is +2.
             material_delta = 1.0 + 2.0 * immediate
             result[action] = (
-                float(immediate), float(anticipated), float(reply_threat),
-                float(stochastic), float(material_delta),
+                float(immediate),
+                float(anticipated),
+                float(reply_threat),
+                float(stochastic),
+                float(material_delta),
             )
         return result
 
     def _anticipated_consequences(
-            self, state: FastState, move: dict[str, Any],
-            reply_profile: ReplyThreatProfile) -> tuple[float, float]:
+        self, state: FastState, move: dict[str, Any], reply_profile: ReplyThreatProfile
+    ) -> tuple[float, float]:
         """Return captures and anticipated value from the same simulations.
 
         Tactical features need both values. Previously every action was
@@ -260,27 +171,35 @@ class FastSimulator:
         simulations, so reusing them removes a redundant rules pass.
         """
         definition = self.catalog.definition(str(move["stone_id"]))
-        samples = 4 if bool(
-            definition.get("random_blades", 0) or definition.get("coin_flip", "")) else 1
+        samples = (
+            4 if bool(definition.get("random_blades", 0) or definition.get("coin_flip", "")) else 1
+        )
         reply_player = _other(state.current_player)
         capture_total = 0.0
         anticipated_total = 0.0
         for sample in range(samples):
-            preview_seed = _stable_seed(str(move["stone_id"]), int(move["row"]),
-                                        int(move["col"]), sample)
+            preview_seed = seed_for_preview(
+                str(move["stone_id"]), int(move["row"]), int(move["col"]), sample
+            )
             simulation = state.clone()
-            simulation.rng.seed(preview_seed)
+            simulation.rng = PreviewRandom(preview_seed)
             result = self.apply_move(
-                simulation, int(move["row"]), int(move["col"]),
-                str(move["stone_id"]), state.current_player)
+                simulation,
+                int(move["row"]),
+                int(move["col"]),
+                str(move["stone_id"]),
+                state.current_player,
+            )
             captures = float(len(result["captures"]))
             capture_total += captures
             anticipated_total += captures - self._public_reply_threat(
-                simulation, reply_player, reply_profile)
+                simulation, reply_player, reply_profile
+            )
         return capture_total / samples, anticipated_total / samples
 
-    def apply_move(self, state: FastState, row: int, col: int, stone_id: str,
-                   player: int) -> dict[str, Any]:
+    def apply_move(
+        self, state: FastState, row: int, col: int, stone_id: str, player: int
+    ) -> dict[str, Any]:
         if not self._valid_placement(state, row, col, stone_id, player):
             raise ValueError("invalid_placement")
         definition = self.catalog.definition(stone_id)
@@ -298,19 +217,33 @@ class FastSimulator:
             state.board[_index(capture["row"], capture["col"])].owner = player
         effects = self._post_attack_effects(state, stone, row, col, player, attack_plan)
         self._recalculate_swarm(state)
-        return {"captures": captures, "attacks": attack_plan["attacks"], "effects": effects,
+        return {
+            "captures": captures,
+            "attacks": attack_plan["attacks"],
+            "effects": effects,
+            "placement_effects": placement_effects,
+            "placement": {
+                "row": row,
+                "col": col,
+                "stone_id": stone_id,
+                "owner": player,
                 "placement_effects": placement_effects,
-                "placement": {"row": row, "col": col, "stone_id": stone_id,
-                              "owner": player, "placement_effects": placement_effects}}
+            },
+        }
 
     def serialize_for_player(self, observer: int) -> dict[str, Any]:
         state = self._require_state()
         opponent = _other(observer)
         board: list[dict[str, Any]] = []
         for cell in state.board:
-            board.append({"cell_type": cell.cell_type, "owner": cell.owner,
-                          "placed_by": cell.placed_by,
-                          "stone": self._serialize_stone(cell.stone) if cell.stone else None})
+            board.append(
+                {
+                    "cell_type": cell.cell_type,
+                    "owner": cell.owner,
+                    "placed_by": cell.placed_by,
+                    "stone": self._serialize_stone(cell.stone) if cell.stone else None,
+                }
+            )
         return {
             "schema_version": 1,
             "observer": observer,
@@ -328,8 +261,13 @@ class FastSimulator:
             "ai_god": state.gods[2],
         }
 
-    def _move_value(self, state: FastState, move: dict[str, Any], anticipation: bool,
-                    reply_profile: ReplyThreatProfile | None = None) -> float:
+    def _move_value(
+        self,
+        state: FastState,
+        move: dict[str, Any],
+        anticipation: bool,
+        reply_profile: ReplyThreatProfile | None = None,
+    ) -> float:
         definition = self.catalog.definition(str(move["stone_id"]))
         stochastic = bool(definition.get("random_blades", 0) or definition.get("coin_flip", ""))
         samples = 4 if stochastic else 1
@@ -338,31 +276,46 @@ class FastSimulator:
             reply_profile = self._reply_threat_profile(state, reply_player)
         total = 0.0
         for sample in range(samples):
-            preview_seed = _stable_seed(str(move["stone_id"]), int(move["row"]),
-                                        int(move["col"]), sample)
+            preview_seed = seed_for_preview(
+                str(move["stone_id"]), int(move["row"]), int(move["col"]), sample
+            )
             if not anticipation:
                 if "swarm" in definition.get("effects", ()):
                     total += self._preview_swarm_capture_count(
-                        state, int(move["row"]), int(move["col"]),
-                        str(move["stone_id"]), state.current_player)
+                        state,
+                        int(move["row"]),
+                        int(move["col"]),
+                        str(move["stone_id"]),
+                        state.current_player,
+                    )
                 else:
                     total += self._preview_capture_count(
-                        state, int(move["row"]), int(move["col"]),
-                        str(move["stone_id"]), state.current_player, preview_seed)
+                        state,
+                        int(move["row"]),
+                        int(move["col"]),
+                        str(move["stone_id"]),
+                        state.current_player,
+                        preview_seed,
+                    )
                 continue
             simulation = state.clone()
-            simulation.rng.seed(preview_seed)
-            result = self.apply_move(simulation, int(move["row"]), int(move["col"]),
-                                     str(move["stone_id"]), state.current_player)
+            simulation.rng = PreviewRandom(preview_seed)
+            result = self.apply_move(
+                simulation,
+                int(move["row"]),
+                int(move["col"]),
+                str(move["stone_id"]),
+                state.current_player,
+            )
             value = float(len(result["captures"]))
             if anticipation:
-                value -= self._public_reply_threat(
-                    simulation, reply_player, reply_profile)
+                value -= self._public_reply_threat(simulation, reply_player, reply_profile)
             total += value
         return total / samples
 
-    def _preview_capture_count(self, state: FastState, row: int, col: int, stone_id: str,
-                               player: int, seed: int) -> float:
+    def _preview_capture_count(
+        self, state: FastState, row: int, col: int, stone_id: str, player: int, seed: int
+    ) -> float:
         """Score a non-swarm move without cloning or mutating the match.
 
         Post-attack effects cannot change captures already decided by
@@ -374,7 +327,7 @@ class FastSimulator:
         source = self._preview_sources.get(key)
         if source is None:
             source = BattleStone.from_definition(stone_id, definition)
-            rng = random.Random(seed)
+            rng = PreviewRandom(seed)
             for _ in range(int(definition.get("random_blades", 0))):
                 candidates = [side for side in range(4) if source.free_slots(side) > 0]
                 if not candidates:
@@ -384,22 +337,25 @@ class FastSimulator:
             if axis:
                 source.coin_flipped = rng.randrange(2) == 1
                 if source.coin_flipped:
-                    first, second = ((2, 3) if axis == "horizontal" else (0, 1))
+                    first, second = (2, 3) if axis == "horizontal" else (0, 1)
                     for values in (source.base, source.random_blades, source.long, source.shields):
                         values[first], values[second] = values[second], values[first]
             self._preview_sources[key] = source
         return float(self._count_captures(state, row, col, player, source))
 
-    def _preview_swarm_capture_count(self, state: FastState, row: int, col: int,
-                                     stone_id: str, player: int) -> float:
+    def _preview_swarm_capture_count(
+        self, state: FastState, row: int, col: int, stone_id: str, player: int
+    ) -> float:
         source = BattleStone.from_definition(
-            stone_id, self.catalog.definition(stone_id), state.next_instance_id)
+            stone_id, self.catalog.definition(stone_id), state.next_instance_id
+        )
         if self.catalog.affinity(stone_id) not in ("neutral", state.gods[player]):
             return float(self._count_captures(state, row, col, player, source))
         source_index = _index(row, col)
         members = {source_index}
         active = {
-            index for index, cell in enumerate(state.board)
+            index
+            for index, cell in enumerate(state.board)
             if cell.owner == player and self._active_power(state, cell, "swarm")
         }
         pending = [source_index]
@@ -431,8 +387,9 @@ class FastSimulator:
         return float(self._count_captures(state, row, col, player, source))
 
     @staticmethod
-    def _count_captures(state: FastState, row: int, col: int, player: int,
-                        source: BattleStone) -> int:
+    def _count_captures(
+        state: FastState, row: int, col: int, player: int, source: BattleStone
+    ) -> int:
         """Allocation-free capture count used only by the profile evaluator."""
         captures = 0
         for side, (dr, dc) in enumerate(DELTAS):
@@ -459,14 +416,17 @@ class FastSimulator:
 
     def _reply_threat_profile(self, state: FastState, player: int) -> ReplyThreatProfile:
         played_lineages = {
-            self.catalog.lineage(cell.stone_id) for cell in state.board
+            self.catalog.lineage(cell.stone_id)
+            for cell in state.board
             if cell.placed_by == player and cell.stone_id
         }
         return self._reply_threat_cache.profile(
-            state.gods[player], played_lineages, len(state.hands[player]))
+            state.gods[player], played_lineages, len(state.hands[player])
+        )
 
-    def _public_reply_threat(self, state: FastState, player: int,
-                             profile: ReplyThreatProfile | None = None) -> float:
+    def _public_reply_threat(
+        self, state: FastState, player: int, profile: ReplyThreatProfile | None = None
+    ) -> float:
         """Fast public-information upper bound for the immediate reply.
 
         Godot's authoritative bot integrates every possible hidden lineage.
@@ -484,16 +444,19 @@ class FastSimulator:
         for index, cell in enumerate(state.board):
             if cell.cell_type == CELL_BLOCKED or cell.owner != PLAYER_NONE:
                 continue
-            captures = sum(self._directional_reply_captures(
-                state, index, player, side,
-                profile.adjacent[side], profile.ranged[side])
-                for side in range(4))
+            captures = sum(
+                self._directional_reply_captures(
+                    state, index, player, side, profile.adjacent[side], profile.ranged[side]
+                )
+                for side in range(4)
+            )
             best = max(best, captures)
         return float(best)
 
     @staticmethod
-    def _directional_reply_captures(state: FastState, origin: int, player: int,
-                                    side: int, adjacent: int, ranged: int) -> int:
+    def _directional_reply_captures(
+        state: FastState, origin: int, player: int, side: int, adjacent: int, ranged: int
+    ) -> int:
         if adjacent <= 0:
             return 0
         captures = 0
@@ -512,8 +475,9 @@ class FastSimulator:
                 break
         return captures
 
-    def _resolve_attacks(self, state: FastState, row: int, col: int, player: int,
-                         source: BattleStone) -> dict[str, Any]:
+    def _resolve_attacks(
+        self, state: FastState, row: int, col: int, player: int, source: BattleStone
+    ) -> dict[str, Any]:
         captures: list[dict[str, Any]] = []
         attacks: list[dict[str, Any]] = []
         for side, (dr, dc) in enumerate(DELTAS):
@@ -525,8 +489,12 @@ class FastSimulator:
             endpoint: dict[str, Any] = {}
             for distance in range(1, BOARD_SIZE + 1):
                 target_row, target_col = row + dr * distance, col + dc * distance
-                endpoint = {"row": target_row, "col": target_col,
-                            "distance": distance, "type": "exit"}
+                endpoint = {
+                    "row": target_row,
+                    "col": target_col,
+                    "distance": distance,
+                    "type": "exit",
+                }
                 if not _inside(target_row, target_col):
                     break
                 if distance > 1 and long_count == 0:
@@ -535,8 +503,11 @@ class FastSimulator:
                 if target_cell.cell_type == CELL_BLOCKED:
                     endpoint["type"] = "blocked"
                     break
-                if (target_cell.owner == PLAYER_NONE or target_cell.owner == player
-                        or target_cell.stone is None):
+                if (
+                    target_cell.owner == PLAYER_NONE
+                    or target_cell.owner == player
+                    or target_cell.stone is None
+                ):
                     continue
                 adjacent_enemy = adjacent_enemy or distance == 1
                 target = target_cell.stone
@@ -544,27 +515,47 @@ class FastSimulator:
                 strength = source.attack(side) if distance == 1 else source.ranged_attack(side)
                 defense = target.defense(defense_side)
                 success = strength > defense
-                hit = {"row": target_row, "col": target_col, "distance": distance,
-                       "attack": strength, "defense": defense, "success": success}
+                hit = {
+                    "row": target_row,
+                    "col": target_col,
+                    "distance": distance,
+                    "attack": strength,
+                    "defense": defense,
+                    "success": success,
+                }
                 hits.append(hit)
                 if success:
-                    captures.append({
-                        "row": target_row, "col": target_col, "direction": SIDES[side],
-                        "distance": distance, "defense_side": SIDES[defense_side],
-                        "stolen_strength": target.attack(defense_side) + target.shields[defense_side],
-                        "stolen_markers": target.defending_marker_indices(defense_side),
-                    })
+                    captures.append(
+                        {
+                            "row": target_row,
+                            "col": target_col,
+                            "direction": SIDES[side],
+                            "distance": distance,
+                            "defense_side": SIDES[defense_side],
+                            "stolen_strength": target.attack(defense_side)
+                            + target.shields[defense_side],
+                            "stolen_markers": target.defending_marker_indices(defense_side),
+                        }
+                    )
                 if not success or long_count == 0:
                     endpoint["type"] = "enemy"
                     break
             if hits:
-                attacks.append({"direction": SIDES[side], "adjacent_enemy": adjacent_enemy,
-                                "normal_count": normal_count if adjacent_enemy else 0,
-                                "long_count": long_count, "hits": hits, "endpoint": endpoint})
+                attacks.append(
+                    {
+                        "direction": SIDES[side],
+                        "adjacent_enemy": adjacent_enemy,
+                        "normal_count": normal_count if adjacent_enemy else 0,
+                        "long_count": long_count,
+                        "hits": hits,
+                        "endpoint": endpoint,
+                    }
+                )
         return {"captures": captures, "attacks": attacks}
 
-    def _placement_effects(self, state: FastState, stone: BattleStone,
-                           definition: dict[str, Any]) -> list[dict[str, Any]]:
+    def _placement_effects(
+        self, state: FastState, stone: BattleStone, definition: dict[str, Any]
+    ) -> list[dict[str, Any]]:
         events: list[dict[str, Any]] = []
         for _ in range(int(definition.get("random_blades", 0))):
             candidates = [side for side in range(4) if stone.free_slots(side) > 0]
@@ -578,28 +569,38 @@ class FastSimulator:
             flipped = state.draw_index(2) == 1
             stone.coin_flipped = flipped
             if flipped:
-                first, second = ((2, 3) if axis == "horizontal" else (0, 1))
+                first, second = (2, 3) if axis == "horizontal" else (0, 1)
                 for values in (stone.base, stone.random_blades, stone.long, stone.shields):
                     values[first], values[second] = values[second], values[first]
             events.append({"type": "coin_flip", "axis": axis, "flipped": flipped})
         return events
 
-    def _post_attack_effects(self, state: FastState, source: BattleStone, row: int, col: int,
-                             player: int, attack_plan: dict[str, Any]) -> list[dict[str, Any]]:
+    def _post_attack_effects(
+        self,
+        state: FastState,
+        source: BattleStone,
+        row: int,
+        col: int,
+        player: int,
+        attack_plan: dict[str, Any],
+    ) -> list[dict[str, Any]]:
         events = self._update_miasma(state, row, col)
         if self.catalog.has_effect(source.stone_id, "shield_theft"):
             events.extend(self._shield_theft(state, source, row, col, attack_plan["captures"]))
         events.extend(self._expire_weakness(state, player))
         if self.catalog.has_effect(source.stone_id, "weaken_on_failed_attack"):
-            events.extend(self._failed_attack_weakness(
-                state, row, col, player, attack_plan["attacks"]))
+            events.extend(
+                self._failed_attack_weakness(state, row, col, player, attack_plan["attacks"])
+            )
         return events
 
-    def _update_miasma(self, state: FastState, source_row: int,
-                        source_col: int) -> list[dict[str, Any]]:
+    def _update_miasma(
+        self, state: FastState, source_row: int, source_col: int
+    ) -> list[dict[str, Any]]:
         active = [self._active_power(state, cell, "weaken_adjacent") for cell in state.board]
-        if not any(active) and not any(cell.stone and cell.stone.miasma_weakness
-                                       for cell in state.board):
+        if not any(active) and not any(
+            cell.stone and cell.stone.miasma_weakness for cell in state.board
+        ):
             return []
         events: list[dict[str, Any]] = []
         for index, cell in enumerate(state.board):
@@ -615,15 +616,24 @@ class FastSimulator:
                 continue
             increased = aura > cell.stone.miasma_weakness
             cell.stone.miasma_weakness = aura
-            events.append({"type": "weaken" if increased else "weakness_expired",
-                           "row": row, "col": col, "amount": abs(cell.stone.weakness - before),
-                           "weakness_before": before, "weakness_after": cell.stone.weakness,
-                           "source_row": source_row if increased else -1,
-                           "source_col": source_col if increased else -1, "scope": "adjacent"})
+            events.append(
+                {
+                    "type": "weaken" if increased else "weakness_expired",
+                    "row": row,
+                    "col": col,
+                    "amount": abs(cell.stone.weakness - before),
+                    "weakness_before": before,
+                    "weakness_after": cell.stone.weakness,
+                    "source_row": source_row if increased else -1,
+                    "source_col": source_col if increased else -1,
+                    "scope": "adjacent",
+                }
+            )
         return events
 
-    def _failed_attack_weakness(self, state: FastState, row: int, col: int, player: int,
-                                attacks: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    def _failed_attack_weakness(
+        self, state: FastState, row: int, col: int, player: int, attacks: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]:
         events: list[dict[str, Any]] = []
         for attack in attacks:
             for hit in attack["hits"]:
@@ -635,12 +645,19 @@ class FastSimulator:
                 before = cell.stone.weakness
                 cell.stone.temporary_weakness += 2
                 cell.stone.temporary_weakness_owner = player
-                events.append({"type": "temporary_weaken", "row": hit["row"],
-                               "col": hit["col"], "amount": cell.stone.weakness - before,
-                               "weakness_before": before,
-                               "weakness_after": cell.stone.weakness,
-                               "source_row": row, "source_col": col,
-                               "scope": "failed_attack"})
+                events.append(
+                    {
+                        "type": "temporary_weaken",
+                        "row": hit["row"],
+                        "col": hit["col"],
+                        "amount": cell.stone.weakness - before,
+                        "weakness_before": before,
+                        "weakness_after": cell.stone.weakness,
+                        "source_row": row,
+                        "source_col": col,
+                        "scope": "failed_attack",
+                    }
+                )
         return events
 
     @staticmethod
@@ -653,38 +670,68 @@ class FastSimulator:
             cell.stone.temporary_weakness = 0
             cell.stone.temporary_weakness_owner = PLAYER_NONE
             row, col = divmod(index, BOARD_SIZE)
-            events.append({"type": "weakness_expired", "row": row, "col": col,
-                           "amount": before - cell.stone.weakness,
-                           "weakness_before": before, "weakness_after": cell.stone.weakness,
-                           "source_row": -1, "source_col": -1, "scope": ""})
+            events.append(
+                {
+                    "type": "weakness_expired",
+                    "row": row,
+                    "col": col,
+                    "amount": before - cell.stone.weakness,
+                    "weakness_before": before,
+                    "weakness_after": cell.stone.weakness,
+                    "source_row": -1,
+                    "source_col": -1,
+                    "scope": "",
+                }
+            )
         return events
 
-    def _shield_theft(self, state: FastState, source: BattleStone, row: int, col: int,
-                      captures: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    def _shield_theft(
+        self,
+        state: FastState,
+        source: BattleStone,
+        row: int,
+        col: int,
+        captures: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
         before = _side_dict(source.shields)
         placements: list[str] = []
         transfers: list[dict[str, Any]] = []
         for capture in captures:
             attacking = SIDE_INDEX[capture["direction"]]
             for marker_index in capture["stolen_markers"]:
-                candidates = [side for side in range(4)
-                              if side != attacking and source.free_slots(side) > 0]
+                candidates = [
+                    side for side in range(4) if side != attacking and source.free_slots(side) > 0
+                ]
                 if not candidates:
                     continue
                 destination = candidates[state.draw_index(len(candidates))]
                 source.shields[destination] += 1
                 placements.append(SIDES[destination])
-                transfers.append({"row": capture["row"], "col": capture["col"],
-                                  "direction": capture["direction"],
-                                  "defense_side": capture["defense_side"],
-                                  "marker_index": marker_index,
-                                  "candidate_sides": [SIDES[item] for item in candidates],
-                                  "destination_side": SIDES[destination]})
+                transfers.append(
+                    {
+                        "row": capture["row"],
+                        "col": capture["col"],
+                        "direction": capture["direction"],
+                        "defense_side": capture["defense_side"],
+                        "marker_index": marker_index,
+                        "candidate_sides": [SIDES[item] for item in candidates],
+                        "destination_side": SIDES[destination],
+                    }
+                )
         if not transfers:
             return []
-        return [{"type": "shield_theft", "row": row, "col": col,
-                 "amount": len(transfers), "placements": placements,
-                 "shields_before": before, "origins": captures, "transfers": transfers}]
+        return [
+            {
+                "type": "shield_theft",
+                "row": row,
+                "col": col,
+                "amount": len(transfers),
+                "placements": placements,
+                "shields_before": before,
+                "origins": captures,
+                "transfers": transfers,
+            }
+        ]
 
     def _recalculate_swarm(self, state: FastState) -> None:
         members: set[int] = set()
@@ -707,8 +754,11 @@ class FastSimulator:
                 component.append(current)
                 row, col = divmod(current, BOARD_SIZE)
                 for neighbor in _adjacent_indices(row, col):
-                    if (neighbor not in visited and neighbor in members
-                            and state.board[neighbor].owner == owner):
+                    if (
+                        neighbor not in visited
+                        and neighbor in members
+                        and state.board[neighbor].owner == owner
+                    ):
                         visited.add(neighbor)
                         pending.append(neighbor)
             bonus = min(4, (len(component) - 1) * 2)
@@ -743,26 +793,34 @@ class FastSimulator:
 
     def _serialize_definition(self, stone_id: str) -> dict[str, Any]:
         definition = self.catalog.definition(stone_id)
-        return {"stone_id": stone_id, "affinity": definition["affinity"],
-                "level": int(definition.get("level", 1)),
-                "blades": dict(definition.get("blades", {})),
-                "long_blades": dict(definition.get("long_blades", {})),
-                "shields": dict(definition.get("shields", {})),
-                "random_blades": int(definition.get("random_blades", 0)),
-                "effects": list(definition.get("effects", [])),
-                "coin_flip": str(definition.get("coin_flip", ""))}
+        return {
+            "stone_id": stone_id,
+            "affinity": definition["affinity"],
+            "level": int(definition.get("level", 1)),
+            "blades": dict(definition.get("blades", {})),
+            "long_blades": dict(definition.get("long_blades", {})),
+            "shields": dict(definition.get("shields", {})),
+            "random_blades": int(definition.get("random_blades", 0)),
+            "effects": list(definition.get("effects", [])),
+            "coin_flip": str(definition.get("coin_flip", "")),
+        }
 
     def _serialize_stone(self, stone: BattleStone) -> dict[str, Any]:
         result = self._serialize_definition(stone.stone_id)
-        result.update({"instance_id": stone.instance_id, "base_blades": _side_dict(stone.base),
-                       "random_blade_sides": _side_dict(stone.random_blades),
-                       "long_blade_sides": _side_dict(stone.long),
-                       "shield_sides": _side_dict(stone.shields),
-                       "swarm_blades": _side_dict(stone.swarm),
-                       "miasma_weakness": stone.miasma_weakness,
-                       "temporary_weakness": stone.temporary_weakness,
-                       "temporary_weakness_owner": stone.temporary_weakness_owner,
-                       "coin_flipped": stone.coin_flipped})
+        result.update(
+            {
+                "instance_id": stone.instance_id,
+                "base_blades": _side_dict(stone.base),
+                "random_blade_sides": _side_dict(stone.random_blades),
+                "long_blade_sides": _side_dict(stone.long),
+                "shield_sides": _side_dict(stone.shields),
+                "swarm_blades": _side_dict(stone.swarm),
+                "miasma_weakness": stone.miasma_weakness,
+                "temporary_weakness": stone.temporary_weakness,
+                "temporary_weakness_owner": stone.temporary_weakness_owner,
+                "coin_flipped": stone.coin_flipped,
+            }
+        )
         return result
 
     def _update_outcome(self) -> None:
@@ -771,11 +829,17 @@ class FastSimulator:
         state.score_ai = sum(cell.owner == PLAYER_AI for cell in state.board)
         state.is_game_over = state.empty_playable_cells <= 0
         if state.is_game_over:
-            state.winner = (PLAYER_HUMAN if state.score_human > state.score_ai else
-                            PLAYER_AI if state.score_ai > state.score_human else PLAYER_NONE)
+            state.winner = (
+                PLAYER_HUMAN
+                if state.score_human > state.score_ai
+                else PLAYER_AI
+                if state.score_ai > state.score_human
+                else PLAYER_NONE
+            )
 
-    def _valid_placement(self, state: FastState, row: int, col: int, stone_id: str,
-                         player: int) -> bool:
+    def _valid_placement(
+        self, state: FastState, row: int, col: int, stone_id: str, player: int
+    ) -> bool:
         if player not in (1, 2) or not _inside(row, col) or stone_id not in state.hands[player]:
             return False
         cell = state.board[_index(row, col)]
@@ -818,10 +882,6 @@ class FastSimulator:
         return self.state
 
 
-def _sides(values: dict[str, Any]) -> list[int]:
-    return [int(values.get(side, 0)) for side in SIDES]
-
-
 def _side_dict(values: list[int]) -> dict[str, int]:
     return {side: int(values[index]) for index, side in enumerate(SIDES)}
 
@@ -856,7 +916,8 @@ def _weighted_index(weights: list[float], rng: random.Random) -> int:
 
 
 def _stable_seed(*parts: object) -> int:
-    value = 0xCBF29CE484222325
-    for byte in ":".join(map(str, parts)).encode("utf-8"):
-        value = ((value ^ byte) * 0x100000001B3) & 0xFFFFFFFFFFFFFFFF
+    """Godot String.hash (DJB2/32), used by the production Swarm rule."""
+    value = 5381
+    for char in ":".join(map(str, parts)):
+        value = (value * 33 + ord(char)) & 0xFFFFFFFF
     return value

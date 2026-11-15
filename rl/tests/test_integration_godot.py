@@ -28,10 +28,12 @@ from samstone_rl.training.ppo_cleanrl import PPOTrainer
 
 @pytest.mark.skipif(not os.environ.get("GODOT_BIN"), reason="GODOT_BIN non defini")
 def test_godot_and_python_expose_same_tactical_feature_schema():
-    godot = SamStoneEnv(backend="godot", tactical_features=True,
-                        opponent=GodotProfileOpponent(1.0, False))
-    python = SamStoneEnv(backend="python", tactical_features=True,
-                         opponent=GodotProfileOpponent(1.0, False))
+    godot = SamStoneEnv(
+        backend="godot", tactical_features=True, opponent=GodotProfileOpponent(1.0, False)
+    )
+    python = SamStoneEnv(
+        backend="python", tactical_features=True, opponent=GodotProfileOpponent(1.0, False)
+    )
     options = {"config": {**env_config(), "first_player": 1, "blocked": []}}
     try:
         godot_obs, godot_info = godot.reset(seed=6001, options=options)
@@ -64,10 +66,14 @@ def test_complete_profile_match_is_deterministic():
                 observation, reward, terminated, truncated, info = env.step(action)
                 scheme = RewardScheme()
                 expected = scheme.captures(info["agent_captures"]) - scheme.captures(
-                    info["opponent_captures"])
+                    info["opponent_captures"]
+                )
                 if terminated:
-                    expected += scheme.terminal if info["winner"] == env.agent_player else (
-                        -scheme.terminal if info["winner"] else 0.0)
+                    expected += (
+                        scheme.terminal
+                        if info["winner"] == env.agent_player
+                        else (-scheme.terminal if info["winner"] else 0.0)
+                    )
                 assert np.isclose(reward, expected)
                 trace.append((observation.tobytes(), reward, info["winner"]))
                 done = terminated or truncated
@@ -85,7 +91,8 @@ def test_profile_opponent_can_play_human_side():
         _observation, info = env.reset(seed=99, options={"config": {"first_player": 1}})
         assert info["action_mask"].any()
         _observation, _reward, _terminated, _truncated, _info = env.step(
-            int(np.flatnonzero(info["action_mask"])[0]))
+            int(np.flatnonzero(info["action_mask"])[0])
+        )
     finally:
         env.close()
 
@@ -123,16 +130,28 @@ def test_godot_catalog_validation_and_batch_protocol():
         assert len(catalog.gods) == 6
         assert len(catalog.variants) == 275
         generator = DeckGenerator(catalog)
-        candidates = [generator.random_candidate("veskar", np.random.default_rng(index))
-                      for index in range(32)]
+        candidates = [
+            generator.random_candidate("veskar", np.random.default_rng(index))
+            for index in range(32)
+        ]
         GodotDeckValidator(bridge, catalog).require_all_valid(candidates)
-        requests = [{"match_id": str(index), "observer": 1,
-                     "config": {**env_config(), "seed": index + 1,
-                                "first_player": 1, "blocked": []}}
-                    for index in range(4)]
+        requests = [
+            {
+                "match_id": str(index),
+                "observer": 1,
+                "config": {**env_config(), "seed": index + 1, "first_player": 1, "blocked": []},
+            }
+            for index in range(4)
+        ]
         reset = bridge.batch_reset(requests)
-        steps = [{"match_id": item["match_id"], "observer": 1,
-                  "action": item["result"]["legal_actions"][0]} for item in reset]
+        steps = [
+            {
+                "match_id": item["match_id"],
+                "observer": 1,
+                "action": item["result"]["legal_actions"][0],
+            }
+            for item in reset
+        ]
         assert all(item["ok"] for item in bridge.batch_step(steps))
         assert bridge.release_matches([str(index) for index in range(4)]) == 0
     finally:
@@ -147,8 +166,7 @@ def test_phase_six_reference_decks_are_accepted_by_godot():
     try:
         bridge.start()
         catalog = DeckCatalog(bridge.deck_catalog())
-        candidates = [catalog.candidate(item["god"], item["deck"])
-                      for item in config["opponents"]]
+        candidates = [catalog.candidate(item["god"], item["deck"]) for item in config["opponents"]]
         assert {item.god_id for item in candidates} == set(catalog.gods)
         GodotDeckValidator(bridge, catalog).require_all_valid(candidates)
     finally:
@@ -158,14 +176,19 @@ def test_phase_six_reference_decks_are_accepted_by_godot():
 @pytest.mark.skipif(not os.environ.get("GODOT_BIN"), reason="GODOT_BIN non defini")
 def test_process_pool_routes_matches_across_workers():
     with GodotProcessPool(2) as pool:
-        requests = [{"match_id": str(index), "observer": 1,
-                     "config": {**env_config(), "seed": 100 + index,
-                                "first_player": 1, "blocked": []}}
-                    for index in range(4)]
+        requests = [
+            {
+                "match_id": str(index),
+                "observer": 1,
+                "config": {**env_config(), "seed": 100 + index, "first_player": 1, "blocked": []},
+            }
+            for index in range(4)
+        ]
         reset = pool.batch_reset(requests)
         assert all(item["ok"] for item in reset)
-        states = pool.batch_get_state([{"match_id": str(index), "observer": 1}
-                                       for index in range(4)])
+        states = pool.batch_get_state(
+            [{"match_id": str(index), "observer": 1} for index in range(4)]
+        )
         assert all(len(item["result"]["legal_actions"]) == 128 for item in states)
         pool.release_matches([str(index) for index in range(4)])
 
@@ -174,8 +197,9 @@ def test_process_pool_routes_matches_across_workers():
 def test_deck_evaluator_runs_real_matches_and_resumes_from_cache(tmp_path):
     checkpoint_path = tmp_path / "policy.pt"
     model = ActorCritic(929, 128, 16)
-    torch.save({"model": model.state_dict(), "config": {"model": {"hidden_dim": 16}}},
-               checkpoint_path)
+    torch.save(
+        {"model": model.state_dict(), "config": {"model": {"hidden_dim": 16}}}, checkpoint_path
+    )
     bridge = GodotProcess()
     env = SamStoneEnv()
     store = MatchStore(tmp_path / "matches.sqlite3")
@@ -186,8 +210,14 @@ def test_deck_evaluator_runs_real_matches_and_resumes_from_cache(tmp_path):
         opponent_policy = CheckpointOpponent(checkpoint_path)
         opponent = EvaluationOpponent("mirror", "veskar", candidate.stone_ids, opponent_policy)
         manifest = bridge.engine_manifest()
-        evaluator = DeckEvaluator(env, checkpoint_path, (opponent,), store,
-                                  str(manifest["catalogue_checksum"]), catalog.checksum)
+        evaluator = DeckEvaluator(
+            env,
+            checkpoint_path,
+            (opponent,),
+            store,
+            str(manifest["catalogue_checksum"]),
+            catalog.checksum,
+        )
         schedule = common_schedule(("mirror",), 1, 7654321)
 
         first = evaluator.evaluate(candidate, schedule)
@@ -195,8 +225,17 @@ def test_deck_evaluator_runs_real_matches_and_resumes_from_cache(tmp_path):
 
         assert first == second
         assert first.games == 4
-        assert len(store.records_for(evaluator.engine_checksum, evaluator.catalog_checksum,
-                                     evaluator.policy_checksum, candidate.deck_hash)) == 4
+        assert (
+            len(
+                store.records_for(
+                    evaluator.engine_checksum,
+                    evaluator.catalog_checksum,
+                    evaluator.policy_checksum,
+                    candidate.deck_hash,
+                )
+            )
+            == 4
+        )
     finally:
         store.close()
         env.close()
@@ -207,8 +246,9 @@ def test_deck_evaluator_runs_real_matches_and_resumes_from_cache(tmp_path):
 def test_batched_deck_evaluator_runs_policy_on_both_sides(tmp_path):
     checkpoint_path = tmp_path / "policy.pt"
     model = ActorCritic(929, 128, 16)
-    torch.save({"model": model.state_dict(), "config": {"model": {"hidden_dim": 16}}},
-               checkpoint_path)
+    torch.save(
+        {"model": model.state_dict(), "config": {"model": {"hidden_dim": 16}}}, checkpoint_path
+    )
     bridge = GodotProcess()
     store = MatchStore(tmp_path / "matches.sqlite3")
     pool = GodotProcessPool(2)
@@ -219,8 +259,8 @@ def test_batched_deck_evaluator_runs_policy_on_both_sides(tmp_path):
         candidate = catalog.candidate("veskar", env_config()["human_deck"])
         opponent = EvaluationOpponent("mirror", "veskar", candidate.stone_ids)
         evaluator = BatchedDeckEvaluator(
-            pool, checkpoint_path, (opponent,), store, "engine", catalog.checksum,
-            batch_size=4)
+            pool, checkpoint_path, (opponent,), store, "engine", catalog.checksum, batch_size=4
+        )
 
         result = evaluator.evaluate(candidate, common_schedule(("mirror",), 1, 8765432))
 
@@ -237,8 +277,9 @@ def test_phase_six_cli_pilot_end_to_end(tmp_path):
     root = Path(__file__).resolve().parents[1]
     checkpoint_path = tmp_path / "policy.pt"
     model = ActorCritic(929, 128, 16)
-    torch.save({"model": model.state_dict(), "config": {"model": {"hidden_dim": 16}}},
-               checkpoint_path)
+    torch.save(
+        {"model": model.state_dict(), "config": {"model": {"hidden_dim": 16}}}, checkpoint_path
+    )
     config = {
         "seed": 17,
         "device": "cpu",
@@ -265,22 +306,32 @@ def test_phase_six_cli_pilot_end_to_end(tmp_path):
             "final_finalists": 1,
         },
         "final_gate": {"minimum_win_rate": 0.0, "minimum_worst_matchup": 0.0},
-        "opponents": [{
-            "id": "mirror_veskar",
-            "god": "veskar",
-            "deck": env_config()["human_deck"],
-        }],
+        "opponents": [
+            {
+                "id": "mirror_veskar",
+                "god": "veskar",
+                "deck": env_config()["human_deck"],
+            }
+        ],
     }
     config_path = tmp_path / "pilot.yaml"
     config_path.write_text(yaml.safe_dump(config), encoding="utf-8")
     output = tmp_path / "output"
 
-    command = [sys.executable, str(root / "scripts" / "run_deck_evolution.py"),
-               "veskar", str(checkpoint_path), "--config", str(config_path),
-               "--output", str(output), "--pilot"]
+    command = [
+        sys.executable,
+        str(root / "scripts" / "run_deck_evolution.py"),
+        "veskar",
+        str(checkpoint_path),
+        "--config",
+        str(config_path),
+        "--output",
+        str(output),
+        "--pilot",
+    ]
     completed = subprocess.run(
-        command,
-        cwd=root, capture_output=True, text=True, timeout=90, check=False)
+        command, cwd=root, capture_output=True, text=True, timeout=90, check=False
+    )
 
     assert completed.returncode == 0, completed.stdout + completed.stderr
     assert (output / "state_veskar.json").is_file()
@@ -293,26 +344,58 @@ def test_phase_six_cli_pilot_end_to_end(tmp_path):
         assert action_count > match_count
 
     resumed = subprocess.run(
-        command, cwd=root, capture_output=True, text=True, timeout=90, check=False)
+        command, cwd=root, capture_output=True, text=True, timeout=90, check=False
+    )
 
     assert resumed.returncode == 0, resumed.stdout + resumed.stderr
     with sqlite3.connect(output / "matches.sqlite3") as connection:
         assert int(connection.execute("SELECT COUNT(*) FROM matches").fetchone()[0]) == match_count
-        assert int(connection.execute("SELECT COUNT(*) FROM match_actions").fetchone()[0]) == action_count
-    events = [json.loads(line) for line in (
-        output / "monitoring" / "veskar" / "metrics.jsonl").read_text(
-        encoding="utf-8").splitlines() if line]
+        assert (
+            int(connection.execute("SELECT COUNT(*) FROM match_actions").fetchone()[0])
+            == action_count
+        )
+    events = [
+        json.loads(line)
+        for line in (output / "monitoring" / "veskar" / "metrics.jsonl")
+        .read_text(encoding="utf-8")
+        .splitlines()
+        if line
+    ]
     assert {event["stream"] for event in events} >= {
-        "deck_evolution/generation", "deck_evolution/medium", "deck_evolution/final"}
+        "deck_evolution/generation",
+        "deck_evolution/medium",
+        "deck_evolution/final",
+    }
     balance = subprocess.run(
-        [sys.executable, str(root / "scripts" / "generate_balance_report.py"),
-         str(output / "matches.sqlite3"), "--output", str(output / "balance"),
-         "--minimum-samples", "1"],
-        cwd=root, capture_output=True, text=True, timeout=30, check=False)
+        [
+            sys.executable,
+            str(root / "scripts" / "generate_balance_report.py"),
+            str(output / "matches.sqlite3"),
+            "--output",
+            str(output / "balance"),
+            "--minimum-samples",
+            "1",
+        ],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        timeout=30,
+        check=False,
+    )
     progress = subprocess.run(
-        [sys.executable, str(root / "scripts" / "generate_training_report.py"),
-         str(output / "monitoring" / "veskar"), "--output", str(output / "progress")],
-        cwd=root, capture_output=True, text=True, timeout=30, check=False)
+        [
+            sys.executable,
+            str(root / "scripts" / "generate_training_report.py"),
+            str(output / "monitoring" / "veskar"),
+            "--output",
+            str(output / "progress"),
+        ],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        timeout=30,
+        check=False,
+    )
     assert balance.returncode == 0, balance.stdout + balance.stderr
     assert progress.returncode == 0, progress.stdout + progress.stderr
     assert (output / "balance" / "balance_report.html").is_file()
@@ -322,32 +405,40 @@ def test_phase_six_cli_pilot_end_to_end(tmp_path):
 @pytest.mark.skipif(not os.environ.get("GODOT_BIN"), reason="GODOT_BIN non defini")
 def test_short_ppo_run_writes_metrics_evaluation_and_atomic_checkpoint(tmp_path):
     root = Path(__file__).resolve().parents[1]
-    config = yaml.safe_load((root / "configs" / "ppo_phase4_tactical.yaml").read_text(
-        encoding="utf-8"))
+    config = yaml.safe_load(
+        (root / "configs" / "ppo_phase4_tactical.yaml").read_text(encoding="utf-8")
+    )
     config["output_dir"] = str(tmp_path / "ppo_run")
     config["environment"].update({"backend": "godot", "evaluation_backend": "godot"})
     config["environment"]["scenarios"] = config["environment"]["scenarios"][:1]
-    config["ppo"].update({
-        "total_timesteps": 16,
-        "rollout_steps": 16,
-        "num_envs": 1,
-        "minibatches": 4,
-        "update_epochs": 1,
-    })
+    config["ppo"].update(
+        {
+            "total_timesteps": 16,
+            "rollout_steps": 16,
+            "num_envs": 1,
+            "minibatches": 4,
+            "update_epochs": 1,
+        }
+    )
     config["evaluation"].update({"every_updates": 1, "games": 4, "num_envs": 1})
-    config["monitoring"].update({
-        "tensorboard": False,
-        "checkpoint_every_updates": 1,
-        "snapshot_every_updates": 0,
-    })
+    config["monitoring"].update(
+        {
+            "tensorboard": False,
+            "checkpoint_every_updates": 1,
+            "snapshot_every_updates": 0,
+        }
+    )
     config_path = tmp_path / "ppo_smoke.yaml"
     config_path.write_text(yaml.safe_dump(config), encoding="utf-8")
 
     PPOTrainer(config_path).train()
 
     output = tmp_path / "ppo_run"
-    events = [json.loads(line) for line in (output / "metrics.jsonl").read_text(
-        encoding="utf-8").splitlines() if line]
+    events = [
+        json.loads(line)
+        for line in (output / "metrics.jsonl").read_text(encoding="utf-8").splitlines()
+        if line
+    ]
     assert {event["stream"] for event in events} == {"training", "evaluation"}
     training = next(event for event in events if event["stream"] == "training")
     assert "normalized_entropy" in training["metrics"]
@@ -361,32 +452,40 @@ def test_short_ppo_run_writes_metrics_evaluation_and_atomic_checkpoint(tmp_path)
 @pytest.mark.skipif(not os.environ.get("GODOT_BIN"), reason="GODOT_BIN non defini")
 def test_vectorized_ppo_collects_from_four_godot_environments(tmp_path):
     root = Path(__file__).resolve().parents[1]
-    config = yaml.safe_load((root / "configs" / "ppo_phase4_tactical.yaml").read_text(
-        encoding="utf-8"))
+    config = yaml.safe_load(
+        (root / "configs" / "ppo_phase4_tactical.yaml").read_text(encoding="utf-8")
+    )
     config["output_dir"] = str(tmp_path / "ppo_vectorized_run")
     config["environment"].update({"backend": "godot", "evaluation_backend": "godot"})
     config["environment"]["scenarios"] = config["environment"]["scenarios"][:1]
-    config["ppo"].update({
-        "total_timesteps": 1024,
-        "rollout_steps": 256,
-        "num_envs": 4,
-        "minibatches": 8,
-        "update_epochs": 1,
-    })
+    config["ppo"].update(
+        {
+            "total_timesteps": 1024,
+            "rollout_steps": 256,
+            "num_envs": 4,
+            "minibatches": 8,
+            "update_epochs": 1,
+        }
+    )
     config["evaluation"].update({"every_updates": 1, "games": 4, "num_envs": 1})
-    config["monitoring"].update({
-        "tensorboard": False,
-        "checkpoint_every_updates": 1,
-        "snapshot_every_updates": 0,
-    })
+    config["monitoring"].update(
+        {
+            "tensorboard": False,
+            "checkpoint_every_updates": 1,
+            "snapshot_every_updates": 0,
+        }
+    )
     config_path = tmp_path / "ppo_vectorized_smoke.yaml"
     config_path.write_text(yaml.safe_dump(config), encoding="utf-8")
 
     PPOTrainer(config_path).train()
 
     output = tmp_path / "ppo_vectorized_run"
-    events = [json.loads(line) for line in (output / "metrics.jsonl").read_text(
-        encoding="utf-8").splitlines() if line]
+    events = [
+        json.loads(line)
+        for line in (output / "metrics.jsonl").read_text(encoding="utf-8").splitlines()
+        if line
+    ]
     training = next(event for event in events if event["stream"] == "training")
     assert training["step"] == 1024
     assert training["metrics"]["environment_count"] == 4.0
@@ -401,36 +500,46 @@ def test_vectorized_ppo_collects_from_four_godot_environments(tmp_path):
 @pytest.mark.skipif(not os.environ.get("GODOT_BIN"), reason="GODOT_BIN non defini")
 def test_fast_python_training_is_evaluated_by_vectorized_godot_oracles(tmp_path):
     root = Path(__file__).resolve().parents[1]
-    config = yaml.safe_load((root / "configs" / "ppo_phase4_tactical.yaml").read_text(
-        encoding="utf-8"))
+    config = yaml.safe_load(
+        (root / "configs" / "ppo_phase4_tactical.yaml").read_text(encoding="utf-8")
+    )
     config["output_dir"] = str(tmp_path / "ppo_fast_run")
     config["environment"]["scenarios"] = config["environment"]["scenarios"][:2]
-    config["ppo"].update({
-        "total_timesteps": 256,
-        "rollout_steps": 8,
-        "num_envs": 32,
-        "minibatches": 8,
-        "update_epochs": 1,
-    })
-    config["evaluation"].update({
-        "every_updates": 1,
-        "games": 8,
-        "num_envs": 4,
-        "anchor_games_per_stage": 0,
-    })
-    config["monitoring"].update({
-        "tensorboard": False,
-        "checkpoint_every_updates": 1,
-        "snapshot_every_updates": 0,
-    })
+    config["ppo"].update(
+        {
+            "total_timesteps": 256,
+            "rollout_steps": 8,
+            "num_envs": 32,
+            "minibatches": 8,
+            "update_epochs": 1,
+        }
+    )
+    config["evaluation"].update(
+        {
+            "every_updates": 1,
+            "games": 8,
+            "num_envs": 4,
+            "anchor_games_per_stage": 0,
+        }
+    )
+    config["monitoring"].update(
+        {
+            "tensorboard": False,
+            "checkpoint_every_updates": 1,
+            "snapshot_every_updates": 0,
+        }
+    )
     config_path = tmp_path / "ppo_fast_smoke.yaml"
     config_path.write_text(yaml.safe_dump(config), encoding="utf-8")
 
     PPOTrainer(config_path).train()
 
     output = tmp_path / "ppo_fast_run"
-    events = [json.loads(line) for line in (output / "metrics.jsonl").read_text(
-        encoding="utf-8").splitlines() if line]
+    events = [
+        json.loads(line)
+        for line in (output / "metrics.jsonl").read_text(encoding="utf-8").splitlines()
+        if line
+    ]
     training = next(event for event in events if event["stream"] == "training")
     evaluation = next(event for event in events if event["stream"] == "evaluation")
     assert training["metrics"]["environment_count"] == 32.0
@@ -446,28 +555,35 @@ def test_fast_python_training_is_evaluated_by_vectorized_godot_oracles(tmp_path)
 @pytest.mark.skipif(not os.environ.get("GODOT_BIN"), reason="GODOT_BIN non defini")
 def test_official_phase_four_config_runs_and_records_its_first_stage(tmp_path):
     root = Path(__file__).resolve().parents[1]
-    config = yaml.safe_load((root / "configs" / "ppo_phase4_tactical.yaml").read_text(
-        encoding="utf-8"))
+    config = yaml.safe_load(
+        (root / "configs" / "ppo_phase4_tactical.yaml").read_text(encoding="utf-8")
+    )
     config["output_dir"] = str(tmp_path / "ppo_progressive_run")
     config["environment"]["scenarios"] = config["environment"]["scenarios"][:2]
-    config["ppo"].update({
-        "total_timesteps": 256,
-        "rollout_steps": 8,
-        "num_envs": 32,
-        "minibatches": 8,
-        "update_epochs": 1,
-    })
-    config["evaluation"].update({
-        "every_updates": 1,
-        "games": 8,
-        "num_envs": 4,
-        "anchor_games_per_stage": 0,
-    })
-    config["monitoring"].update({
-        "tensorboard": False,
-        "checkpoint_every_updates": 1,
-        "snapshot_every_updates": 0,
-    })
+    config["ppo"].update(
+        {
+            "total_timesteps": 256,
+            "rollout_steps": 8,
+            "num_envs": 32,
+            "minibatches": 8,
+            "update_epochs": 1,
+        }
+    )
+    config["evaluation"].update(
+        {
+            "every_updates": 1,
+            "games": 8,
+            "num_envs": 4,
+            "anchor_games_per_stage": 0,
+        }
+    )
+    config["monitoring"].update(
+        {
+            "tensorboard": False,
+            "checkpoint_every_updates": 1,
+            "snapshot_every_updates": 0,
+        }
+    )
     config_path = tmp_path / "ppo_phase4_smoke.yaml"
     config_path.write_text(yaml.safe_dump(config), encoding="utf-8")
 
@@ -477,10 +593,12 @@ def test_official_phase_four_config_runs_and_records_its_first_stage(tmp_path):
     trainer.train()
 
     output = tmp_path / "ppo_progressive_run"
-    events = [json.loads(line) for line in (output / "metrics.jsonl").read_text(
-        encoding="utf-8").splitlines() if line]
-    assert {event["context"]["stage"] for event in events} == {
-        "precision_0"}
+    events = [
+        json.loads(line)
+        for line in (output / "metrics.jsonl").read_text(encoding="utf-8").splitlines()
+        if line
+    ]
+    assert {event["context"]["stage"] for event in events} == {"precision_0"}
     checkpoint = torch.load(output / "latest.pt", map_location="cpu", weights_only=False)
     assert checkpoint["curriculum"]["stage_index"] == 0
     assert checkpoint["curriculum"]["current"]["anticipation"] is False
@@ -489,18 +607,21 @@ def test_official_phase_four_config_runs_and_records_its_first_stage(tmp_path):
 @pytest.mark.skipif(not os.environ.get("GODOT_BIN"), reason="GODOT_BIN non defini")
 def test_adaptive_god_sampling_is_logged_by_vectorized_ppo(tmp_path):
     root = Path(__file__).resolve().parents[1]
-    config = yaml.safe_load((root / "configs" / "ppo_phase4_tactical.yaml").read_text(
-        encoding="utf-8"))
+    config = yaml.safe_load(
+        (root / "configs" / "ppo_phase4_tactical.yaml").read_text(encoding="utf-8")
+    )
     config["output_dir"] = str(tmp_path / "ppo_adaptive_run")
     config["environment"].update({"backend": "godot", "evaluation_backend": "godot"})
     config["environment"]["scenarios"] = config["environment"]["scenarios"][:2]
-    config["ppo"].update({
-        "total_timesteps": 1024,
-        "rollout_steps": 256,
-        "num_envs": 4,
-        "minibatches": 8,
-        "update_epochs": 1,
-    })
+    config["ppo"].update(
+        {
+            "total_timesteps": 1024,
+            "rollout_steps": 256,
+            "num_envs": 4,
+            "minibatches": 8,
+            "update_epochs": 1,
+        }
+    )
     config["curriculum"]["god_sampling"] = {
         "enabled": True,
         "target_wilson": 0.90,
@@ -520,18 +641,25 @@ def test_adaptive_god_sampling_is_logged_by_vectorized_ppo(tmp_path):
         "max_reset_attempts": 12,
     }
     config["evaluation"].update({"every_updates": 1, "games": 4, "num_envs": 1})
-    config["monitoring"].update({
-        "tensorboard": False,
-        "checkpoint_every_updates": 1,
-        "snapshot_every_updates": 0,
-    })
+    config["monitoring"].update(
+        {
+            "tensorboard": False,
+            "checkpoint_every_updates": 1,
+            "snapshot_every_updates": 0,
+        }
+    )
     config_path = tmp_path / "ppo_adaptive_smoke.yaml"
     config_path.write_text(yaml.safe_dump(config), encoding="utf-8")
 
     PPOTrainer(config_path).train()
 
-    events = [json.loads(line) for line in (tmp_path / "ppo_adaptive_run" / "metrics.jsonl").read_text(
-        encoding="utf-8").splitlines() if line]
+    events = [
+        json.loads(line)
+        for line in (tmp_path / "ppo_adaptive_run" / "metrics.jsonl")
+        .read_text(encoding="utf-8")
+        .splitlines()
+        if line
+    ]
     training = next(event for event in events if event["stream"] == "training")
     evaluation = next(event for event in events if event["stream"] == "evaluation")
     assert set(training["metrics"]["god_sampling"]["weights"]) == {"veskar", "nerava"}
@@ -544,4 +672,5 @@ def test_adaptive_god_sampling_is_logged_by_vectorized_ppo(tmp_path):
 
 def env_config():
     from samstone_rl.envs.samstone_env import DEFAULT_CONFIG
+
     return DEFAULT_CONFIG

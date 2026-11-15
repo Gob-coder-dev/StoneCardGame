@@ -14,13 +14,15 @@ from samstone_rl.opponents import GodotProfileOpponent
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Mesure le debit du moteur Python en conditions Gym/PPO.")
+        description="Mesure le debit du moteur Python en conditions Gym/PPO."
+    )
     parser.add_argument("--games", type=int, default=1000)
     parser.add_argument("--seed", type=int, default=424242)
     parser.add_argument("--precision", type=float, default=0.25)
     parser.add_argument("--anticipation", action="store_true")
-    parser.add_argument("--config", type=Path,
-                        help="configuration PPO dont les scenarios sont alternes")
+    parser.add_argument(
+        "--config", type=Path, help="configuration PPO dont les scenarios sont alternes"
+    )
     parser.add_argument("--god", help="limite le benchmark a un dieu de la configuration")
     args = parser.parse_args()
     if args.games <= 0 or not 0 <= args.precision <= 1:
@@ -46,12 +48,14 @@ def main() -> int:
             options = None
             if scenarios:
                 scenario = scenarios[game % len(scenarios)]
-                options = {"config": {
-                    "human_deck": list(scenario["deck"]),
-                    "ai_deck": list(scenario["deck"]),
-                    "human_god": str(scenario["god"]),
-                    "ai_god": str(scenario["god"]),
-                }}
+                options = {
+                    "config": {
+                        "human_deck": list(scenario["deck"]),
+                        "ai_deck": list(scenario["deck"]),
+                        "human_god": str(scenario["god"]),
+                        "ai_god": str(scenario["god"]),
+                    }
+                }
             _observation, info = env.reset(seed=args.seed + game, options=options)
             terminated = False
             while not terminated:
@@ -62,9 +66,11 @@ def main() -> int:
     finally:
         env.close()
     elapsed = time.perf_counter() - started
-    print(f"{args.games} parties en {elapsed:.3f} s: {args.games / elapsed:.2f} parties/s; "
-          f"{decisions / elapsed:.2f} decisions agent/s "
-          f"(precision={args.precision:g}, anticipation={args.anticipation})")
+    print(
+        f"{args.games} parties en {elapsed:.3f} s: {args.games / elapsed:.2f} parties/s; "
+        f"{decisions / elapsed:.2f} decisions agent/s "
+        f"(precision={args.precision:g}, anticipation={args.anticipation})"
+    )
     return 0
 
 

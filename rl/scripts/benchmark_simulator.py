@@ -14,7 +14,8 @@ from samstone_rl.envs.samstone_env import DEFAULT_CONFIG
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Mesure le debit du simulateur Godot batche et multi-processus.")
+        description="Mesure le debit du simulateur Godot batche et multi-processus."
+    )
     parser.add_argument("--games", type=int, default=1000)
     parser.add_argument("--workers", type=int, default=max(1, (os.cpu_count() or 2) // 2))
     parser.add_argument("--batch-size", type=int, default=64)
@@ -37,8 +38,13 @@ def main() -> int:
                 for _ in range(capacity):
                     match_id = f"benchmark-{next_game}"
                     config = dict(DEFAULT_CONFIG)
-                    config.update({"seed": args.seed + next_game,
-                                   "first_player": 1 + next_game % 2, "blocked": []})
+                    config.update(
+                        {
+                            "seed": args.seed + next_game,
+                            "first_player": 1 + next_game % 2,
+                            "blocked": [],
+                        }
+                    )
                     resets.append({"match_id": match_id, "observer": 1, "config": config})
                     next_game += 1
                 for item in pool.batch_reset(resets):
@@ -50,8 +56,13 @@ def main() -> int:
                 legal = state["legal_actions"]
                 if not legal:
                     raise RuntimeError(f"aucune action legale pour {match_id}")
-                steps.append({"match_id": match_id, "observer": 1,
-                              "action": legal[int(rng.integers(len(legal)))]})
+                steps.append(
+                    {
+                        "match_id": match_id,
+                        "observer": 1,
+                        "action": legal[int(rng.integers(len(legal)))],
+                    }
+                )
             finished: list[str] = []
             for item in pool.batch_step(steps):
                 if not item["ok"]:
@@ -68,8 +79,10 @@ def main() -> int:
                     del active[match_id]
                 completed += len(finished)
     elapsed = time.perf_counter() - started
-    print(f"{completed} parties en {elapsed:.2f} s: {completed / elapsed:.2f} parties/s "
-          f"({args.workers} workers, batch {args.batch_size})")
+    print(
+        f"{completed} parties en {elapsed:.2f} s: {completed / elapsed:.2f} parties/s "
+        f"({args.workers} workers, batch {args.batch_size})"
+    )
     return 0
 
 

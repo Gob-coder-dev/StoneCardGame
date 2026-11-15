@@ -2,6 +2,8 @@
 ## Toutes les contraintes restent déléguées à StoneLoader et DeckRules.
 extends RefCounted
 
+const Identity := preload("res://scripts/ai/neural/RLIdentity.gd")
+
 
 static func catalog() -> Dictionary:
 	var gods: Array = []
@@ -26,7 +28,8 @@ static func catalog() -> Dictionary:
 		"gods": gods,
 		"variants": variants
 	}
-	snapshot["checksum"] = _checksum(snapshot)
+	snapshot["checksum"] = Identity.content_checksum()
+	snapshot["deck_checksum"] = _checksum(snapshot)
 	return snapshot
 
 
@@ -57,6 +60,9 @@ static func engine_manifest() -> Dictionary:
 		"protocol_version": 2,
 		"observation_schema": 1,
 		"catalogue_checksum": catalogue["checksum"],
+		"deck_checksum": catalogue["deck_checksum"],
+		"rules_checksum": Identity.rules_checksum(),
+		"action_feature_schema": 2,
 		"game_version": str(ProjectSettings.get_setting("application/config/version", "development")),
 		"godot_version": Engine.get_version_info().get("string", "unknown")
 	}

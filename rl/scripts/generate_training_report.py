@@ -9,7 +9,8 @@ from samstone_rl.observability.training_report import generate_training_report
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Génère un rapport HTML/JSON/CSV depuis les métriques d'un run.")
+        description="Génère un rapport HTML/JSON/CSV depuis les métriques d'un run."
+    )
     parser.add_argument("run", type=Path)
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()

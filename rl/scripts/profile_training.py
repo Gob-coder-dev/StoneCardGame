@@ -13,12 +13,9 @@ from samstone_rl.observability.profiling import (
 )
 
 DECISIONS = {
-    "vectorization_recommended":
-        "La simulation domine: un moteur batch/vectorisé mérite un prototype.",
-    "optimize_neural_compute_first":
-        "Le réseau domine: optimiser les lots/minibatches avant de réécrire les règles.",
-    "mixed_profile_measure_before_rewrite":
-        "Le coût est partagé: faire un micro-benchmark ciblé avant une réécriture complète.",
+    "vectorization_recommended": "La simulation domine: un moteur batch/vectorisé mérite un prototype.",
+    "optimize_neural_compute_first": "Le réseau domine: optimiser les lots/minibatches avant de réécrire les règles.",
+    "mixed_profile_measure_before_rewrite": "Le coût est partagé: faire un micro-benchmark ciblé avant une réécriture complète.",
 }
 
 
@@ -32,16 +29,18 @@ def main() -> int:
     if args.json:
         print(json.dumps(summary, indent=2, ensure_ascii=False))
         return 0
-    print(f"Updates analysées: {summary['updates_analyzed']} "
-          f"(steps {summary['first_step']} a {summary['last_step']})")
+    print(
+        f"Updates analysées: {summary['updates_analyzed']} "
+        f"(steps {summary['first_step']} a {summary['last_step']})"
+    )
     print(f"Durée moyenne d'une update: {summary['mean_update_seconds']:.3f} s")
     print("Répartition du temps:")
     for phase in PROFILE_PHASES:
         values = summary["phases"][phase]
-        print(f"  {phase:16} {values['fraction']:6.1%}  "
-              f"({values['mean_seconds']:.4f} s/update)")
-    print(f"Évaluations dans le temps mesuré: "
-          f"{summary['evaluation_fraction_of_measured_time']:.1%}")
+        print(f"  {phase:16} {values['fraction']:6.1%}  ({values['mean_seconds']:.4f} s/update)")
+    print(
+        f"Évaluations dans le temps mesuré: {summary['evaluation_fraction_of_measured_time']:.1%}"
+    )
     print(f"Conclusion: {DECISIONS[summary['decision']]}")
     return 0
 

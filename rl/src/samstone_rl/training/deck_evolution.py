@@ -29,9 +29,13 @@ class EvolutionConfig:
     generations: int = 20
 
     def validate(self) -> None:
-        total = self.elites + self.crossover_children + self.strong_mutations + self.random_immigrants
+        total = (
+            self.elites + self.crossover_children + self.strong_mutations + self.random_immigrants
+        )
         if total != self.population_size:
-            raise ValueError(f"la composition de population vaut {total}, attendu {self.population_size}")
+            raise ValueError(
+                f"la composition de population vaut {total}, attendu {self.population_size}"
+            )
         required = (self.population_size, self.elites, self.tournament_size, self.generations)
         optional = (self.crossover_children, self.strong_mutations, self.random_immigrants)
         if any(value <= 0 for value in required) or any(value < 0 for value in optional):
@@ -47,59 +51,89 @@ class RankedCandidate:
 
 
 class EvolutionStateStore:
-    def __init__(self, path: str | Path) -> None:
+    def __init__(self, path: str | Path, engine_checksum: str = "") -> None:
         self.path = Path(path).resolve()
         self.path.parent.mkdir(parents=True, exist_ok=True)
+        self.engine_checksum = engine_checksum
 
-    def save(self, generation: int, god_id: str, population: Iterable[DeckCandidate],
-             ranking: Iterable[RankedCandidate], rng: np.random.Generator,
-             catalog_checksum: str, policy_checksum: str,
-             evolution_config: EvolutionConfig) -> None:
+    def save(
+        self,
+        generation: int,
+        god_id: str,
+        population: Iterable[DeckCandidate],
+        ranking: Iterable[RankedCandidate],
+        rng: np.random.Generator,
+        catalog_checksum: str,
+        policy_checksum: str,
+        evolution_config: EvolutionConfig,
+    ) -> None:
         payload = {
-            "version": 2,
+            "version": 3,
+            "engine_checksum": self.engine_checksum,
             "generation": generation,
             "god_id": god_id,
             "catalog_checksum": catalog_checksum,
             "policy_checksum": policy_checksum,
             "evolution_config": asdict(evolution_config),
             "population": [item.to_dict() for item in population],
-            "ranking": [{"candidate": item.candidate.to_dict(),
-                         "evaluation": asdict(item.evaluation)} for item in ranking],
+            "ranking": [
+                {"candidate": item.candidate.to_dict(), "evaluation": asdict(item.evaluation)}
+                for item in ranking
+            ],
             "rng_state": rng.bit_generator.state,
         }
         temporary = self.path.with_suffix(self.path.suffix + ".tmp")
         temporary.write_text(json.dumps(payload, indent=2), encoding="utf-8")
         temporary.replace(self.path)
 
-    def load(self, catalog: DeckCatalog, expected_policy_checksum: str,
-             expected_config: EvolutionConfig) -> tuple[
-            int, str, list[DeckCandidate], dict, tuple[RankedCandidate, ...]] | None:
+    def load(
+        self, catalog: DeckCatalog, expected_policy_checksum: str, expected_config: EvolutionConfig
+    ) -> tuple[int, str, list[DeckCandidate], dict, tuple[RankedCandidate, ...]] | None:
         if not self.path.is_file():
             return None
         payload = json.loads(self.path.read_text(encoding="utf-8"))
-        if payload.get("version") != 2:
+        if payload.get("version") != 3:
             raise ValueError("version d'état d'évolution incompatible")
+        if payload.get("engine_checksum") != self.engine_checksum:
+            raise ValueError("l'etat d'evolution utilise un autre moteur")
         if payload.get("catalog_checksum") != catalog.checksum:
             raise ValueError("l'état d'évolution utilise un autre catalogue")
         if payload.get("policy_checksum") != expected_policy_checksum:
             raise ValueError("l'état d'évolution utilise une autre politique")
         if payload.get("evolution_config") != asdict(expected_config):
             raise ValueError("l'état d'évolution utilise une autre configuration")
-        population = [catalog.candidate(payload["god_id"], item["stone_ids"])
-                      for item in payload["population"]]
-        ranking = tuple(RankedCandidate(
-            catalog.candidate(payload["god_id"], item["candidate"]["stone_ids"]),
-            CandidateEvaluation(**item["evaluation"])) for item in payload.get("ranking", []))
-        return (int(payload["generation"]), str(payload["god_id"]), population,
-                payload["rng_state"], ranking)
+        population = [
+            catalog.candidate(payload["god_id"], item["stone_ids"])
+            for item in payload["population"]
+        ]
+        ranking = tuple(
+            RankedCandidate(
+                catalog.candidate(payload["god_id"], item["candidate"]["stone_ids"]),
+                CandidateEvaluation(**item["evaluation"]),
+            )
+            for item in payload.get("ranking", [])
+        )
+        return (
+            int(payload["generation"]),
+            str(payload["god_id"]),
+            population,
+            payload["rng_state"],
+            ranking,
+        )
 
 
 class DeckEvolution:
-    def __init__(self, catalog: DeckCatalog, validator: GodotDeckValidator,
-                 evaluate: Callable[[DeckCandidate], CandidateEvaluation],
-                 policy_checksum: str, config: EvolutionConfig,
-                 state_store: EvolutionStateStore, seed: int,
-                 on_generation: Callable[[int, dict[str, float]], None] | None = None) -> None:
+    def __init__(
+        self,
+        catalog: DeckCatalog,
+        validator: GodotDeckValidator,
+        evaluate: Callable[[DeckCandidate], CandidateEvaluation],
+        policy_checksum: str,
+        config: EvolutionConfig,
+        state_store: EvolutionStateStore,
+        seed: int,
+        on_generation: Callable[[int, dict[str, float]], None] | None = None,
+    ) -> None:
         config.validate()
         self.catalog = catalog
         self.validator = validator
@@ -112,7 +146,9 @@ class DeckEvolution:
         self.operators = DeckOperators(catalog)
         self.on_generation = on_generation
 
-    def run(self, god_id: str, baselines: Iterable[DeckCandidate] = ()) -> tuple[RankedCandidate, ...]:
+    def run(
+        self, god_id: str, baselines: Iterable[DeckCandidate] = ()
+    ) -> tuple[RankedCandidate, ...]:
         restored = self.state_store.load(self.catalog, self.policy_checksum, self.config)
         if restored is None:
             generation = 0
@@ -125,17 +161,32 @@ class DeckEvolution:
             self.rng.bit_generator.state = rng_state
         while generation < self.config.generations:
             self.validator.require_all_valid(population)
-            ranking = tuple(sorted(
-                (RankedCandidate(candidate, self.evaluate(candidate)) for candidate in population),
-                key=lambda item: item.evaluation.fitness, reverse=True))
+            ranking = tuple(
+                sorted(
+                    (
+                        RankedCandidate(candidate, self.evaluate(candidate))
+                        for candidate in population
+                    ),
+                    key=lambda item: item.evaluation.fitness,
+                    reverse=True,
+                )
+            )
             last_ranking = ranking
             if self.on_generation is not None:
                 self.on_generation(generation + 1, self._generation_metrics(ranking))
             generation += 1
             if generation < self.config.generations:
                 population = self._breed(ranking)
-            self.state_store.save(generation, god_id, population, ranking, self.rng,
-                                  self.catalog.checksum, self.policy_checksum, self.config)
+            self.state_store.save(
+                generation,
+                god_id,
+                population,
+                ranking,
+                self.rng,
+                self.catalog.checksum,
+                self.policy_checksum,
+                self.config,
+            )
         return last_ranking
 
     def _generation_metrics(self, ranking: tuple[RankedCandidate, ...]) -> dict[str, float]:
@@ -145,12 +196,14 @@ class DeckEvolution:
         lineage_distances: list[float] = []
         for index, first in enumerate(ranking):
             first_stones = set(first.candidate.stone_ids)
-            first_lineages = {self.catalog.variants[item].lineage_id
-                              for item in first.candidate.stone_ids}
-            for second in ranking[index + 1:]:
+            first_lineages = {
+                self.catalog.variants[item].lineage_id for item in first.candidate.stone_ids
+            }
+            for second in ranking[index + 1 :]:
                 second_stones = set(second.candidate.stone_ids)
-                second_lineages = {self.catalog.variants[item].lineage_id
-                                   for item in second.candidate.stone_ids}
+                second_lineages = {
+                    self.catalog.variants[item].lineage_id for item in second.candidate.stone_ids
+                }
                 exact_distances.append(self._jaccard_distance(first_stones, second_stones))
                 lineage_distances.append(self._jaccard_distance(first_lineages, second_lineages))
         return {
@@ -173,8 +226,9 @@ class DeckEvolution:
         union = first | second
         return 1.0 - len(first & second) / len(union) if union else 0.0
 
-    def _initial_population(self, god_id: str,
-                            baselines: Iterable[DeckCandidate]) -> list[DeckCandidate]:
+    def _initial_population(
+        self, god_id: str, baselines: Iterable[DeckCandidate]
+    ) -> list[DeckCandidate]:
         population: list[DeckCandidate] = []
         seen: set[str] = set()
         for candidate in baselines:
@@ -186,7 +240,7 @@ class DeckEvolution:
         return population
 
     def _breed(self, ranking: tuple[RankedCandidate, ...]) -> list[DeckCandidate]:
-        population = [item.candidate for item in ranking[:self.config.elites]]
+        population = [item.candidate for item in ranking[: self.config.elites]]
         seen = {item.deck_hash for item in population}
         target = self.config.elites + self.config.crossover_children
         attempts = 0
@@ -214,17 +268,21 @@ class DeckEvolution:
             if child.deck_hash not in seen:
                 population.append(child)
                 seen.add(child.deck_hash)
-        self._fill_random(population, seen, ranking[0].candidate.god_id, self.config.population_size)
+        self._fill_random(
+            population, seen, ranking[0].candidate.god_id, self.config.population_size
+        )
         return population
 
     def _tournament(self, ranking: tuple[RankedCandidate, ...]) -> DeckCandidate:
         count = min(self.config.tournament_size, len(ranking))
         indices = self.rng.choice(len(ranking), size=count, replace=False)
-        return max((ranking[int(index)] for index in indices),
-                   key=lambda item: item.evaluation.fitness).candidate
+        return max(
+            (ranking[int(index)] for index in indices), key=lambda item: item.evaluation.fitness
+        ).candidate
 
-    def _fill_random(self, population: list[DeckCandidate], seen: set[str],
-                     god_id: str, target: int) -> None:
+    def _fill_random(
+        self, population: list[DeckCandidate], seen: set[str], god_id: str, target: int
+    ) -> None:
         attempts = 0
         while len(population) < target and attempts < target * 1000:
             attempts += 1

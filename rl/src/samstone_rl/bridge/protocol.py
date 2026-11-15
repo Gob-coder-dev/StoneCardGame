@@ -21,4 +21,3 @@ class Protocol:
             return value if isinstance(value, dict) else None
         except (json.JSONDecodeError, TypeError):
             return None
-

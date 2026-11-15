@@ -4,6 +4,7 @@ extends Node
 const SimulatorModel := preload("res://tools/rl_sim/MatchSimulator.gd")
 const Serializer := preload("res://tools/rl_sim/StateSerializer.gd")
 const DeckApi := preload("res://tools/rl_sim/DeckApi.gd")
+const NeuralApi := preload("res://tools/rl_sim/NeuralApi.gd")
 
 var _server := TCPServer.new()
 var _peer: StreamPeerTCP = null
@@ -90,6 +91,11 @@ func _handle(line: String) -> void:
 			_send_ok(request_id, {"results": DeckApi.validate_decks(request.get("decks", []))})
 		"get_engine_manifest":
 			_send_ok(request_id, DeckApi.engine_manifest())
+		"evaluate_policy":
+			_send_ok(request_id, NeuralApi.evaluate(_simulator.state,
+				int(request.get("observer", GameState.PLAYER_HUMAN)), str(request.get("path", ""))))
+		"choose_neural_action":
+			_send_ok(request_id, NeuralApi.choose(_simulator.state, str(request.get("path", ""))))
 		"batch_reset":
 			_send_ok(request_id, {"results": _batch_reset(request.get("matches", []))})
 		"batch_step":
@@ -98,6 +104,8 @@ func _handle(line: String) -> void:
 			_send_ok(request_id, {"results": _batch_get_state(request.get("matches", []))})
 		"batch_choose_profile_action":
 			_send_ok(request_id, {"results": _batch_choose_profile(request.get("matches", []))})
+		"batch_tactical_action_scores":
+			_send_ok(request_id, {"results": _batch_tactical_scores(request.get("matches", []))})
 		"release_matches":
 			for match_id in request.get("match_ids", []):
 				_simulators.erase(str(match_id))
@@ -170,6 +178,19 @@ func _batch_get_state(matches: Array) -> Array:
 			continue
 		results.append({"ok": true, "match_id": match_id,
 			"result": _snapshot_for(simulator, int(request.get("observer", GameState.PLAYER_HUMAN)))})
+	return results
+
+
+func _batch_tactical_scores(matches: Array) -> Array:
+	var results: Array = []
+	for request in matches:
+		var match_id := str(request.get("match_id", "")) if request is Dictionary else ""
+		var simulator = _simulators.get(match_id)
+		if simulator == null:
+			results.append({"ok": false, "match_id": match_id, "error": "match inconnu"})
+			continue
+		results.append({"ok": true, "match_id": match_id, "result": {"scores":
+			simulator.tactical_action_scores(int(request.get("observer", GameState.PLAYER_HUMAN)))}})
 	return results
 
 

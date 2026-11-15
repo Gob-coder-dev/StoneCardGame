@@ -9,8 +9,10 @@ class ActorCritic(nn.Module):
     def __init__(self, obs_dim: int, action_dim: int, hidden_dim: int = 256) -> None:
         super().__init__()
         self.backbone = nn.Sequential(
-            nn.Linear(obs_dim, hidden_dim), nn.Tanh(),
-            nn.Linear(hidden_dim, hidden_dim), nn.Tanh(),
+            nn.Linear(obs_dim, hidden_dim),
+            nn.Tanh(),
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.Tanh(),
         )
         self.actor = nn.Linear(hidden_dim, action_dim)
         self.critic = nn.Linear(hidden_dim, 1)
@@ -20,8 +22,9 @@ class ActorCritic(nn.Module):
     def encode_state(self, observations: torch.Tensor) -> torch.Tensor:
         return self.backbone(observations)
 
-    def distribution_and_value(self, observations: torch.Tensor,
-                               action_mask: torch.Tensor) -> tuple[Categorical, torch.Tensor]:
+    def distribution_and_value(
+        self, observations: torch.Tensor, action_mask: torch.Tensor
+    ) -> tuple[Categorical, torch.Tensor]:
         if action_mask.dtype is not torch.bool:
             raise TypeError("action_mask doit etre un tenseur bool")
         if torch.any(~action_mask.any(dim=-1)):
@@ -30,19 +33,25 @@ class ActorCritic(nn.Module):
         logits = self.actor(features).masked_fill(~action_mask, -1.0e9)
         return Categorical(logits=logits), self.critic(features).squeeze(-1)
 
-    def act(self, observations: torch.Tensor, action_mask: torch.Tensor,
-            deterministic: bool = False) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    def act(
+        self, observations: torch.Tensor, action_mask: torch.Tensor, deterministic: bool = False
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         distribution, value = self.distribution_and_value(observations, action_mask)
         action = distribution.probs.argmax(dim=-1) if deterministic else distribution.sample()
-        selected = (action.long().unsqueeze(-1) == torch.arange(
-            self.actor.out_features, device=action.device)).to(distribution.logits.dtype)
+        selected = (
+            action.long().unsqueeze(-1)
+            == torch.arange(self.actor.out_features, device=action.device)
+        ).to(distribution.logits.dtype)
         return action, (distribution.logits * selected).sum(dim=-1), value
 
-    def evaluate_actions(self, observations: torch.Tensor, action_mask: torch.Tensor,
-                         actions: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    def evaluate_actions(
+        self, observations: torch.Tensor, action_mask: torch.Tensor, actions: torch.Tensor
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         distribution, value = self.distribution_and_value(observations, action_mask)
-        selected = (actions.long().unsqueeze(-1) == torch.arange(
-            self.actor.out_features, device=actions.device)).to(distribution.logits.dtype)
+        selected = (
+            actions.long().unsqueeze(-1)
+            == torch.arange(self.actor.out_features, device=actions.device)
+        ).to(distribution.logits.dtype)
         log_prob = (distribution.logits * selected).sum(dim=-1)
         entropy = -(distribution.probs * distribution.logits).sum(dim=-1)
         return log_prob, entropy, value

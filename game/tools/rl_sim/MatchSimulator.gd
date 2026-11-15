@@ -5,7 +5,7 @@ extends RefCounted
 
 const ProfileAIModel := preload("res://scripts/ai/ProfileAI.gd")
 const AIProfileModel := preload("res://scripts/ai/AIProfile.gd")
-const MoveEvaluatorModel := preload("res://scripts/ai/MoveEvaluator.gd")
+const RLTactics := preload("res://scripts/ai/neural/RLTacticalFeatures.gd")
 
 var state: GameState = null
 var _opponent_rng := RandomNumberGenerator.new()
@@ -20,6 +20,8 @@ func reset(config: Dictionary) -> Dictionary:
 	setup_rng.seed = seed
 	state = GameState.new()
 	state.set_random_seed(seed)
+	if bool(config.get("portable_rng", false)):
+		state.set_preview_seed(seed)
 	state.human_god_id = str(config["human_god"])
 	state.ai_god_id = str(config["ai_god"])
 	state.setup_hands(config["human_deck"], config["ai_deck"])
@@ -91,45 +93,7 @@ func choose_profile_action(profile_data: Dictionary) -> Dictionary:
 ## Conséquences publiques utilisées par la politique tactique RL. Cette méthode
 ## ne choisit aucun coup et travaille exclusivement sur des clones de l'état.
 func tactical_action_scores(observer: int) -> Dictionary:
-	if state == null or state.is_game_over or state.current_player != observer:
-		return {}
-	var view := state.clone()
-	if observer == GameState.PLAYER_HUMAN:
-		_swap_players(view)
-	view = view.clone_for_ai()
-	var moves := RulesEngine.get_valid_moves(view, GameState.PLAYER_AI)
-	var immediate_evaluator := MoveEvaluatorModel.new(view, false)
-	var anticipated_evaluator := MoveEvaluatorModel.new(view, true)
-	var scores := {}
-	for move in moves:
-		var immediate := _average_move_value(immediate_evaluator, move)
-		var anticipated := _average_move_value(anticipated_evaluator, move)
-		var hand_slot := view.ai_hand.find(str(move["stone_id"]))
-		if hand_slot < 0:
-			continue
-		var action := hand_slot * 16 + int(move["row"]) * 4 + int(move["col"])
-		var definition := StoneLoader.get_stone(str(move["stone_id"]))
-		var stochastic := int(definition.get("random_blades", 0)) > 0 \
-			or str(definition.get("coin_flip", "")) != ""
-		scores[str(action)] = [
-			immediate,
-			anticipated,
-			maxf(0.0, immediate - anticipated),
-			1.0 if stochastic else 0.0,
-			1.0 + 2.0 * immediate,
-		]
-	return scores
-
-
-func _average_move_value(evaluator, move: Dictionary) -> float:
-	var first: Dictionary = evaluator.evaluate(move, 0)
-	var total := float(first["value"])
-	var count := 1
-	if bool(first["random"]):
-		for sample in range(1, evaluator.random_samples()):
-			total += float(evaluator.evaluate(move, sample)["value"])
-			count += 1
-	return total / count
+	return {} if state == null else RLTactics.scores(state, observer)
 
 
 func _update_outcome() -> void:

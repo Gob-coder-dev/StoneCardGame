@@ -28,4 +28,3 @@ def _build_rays() -> tuple[tuple[tuple[int, ...], ...], ...]:
 
 # RAYS[origin][side] lists board indices from nearest to farthest.
 RAYS = _build_rays()
-

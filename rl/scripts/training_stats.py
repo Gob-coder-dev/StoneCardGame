@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Print cumulative, refresh-safe counters for one local training run."""
+
 from __future__ import annotations
 
 import argparse
@@ -37,8 +38,13 @@ def collect_stats(run_directory: str | Path) -> dict[str, Any]:
             evaluations += 1
             primary = int(metrics.get("games", 0))
             anchors = metrics.get("anchors", {})
-            anchoring = (sum(int(item.get("games", 0)) for item in anchors.values()
-                             if isinstance(item, dict)) if isinstance(anchors, dict) else 0)
+            anchoring = (
+                sum(
+                    int(item.get("games", 0)) for item in anchors.values() if isinstance(item, dict)
+                )
+                if isinstance(anchors, dict)
+                else 0
+            )
             mixed = metrics.get("mixed_vs_phase4", {})
             mixed_count = int(mixed.get("games", 0)) if isinstance(mixed, dict) else 0
             primary_games += primary
@@ -81,10 +87,12 @@ def collect_stats(run_directory: str | Path) -> dict[str, Any]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Affiche les compteurs cumules d'un run PPO.")
-    parser.add_argument("run", type=Path, nargs="?",
-                        default=Path("runs/ppo_phase4_tactical"))
-    parser.add_argument("--json", action="store_true",
-                        help="affiche les donnees brutes JSON au lieu du resume lisible")
+    parser.add_argument("run", type=Path, nargs="?", default=Path("runs/ppo_phase4_tactical"))
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="affiche les donnees brutes JSON au lieu du resume lisible",
+    )
     args = parser.parse_args()
     stats = collect_stats(args.run)
     if args.json:

@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=69", "wheel"]
+requires = ["setuptools==84.2.1", "wheel==0.48.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "samstone-rl"
-version = "0.1.0"
+version = "0.2.0"
 description = "Entraînement des boss par renforcement pour SamStone"
 readme = "README.md"
 requires-python = ">=3.11,<3.12"
@@ -14,8 +14,8 @@ dynamic = ["dependencies"]
 samstone-train = "samstone_rl.training.ppo_cleanrl:main"
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0.0", "ruff>=0.8.0", "mypy>=1.13.0"]
-directml = ["torch-directml>=0.2.0.dev240914"]
+dev = ["pytest==9.1.1", "ruff==0.17.3"]
+directml = ["torch-directml==0.2.5.dev240914; sys_platform == 'win32'"]
 monitoring = ["wandb>=0.16.0"]
 
 [tool.setuptools.dynamic]
@@ -27,4 +27,11 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]
 

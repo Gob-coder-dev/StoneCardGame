@@ -4,21 +4,36 @@ from samstone_rl.evaluation import MatchRecord, paired_ablation, replacement_var
 
 
 def _record(deck_hash: str, seed: int, winner: int) -> MatchRecord:
-    return MatchRecord("engine", "catalog", "policy", deck_hash, "veskar", ("a",),
-                       "opponent", "nerava", ("b",), seed, 1, 1, winner, 10, 6)
+    return MatchRecord(
+        "engine",
+        "catalog",
+        "policy",
+        deck_hash,
+        "veskar",
+        ("a",),
+        "opponent",
+        "nerava",
+        ("b",),
+        seed,
+        1,
+        1,
+        winner,
+        10,
+        6,
+    )
 
 
 def test_replacement_variants_are_legal_bounded_and_unique():
     catalog = synthetic_catalog()
     baseline = catalog.candidate("veskar", [f"n{index:02d}_n2" for index in range(8)])
-    variants = replacement_variants(catalog, baseline, alternatives_per_card=2,
-                                    maximum_cost_delta=100)
+    variants = replacement_variants(
+        catalog, baseline, alternatives_per_card=2, maximum_cost_delta=100
+    )
     assert variants
     assert len({item.candidate.deck_hash for item in variants}) == len(variants)
     assert all(not catalog.problems(item.candidate) for item in variants)
     assert all(item.removed not in item.candidate.stone_ids for item in variants)
-    assert all(sum(item.removed == card for item in variants) <= 2
-               for card in baseline.stone_ids)
+    assert all(sum(item.removed == card for item in variants) <= 2 for card in baseline.stone_ids)
 
 
 def test_paired_ablation_compares_identical_seeds():

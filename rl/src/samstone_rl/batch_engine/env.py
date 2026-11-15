@@ -36,6 +36,9 @@ class _SimulatorBridge:
         """Expose the opponent's own hidden hand, never the agent's hand."""
         return {"observation": self.simulator.serialize_for_player(observer)}
 
+    def tactical_action_scores(self, observer: int) -> dict[int, tuple[float, ...]]:
+        return self.simulator.tactical_action_scores(observer)
+
 
 @dataclass(slots=True)
 class _Slot:
@@ -65,11 +68,15 @@ class BatchSamStoneEnv:
 
     backend_name = "python_batch"
 
-    def __init__(self, num_envs: int, reward_scheme: Any,
-                 game_root: str | Path | None = None,
-                 tactical_features: bool = False,
-                 vector_tactical: bool = True,
-                 vector_effects: bool = True) -> None:
+    def __init__(
+        self,
+        num_envs: int,
+        reward_scheme: Any,
+        game_root: str | Path | None = None,
+        tactical_features: bool = False,
+        vector_tactical: bool = True,
+        vector_effects: bool = True,
+    ) -> None:
         if num_envs <= 0:
             raise ValueError("num_envs doit etre strictement positif")
         self.num_envs = int(num_envs)
@@ -80,34 +87,51 @@ class BatchSamStoneEnv:
         self.tactical_features_enabled = bool(tactical_features)
         self.tactical_encoder = TacticalActionEncoder()
         self.vector_tactical_enabled = bool(vector_tactical and tactical_features)
-        self.vector_tactical = (VectorTacticalEvaluator(
-            self.numeric_catalog, vector_effects=vector_effects)
-                                if self.vector_tactical_enabled else None)
+        self.vector_tactical = (
+            VectorTacticalEvaluator(self.numeric_catalog, vector_effects=vector_effects)
+            if self.vector_tactical_enabled
+            else None
+        )
         self.codec = ActionCodec()
         self.slots: list[_Slot] = []
         for _ in range(self.num_envs):
             simulator = FastSimulator(self.catalog)
             self.slots.append(_Slot(simulator, _SimulatorBridge(simulator)))
         self.observations = np.zeros(
-            (self.num_envs, self.encoder.observation_size), dtype=np.float32)
-        self.action_masks = np.zeros(
-            (self.num_envs, self.codec.n_actions), dtype=np.bool_)
+            (self.num_envs, self.encoder.observation_size), dtype=np.float32
+        )
+        self.action_masks = np.zeros((self.num_envs, self.codec.n_actions), dtype=np.bool_)
         self.action_features = np.zeros(
             (self.num_envs, self.codec.n_actions, self.tactical_encoder.feature_size),
-            dtype=np.float32)
+            dtype=np.float32,
+        )
         self.closed = False
 
-    def reset_one(self, index: int, *, seed: int, opponent: Opponent,
-                  agent_player: int, options: dict[str, Any] | None = None
-                  ) -> tuple[np.ndarray, dict[str, Any]]:
-        self._reset_slot(index, seed=seed, opponent=opponent,
-                         agent_player=agent_player, options=options)
+    def reset_one(
+        self,
+        index: int,
+        *,
+        seed: int,
+        opponent: Opponent,
+        agent_player: int,
+        options: dict[str, Any] | None = None,
+    ) -> tuple[np.ndarray, dict[str, Any]]:
+        self._reset_slot(
+            index, seed=seed, opponent=opponent, agent_player=agent_player, options=options
+        )
         self._encode_many([index])
         return self.observations[index], self._info(index)
 
-    def _reset_slot(self, index: int, *, seed: int, opponent: Opponent,
-                    agent_player: int, options: dict[str, Any] | None = None,
-                    play_opponent: bool = True) -> None:
+    def _reset_slot(
+        self,
+        index: int,
+        *,
+        seed: int,
+        opponent: Opponent,
+        agent_player: int,
+        options: dict[str, Any] | None = None,
+        play_opponent: bool = True,
+    ) -> None:
         slot = self._slot(index)
         if agent_player not in (1, 2):
             raise ValueError("agent_player doit valoir 1 ou 2")
@@ -132,57 +156,84 @@ class BatchSamStoneEnv:
         if play_opponent:
             slot.opponent_captures += self._play_opponent_turns(slot)
 
-    def reset_many(self, indices: Sequence[int], *, seeds: Sequence[int],
-                   opponents: Sequence[Opponent], agent_players: Sequence[int],
-                   options: Sequence[dict[str, Any] | None]
-                   ) -> tuple[list[np.ndarray], list[dict[str, Any]]]:
+    def reset_many(
+        self,
+        indices: Sequence[int],
+        *,
+        seeds: Sequence[int],
+        opponents: Sequence[Opponent],
+        agent_players: Sequence[int],
+        options: Sequence[dict[str, Any] | None],
+    ) -> tuple[list[np.ndarray], list[dict[str, Any]]]:
         lengths = {len(indices), len(seeds), len(opponents), len(agent_players), len(options)}
         if len(lengths) != 1:
             raise ValueError("les lots de reset doivent avoir la meme taille")
         for index, seed, opponent, player, item_options in zip(
-                indices, seeds, opponents, agent_players, options, strict=True):
+            indices, seeds, opponents, agent_players, options, strict=True
+        ):
             self._reset_slot(
-                index, seed=int(seed), opponent=opponent,
-                agent_player=int(player), options=item_options,
-                play_opponent=False)
+                index,
+                seed=int(seed),
+                opponent=opponent,
+                agent_player=int(player),
+                options=item_options,
+                play_opponent=False,
+            )
         captures = self._play_opponents_batch(indices)
         for index in indices:
             self.slots[index].opponent_captures += captures.get(int(index), 0)
         self._encode_many(indices)
-        return ([self.observations[index] for index in indices],
-                [self._info(index) for index in indices])
+        return (
+            [self.observations[index] for index in indices],
+            [self._info(index) for index in indices],
+        )
 
-    def step(self, actions: Sequence[int]) -> list[tuple[np.ndarray, float, bool, bool,
-                                                        dict[str, Any]]]:
+    def step(
+        self, actions: Sequence[int]
+    ) -> list[tuple[np.ndarray, float, bool, bool, dict[str, Any]]]:
         if len(actions) != self.num_envs:
             raise ValueError(f"{self.num_envs} actions attendues, {len(actions)} recues")
-        pending = [self._play_agent_action(index, int(action))
-                   for index, action in enumerate(actions)]
+        pending = [
+            self._play_agent_action(index, int(action)) for index, action in enumerate(actions)
+        ]
         opponent_captures = self._play_opponents_batch(range(self.num_envs))
-        advanced = [self._finish_transition(
-            index, pending[index][0], pending[index][1],
-            opponent_captures.get(index, 0))
-            for index in range(self.num_envs)]
+        advanced = [
+            self._finish_transition(
+                index, pending[index][0], pending[index][1], opponent_captures.get(index, 0)
+            )
+            for index in range(self.num_envs)
+        ]
         self._encode_many(list(range(self.num_envs)))
         return [
-            (self.observations[index], float(values[0]), values[1], False,
-             self._info(index, *values[2]))
+            (
+                self.observations[index],
+                float(values[0]),
+                values[1],
+                False,
+                self._info(index, *values[2]),
+            )
             for index, values in enumerate(advanced)
         ]
 
-    def step_one(self, index: int, action: int
-                 ) -> tuple[np.ndarray, float, bool, bool, dict[str, Any]]:
+    def step_one(
+        self, index: int, action: int
+    ) -> tuple[np.ndarray, float, bool, bool, dict[str, Any]]:
         reward, terminated, details = self._advance_one(index, action)
         self._encode_many([index])
-        return (self.observations[index], float(reward), terminated, False,
-                self._info(index, *details))
+        return (
+            self.observations[index],
+            float(reward),
+            terminated,
+            False,
+            self._info(index, *details),
+        )
 
-    def _advance_one(self, index: int, action: int
-                     ) -> tuple[float, bool, tuple[int, int, float, float, float, float]]:
+    def _advance_one(
+        self, index: int, action: int
+    ) -> tuple[float, bool, tuple[int, int, float, float, float, float]]:
         previous_margin, agent_captures = self._play_agent_action(index, action)
         opponent_captures = self._play_opponent_turns(self._slot(index))
-        return self._finish_transition(
-            index, previous_margin, agent_captures, opponent_captures)
+        return self._finish_transition(index, previous_margin, agent_captures, opponent_captures)
 
     def _play_agent_action(self, index: int, action: int) -> tuple[int, int]:
         slot = self._slot(index)
@@ -202,26 +253,32 @@ class BatchSamStoneEnv:
         slot.agent_captures += agent_captures
         return previous_margin, agent_captures
 
-    def _finish_transition(self, index: int, previous_margin: int,
-                           agent_captures: int, opponent_captures: int
-                           ) -> tuple[float, bool,
-                                      tuple[int, int, float, float, float, float]]:
+    def _finish_transition(
+        self, index: int, previous_margin: int, agent_captures: int, opponent_captures: int
+    ) -> tuple[float, bool, tuple[int, int, float, float, float, float]]:
         slot = self._slot(index)
         slot.opponent_captures += opponent_captures
         state = slot.simulator.state
         assert state is not None
         terminated = bool(state.is_game_over)
-        capture_reward = (self.reward_scheme.captures(agent_captures)
-                          - self.reward_scheme.captures(opponent_captures))
+        capture_reward = self.reward_scheme.captures(agent_captures) - self.reward_scheme.captures(
+            opponent_captures
+        )
         terminal_reward = self._terminal_reward(slot) if terminated else 0.0
         final_margin_reward = self._final_margin_reward(slot) if terminated else 0.0
         control_delta_reward = self.reward_scheme.control_delta(
-            previous_margin, self._score_margin(slot))
-        reward = (capture_reward + terminal_reward + final_margin_reward
-                  + control_delta_reward)
+            previous_margin, self._score_margin(slot)
+        )
+        reward = capture_reward + terminal_reward + final_margin_reward + control_delta_reward
         slot.episode_return += reward
-        details = (agent_captures, opponent_captures, capture_reward,
-                   terminal_reward, final_margin_reward, control_delta_reward)
+        details = (
+            agent_captures,
+            opponent_captures,
+            capture_reward,
+            terminal_reward,
+            final_margin_reward,
+            control_delta_reward,
+        )
         return float(reward), terminated, details
 
     def _play_opponents_batch(self, indices: Sequence[int]) -> dict[int, int]:
@@ -231,7 +288,7 @@ class BatchSamStoneEnv:
         counterfactual scoring of all legal replies is shared by the batch.
         """
         captures = {int(index): 0 for index in indices}
-        profile_requests: list[tuple[int, bool]] = []
+        profile_requests: list[tuple[int, bool, GodotProfileOpponent]] = []
         for raw_index in indices:
             index = int(raw_index)
             slot = self._slot(index)
@@ -239,29 +296,28 @@ class BatchSamStoneEnv:
             assert state is not None
             if state.is_game_over or state.current_player == slot.agent_player:
                 continue
-            if isinstance(slot.opponent, GodotProfileOpponent):
-                if self.vector_tactical is None:
+            opponent = getattr(slot.opponent, "selected", None) or slot.opponent
+            if isinstance(opponent, GodotProfileOpponent):
+                if self.vector_tactical is None or opponent.precision <= 0.0:
                     moves = slot.simulator.legal_actions()
-                    move = slot.opponent.choose(
-                        slot.bridge, moves, slot.rng, state.current_player)
+                    move = opponent.choose(slot.bridge, moves, slot.rng, state.current_player)
                     result = slot.simulator.step(move)
                     captures[index] += len(result.get("captures", ()))
                     slot.turns += 1
                     continue
-                probability = slot.opponent.anticipation_probability
+                probability = opponent.anticipation_probability
                 if probability is None:
-                    anticipation = slot.opponent.anticipation
+                    anticipation = opponent.anticipation
                 elif probability <= 0.0:
                     anticipation = False
                 elif probability >= 1.0:
                     anticipation = True
                 else:
                     anticipation = bool(slot.rng.random() < probability)
-                profile_requests.append((index, anticipation))
+                profile_requests.append((index, anticipation, opponent))
                 continue
             moves = slot.simulator.legal_actions()
-            move = slot.opponent.choose(
-                slot.bridge, moves, slot.rng, state.current_player)
+            move = opponent.choose(slot.bridge, moves, slot.rng, state.current_player)
             result = slot.simulator.step(move)
             captures[index] += len(result.get("captures", ()))
             slot.turns += 1
@@ -269,20 +325,21 @@ class BatchSamStoneEnv:
             return captures
         request_indices = [item[0] for item in profile_requests]
         simulators = [self.slots[index].simulator for index in request_indices]
-        observers = [int(simulator.state.current_player)  # type: ignore[union-attr]
-                     for simulator in simulators]
+        observers = [
+            int(simulator.state.current_player)  # type: ignore[union-attr]
+            for simulator in simulators
+        ]
         masks = np.zeros((len(simulators), self.codec.n_actions), dtype=np.bool_)
-        for row, (simulator, observer) in enumerate(zip(
-                simulators, observers, strict=True)):
+        for row, (simulator, observer) in enumerate(zip(simulators, observers, strict=True)):
             state = simulator.state
             assert state is not None
             self.encoder.action_mask(state, observer, masks[row])
         assert self.vector_tactical is not None
         score_batches = self.vector_tactical.evaluate(simulators, observers, masks)
-        for row, ((index, anticipation), observer) in enumerate(zip(
-                profile_requests, observers, strict=True)):
+        for row, ((index, anticipation, opponent), observer) in enumerate(
+            zip(profile_requests, observers, strict=True)
+        ):
             slot = self.slots[index]
-            opponent = slot.opponent
             assert isinstance(opponent, GodotProfileOpponent)
             simulator = slot.simulator
             moves = simulator.legal_actions()
@@ -306,7 +363,8 @@ class BatchSamStoneEnv:
                 if not plays_best:
                     weights = [
                         math.exp(-(best - value) / temperature) if temperature > 0 else 0.0
-                        for value in values]
+                        for value in values
+                    ]
                 move = moves[_weighted_index(weights, rng)]
             result = simulator.step(move)
             captures[index] += len(result.get("captures", ()))
@@ -317,17 +375,19 @@ class BatchSamStoneEnv:
         return {
             "protocol_version": 2,
             "observation_schema": 1,
-            "action_feature_schema": (1 if self.tactical_features_enabled else 0),
-            "action_feature_size": (self.tactical_encoder.feature_size
-                                    if self.tactical_features_enabled else 0),
+            "action_feature_schema": (
+                self.tactical_encoder.SCHEMA_VERSION if self.tactical_features_enabled else 0
+            ),
+            "action_feature_size": (
+                self.tactical_encoder.feature_size if self.tactical_features_enabled else 0
+            ),
             "catalogue_checksum": self.catalog.checksum,
             "game_version": "fast-python-batch-1",
             "godot_version": "in-process",
             "backend": self.backend_name,
             "batch_size": self.num_envs,
             "vector_tactical": self.vector_tactical_enabled,
-            "vector_effects": bool(
-                self.vector_tactical and self.vector_tactical.vector_effects),
+            "vector_effects": bool(self.vector_tactical and self.vector_tactical.vector_effects),
         }
 
     def vector_metrics(self, *, reset: bool = False) -> dict[str, float]:
@@ -351,17 +411,13 @@ class BatchSamStoneEnv:
         assert state is not None
         while not state.is_game_over and state.current_player != slot.agent_player:
             moves = slot.simulator.legal_actions()
-            move = slot.opponent.choose(
-                slot.bridge, moves, slot.rng, state.current_player)
+            move = slot.opponent.choose(slot.bridge, moves, slot.rng, state.current_player)
             result = slot.simulator.step(move)
             captures += len(result.get("captures", ()))
             slot.turns += 1
             state = slot.simulator.state
             assert state is not None
         return captures
-
-    def _encode_slot(self, index: int) -> None:
-        self._encode_many([index])
 
     def _encode_many(self, indices: Sequence[int]) -> None:
         if not indices:
@@ -374,7 +430,7 @@ class BatchSamStoneEnv:
             self.encoder.encode(state, slot.agent_player, self.observations[index])
             self.encoder.action_mask(state, slot.agent_player, self.action_masks[index])
         if not self.tactical_features_enabled:
-            self.action_features[selected].fill(0.0)
+            self.action_features[selected] = 0.0
             return
         simulators = [self.slots[index].simulator for index in selected]
         observers = [self.slots[index].agent_player for index in selected]
@@ -382,14 +438,17 @@ class BatchSamStoneEnv:
         if self.vector_tactical is not None:
             scores = self.vector_tactical.evaluate(simulators, observers, masks)
             self.action_features[selected] = self.tactical_encoder.encode_batch(
-                self.observations[selected], masks, scores)
+                self.observations[selected], masks, scores
+            )
             return
-        for index, simulator, observer in zip(
-                selected, simulators, observers, strict=True):
+        for index, simulator, observer in zip(selected, simulators, observers, strict=True):
             scores = simulator.tactical_action_scores(observer)
             self.tactical_encoder.encode(
-                self.observations[index], self.action_masks[index], scores,
-                self.action_features[index])
+                self.observations[index],
+                self.action_masks[index],
+                scores,
+                self.action_features[index],
+            )
 
     @staticmethod
     def _scores(slot: _Slot) -> tuple[int, int]:
@@ -414,10 +473,16 @@ class BatchSamStoneEnv:
         own, opponent = self._scores(slot)
         return float(self.reward_scheme.board_margin(own, opponent))
 
-    def _info(self, index: int, agent_captures: int = 0,
-              opponent_captures: int = 0, capture_reward: float = 0.0,
-              terminal_reward: float = 0.0, final_margin_reward: float = 0.0,
-              control_delta_reward: float = 0.0) -> dict[str, Any]:
+    def _info(
+        self,
+        index: int,
+        agent_captures: int = 0,
+        opponent_captures: int = 0,
+        capture_reward: float = 0.0,
+        terminal_reward: float = 0.0,
+        final_margin_reward: float = 0.0,
+        control_delta_reward: float = 0.0,
+    ) -> dict[str, Any]:
         slot = self.slots[index]
         state = slot.simulator.state
         assert state is not None

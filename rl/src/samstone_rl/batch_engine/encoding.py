@@ -18,12 +18,11 @@ class DirectStateEncoder:
         self.codec = ActionCodec()
         self.observation_size = self.schema.get_obs_size()
 
-    def encode(self, state: FastState, observer: int,
-               out: np.ndarray | None = None) -> np.ndarray:
+    def encode(self, state: FastState, observer: int, out: np.ndarray | None = None) -> np.ndarray:
         if observer not in (1, 2):
             raise ValueError("observer doit valoir 1 ou 2")
         opponent = 2 if observer == 1 else 1
-        result = (np.zeros(self.observation_size, dtype=np.float32) if out is None else out)
+        result = np.zeros(self.observation_size, dtype=np.float32) if out is None else out
         if result.shape != (self.observation_size,) or result.dtype != np.float32:
             raise ValueError("tampon d'observation incompatible")
         result.fill(0.0)
@@ -41,16 +40,15 @@ class DirectStateEncoder:
             if stone is None:
                 continue
             cursor = offset + 6
-            for values in (stone.base, stone.random_blades, stone.long,
-                           stone.shields, stone.swarm):
-                result[cursor:cursor + 4] = np.asarray(values, dtype=np.float32) / 4.0
+            for values in (stone.base, stone.random_blades, stone.long, stone.shields, stone.swarm):
+                result[cursor : cursor + 4] = np.asarray(values, dtype=np.float32) / 4.0
                 cursor += 4
             result[cursor] = stone.miasma_weakness / 4.0
             result[cursor + 1] = stone.temporary_weakness / 4.0
             result[cursor + 2] = float(stone.temporary_weakness_owner == observer)
             result[cursor + 3] = float(stone.temporary_weakness_owner == opponent)
             stone_index = self.catalog.index(stone.stone_id)
-            result[cursor + 4:cursor + 8] = self.catalog.effect_flags[stone_index]
+            result[cursor + 4 : cursor + 8] = self.catalog.effect_flags[stone_index]
             affinity = int(self.catalog.affinity_indices[stone_index])
             result[cursor + 8 + affinity] = 1.0
             result[cursor + 15] = float(stone.coin_flipped)
@@ -62,8 +60,9 @@ class DirectStateEncoder:
             raise ValueError("main trop grande")
         for slot, stone_id in enumerate(hand):
             offset = board_end + slot * card_width
-            result[offset:offset + card_width] = self.catalog.card_features[
-                self.catalog.index(stone_id)]
+            result[offset : offset + card_width] = self.catalog.card_features[
+                self.catalog.index(stone_id)
+            ]
 
         global_offset = board_end + self.codec.max_hand_size * card_width
         own_score = state.score_human if observer == 1 else state.score_ai
@@ -92,19 +91,24 @@ class DirectStateEncoder:
         globals_[24] = float(observer == 2)
         return result
 
-    def action_mask(self, state: FastState, observer: int,
-                    out: np.ndarray | None = None) -> np.ndarray:
-        result = (np.zeros(self.codec.n_actions, dtype=np.bool_) if out is None else out)
+    def action_mask(
+        self, state: FastState, observer: int, out: np.ndarray | None = None
+    ) -> np.ndarray:
+        result = np.zeros(self.codec.n_actions, dtype=np.bool_) if out is None else out
         if result.shape != (self.codec.n_actions,) or result.dtype != np.bool_:
             raise ValueError("tampon de masque incompatible")
         result.fill(False)
         if state.is_game_over or state.current_player != observer:
             return result
         free = np.fromiter(
-            (cell.cell_type != CELL_BLOCKED and cell.owner == PLAYER_NONE
-             and cell.stone is None for cell in state.board),
-            dtype=np.bool_, count=16)
+            (
+                cell.cell_type != CELL_BLOCKED and cell.owner == PLAYER_NONE and cell.stone is None
+                for cell in state.board
+            ),
+            dtype=np.bool_,
+            count=16,
+        )
         for hand_slot in range(len(state.hands[observer])):
             start = hand_slot * 16
-            result[start:start + 16] = free
+            result[start : start + 16] = free
         return result

@@ -30,25 +30,27 @@ def test_training_profiler_identifies_simulation_bottleneck(tmp_path):
     run.mkdir()
     events = []
     for step in (1024, 2048):
-        events.append({
-            "stream": "training",
-            "step": step,
-            "metrics": {
-                "update_seconds": 1.0,
-                "profile": {
-                    "total_seconds": 1.0,
-                    "environment_seconds": 0.55,
-                    "reset_seconds": 0.05,
-                    "policy_seconds": 0.10,
-                    "optimization_seconds": 0.15,
-                    "other_seconds": 0.15,
+        events.append(
+            {
+                "stream": "training",
+                "step": step,
+                "metrics": {
+                    "update_seconds": 1.0,
+                    "profile": {
+                        "total_seconds": 1.0,
+                        "environment_seconds": 0.55,
+                        "reset_seconds": 0.05,
+                        "policy_seconds": 0.10,
+                        "optimization_seconds": 0.15,
+                        "other_seconds": 0.15,
+                    },
                 },
-            },
-        })
-    events.append({"stream": "evaluation", "step": 2048,
-                   "metrics": {"evaluation_seconds": 0.5}})
+            }
+        )
+    events.append({"stream": "evaluation", "step": 2048, "metrics": {"evaluation_seconds": 0.5}})
     (run / "metrics.jsonl").write_text(
-        "\n".join(json.dumps(item) for item in events) + "\n", encoding="utf-8")
+        "\n".join(json.dumps(item) for item in events) + "\n", encoding="utf-8"
+    )
 
     summary = summarize_run_profile(run)
 
@@ -94,8 +96,15 @@ def test_tracker_reports_and_manifest_are_recoverable(tmp_path):
         tracker.log("training", 10, {"episode_return_mean": 0.5, "nested": {"value": 2}})
         tracker.log("training", 20, {"episode_return_mean": 0.8, "normalized_entropy": 0.4})
         tracker.log("evaluation", 20, {"win_rate": 0.6, "wilson_lower": 0.5})
-        tracker.log_alert({"step": 20, "severity": "warning", "code": "demo",
-                           "message": "test", "recommendation": "none"})
+        tracker.log_alert(
+            {
+                "step": 20,
+                "severity": "warning",
+                "code": "demo",
+                "message": "test",
+                "recommendation": "none",
+            }
+        )
 
     summary = generate_training_report(tmp_path / "run")
     status = latest_status(tmp_path / "run")
@@ -137,17 +146,49 @@ def test_balance_report_uses_match_and_action_telemetry(tmp_path):
     for seed in range(8):
         won = seed < 6
         record = MatchRecord(
-            "engine", "catalog", "policy", f"deck-{seed % 2}", "veskar",
-            ("devoracle_n3", "avortons_des_caves_n2"), "opponent", "nerava", ("porte_fievre_n2",),
-            seed, 1 if seed % 2 == 0 else 2, 1, 1 if won and seed % 2 == 0 else (
-                2 if won else (2 if seed % 2 == 0 else 1)),
-            10 if won else 6, 6 if won else 10, ((0, 0),), 2, 1, 0, True)
+            "engine",
+            "catalog",
+            "policy",
+            f"deck-{seed % 2}",
+            "veskar",
+            ("devoracle_n3", "avortons_des_caves_n2"),
+            "opponent",
+            "nerava",
+            ("porte_fievre_n2",),
+            seed,
+            1 if seed % 2 == 0 else 2,
+            1,
+            1 if won and seed % 2 == 0 else (2 if won else (2 if seed % 2 == 0 else 1)),
+            10 if won else 6,
+            6 if won else 10,
+            ((0, 0),),
+            2,
+            1,
+            0,
+            True,
+        )
         records.append(record)
-        actions.append(MatchAction(
-            "engine", "catalog", "policy", record.candidate_hash, "opponent",
-            seed, record.agent_player, 1, 1, record.agent_player,
-            "devoracle_n3", 1, 2, 1, ({"type": "swarm"},), (),
-            ("devoracle_n3", "avortons_des_caves_n2")))
+        actions.append(
+            MatchAction(
+                "engine",
+                "catalog",
+                "policy",
+                record.candidate_hash,
+                "opponent",
+                seed,
+                record.agent_player,
+                1,
+                1,
+                record.agent_player,
+                "devoracle_n3",
+                1,
+                2,
+                1,
+                ({"type": "swarm"},),
+                (),
+                ("devoracle_n3", "avortons_des_caves_n2"),
+            )
+        )
     with MatchStore(database) as store:
         store.insert_many(records, actions)
         assert store.has_hand_telemetry(records[0])
@@ -159,8 +200,9 @@ def test_balance_report_uses_match_and_action_telemetry(tmp_path):
     assert report["tables"]["card_played"][0]["key"] == "devoracle_n3"
     assert report["tables"]["triggered_effect"][0]["key"] == "swarm"
     assert report["card_action_statistics"][0]["captures_per_play"] == 1.0
-    usage = next(item for item in report["card_usage_statistics"]
-                 if item["stone_id"] == "devoracle_n3")
+    usage = next(
+        item for item in report["card_usage_statistics"] if item["stone_id"] == "devoracle_n3"
+    )
     assert usage["available_decisions"] == 8
     assert usage["selection_rate_when_available"] == 1.0
     assert (tmp_path / "report" / "balance_report.html").is_file()
@@ -177,25 +219,46 @@ def test_balance_report_lists_cards_never_selected_from_catalog(tmp_path):
         "checksum": catalog.checksum,
         "gods": [{"id": item} for item in catalog.gods],
         "variants": [
-            {"stone_id": item.stone_id, "lineage_id": item.lineage_id,
-             "level": item.level, "max_level": item.max_level,
-             "affinity": item.affinity, "cost": item.cost}
+            {
+                "stone_id": item.stone_id,
+                "lineage_id": item.lineage_id,
+                "level": item.level,
+                "max_level": item.max_level,
+                "affinity": item.affinity,
+                "cost": item.cost,
+            }
             for item in catalog.variants.values()
         ],
     }
     catalog_path = tmp_path / "catalog_snapshot.json"
     catalog_path.write_text(json.dumps(snapshot), encoding="utf-8")
-    records = [MatchRecord(
-        "engine", catalog.checksum, "policy", f"deck-{index}", "veskar",
-        ("n00_n1",), "opponent", "veskar", ("avortons_des_caves_n1",), index,
-        1, 1, 1, 10, 5) for index in range(5)]
+    records = [
+        MatchRecord(
+            "engine",
+            catalog.checksum,
+            "policy",
+            f"deck-{index}",
+            "veskar",
+            ("n00_n1",),
+            "opponent",
+            "veskar",
+            ("avortons_des_caves_n1",),
+            index,
+            1,
+            1,
+            1,
+            10,
+            5,
+        )
+        for index in range(5)
+    ]
     database = tmp_path / "matches.sqlite3"
     with MatchStore(database) as store:
         store.insert_many(records)
 
     report = generate_balance_report(
-        database, tmp_path / "report", minimum_samples=2,
-        catalog_snapshot=catalog_path)
+        database, tmp_path / "report", minimum_samples=2, catalog_snapshot=catalog_path
+    )
 
     never = {item["stone_id"] for item in report["findings"]["never_selected_cards"]}
     assert "n01_n1" in never
@@ -204,12 +267,21 @@ def test_balance_report_lists_cards_never_selected_from_catalog(tmp_path):
 
 def test_ppo_metrics_are_aggregated_and_checkpoint_resume_is_versioned(tmp_path):
     source = yaml.safe_load(
-        (Path(__file__).resolve().parents[1]
-         / "configs" / "ppo_phase4_tactical.yaml").read_text(encoding="utf-8"))
+        (Path(__file__).resolve().parents[1] / "configs" / "ppo_phase4_tactical.yaml").read_text(
+            encoding="utf-8"
+        )
+    )
     source["output_dir"] = str(tmp_path / "run")
     source["monitoring"]["tensorboard"] = False
-    source["ppo"].update({"total_timesteps": 16, "rollout_steps": 16,
-                          "num_envs": 1, "minibatches": 4, "update_epochs": 2})
+    source["ppo"].update(
+        {
+            "total_timesteps": 16,
+            "rollout_steps": 16,
+            "num_envs": 1,
+            "minibatches": 4,
+            "update_epochs": 2,
+        }
+    )
     source["evaluation"]["num_envs"] = 1
     config_path = tmp_path / "ppo.yaml"
     config_path.write_text(yaml.safe_dump(source), encoding="utf-8")
@@ -222,10 +294,12 @@ def test_ppo_metrics_are_aggregated_and_checkpoint_resume_is_versioned(tmp_path)
         with torch.no_grad():
             if trainer.tactical_features_enabled:
                 distribution, values = trainer.model.distribution_and_value(
-                    storage["obs"], storage["masks"], storage["action_features"])
+                    storage["obs"], storage["masks"], storage["action_features"]
+                )
             else:
                 distribution, values = trainer.model.distribution_and_value(
-                    storage["obs"], storage["masks"])
+                    storage["obs"], storage["masks"]
+                )
             storage["log_probs"] = distribution.log_prob(storage["actions"])
             storage["values"] = values
         advantages = torch.linspace(-1, 1, 16, device=trainer.device)
@@ -239,24 +313,21 @@ def test_ppo_metrics_are_aggregated_and_checkpoint_resume_is_versioned(tmp_path)
         assert not (tmp_path / "run" / "latest.pt.tmp").exists()
         assert (tmp_path / "run" / "latest.pt.sha256").is_file()
     finally:
-        trainer.tracker.close()
-        trainer._close_training_envs()
+        trainer.close()
 
-    resumed = PPOTrainer(config_path)
+    resumed = PPOTrainer(config_path, mode="resume")
     try:
         resumed.load_checkpoint(tmp_path / "run" / "latest.pt")
         assert resumed._resume_global_step == 16
         assert resumed._resume_update == 1
         corrupt = tmp_path / "run" / "corrupt.pt"
         shutil.copy2(tmp_path / "run" / "latest.pt", corrupt)
-        shutil.copy2(tmp_path / "run" / "latest.pt.sha256",
-                     tmp_path / "run" / "corrupt.pt.sha256")
+        shutil.copy2(tmp_path / "run" / "latest.pt.sha256", tmp_path / "run" / "corrupt.pt.sha256")
         corrupt.write_bytes(corrupt.read_bytes() + b"corrupt")
-        with pytest.raises(RuntimeError, match="checksum invalide"):
+        with pytest.raises(ValueError, match="checksum invalide"):
             resumed.load_checkpoint(corrupt)
     finally:
-        resumed.tracker.close()
-        resumed._close_training_envs()
+        resumed.close()
 
 
 def test_jsonl_loader_ignores_interrupted_last_line(tmp_path):
@@ -267,17 +338,21 @@ def test_jsonl_loader_ignores_interrupted_last_line(tmp_path):
 
 def test_vectorized_ppo_keeps_batch_shape_and_vector_gae(tmp_path):
     source = yaml.safe_load(
-        (Path(__file__).resolve().parents[1]
-         / "configs" / "ppo_phase4_tactical.yaml").read_text(encoding="utf-8"))
+        (Path(__file__).resolve().parents[1] / "configs" / "ppo_phase4_tactical.yaml").read_text(
+            encoding="utf-8"
+        )
+    )
     source["output_dir"] = str(tmp_path / "vectorized")
     source["monitoring"]["tensorboard"] = False
     source["evaluation"]["num_envs"] = 1
-    source["ppo"].update({
-        "total_timesteps": 16,
-        "rollout_steps": 4,
-        "num_envs": 4,
-        "minibatches": 4,
-    })
+    source["ppo"].update(
+        {
+            "total_timesteps": 16,
+            "rollout_steps": 4,
+            "num_envs": 4,
+            "minibatches": 4,
+        }
+    )
     config_path = tmp_path / "vectorized.yaml"
     config_path.write_text(yaml.safe_dump(source), encoding="utf-8")
     trainer = PPOTrainer(config_path)
@@ -288,7 +363,8 @@ def test_vectorized_ppo_keeps_batch_shape_and_vector_gae(tmp_path):
         storage["dones"][3] = 1.0
         storage["dones"][11] = 1.0
         advantages, returns = trainer._gae_vectorized(
-            storage, torch.zeros(4, device=trainer.device), steps=4)
+            storage, torch.zeros(4, device=trainer.device), steps=4
+        )
 
         assert trainer.num_envs == 4
         assert trainer.batch_env is not None
@@ -297,36 +373,39 @@ def test_vectorized_ppo_keeps_batch_shape_and_vector_gae(tmp_path):
         assert returns.shape == (16,)
         assert torch.isfinite(advantages).all()
     finally:
-        trainer.tracker.close()
-        trainer._close_training_envs()
+        trainer.close()
 
 
 def test_environment_width_can_change_when_loading_a_checkpoint(tmp_path):
     source = yaml.safe_load(
-        (Path(__file__).resolve().parents[1]
-         / "configs" / "ppo_phase4_tactical.yaml").read_text(encoding="utf-8"))
+        (Path(__file__).resolve().parents[1] / "configs" / "ppo_phase4_tactical.yaml").read_text(
+            encoding="utf-8"
+        )
+    )
     source["output_dir"] = str(tmp_path / "sequential")
     source["monitoring"]["tensorboard"] = False
     source["evaluation"]["num_envs"] = 1
-    source["ppo"].update({"total_timesteps": 16, "rollout_steps": 16,
-                          "num_envs": 1, "minibatches": 4})
+    source["ppo"].update(
+        {"total_timesteps": 16, "rollout_steps": 16, "num_envs": 1, "minibatches": 4}
+    )
     sequential_path = tmp_path / "sequential.yaml"
     sequential_path.write_text(yaml.safe_dump(source), encoding="utf-8")
     sequential = PPOTrainer(sequential_path)
     try:
         sequential._save("latest.pt", 16, {"win_rate": 0.5}, update=1)
     finally:
-        sequential.tracker.close()
-        sequential._close_training_envs()
+        sequential.close()
 
     vectorized = yaml.safe_load(yaml.safe_dump(source))
     vectorized["output_dir"] = str(tmp_path / "vectorized")
-    vectorized["ppo"].update({
-        "total_timesteps": 16,
-        "rollout_steps": 4,
-        "num_envs": 4,
-        "minibatches": 4,
-    })
+    vectorized["ppo"].update(
+        {
+            "total_timesteps": 16,
+            "rollout_steps": 4,
+            "num_envs": 4,
+            "minibatches": 4,
+        }
+    )
     vectorized_path = tmp_path / "vectorized.yaml"
     vectorized_path.write_text(yaml.safe_dump(vectorized), encoding="utf-8")
     trainer = PPOTrainer(vectorized_path)
@@ -335,29 +414,34 @@ def test_environment_width_can_change_when_loading_a_checkpoint(tmp_path):
         assert trainer._resume_global_step == 16
         assert trainer._resume_update == 1
     finally:
-        trainer.tracker.close()
-        trainer._close_training_envs()
+        trainer.close()
 
 
 def test_python_batch_backend_runs_a_complete_ppo_update(tmp_path):
     source = yaml.safe_load(
-        (Path(__file__).resolve().parents[1]
-         / "configs" / "ppo_phase4_tactical.yaml").read_text(encoding="utf-8"))
+        (Path(__file__).resolve().parents[1] / "configs" / "ppo_phase4_tactical.yaml").read_text(
+            encoding="utf-8"
+        )
+    )
     source["output_dir"] = str(tmp_path / "batch-run")
     source["environment"]["backend"] = "python_batch"
     source["environment"]["evaluation_backend"] = "python"
-    source["monitoring"].update({
-        "tensorboard": False,
-        "checkpoint_every_updates": 0,
-        "snapshot_every_updates": 0,
-    })
-    source["ppo"].update({
-        "total_timesteps": 32,
-        "rollout_steps": 4,
-        "num_envs": 8,
-        "minibatches": 4,
-        "update_epochs": 1,
-    })
+    source["monitoring"].update(
+        {
+            "tensorboard": False,
+            "checkpoint_every_updates": 0,
+            "snapshot_every_updates": 0,
+        }
+    )
+    source["ppo"].update(
+        {
+            "total_timesteps": 32,
+            "rollout_steps": 4,
+            "num_envs": 8,
+            "minibatches": 4,
+            "update_epochs": 1,
+        }
+    )
     source["evaluation"]["every_updates"] = 2
     source["evaluation"]["num_envs"] = 1
     config_path = tmp_path / "batch.yaml"
@@ -372,6 +456,7 @@ def test_python_batch_backend_runs_a_complete_ppo_update(tmp_path):
     assert training[0]["metrics"]["environment_count"] == 8
     assert training[0]["metrics"]["illegal_actions"] == 0
     manifest = json.loads(
-        (tmp_path / "batch-run" / "run_manifest.json").read_text(encoding="utf-8"))
+        (tmp_path / "batch-run" / "run_manifest.json").read_text(encoding="utf-8")
+    )
     assert manifest["extra"]["training_backend"] == "python_batch"
     assert manifest["extra"]["engine_manifest"]["batch_size"] == 8

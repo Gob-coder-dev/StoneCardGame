@@ -22,10 +22,18 @@ class GodotDeckValidator:
         self.bridge = bridge
         self.catalog = catalog
 
-    def validate_many(self, candidates: Iterable[DeckCandidate]) -> tuple[DeckValidationResult, ...]:
+    def validate_many(
+        self, candidates: Iterable[DeckCandidate]
+    ) -> tuple[DeckValidationResult, ...]:
         candidates = tuple(candidates)
-        requests = [{"candidate_id": item.deck_hash, "god_id": item.god_id,
-                     "stone_ids": list(item.stone_ids)} for item in candidates]
+        requests = [
+            {
+                "candidate_id": item.deck_hash,
+                "god_id": item.god_id,
+                "stone_ids": list(item.stone_ids),
+            }
+            for item in candidates
+        ]
         remote = {str(item["candidate_id"]): item for item in self.bridge.validate_decks(requests)}
         results = []
         for candidate in candidates:
@@ -39,5 +47,7 @@ class GodotDeckValidator:
     def require_all_valid(self, candidates: Iterable[DeckCandidate]) -> None:
         invalid = [result for result in self.validate_many(candidates) if not result.valid]
         if invalid:
-            details = "; ".join(f"{item.candidate.deck_hash[:8]}: {item.reason}" for item in invalid)
+            details = "; ".join(
+                f"{item.candidate.deck_hash[:8]}: {item.reason}" for item in invalid
+            )
             raise ValueError(f"decks refusés par Godot: {details}")

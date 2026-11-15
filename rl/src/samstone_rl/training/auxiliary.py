@@ -50,8 +50,12 @@ class AuxiliaryConfig:
         learning_rate = raw.get("learning_rate")
         if learning_rate is not None and float(learning_rate) <= 0.0:
             raise ValueError("auxiliary.learning_rate doit etre positif")
-        return cls(bool(raw.get("enabled", False)), coefficient,
-                   None if learning_rate is None else float(learning_rate), loss)
+        return cls(
+            bool(raw.get("enabled", False)),
+            coefficient,
+            None if learning_rate is None else float(learning_rate),
+            loss,
+        )
 
 
 class RolloutMarginLabels:
@@ -87,11 +91,9 @@ class RolloutMarginLabels:
         return int(np.count_nonzero(self.mask))
 
 
-def auxiliary_loss(predictions: torch.Tensor, targets: torch.Tensor,
-                   kind: str) -> torch.Tensor:
+def auxiliary_loss(predictions: torch.Tensor, targets: torch.Tensor, kind: str) -> torch.Tensor:
     if kind == "huber":
         return nn.functional.smooth_l1_loss(predictions, targets)
     if kind == "mse":
         return nn.functional.mse_loss(predictions, targets)
     raise ValueError(f"perte auxiliaire inconnue: {kind}")
-

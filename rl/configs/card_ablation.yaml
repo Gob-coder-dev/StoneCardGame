@@ -11,7 +11,7 @@ telemetry:
 
 ablation:
   games_per_side_order: 12
-  seed_base: 2800000000
+  seed_base: 8200000000
   alternatives_per_card: 4
   maximum_cost_delta: 8.0
   minimum_effect: 0.02

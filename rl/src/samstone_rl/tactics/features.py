@@ -20,8 +20,9 @@ class TacticalScore:
     def from_sequence(cls, values: Sequence[float]) -> TacticalScore:
         if len(values) != 5:
             raise ValueError("un score tactique doit contenir cinq valeurs")
-        return cls(float(values[0]), float(values[1]), float(values[2]),
-                   bool(values[3]), float(values[4]))
+        return cls(
+            float(values[0]), float(values[1]), float(values[2]), bool(values[3]), float(values[4])
+        )
 
 
 class TacticalActionEncoder:
@@ -32,6 +33,7 @@ class TacticalActionEncoder:
     opponent hand information.
     """
 
+    SCHEMA_VERSION = 2
     SCORE_FEATURES = 5
     POSITION_FEATURES = 3
     BOARD_FEATURES = 42
@@ -41,21 +43,25 @@ class TacticalActionEncoder:
 
     def __init__(self) -> None:
         self.feature_size = (
-            self.CARD_FEATURES
-            + self.BOARD_FEATURES
-            + self.POSITION_FEATURES
-            + self.SCORE_FEATURES
+            self.CARD_FEATURES + self.BOARD_FEATURES + self.POSITION_FEATURES + self.SCORE_FEATURES
         )
 
-    def encode(self, observation: np.ndarray, action_mask: np.ndarray,
-               scores: Mapping[int, TacticalScore | Sequence[float]],
-               out: np.ndarray | None = None) -> np.ndarray:
+    def encode(
+        self,
+        observation: np.ndarray,
+        action_mask: np.ndarray,
+        scores: Mapping[int, TacticalScore | Sequence[float]],
+        out: np.ndarray | None = None,
+    ) -> np.ndarray:
         if observation.shape != (self.OBSERVATION_SIZE,):
             raise ValueError("observation incompatible avec les features tactiques")
         if action_mask.shape != (self.ACTION_COUNT,):
             raise ValueError("masque incompatible avec les features tactiques")
-        result = (np.zeros((self.ACTION_COUNT, self.feature_size), dtype=np.float32)
-                  if out is None else out)
+        result = (
+            np.zeros((self.ACTION_COUNT, self.feature_size), dtype=np.float32)
+            if out is None
+            else out
+        )
         if result.shape != (self.ACTION_COUNT, self.feature_size) or result.dtype != np.float32:
             raise ValueError("tampon de features tactiques incompatible")
         result.fill(0.0)
@@ -66,21 +72,24 @@ class TacticalActionEncoder:
             hand_slot, cell = divmod(int(action), 16)
             cursor = 0
             card_offset = cards_offset + hand_slot * card_width
-            result[action, cursor:cursor + card_width] = observation[
-                card_offset:card_offset + card_width]
+            result[action, cursor : cursor + card_width] = observation[
+                card_offset : card_offset + card_width
+            ]
             cursor += card_width
             cell_offset = cell * board_width
-            result[action, cursor:cursor + board_width] = observation[
-                cell_offset:cell_offset + board_width]
+            result[action, cursor : cursor + board_width] = observation[
+                cell_offset : cell_offset + board_width
+            ]
             cursor += board_width
             row, col = divmod(cell, 4)
-            result[action, cursor:cursor + 3] = (
-                hand_slot / 7.0, row / 3.0, col / 3.0)
+            result[action, cursor : cursor + 3] = (hand_slot / 7.0, row / 3.0, col / 3.0)
             cursor += 3
             raw = scores.get(int(action))
-            score = (raw if isinstance(raw, TacticalScore)
-                     else TacticalScore.from_sequence(
-                         (0, 0, 0, 0, 0) if raw is None else raw))
+            score = (
+                raw
+                if isinstance(raw, TacticalScore)
+                else TacticalScore.from_sequence((0, 0, 0, 0, 0) if raw is None else raw)
+            )
             result[action, cursor:] = (
                 np.clip(score.immediate_captures / 4.0, -1.0, 1.0),
                 np.clip(score.anticipated_value / 4.0, -1.0, 1.0),
@@ -90,8 +99,13 @@ class TacticalActionEncoder:
             )
         return result
 
-    def encode_batch(self, observations: np.ndarray, action_masks: np.ndarray,
-                     scores: np.ndarray, out: np.ndarray | None = None) -> np.ndarray:
+    def encode_batch(
+        self,
+        observations: np.ndarray,
+        action_masks: np.ndarray,
+        scores: np.ndarray,
+        out: np.ndarray | None = None,
+    ) -> np.ndarray:
         """Vectorized equivalent of :meth:`encode` for rollout batches."""
         from samstone_rl.vector_engine.geometry import (
             ACTION_CELLS,
@@ -107,23 +121,25 @@ class TacticalActionEncoder:
             raise ValueError("lot de masques incompatible")
         if scores.shape != expected_scores:
             raise ValueError("lot de scores tactiques incompatible")
-        result = (np.zeros(
-            (batch, self.ACTION_COUNT, self.feature_size), dtype=np.float32)
-                  if out is None else out)
+        result = (
+            np.zeros((batch, self.ACTION_COUNT, self.feature_size), dtype=np.float32)
+            if out is None
+            else out
+        )
         if result.shape != (batch, self.ACTION_COUNT, self.feature_size):
             raise ValueError("tampon tactique batch incompatible")
         result.fill(0.0)
         board_end = 16 * self.BOARD_FEATURES
-        hands = observations[:, board_end:board_end + 8 * self.CARD_FEATURES].reshape(
-            batch, 8, self.CARD_FEATURES)
-        board = observations[:, :board_end].reshape(
-            batch, 16, self.BOARD_FEATURES)
+        hands = observations[:, board_end : board_end + 8 * self.CARD_FEATURES].reshape(
+            batch, 8, self.CARD_FEATURES
+        )
+        board = observations[:, :board_end].reshape(batch, 16, self.BOARD_FEATURES)
         cursor = 0
-        result[:, :, cursor:cursor + self.CARD_FEATURES] = hands[:, ACTION_SLOTS]
+        result[:, :, cursor : cursor + self.CARD_FEATURES] = hands[:, ACTION_SLOTS]
         cursor += self.CARD_FEATURES
-        result[:, :, cursor:cursor + self.BOARD_FEATURES] = board[:, ACTION_CELLS]
+        result[:, :, cursor : cursor + self.BOARD_FEATURES] = board[:, ACTION_CELLS]
         cursor += self.BOARD_FEATURES
-        result[:, :, cursor:cursor + self.POSITION_FEATURES] = POSITION_FEATURES
+        result[:, :, cursor : cursor + self.POSITION_FEATURES] = POSITION_FEATURES
         cursor += self.POSITION_FEATURES
         result[:, :, cursor] = np.clip(scores[..., 0] / 4.0, -1.0, 1.0)
         result[:, :, cursor + 1] = np.clip(scores[..., 1] / 4.0, -1.0, 1.0)

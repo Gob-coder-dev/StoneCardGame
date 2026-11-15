@@ -3,7 +3,7 @@
 # l'arbitre autoritaire des regles.
 seed: 20261102
 device: directml
-output_dir: runs/ppo_phase4_vectorized
+output_dir: runs/ppo_phase4_vectorized_v2
 
 environment:
   backend: python_batch
@@ -117,12 +117,12 @@ evaluation:
   every_updates: 100
   games: 500
   num_envs: 10
-  seed_base: 2200000000
+  seed_base: 4100000000
   anchor_games_per_stage: 24
-  anchor_seed_base: 2250000000
+  anchor_seed_base: 4200000000
   final_gate:
     games_per_slice: 100
-    seed_base: 2300000000
+    seed_base: 4900000000
     overall_win_rate: 0.85
     confidence_floor: 0.80
     maximum_loss_rate: 0.05
@@ -133,7 +133,7 @@ evaluation:
 phase5:
   activation: after_phase4_gate
   require_validated_phase4: true
-  league_directory: runs/ppo_phase4_vectorized/league
+  league_directory: runs/ppo_phase4_vectorized_v2/league
   snapshot_every_updates: 100
   weight_schedule:
     - until_update: 100

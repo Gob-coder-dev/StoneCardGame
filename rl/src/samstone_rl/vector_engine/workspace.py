@@ -55,6 +55,4 @@ class VectorWorkspace:
 
     @property
     def allocated_bytes(self) -> int:
-        return sum(value.nbytes for value in vars(self).values()
-                   if isinstance(value, np.ndarray))
-
+        return sum(value.nbytes for value in vars(self).values() if isinstance(value, np.ndarray))

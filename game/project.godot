@@ -51,6 +51,10 @@ window/handheld/orientation=1
 
 theme/custom="res://assets/ui/samstone_theme.tres"
 
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/rl_export/plugin.cfg")
+
 [input]
 
 ui_accept={

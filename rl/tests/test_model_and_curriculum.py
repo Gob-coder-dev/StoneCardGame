@@ -1,4 +1,5 @@
 from copy import deepcopy
+from unittest.mock import Mock
 
 import numpy as np
 import pytest
@@ -30,7 +31,11 @@ def test_masked_ppo_evaluation_updates_actor():
     before = model.actor.weight.detach().clone()
     new_log_prob, entropy, value = model.evaluate_actions(observations, masks, actions)
     ratio = (new_log_prob - old_log_prob).exp()
-    loss = -(new_log_prob * torch.linspace(-1, 1, 16)).mean() - 0.01 * entropy.mean() + value.pow(2).mean()
+    loss = (
+        -(new_log_prob * torch.linspace(-1, 1, 16)).mean()
+        - 0.01 * entropy.mean()
+        + value.pow(2).mean()
+    )
     optimizer.zero_grad()
     loss.backward()
     assert model.actor.weight.grad is not None
@@ -83,7 +88,9 @@ def test_curriculum_requires_final_stage_victory_before_phase_five():
 
 
 def test_curriculum_replays_old_stages():
-    curriculum = CurriculumManager(target_win_rate=0.5, confidence_floor=0.0, replay_probability=1.0)
+    curriculum = CurriculumManager(
+        target_win_rate=0.5, confidence_floor=0.0, replay_probability=1.0
+    )
     curriculum.consider_promotion(10, 10)
     sampled = curriculum.training_stage(np.random.default_rng(1))
     assert sampled.name == "precision_0"
@@ -115,8 +122,8 @@ def test_progressive_anticipation_is_seeded_and_preserves_legacy_extremes():
         actual_rng = np.random.default_rng(91)
         untouched_rng = np.random.default_rng(91)
         opponent = GodotProfileOpponent(
-            1.0, anticipation=not expected,
-            anticipation_probability=probability)
+            1.0, anticipation=not expected, anticipation_probability=probability
+        )
         opponent.choose(bridge, [], actual_rng, 2)
         assert bridge.anticipation == [expected]
         # The exact endpoints retain legacy RNG consumption.
@@ -124,18 +131,15 @@ def test_progressive_anticipation_is_seeded_and_preserves_legacy_extremes():
 
 
 def test_explicit_progressive_curriculum_promotes_automatically():
-    stages = stages_from_config([
-        {"name": "anticipation_25", "precision": 1.0,
-         "anticipation_probability": 0.25},
-        {"name": "anticipation_50", "precision": 1.0,
-         "anticipation_probability": 0.50},
-        {"name": "anticipation_75", "precision": 1.0,
-         "anticipation_probability": 0.75},
-        {"name": "anticipation_100", "precision": 1.0,
-         "anticipation_probability": 1.0},
-    ])
-    curriculum = CurriculumManager(
-        target_win_rate=0.85, confidence_floor=0.0, stages=stages)
+    stages = stages_from_config(
+        [
+            {"name": "anticipation_25", "precision": 1.0, "anticipation_probability": 0.25},
+            {"name": "anticipation_50", "precision": 1.0, "anticipation_probability": 0.50},
+            {"name": "anticipation_75", "precision": 1.0, "anticipation_probability": 0.75},
+            {"name": "anticipation_100", "precision": 1.0, "anticipation_probability": 1.0},
+        ]
+    )
+    curriculum = CurriculumManager(target_win_rate=0.85, confidence_floor=0.0, stages=stages)
     assert curriculum.current.name == "anticipation_25"
     for expected in ("anticipation_50", "anticipation_75", "anticipation_100"):
         assert curriculum.consider_promotion(90, 100)
@@ -148,34 +152,41 @@ def test_explicit_curriculum_rejects_invalid_or_duplicate_stages():
     with pytest.raises(ValueError, match="au moins un palier"):
         stages_from_config([])
     with pytest.raises(ValueError, match="uniques"):
-        stages_from_config([
-            {"name": "same", "precision": 1.0},
-            {"name": "same", "precision": 1.0},
-        ])
+        stages_from_config(
+            [
+                {"name": "same", "precision": 1.0},
+                {"name": "same", "precision": 1.0},
+            ]
+        )
     with pytest.raises(ValueError, match="probabilite"):
         CurriculumStage("bad", 1.0, False, 1.1)
 
 
 def test_adaptive_god_sampling_targets_weak_held_out_matchups_and_persists():
-    curriculum = CurriculumManager(god_sampling={
-        "enabled": True,
-        "target_wilson": 0.90,
-        "minimum_multiplier": 0.50,
-        "maximum_multiplier": 3.00,
-        "deficit_exponent": 1.0,
-        "smoothing": 1.0,
-    })
+    curriculum = CurriculumManager(
+        god_sampling={
+            "enabled": True,
+            "target_wilson": 0.90,
+            "minimum_multiplier": 0.50,
+            "maximum_multiplier": 3.00,
+            "deficit_exponent": 1.0,
+            "smoothing": 1.0,
+        }
+    )
     scenarios = ({"god": "weak"}, {"god": "strong"})
     curriculum.initialize_god_sampling(["weak", "strong"])
-    metrics = curriculum.update_god_sampling({
-        "weak": {"wilson_lower": 0.50},
-        "strong": {"wilson_lower": 0.89},
-    })
+    metrics = curriculum.update_god_sampling(
+        {
+            "weak": {"wilson_lower": 0.50},
+            "strong": {"wilson_lower": 0.89},
+        }
+    )
     assert metrics["weights"]["weak"] > metrics["weights"]["strong"] * 3
 
     rng = np.random.default_rng(12)
-    sampled = [scenarios[curriculum.sample_scenario_index(scenarios, rng)]["god"]
-               for _ in range(2_000)]
+    sampled = [
+        scenarios[curriculum.sample_scenario_index(scenarios, rng)]["god"] for _ in range(2_000)
+    ]
     assert sampled.count("weak") > sampled.count("strong") * 3
 
     restored = CurriculumManager(god_sampling={"enabled": True})
@@ -185,20 +196,24 @@ def test_adaptive_god_sampling_targets_weak_held_out_matchups_and_persists():
 
 
 def test_adaptive_terrain_sampling_targets_weak_layout_and_persists():
-    curriculum = CurriculumManager(terrain_sampling={
-        "enabled": True,
-        "target_wilson": 0.90,
-        "minimum_multiplier": 0.50,
-        "maximum_multiplier": 3.00,
-        "deficit_exponent": 1.0,
-        "smoothing": 1.0,
-        "blocked_counts": [0, 1, 2],
-    })
-    metrics = curriculum.update_terrain_sampling({
-        "0": {"wilson_lower": 0.89},
-        "1": {"wilson_lower": 0.50},
-        "2": {"wilson_lower": 0.80},
-    })
+    curriculum = CurriculumManager(
+        terrain_sampling={
+            "enabled": True,
+            "target_wilson": 0.90,
+            "minimum_multiplier": 0.50,
+            "maximum_multiplier": 3.00,
+            "deficit_exponent": 1.0,
+            "smoothing": 1.0,
+            "blocked_counts": [0, 1, 2],
+        }
+    )
+    metrics = curriculum.update_terrain_sampling(
+        {
+            "0": {"wilson_lower": 0.89},
+            "1": {"wilson_lower": 0.50},
+            "2": {"wilson_lower": 0.80},
+        }
+    )
     assert metrics["weights"]["1"] > metrics["weights"]["2"] > metrics["weights"]["0"]
 
     rng = np.random.default_rng(9)
@@ -278,8 +293,13 @@ def test_curriculum_bootstrap_completion_survives_checkpoint_state():
 def test_final_gate_requires_every_stage_god_camp_and_first_player():
     stages = ("easy", "hard")
     gods = ("veskar", "nerava")
-    slices = [EvaluationSlice(stage, god, agent, first, 95, 0, 5)
-              for stage in stages for god in gods for agent in (1, 2) for first in (1, 2)]
+    slices = [
+        EvaluationSlice(stage, god, agent, first, 95, 0, 5)
+        for stage in stages
+        for god in gods
+        for agent in (1, 2)
+        for first in (1, 2)
+    ]
     report = PhaseFourGateReport.build(slices, stages, gods, minimum_games_per_slice=100)
     assert report.passed
     incomplete = PhaseFourGateReport.build(slices[:-1], stages, gods, minimum_games_per_slice=100)
@@ -289,21 +309,41 @@ def test_final_gate_requires_every_stage_god_camp_and_first_player():
 
 def test_final_gate_can_enforce_loss_and_non_loss_criteria():
     stages, gods = ("hard",), ("veskar",)
-    good = [EvaluationSlice("hard", "veskar", agent, first, 85, 10, 5)
-            for agent in (1, 2) for first in (1, 2)]
+    good = [
+        EvaluationSlice("hard", "veskar", agent, first, 85, 10, 5)
+        for agent in (1, 2)
+        for first in (1, 2)
+    ]
     report = PhaseFourGateReport.build(
-        good, stages, gods, overall_threshold=0.85, confidence_floor=0.90,
-        slice_floor=0.80, minimum_games_per_slice=100,
-        maximum_loss_rate=0.05, non_loss_confidence_floor=0.90,
-        maximum_slice_loss_rate=0.10)
+        good,
+        stages,
+        gods,
+        overall_threshold=0.85,
+        confidence_floor=0.90,
+        slice_floor=0.80,
+        minimum_games_per_slice=100,
+        maximum_loss_rate=0.05,
+        non_loss_confidence_floor=0.90,
+        maximum_slice_loss_rate=0.10,
+    )
     assert report.passed
-    failing = [EvaluationSlice("hard", "veskar", agent, first, 85, 0, 15)
-               for agent in (1, 2) for first in (1, 2)]
+    failing = [
+        EvaluationSlice("hard", "veskar", agent, first, 85, 0, 15)
+        for agent in (1, 2)
+        for first in (1, 2)
+    ]
     assert not PhaseFourGateReport.build(
-        failing, stages, gods, overall_threshold=0.85, confidence_floor=0.90,
-        slice_floor=0.80, minimum_games_per_slice=100,
-        maximum_loss_rate=0.05, non_loss_confidence_floor=0.90,
-        maximum_slice_loss_rate=0.10).passed
+        failing,
+        stages,
+        gods,
+        overall_threshold=0.85,
+        confidence_floor=0.90,
+        slice_floor=0.80,
+        minimum_games_per_slice=100,
+        maximum_loss_rate=0.05,
+        non_loss_confidence_floor=0.90,
+        maximum_slice_loss_rate=0.10,
+    ).passed
 
 
 def test_checkpoint_reload_reproduces_deterministic_decision(tmp_path):
@@ -328,39 +368,50 @@ def test_weights_only_checkpoint_import_resets_training_state(tmp_path):
         for parameter in source.parameters():
             parameter.fill_(0.125)
     checkpoint = tmp_path / "source.pt"
-    torch.save({
-        "model": source.state_dict(),
-        "global_step": 123_456,
-        "update": 321,
-        "best_win_rate": 0.99,
-        "best_stage_index": 3,
-        "curriculum": {"stage_index": 3, "completed": True},
-    }, checkpoint)
+    torch.save(
+        {
+            "model": source.state_dict(),
+            "global_step": 123_456,
+            "update": 321,
+            "best_win_rate": 0.99,
+            "best_stage_index": 3,
+            "curriculum": {"stage_index": 3, "completed": True},
+        },
+        checkpoint,
+    )
 
     trainer = PPOTrainer.__new__(PPOTrainer)
     trainer.device = torch.device("cpu")
     trainer.model = ActorCritic(12, 8, 16)
     trainer.optimizer = torch.optim.Adam(trainer.model.parameters())
-    trainer.curriculum = CurriculumManager(stages=(
-        CurriculumStage("new_25", 1.0, False, 0.25),
-        CurriculumStage("new_100", 1.0, False, 1.0),
-    ))
+    trainer.curriculum = CurriculumManager(
+        stages=(
+            CurriculumStage("new_25", 1.0, False, 0.25),
+            CurriculumStage("new_100", 1.0, False, 1.0),
+        )
+    )
     trainer.best_win_rate = -1.0
     trainer.best_stage_index = -1
     trainer._resume_global_step = 0
     trainer._resume_update = 0
     trainer.rng = np.random.default_rng(7)
     trainer.config = {"ppo": {"rollout_steps": 1, "num_envs": 1}}
+    trainer.tracker = Mock()
 
-    trainer.load_checkpoint(
-        checkpoint, load_optimizer=False, load_training_state=False)
-    assert all(torch.allclose(parameter, torch.full_like(parameter, 0.125))
-               for parameter in trainer.model.parameters())
+    trainer.load_checkpoint(checkpoint, load_optimizer=False, load_training_state=False)
+    assert all(
+        torch.allclose(parameter, torch.full_like(parameter, 0.125))
+        for parameter in trainer.model.parameters()
+    )
     assert trainer.curriculum.stage_index == 0
     assert not trainer.curriculum.completed
     assert trainer.best_win_rate == -1.0
     assert trainer._resume_global_step == 0
     assert trainer._resume_update == 0
+    assert trainer._weight_source["global_step"] == 123_456
+    trainer.tracker.update_manifest.assert_called_once_with(
+        extra={"weight_source": trainer._weight_source}
+    )
 
 
 def test_weights_only_refuses_to_overwrite_an_existing_run(tmp_path):
@@ -370,5 +421,6 @@ def test_weights_only_refuses_to_overwrite_an_existing_run(tmp_path):
     config = tmp_path / "config.yaml"
     config.write_text(f"output_dir: '{output.as_posix()}'\n", encoding="utf-8")
     with pytest.raises(SystemExit, match="2"):
-        ppo_main(["--config", str(config), "--resume", str(tmp_path / "source.pt"),
-                  "--weights-only"])
+        ppo_main(
+            ["--config", str(config), "--resume", str(tmp_path / "source.pt"), "--weights-only"]
+        )

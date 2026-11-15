@@ -27,20 +27,31 @@ class DeckCatalog:
         self.gods = tuple(str(item["id"]) for item in snapshot["gods"])
         self.variants = {
             str(item["stone_id"]): StoneVariant(
-                str(item["stone_id"]), str(item["lineage_id"]), int(item["level"]),
-                int(item["max_level"]), str(item["affinity"]), float(item["cost"]))
+                str(item["stone_id"]),
+                str(item["lineage_id"]),
+                int(item["level"]),
+                int(item["max_level"]),
+                str(item["affinity"]),
+                float(item["cost"]),
+            )
             for item in snapshot["variants"]
         }
         self.by_lineage: dict[str, tuple[StoneVariant, ...]] = {}
         for lineage in sorted({item.lineage_id for item in self.variants.values()}):
-            self.by_lineage[lineage] = tuple(sorted(
-                (item for item in self.variants.values() if item.lineage_id == lineage),
-                key=lambda item: (item.level, item.stone_id)))
+            self.by_lineage[lineage] = tuple(
+                sorted(
+                    (item for item in self.variants.values() if item.lineage_id == lineage),
+                    key=lambda item: (item.level, item.stone_id),
+                )
+            )
 
     def compatible_lineages(self, god_id: str) -> tuple[str, ...]:
         self._require_god(god_id)
-        return tuple(lineage for lineage, variants in self.by_lineage.items()
-                     if variants[0].affinity in {"neutral", god_id})
+        return tuple(
+            lineage
+            for lineage, variants in self.by_lineage.items()
+            if variants[0].affinity in {"neutral", god_id}
+        )
 
     def variants_for(self, lineage_id: str, god_id: str) -> tuple[StoneVariant, ...]:
         variants = self.by_lineage.get(lineage_id, ())
@@ -51,8 +62,12 @@ class DeckCatalog:
         unknown = [item for item in ids if item not in self.variants]
         if unknown:
             raise ValueError(f"pierres inconnues: {unknown}")
-        return tuple(sorted(ids, key=lambda item: (self.variants[item].lineage_id,
-                                                   self.variants[item].level, item)))
+        return tuple(
+            sorted(
+                ids,
+                key=lambda item: (self.variants[item].lineage_id, self.variants[item].level, item),
+            )
+        )
 
     def cost(self, stone_ids: Iterable[str]) -> float:
         return sum(self.variants[item].cost for item in stone_ids)
@@ -70,8 +85,11 @@ class DeckCatalog:
         lineages = [self.variants[item].lineage_id for item in candidate.stone_ids]
         if len(lineages) != len(set(lineages)):
             problems.append("les lignées doivent être uniques")
-        wrong = [item for item in candidate.stone_ids
-                 if self.variants[item].affinity not in {"neutral", candidate.god_id}]
+        wrong = [
+            item
+            for item in candidate.stone_ids
+            if self.variants[item].affinity not in {"neutral", candidate.god_id}
+        ]
         if wrong:
             problems.append(f"pierres incompatibles avec le dieu: {wrong}")
         if self.cost(candidate.stone_ids) > self.deck_budget + 1e-9:

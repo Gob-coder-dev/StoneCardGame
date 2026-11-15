@@ -29,11 +29,9 @@ class NumericStoneCatalog:
         encoder = ObservationEncoder()
         stone_ids = tuple(source.definitions)
         id_to_index = {stone_id: index for index, stone_id in enumerate(stone_ids)}
-        card_features = np.zeros(
-            (len(stone_ids), encoder.CARD_FEATURES), dtype=np.float32)
+        card_features = np.zeros((len(stone_ids), encoder.CARD_FEATURES), dtype=np.float32)
         affinity_indices = np.zeros(len(stone_ids), dtype=np.int8)
-        effect_flags = np.zeros(
-            (len(stone_ids), len(encoder.EFFECTS)), dtype=np.bool_)
+        effect_flags = np.zeros((len(stone_ids), len(encoder.EFFECTS)), dtype=np.bool_)
         affinity_map = {name: index for index, name in enumerate(encoder.AFFINITIES)}
         for index, stone_id in enumerate(stone_ids):
             definition = source.definition(stone_id)
@@ -48,18 +46,22 @@ class NumericStoneCatalog:
                 "effects": list(definition.get("effects", [])),
                 "coin_flip": str(definition.get("coin_flip", "")),
             }
-            card_features[index] = encoder._card(serialized)
+            card_features[index] = encoder.encode_card(serialized)
             affinity_indices[index] = affinity_map[str(definition["affinity"])]
             effects = definition.get("effects", ())
             effect_flags[index] = [effect in effects for effect in encoder.EFFECTS]
         card_features.setflags(write=False)
         affinity_indices.setflags(write=False)
         effect_flags.setflags(write=False)
-        return cls(source, stone_ids, id_to_index, card_features,
-                   affinity_indices, effect_flags)
+        return cls(source, stone_ids, id_to_index, card_features, affinity_indices, effect_flags)
 
     def index(self, stone_id: str) -> int:
         try:
             return self.id_to_index[stone_id]
         except KeyError as exc:
             raise ValueError(f"pierre inconnue: {stone_id}") from exc
+
+    @staticmethod
+    def god_index(god_id: str) -> int:
+        """Use the observation schema order, never the catalogue's UI order."""
+        return ObservationEncoder.AFFINITIES.index(god_id)

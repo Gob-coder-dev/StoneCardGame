@@ -22,7 +22,9 @@ def main() -> int:
     parser.add_argument("--anticipation", action="store_true")
     args = parser.parse_args()
     wins = draws = losses = 0
-    env = SamStoneEnv(godot_path=args.godot, opponent=GodotProfileOpponent(args.profile, args.anticipation))
+    env = SamStoneEnv(
+        godot_path=args.godot, opponent=GodotProfileOpponent(args.profile, args.anticipation)
+    )
     try:
         for episode in range(args.games):
             _observation, info = env.reset(seed=1000 + episode)

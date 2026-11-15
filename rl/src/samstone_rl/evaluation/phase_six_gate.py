@@ -13,8 +13,10 @@ class PhaseSixGate:
     minimum_worst_matchup: float
 
     def validate(self) -> None:
-        for name, value in (("minimum_win_rate", self.minimum_win_rate),
-                            ("minimum_worst_matchup", self.minimum_worst_matchup)):
+        for name, value in (
+            ("minimum_win_rate", self.minimum_win_rate),
+            ("minimum_worst_matchup", self.minimum_worst_matchup),
+        ):
             if not 0.0 <= value <= 1.0:
                 raise ValueError(f"{name} doit etre compris entre 0 et 1")
 
@@ -27,9 +29,16 @@ class PhaseSixGate:
         )
 
 
-def write_gate_result(path: str | Path, god_id: str, ranking: tuple[RankedCandidate, ...],
-                      gate: PhaseSixGate, engine_checksum: str, catalog_checksum: str,
-                      policy_checksum: str, official: bool = True) -> dict:
+def write_gate_result(
+    path: str | Path,
+    god_id: str,
+    ranking: tuple[RankedCandidate, ...],
+    gate: PhaseSixGate,
+    engine_checksum: str,
+    catalog_checksum: str,
+    policy_checksum: str,
+    official: bool = True,
+) -> dict:
     gate.validate()
     thresholds_passed = gate.passes(ranking)
     payload = {

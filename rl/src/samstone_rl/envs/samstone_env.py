@@ -17,8 +17,26 @@ from .action_space import ActionCodec
 from .observation import ObservationEncoder
 
 DEFAULT_CONFIG: dict[str, Any] = {
-    "human_deck": ["devoracle_n3", "griffe_a_jetons_n3", "sou_ricanant_n3", "croupier_manchot_n2", "jumeau_de_cuivre_n2", "valet_a_lenvers_n2", "avortons_des_caves_n2", "le_voyeur_n1"],
-    "ai_deck": ["devoracle_n3", "griffe_a_jetons_n3", "sou_ricanant_n3", "croupier_manchot_n2", "jumeau_de_cuivre_n2", "valet_a_lenvers_n2", "avortons_des_caves_n2", "le_voyeur_n1"],
+    "human_deck": [
+        "devoracle_n3",
+        "griffe_a_jetons_n3",
+        "sou_ricanant_n3",
+        "croupier_manchot_n2",
+        "jumeau_de_cuivre_n2",
+        "valet_a_lenvers_n2",
+        "avortons_des_caves_n2",
+        "le_voyeur_n1",
+    ],
+    "ai_deck": [
+        "devoracle_n3",
+        "griffe_a_jetons_n3",
+        "sou_ricanant_n3",
+        "croupier_manchot_n2",
+        "jumeau_de_cuivre_n2",
+        "valet_a_lenvers_n2",
+        "avortons_des_caves_n2",
+        "le_voyeur_n1",
+    ],
     "human_god": "veskar",
     "ai_god": "veskar",
 }
@@ -81,11 +99,17 @@ class SamStoneEnv(gym.Env[np.ndarray, int]):
 
     metadata: ClassVar[dict[str, list[str]]] = {"render_modes": []}
 
-    def __init__(self, godot_path: str | None = None, project_path: str | None = None,
-                 opponent: Opponent | None = None, agent_player: int = 1,
-                 match_config: dict[str, Any] | None = None,
-                 reward_scheme: RewardScheme | None = None,
-                 backend: str = "godot", tactical_features: bool = False) -> None:
+    def __init__(
+        self,
+        godot_path: str | None = None,
+        project_path: str | None = None,
+        opponent: Opponent | None = None,
+        agent_player: int = 1,
+        match_config: dict[str, Any] | None = None,
+        reward_scheme: RewardScheme | None = None,
+        backend: str = "godot",
+        tactical_features: bool = False,
+    ) -> None:
         super().__init__()
         if agent_player not in (1, 2):
             raise ValueError("agent_player doit valoir 1 ou 2")
@@ -97,13 +121,18 @@ class SamStoneEnv(gym.Env[np.ndarray, int]):
         self.codec = ActionCodec()
         self.tactical_features_enabled = bool(tactical_features)
         self.tactical_encoder = TacticalActionEncoder()
-        self.observation_space = spaces.Box(-1.0, 1.0, (self.encoder.get_obs_size(),), dtype=np.float32)
+        self.observation_space = spaces.Box(
+            -1.0, 1.0, (self.encoder.get_obs_size(),), dtype=np.float32
+        )
         self.action_space = MaskedDiscrete(self.codec.n_actions)
         if backend not in ("godot", "python"):
             raise ValueError("backend doit valoir 'godot' ou 'python'")
         self.backend = backend
-        self.bridge = (FastEngineBridge(project_path=project_path) if backend == "python"
-                       else GodotProcess(project_path=project_path, godot_path=godot_path))
+        self.bridge = (
+            FastEngineBridge(project_path=project_path)
+            if backend == "python"
+            else GodotProcess(project_path=project_path, godot_path=godot_path)
+        )
         self._raw: dict[str, Any] = {}
         self._legal: list[dict[str, Any]] = []
         self._episode_seed = 0
@@ -122,7 +151,9 @@ class SamStoneEnv(gym.Env[np.ndarray, int]):
         super().reset(seed=seed)
         if self.bridge.process is None:
             self.bridge.start()
-        self._episode_seed = int(seed if seed is not None else self.np_random.integers(1, 2**31 - 1))
+        self._episode_seed = int(
+            seed if seed is not None else self.np_random.integers(1, 2**31 - 1)
+        )
         config = deepcopy(self.match_config)
         config.update(deepcopy((options or {}).get("config", {})))
         config["seed"] = self._episode_seed
@@ -158,24 +189,39 @@ class SamStoneEnv(gym.Env[np.ndarray, int]):
         opponent_captures = self._play_opponent_turns()
         self._episode_opponent_captures += opponent_captures
         terminated = bool(self._raw["is_game_over"])
-        capture_reward = (self.reward_scheme.captures(agent_captures)
-                          - self.reward_scheme.captures(opponent_captures))
+        capture_reward = self.reward_scheme.captures(agent_captures) - self.reward_scheme.captures(
+            opponent_captures
+        )
         terminal_reward = self._terminal_reward() if terminated else 0.0
         final_margin_reward = self._final_margin_reward() if terminated else 0.0
         control_delta_reward = self.reward_scheme.control_delta(
-            previous_margin, self._score_margin())
+            previous_margin, self._score_margin()
+        )
         reward = capture_reward + terminal_reward + final_margin_reward + control_delta_reward
         self._episode_return += reward
-        return self.encoder.encode(self._raw), float(reward), terminated, False, self._info(
-            agent_captures, opponent_captures, capture_reward, terminal_reward,
-            final_margin_reward, control_delta_reward)
+        return (
+            self.encoder.encode(self._raw),
+            float(reward),
+            terminated,
+            False,
+            self._info(
+                agent_captures,
+                opponent_captures,
+                capture_reward,
+                terminal_reward,
+                final_margin_reward,
+                control_delta_reward,
+            ),
+        )
 
     def close(self) -> None:
         self.bridge.close()
 
     def _play_opponent_turns(self) -> int:
         captures = 0
-        while not self._raw["is_game_over"] and int(self._raw["current_player"]) != self.agent_player:
+        while (
+            not self._raw["is_game_over"] and int(self._raw["current_player"]) != self.agent_player
+        ):
             player = int(self._raw["current_player"])
             move = self.opponent.choose(self.bridge, self._legal, self.np_random, player)
             result = self.bridge.step(move, self.agent_player)
@@ -192,27 +238,33 @@ class SamStoneEnv(gym.Env[np.ndarray, int]):
 
     def _terminal_reward(self) -> float:
         winner = int(self._raw["winner"])
-        return self.reward_scheme.terminal if winner == self.agent_player else (
-            -self.reward_scheme.terminal if winner else 0.0)
+        return (
+            self.reward_scheme.terminal
+            if winner == self.agent_player
+            else (-self.reward_scheme.terminal if winner else 0.0)
+        )
 
     def _final_margin_reward(self) -> float:
         return self.reward_scheme.board_margin(self._own_score(), self._opponent_score())
 
     def _own_score(self) -> int:
-        return int(self._raw["score_human"] if self.agent_player == 1
-                   else self._raw["score_ai"])
+        return int(self._raw["score_human"] if self.agent_player == 1 else self._raw["score_ai"])
 
     def _opponent_score(self) -> int:
-        return int(self._raw["score_ai"] if self.agent_player == 1
-                   else self._raw["score_human"])
+        return int(self._raw["score_ai"] if self.agent_player == 1 else self._raw["score_human"])
 
     def _score_margin(self) -> int:
         return self._own_score() - self._opponent_score()
 
-    def _info(self, agent_captures: int = 0, opponent_captures: int = 0,
-              capture_reward: float = 0.0, terminal_reward: float = 0.0,
-              final_margin_reward: float = 0.0,
-              control_delta_reward: float = 0.0) -> dict[str, Any]:
+    def _info(
+        self,
+        agent_captures: int = 0,
+        opponent_captures: int = 0,
+        capture_reward: float = 0.0,
+        terminal_reward: float = 0.0,
+        final_margin_reward: float = 0.0,
+        control_delta_reward: float = 0.0,
+    ) -> dict[str, Any]:
         action_mask = self.codec.legal_mask(self._legal, self._raw["hand"])
         info: dict[str, Any] = {
             "action_mask": action_mask,
@@ -231,17 +283,17 @@ class SamStoneEnv(gym.Env[np.ndarray, int]):
         }
         if self.tactical_features_enabled:
             if not hasattr(self.bridge, "tactical_action_scores"):
-                raise RuntimeError(
-                    "ce backend ne fournit pas encore les features tactiques")
+                raise RuntimeError("ce backend ne fournit pas encore les features tactiques")
             scores = self.bridge.tactical_action_scores(self.agent_player)
             observation = self.encoder.encode(self._raw)
-            info["action_features"] = self.tactical_encoder.encode(
-                observation, action_mask, scores)
+            info["action_features"] = self.tactical_encoder.encode(observation, action_mask, scores)
         if bool(self._raw.get("is_game_over", False)):
-            own_score = int(self._raw["score_human"] if self.agent_player == 1
-                            else self._raw["score_ai"])
-            opponent_score = int(self._raw["score_ai"] if self.agent_player == 1
-                                 else self._raw["score_human"])
+            own_score = int(
+                self._raw["score_human"] if self.agent_player == 1 else self._raw["score_ai"]
+            )
+            opponent_score = int(
+                self._raw["score_ai"] if self.agent_player == 1 else self._raw["score_human"]
+            )
             episode = {
                 "return": float(self._episode_return),
                 "agent_decisions": self._episode_agent_decisions,
@@ -258,10 +310,16 @@ class SamStoneEnv(gym.Env[np.ndarray, int]):
                 "agent_player": self.agent_player,
                 "first_player": self._first_player,
                 "blocked_count": len(self._blocked),
-                "god": str(self._episode_config.get(
-                    "human_god" if self.agent_player == 1 else "ai_god", "")),
-                "opponent_god": str(self._episode_config.get(
-                    "ai_god" if self.agent_player == 1 else "human_god", "")),
+                "god": str(
+                    self._episode_config.get(
+                        "human_god" if self.agent_player == 1 else "ai_god", ""
+                    )
+                ),
+                "opponent_god": str(
+                    self._episode_config.get(
+                        "ai_god" if self.agent_player == 1 else "human_god", ""
+                    )
+                ),
                 "opponent_id": str(getattr(self.opponent, "selected_name", "")),
                 "opponent_category": str(getattr(self.opponent, "selected_category", "")),
             }
@@ -274,13 +332,15 @@ class SamStoneEnv(gym.Env[np.ndarray, int]):
         self._episode_turns += 1
         if not self._trace_enabled:
             return
-        self._trace.append({
-            "turn": self._episode_turns,
-            "player": int(player),
-            "stone_id": str(move.get("stone_id", "")),
-            "row": int(move.get("row", -1)),
-            "col": int(move.get("col", -1)),
-            "captures": len(result.get("captures", [])),
-            "effects": deepcopy(result.get("effects", [])),
-            "placement_effects": deepcopy(result.get("placement_effects", [])),
-        })
+        self._trace.append(
+            {
+                "turn": self._episode_turns,
+                "player": int(player),
+                "stone_id": str(move.get("stone_id", "")),
+                "row": int(move.get("row", -1)),
+                "col": int(move.get("col", -1)),
+                "captures": len(result.get("captures", [])),
+                "effects": deepcopy(result.get("effects", [])),
+                "placement_effects": deepcopy(result.get("placement_effects", [])),
+            }
+        )

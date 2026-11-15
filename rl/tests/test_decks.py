@@ -8,17 +8,26 @@ def synthetic_catalog() -> DeckCatalog:
     for lineage_index in range(12):
         lineage = f"n{lineage_index:02d}"
         for level in range(1, 4):
-            variants.append({
-                "stone_id": f"{lineage}_n{level}",
-                "lineage_id": lineage,
-                "level": level,
-                "max_level": 3,
-                "affinity": "neutral" if lineage_index < 10 else "veskar",
-                "cost": float(level + lineage_index % 3),
-            })
-    return DeckCatalog({"schema_version": 1, "deck_size": 8, "deck_budget": 40,
-                        "checksum": "synthetic", "gods": [{"id": "veskar"}],
-                        "variants": variants})
+            variants.append(
+                {
+                    "stone_id": f"{lineage}_n{level}",
+                    "lineage_id": lineage,
+                    "level": level,
+                    "max_level": 3,
+                    "affinity": "neutral" if lineage_index < 10 else "veskar",
+                    "cost": float(level + lineage_index % 3),
+                }
+            )
+    return DeckCatalog(
+        {
+            "schema_version": 1,
+            "deck_size": 8,
+            "deck_budget": 40,
+            "checksum": "synthetic",
+            "gods": [{"id": "veskar"}],
+            "variants": variants,
+        }
+    )
 
 
 def test_generation_mutation_and_crossover_stay_legal():
@@ -30,11 +39,15 @@ def test_generation_mutation_and_crossover_stay_legal():
     assert all(not catalog.problems(candidate) for candidate in candidates)
     mutated = [operators.mutate(candidate, rng) for candidate in candidates]
     assert all(not catalog.problems(candidate) for candidate in mutated)
-    children = [operators.crossover(candidates[index], mutated[index], rng)
-                for index in range(len(candidates))]
+    children = [
+        operators.crossover(candidates[index], mutated[index], rng)
+        for index in range(len(candidates))
+    ]
     assert all(not catalog.problems(candidate) for candidate in children)
-    assert all(len({catalog.variants[item].lineage_id for item in candidate.stone_ids}) == 8
-               for candidate in children)
+    assert all(
+        len({catalog.variants[item].lineage_id for item in candidate.stone_ids}) == 8
+        for candidate in children
+    )
 
 
 def test_candidate_hash_ignores_input_order():

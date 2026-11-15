@@ -6,15 +6,11 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
+from samstone_rl.utils.certification import require_certified
+from samstone_rl.utils.checkpoints import file_checksum, load_checkpoint
+from samstone_rl.utils.provenance import provenance
+
 BOSS_GODS = ("veskar", "nerava", "kharun", "ilyr", "sylkha", "enigma")
-
-
-def file_checksum(path: str | Path) -> str:
-    digest = hashlib.sha256()
-    with Path(path).open("rb") as stream:
-        for block in iter(lambda: stream.read(1024 * 1024), b""):
-            digest.update(block)
-    return digest.hexdigest()
 
 
 @dataclass(frozen=True, slots=True)
@@ -36,27 +32,39 @@ class BossRoster:
     phase5_checkpoint: str
     decks: tuple[BossDeck, ...]
     source_checksums: dict[str, str]
+    engine_checksum: str
 
     @classmethod
     def load(cls, path: str | Path) -> BossRoster:
         source = Path(path).resolve()
         payload = json.loads(source.read_text(encoding="utf-8"))
-        if payload.get("schema_version") != 1:
+        if payload.get("schema_version") != 2:
             raise ValueError("version de registre de boss incompatible")
-        decks = tuple(BossDeck(
-            str(item["god_id"]), tuple(str(value) for value in item["stone_ids"]),
-            str(item["deck_hash"]), float(item["win_rate"]),
-            float(item["worst_matchup_win_rate"])) for item in payload["decks"])
-        roster = cls(str(payload["catalog_checksum"]), str(payload["policy_checksum"]),
-                     str(payload["phase5_checkpoint"]), decks,
-                     {str(key): str(value) for key, value in payload["source_checksums"].items()})
+        decks = tuple(
+            BossDeck(
+                str(item["god_id"]),
+                tuple(str(value) for value in item["stone_ids"]),
+                str(item["deck_hash"]),
+                float(item["win_rate"]),
+                float(item["worst_matchup_win_rate"]),
+            )
+            for item in payload["decks"]
+        )
+        roster = cls(
+            str(payload["catalog_checksum"]),
+            str(payload["policy_checksum"]),
+            str(payload["phase5_checkpoint"]),
+            decks,
+            {str(key): str(value) for key, value in payload["source_checksums"].items()},
+            str(payload["engine_checksum"]),
+        )
         roster.validate()
         return roster
 
     def validate(self) -> None:
         if tuple(item.god_id for item in self.decks) != BOSS_GODS:
             raise ValueError("le registre doit contenir les six dieux dans l'ordre canonique")
-        if not self.catalog_checksum or not self.policy_checksum:
+        if not self.catalog_checksum or not self.policy_checksum or not self.engine_checksum:
             raise ValueError("checksums catalogue/politique absents")
         if len(self.source_checksums) != len(BOSS_GODS):
             raise ValueError("les six rapports de phase 6 sont requis")
@@ -75,49 +83,79 @@ class BossRoster:
         return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
     def to_dict(self) -> dict[str, Any]:
-        return {"schema_version": 1, "catalog_checksum": self.catalog_checksum,
-                "policy_checksum": self.policy_checksum,
-                "phase5_checkpoint": self.phase5_checkpoint,
-                "decks": [item.to_dict() for item in self.decks],
-                "source_checksums": dict(sorted(self.source_checksums.items()))}
+        return {
+            "schema_version": 2,
+            "engine_checksum": self.engine_checksum,
+            "catalog_checksum": self.catalog_checksum,
+            "policy_checksum": self.policy_checksum,
+            "phase5_checkpoint": self.phase5_checkpoint,
+            "decks": [item.to_dict() for item in self.decks],
+            "source_checksums": dict(sorted(self.source_checksums.items())),
+        }
 
 
-def build_boss_roster(reports_directory: str | Path, phase5_checkpoint: str | Path,
-                      output_path: str | Path) -> BossRoster:
+def build_boss_roster(
+    reports_directory: str | Path, phase5_checkpoint: str | Path, output_path: str | Path
+) -> BossRoster:
     reports = Path(reports_directory).resolve()
     checkpoint = Path(phase5_checkpoint).resolve()
     if not checkpoint.is_file():
         raise FileNotFoundError(checkpoint)
+    require_certified(load_checkpoint(checkpoint), "phase5", provenance())
     policy_checksum = file_checksum(checkpoint)
     decks: list[BossDeck] = []
     catalog_checksums: set[str] = set()
+    engine_checksums: set[str] = set()
     source_checksums: dict[str, str] = {}
     for god_id in BOSS_GODS:
         path = reports / f"phase6_gate_{god_id}.json"
         if not path.is_file():
             raise FileNotFoundError(path)
         payload = json.loads(path.read_text(encoding="utf-8"))
-        if (payload.get("version") != 1 or payload.get("god_id") != god_id
-                or not payload.get("official") or not payload.get("passed")):
+        if (
+            payload.get("version") != 1
+            or payload.get("god_id") != god_id
+            or not payload.get("official")
+            or not payload.get("passed")
+        ):
             raise ValueError(f"rapport phase 6 non officiel ou refuse: {god_id}")
         if payload.get("policy_checksum") != policy_checksum:
             raise ValueError(f"politique differente dans le rapport {god_id}")
         finalists = payload.get("finalists", [])
         if not finalists:
             raise ValueError(f"aucun deck finaliste pour {god_id}")
-        selected = max(finalists, key=lambda item: (
-            float(item["fitness"]), float(item["worst_matchup_win_rate"]),
-            float(item["win_rate"])))
-        decks.append(BossDeck(
-            god_id, tuple(str(value) for value in selected["stone_ids"]),
-            str(selected["deck_hash"]), float(selected["win_rate"]),
-            float(selected["worst_matchup_win_rate"])))
+        selected = max(
+            finalists,
+            key=lambda item: (
+                float(item["fitness"]),
+                float(item["worst_matchup_win_rate"]),
+                float(item["win_rate"]),
+            ),
+        )
+        decks.append(
+            BossDeck(
+                god_id,
+                tuple(str(value) for value in selected["stone_ids"]),
+                str(selected["deck_hash"]),
+                float(selected["win_rate"]),
+                float(selected["worst_matchup_win_rate"]),
+            )
+        )
         catalog_checksums.add(str(payload.get("catalog_checksum", "")))
+        engine_checksums.add(str(payload.get("engine_checksum", "")))
         source_checksums[god_id] = file_checksum(path)
     if len(catalog_checksums) != 1 or "" in catalog_checksums:
         raise ValueError("les rapports n'utilisent pas le meme catalogue")
-    roster = BossRoster(catalog_checksums.pop(), policy_checksum, str(checkpoint),
-                        tuple(decks), source_checksums)
+    if len(engine_checksums) != 1 or "" in engine_checksums:
+        raise ValueError("les rapports n utilisent pas le meme moteur")
+    roster = BossRoster(
+        catalog_checksums.pop(),
+        policy_checksum,
+        str(checkpoint),
+        tuple(decks),
+        source_checksums,
+        engine_checksums.pop(),
+    )
     roster.validate()
     target = Path(output_path).resolve()
     target.parent.mkdir(parents=True, exist_ok=True)

@@ -27,9 +27,9 @@ evaluation:
   short_games_per_side_order: 4   # 96 matchs par deck
   medium_games_per_side_order: 20 # 480 matchs par deck
   final_games_per_side_order: 100 # 2 400 matchs par deck
-  short_seed_base: 2200000000
-  medium_seed_base: 2210000000
-  final_seed_base: 2220000000
+  short_seed_base: 6100000000
+  medium_seed_base: 6200000000
+  final_seed_base: 6900000000
   medium_finalists: 12
   final_finalists: 3
 

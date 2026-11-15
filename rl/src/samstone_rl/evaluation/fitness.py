@@ -41,10 +41,12 @@ def compute_fitness(records: Iterable[MatchRecord]) -> CandidateEvaluation:
     for record in records:
         by_opponent[record.opponent_id].append(record.won)
     worst = min(sum(outcomes) / len(outcomes) for outcomes in by_opponent.values())
-    mean_margin = float(np.mean([
-        (record.score_candidate - record.score_opponent) / 16.0 for record in records]))
+    mean_margin = float(
+        np.mean([(record.score_candidate - record.score_opponent) / 16.0 for record in records])
+    )
     margin_component = min(1.0, max(0.0, (mean_margin + 1.0) / 2.0))
     lower = wilson_lower(wins, games)
     fitness = 0.70 * lower + 0.25 * worst + 0.05 * margin_component
-    return CandidateEvaluation(next(iter(hashes)), games, wins, draws, losses,
-                               win_rate, lower, worst, mean_margin, fitness)
+    return CandidateEvaluation(
+        next(iter(hashes)), games, wins, draws, losses, win_rate, lower, worst, mean_margin, fitness
+    )

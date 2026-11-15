@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
-from collections import Counter
+import threading
+from collections import Counter, OrderedDict
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -12,6 +14,7 @@ import numpy as np
 from samstone_rl.opponents import Opponent
 from samstone_rl.opponents.checkpoint import CheckpointOpponent
 from samstone_rl.training.curriculum import DEFAULT_STAGES
+from samstone_rl.utils.checkpoints import atomic_text
 
 
 @dataclass(frozen=True)
@@ -26,21 +29,28 @@ class LeagueEntry:
 class SelfPlayLeague:
     """Persistent frozen-checkpoint league; one opponent is sampled per episode."""
 
-    def __init__(self, directory: str | Path, weights: dict[str, float], device: str = "cpu") -> None:
+    def __init__(
+        self, directory: str | Path, weights: dict[str, float], device: str = "cpu"
+    ) -> None:
         self.directory = Path(directory).resolve()
         self.directory.mkdir(parents=True, exist_ok=True)
         self.manifest_path = self.directory / "manifest.json"
         self.weights = weights
         self.device = device
         self.entries = self._load_manifest()
-        self._cache: dict[str, CheckpointOpponent] = {}
+        self._cache: OrderedDict[str, CheckpointOpponent] = OrderedDict()
+        self.maximum_cached_models = 8
+        self._cache_lock = threading.RLock()
         self.selection_counts: Counter[str] = Counter()
         self.ratings_path = self.directory / "ratings.json"
         self.results_path = self.directory / "results.jsonl"
+        self._pending_results: list[dict] = []
+        self._results_offset = 0
         self.ratings = self._load_ratings()
 
-    def register(self, checkpoint_path: str | Path, global_step: int, score: float,
-                 category: str = "recent") -> LeagueEntry:
+    def register(
+        self, checkpoint_path: str | Path, global_step: int, score: float, category: str = "recent"
+    ) -> LeagueEntry:
         if category not in {"current", "recent", "historical", "best"}:
             raise ValueError(f"categorie de ligue inconnue: {category}")
         source = Path(checkpoint_path).resolve()
@@ -50,11 +60,17 @@ class SelfPlayLeague:
         destination = self.directory / name
         if source != destination:
             shutil.copy2(source, destination)
+        with self._cache_lock:
+            self._cache.pop(str(destination), None)
         entry = LeagueEntry(name, name, category, int(global_step), float(score))
         self.entries = [item for item in self.entries if item.name != name]
         if category == "current":
-            self.entries = [LeagueEntry(item.name, item.path, "recent", item.global_step, item.score)
-                            if item.category == "current" else item for item in self.entries]
+            self.entries = [
+                LeagueEntry(item.name, item.path, "recent", item.global_step, item.score)
+                if item.category == "current"
+                else item
+                for item in self.entries
+            ]
         if category == "best":
             self.entries = [item for item in self.entries if item.category != "best"]
         self.entries.append(entry)
@@ -69,9 +85,12 @@ class SelfPlayLeague:
             raise ValueError(f"categorie de ligue inconnue: {category}")
         if not any(item.name == name for item in self.entries):
             raise KeyError(name)
-        self.entries = [LeagueEntry(item.name, item.path, category,
-                                    item.global_step, item.score)
-                        if item.name == name else item for item in self.entries]
+        self.entries = [
+            LeagueEntry(item.name, item.path, category, item.global_step, item.score)
+            if item.name == name
+            else item
+            for item in self.entries
+        ]
         self._save_manifest()
 
     def sample(self, rng: np.random.Generator) -> Opponent:
@@ -84,8 +103,11 @@ class SelfPlayLeague:
             for category in ("current", "recent", "historical", "best")
         }
         pools["godot"] = [None]
-        available = [(name, members, float(self.weights.get(name, 0.0)))
-                     for name, members in pools.items() if members and self.weights.get(name, 0.0) > 0.0]
+        available = [
+            (name, members, float(self.weights.get(name, 0.0)))
+            for name, members in pools.items()
+            if members and self.weights.get(name, 0.0) > 0.0
+        ]
         if not available:
             raise RuntimeError("la ligue ne contient aucun adversaire echantillonnable")
         probabilities = np.asarray([item[2] for item in available], dtype=np.float64)
@@ -99,28 +121,46 @@ class SelfPlayLeague:
         assert entry is not None
         checkpoint_path = self.directory / entry.path
         cache_key = str(checkpoint_path)
-        if cache_key not in self._cache:
-            self._cache[cache_key] = CheckpointOpponent(checkpoint_path, self.device, deterministic=False)
-        return self._cache[cache_key], entry.name, category
+        with self._cache_lock:
+            if cache_key not in self._cache:
+                self._cache[cache_key] = CheckpointOpponent(
+                    checkpoint_path, self.device, deterministic=False
+                )
+                if len(self._cache) > self.maximum_cached_models:
+                    self._cache.popitem(last=False)
+            self._cache.move_to_end(cache_key)
+            return self._cache[cache_key], entry.name, category
 
     def metrics_snapshot(self, reset_samples: bool = False) -> dict:
         categories = ("current", "recent", "historical", "best", "godot")
         metrics = {
-            "entries": {category: sum(item.category == category for item in self.entries)
-                        for category in categories if category != "godot"},
-            "weights": {category: float(self.weights.get(category, 0.0))
-                        for category in categories},
-            "samples": {category: int(self.selection_counts.get(category, 0))
-                        for category in categories},
+            "entries": {
+                category: sum(item.category == category for item in self.entries)
+                for category in categories
+                if category != "godot"
+            },
+            "weights": {
+                category: float(self.weights.get(category, 0.0)) for category in categories
+            },
+            "samples": {
+                category: int(self.selection_counts.get(category, 0)) for category in categories
+            },
             "ratings": dict(self.ratings),
         }
         if reset_samples:
             self.selection_counts.clear()
         return metrics
 
-    def record_result(self, agent_id: str, opponent_id: str, score: float,
-                      global_step: int, context: dict | None = None,
-                      k_factor: float = 32.0) -> dict[str, float]:
+    def record_result(
+        self,
+        agent_id: str,
+        opponent_id: str,
+        score: float,
+        global_step: int,
+        context: dict | None = None,
+        k_factor: float = 32.0,
+        persist: bool = True,
+    ) -> dict[str, float]:
         if score not in (0.0, 0.5, 1.0):
             raise ValueError("score Elo doit valoir 0, 0.5 ou 1")
         agent_rating = float(self.ratings.get(agent_id, 1500.0))
@@ -129,10 +169,6 @@ class SelfPlayLeague:
         delta = float(k_factor) * (score - expected)
         self.ratings[agent_id] = agent_rating + delta
         self.ratings[opponent_id] = opponent_rating - delta
-        temporary = self.ratings_path.with_suffix(".json.tmp")
-        temporary.write_text(json.dumps({"version": 1, "ratings": self.ratings}, indent=2),
-                             encoding="utf-8")
-        temporary.replace(self.ratings_path)
         event = {
             "version": 1,
             "timestamp": datetime.now(UTC).isoformat(),
@@ -145,32 +181,79 @@ class SelfPlayLeague:
             "opponent_rating": self.ratings[opponent_id],
             "context": context or {},
         }
-        with self.results_path.open("a", encoding="utf-8") as stream:
-            stream.write(json.dumps(event, ensure_ascii=False) + "\n")
-        return {"agent_rating": self.ratings[agent_id],
-                "opponent_rating": self.ratings[opponent_id], "rating_delta": delta}
+        self._pending_results.append(event)
+        if persist:
+            self.flush_results()
+        return {
+            "agent_rating": self.ratings[agent_id],
+            "opponent_rating": self.ratings[opponent_id],
+            "rating_delta": delta,
+        }
+
+    def flush_results(self) -> None:
+        """Commit a complete update once; replay the journal after a crash."""
+        if not self._pending_results:
+            return
+        payload = "".join(
+            json.dumps(event, ensure_ascii=False) + "\n" for event in self._pending_results
+        ).encode("utf-8")
+        with self.results_path.open("ab") as stream:
+            stream.write(payload)
+            stream.flush()
+            os.fsync(stream.fileno())
+            self._results_offset = stream.tell()
+        self._pending_results.clear()
+        atomic_text(
+            self.ratings_path,
+            json.dumps(
+                {"version": 2, "ratings": self.ratings, "results_offset": self._results_offset},
+                indent=2,
+            ),
+        )
 
     def _load_manifest(self) -> list[LeagueEntry]:
         if not self.manifest_path.is_file():
             return []
         data = json.loads(self.manifest_path.read_text(encoding="utf-8"))
-        return [LeagueEntry(**item) for item in data.get("entries", [])
-                if (self.directory / item["path"]).is_file()]
+        return [
+            LeagueEntry(**item)
+            for item in data.get("entries", [])
+            if (self.directory / item["path"]).is_file()
+        ]
 
     def _save_manifest(self) -> None:
         temporary = self.manifest_path.with_suffix(".tmp")
-        temporary.write_text(json.dumps({"version": 1, "entries": [asdict(item) for item in self.entries]},
-                                        indent=2), encoding="utf-8")
+        temporary.write_text(
+            json.dumps(
+                {"version": 1, "entries": [asdict(item) for item in self.entries]}, indent=2
+            ),
+            encoding="utf-8",
+        )
         temporary.replace(self.manifest_path)
 
     def _load_ratings(self) -> dict[str, float]:
-        if not self.ratings_path.is_file():
-            return {}
-        try:
-            payload = json.loads(self.ratings_path.read_text(encoding="utf-8"))
-            return {str(name): float(value) for name, value in payload.get("ratings", {}).items()}
-        except (OSError, ValueError, TypeError, json.JSONDecodeError):
-            return {}
+        payload = (
+            json.loads(self.ratings_path.read_text(encoding="utf-8"))
+            if self.ratings_path.is_file()
+            else {}
+        )
+        ratings = {str(name): float(value) for name, value in payload.get("ratings", {}).items()}
+        size = self.results_path.stat().st_size if self.results_path.is_file() else 0
+        self._results_offset = int(payload.get("results_offset", size if payload else 0))
+        if self._results_offset > size:
+            raise ValueError("journal Elo tronque; restaurer le registre de la ligue")
+        if self.results_path.is_file():
+            with self.results_path.open("rb+") as stream:
+                stream.seek(self._results_offset)
+                for line in stream:
+                    if not line.endswith(b"\n"):
+                        stream.truncate(self._results_offset)
+                        break
+                    event = json.loads(line)
+                    ratings[event["agent_id"]] = float(event["agent_rating"])
+                    ratings[event["opponent_id"]] = float(event["opponent_rating"])
+                    self._results_offset += len(line)
+        return ratings
 
 
 class LeagueOpponent:
@@ -183,7 +266,9 @@ class LeagueOpponent:
         self.selected_category = ""
 
     def begin_episode(self, rng: np.random.Generator) -> None:
-        self.selected, self.selected_name, self.selected_category = self.league.sample_with_metadata(rng)
+        self.selected, self.selected_name, self.selected_category = (
+            self.league.sample_with_metadata(rng)
+        )
         self.selected.begin_episode(rng)
 
     def choose(self, bridge, legal_actions, rng, player):

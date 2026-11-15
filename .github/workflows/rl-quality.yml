@@ -1,0 +1,59 @@
+name: RL quality
+
+on:
+  push:
+    paths: ['rl/**', 'game/scripts/**', 'game/data/**', 'game/tools/rl_sim/**', 'game/project.godot', '.github/workflows/rl-quality.yml']
+  pull_request:
+    paths: ['rl/**', 'game/scripts/**', 'game/data/**', 'game/tools/rl_sim/**', 'game/project.godot', '.github/workflows/rl-quality.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cpu-and-godot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: rl
+    env:
+      GODOT_BIN: ${{ runner.temp }}/godot/Godot_v4.7.2-stable_linux.x86_64
+      APPDATA: ${{ runner.temp }}/rl-appdata
+      LOCALAPPDATA: ${{ runner.temp }}/rl-localdata
+      XDG_DATA_HOME: ${{ runner.temp }}/rl-userdata
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: rl/requirements-cpu.lock
+      - name: Install locked CPU environment
+        run: |
+          python -m pip install -r requirements-cpu.lock
+          python -m pip install --no-build-isolation --no-deps -e .
+          python -m pip check
+      - name: Install Godot
+        run: |
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/godot.zip" https://github.com/godotengine/godot-builds/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
+          unzip -q "$RUNNER_TEMP/godot.zip" -d "$RUNNER_TEMP/godot"
+          chmod +x "$GODOT_BIN"
+          "$GODOT_BIN" --headless --editor --path ../game --import
+      - name: Lint and integration tests
+        run: |
+          python -m ruff check src scripts tests
+          python -m ruff format --check src scripts tests
+          python -m pytest -q --junitxml=../.tmp/rl-tests.xml
+      - name: Retain test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: rl-test-results
+          path: .tmp/rl-tests.xml
+          include-hidden-files: true
+          retention-days: 7

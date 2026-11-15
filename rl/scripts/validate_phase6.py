@@ -10,7 +10,8 @@ GODS = ("veskar", "nerava", "kharun", "ilyr", "sylkha", "enigma")
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Valide les six artefacts finaux produits par la phase 6.")
+        description="Valide les six artefacts finaux produits par la phase 6."
+    )
     parser.add_argument("reports", type=Path, help="dossier contenant phase6_gate_<dieu>.json")
     args = parser.parse_args()
     reports = args.reports.resolve()

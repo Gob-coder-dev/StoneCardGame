@@ -71,6 +71,8 @@ var random_state: int = 1
 var next_instance_id: int = 1
 ## Outil de tirage réutilisé ; random_state reste la valeur clonée et sérialisable.
 var _random_generator: RandomNumberGenerator = null
+## Flux portable reserve aux apercus RL. -1 conserve le hasard reel de Godot.
+var preview_random_state: int = -1
 
 
 ## Le clonage recopie directement les cases ; il n'alloue pas de plateau jetable.
@@ -137,6 +139,7 @@ func setup_hands(human_stone_ids: Array, ai_stone_ids: Array) -> void:
 
 
 func set_random_seed(value: int) -> void:
+	preview_random_state = -1
 	random_seed = value if value != 0 else 1
 	var generator := _rng()
 	generator.seed = random_seed
@@ -146,11 +149,19 @@ func set_random_seed(value: int) -> void:
 func draw_random_index(count: int) -> int:
 	if count <= 1:
 		return 0
+	if preview_random_state >= 0:
+		preview_random_state = (1664525 * preview_random_state + 1013904223) & 0xffffffff
+		return (preview_random_state >> 16) % count
 	var generator := _rng()
 	generator.state = random_state
 	var result := generator.randi_range(0, count - 1)
 	random_state = generator.state
 	return result
+
+
+## Meme LCG que fast_engine/preview.py ; ne s'applique qu'a un clone de simulation.
+func set_preview_seed(value: int) -> void:
+	preview_random_state = value & 0xffffffff
 
 
 func _rng() -> RandomNumberGenerator:
@@ -255,6 +266,7 @@ func _clone_common() -> GameState:
 	copy.ai_god_id = ai_god_id
 	copy.random_seed = random_seed
 	copy.random_state = random_state
+	copy.preview_random_state = preview_random_state
 	copy.next_instance_id = next_instance_id
 	return copy
 

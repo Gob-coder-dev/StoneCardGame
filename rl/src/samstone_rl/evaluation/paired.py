@@ -10,11 +10,11 @@ from __future__ import annotations
 from collections import defaultdict
 from collections.abc import Iterable
 from dataclasses import asdict, dataclass
-from math import comb
 
 import numpy as np
 
 from samstone_rl.training.validation import wilson_lower
+from samstone_rl.utils.statistics import sign_test
 
 
 @dataclass(frozen=True)
@@ -72,7 +72,9 @@ def outcome_summary(outcomes: Iterable[ComparisonOutcome]) -> dict[str, float | 
     }
 
 
-def grouped_summary(outcomes: Iterable[ComparisonOutcome]) -> dict[str, dict[str, dict[str, float | int]]]:
+def grouped_summary(
+    outcomes: Iterable[ComparisonOutcome],
+) -> dict[str, dict[str, dict[str, float | int]]]:
     """Return overall and controlled slices for one policy."""
     values = tuple(outcomes)
     groups: dict[str, dict[str, list[ComparisonOutcome]]] = {
@@ -84,31 +86,38 @@ def grouped_summary(outcomes: Iterable[ComparisonOutcome]) -> dict[str, dict[str
     for item in values:
         groups["by_god"][item.case.god].append(item)
         groups["by_blocked_count"][str(item.case.blocked_count)].append(item)
-        order = "agent_first" if item.case.first_player == item.case.agent_player else "opponent_first"
+        order = (
+            "agent_first" if item.case.first_player == item.case.agent_player else "opponent_first"
+        )
         groups["by_start_order"][order].append(item)
         groups["by_agent_side"][f"player_{item.case.agent_player}"].append(item)
     return {
         "overall": outcome_summary(values),
-        **{name: {key: outcome_summary(bucket) for key, bucket in sorted(group.items())}
-           for name, group in groups.items()},
+        **{
+            name: {key: outcome_summary(bucket) for key, bucket in sorted(group.items())}
+            for name, group in groups.items()
+        },
     }
 
 
-def paired_delta(reference: Iterable[ComparisonOutcome], candidate: Iterable[ComparisonOutcome]) -> dict[str, float | int]:
+def paired_delta(
+    reference: Iterable[ComparisonOutcome], candidate: Iterable[ComparisonOutcome]
+) -> dict[str, float | int]:
     """Compare two models on the same cases using outcome score differences."""
     reference_by_case = {item.case.case_id: item for item in reference}
     candidate_by_case = {item.case.case_id: item for item in candidate}
     if set(reference_by_case) != set(candidate_by_case):
         raise ValueError("les modèles ne possèdent pas le même ensemble de cas")
-    deltas = [candidate_by_case[key].score - reference_by_case[key].score
-              for key in sorted(reference_by_case)]
+    deltas = [
+        candidate_by_case[key].score - reference_by_case[key].score
+        for key in sorted(reference_by_case)
+    ]
     better = sum(value > 0.0 for value in deltas)
     worse = sum(value < 0.0 for value in deltas)
     decisive = better + worse
     # Exact two-sided sign test. Ties contain no directional information and
     # are deliberately excluded, as in a standard paired sign test.
-    tail = sum(comb(decisive, index) for index in range(min(better, worse) + 1))
-    sign_p_value = min(1.0, 2.0 * tail / (2 ** decisive)) if decisive else 1.0
+    sign_p_value = sign_test(better, worse)
     return {
         "games": len(deltas),
         "candidate_better": better,

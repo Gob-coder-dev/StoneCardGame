@@ -10,6 +10,7 @@ extends Node
 const Profile := preload("res://scripts/ai/AIProfile.gd")
 const ProfileAIModel := preload("res://scripts/ai/ProfileAI.gd")
 const MoveSearchModel := preload("res://scripts/ai/MoveSearch.gd")
+const NeuralAIModel := preload("res://scripts/ai/neural/NeuralAI.gd")
 
 ## Temps de préparation et de calcul accordé à l'IA à chaque image, en microsecondes.
 const FRAME_BUDGET_USEC := 4000
@@ -25,6 +26,11 @@ var _elapsed := 0.0
 ## Crée l'IA décrite par le champ "ai" d'un adversaire de npcs.json.
 static func create_ai(profile_data: Variant) -> AIPlayer:
 	return ProfileAIModel.new(Profile.new(profile_data))
+
+
+## Activation explicite apres export et validation d'un boss.
+static func create_neural_ai(policy_path: String) -> AIPlayer:
+	return NeuralAIModel.new(policy_path)
 
 
 func _ready() -> void:

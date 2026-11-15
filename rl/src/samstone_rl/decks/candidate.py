@@ -21,9 +21,16 @@ class DeckCandidate:
 
     @property
     def deck_hash(self) -> str:
-        payload = json.dumps({"god_id": self.god_id, "stone_ids": self.stone_ids},
-                             separators=(",", ":"), ensure_ascii=True)
+        payload = json.dumps(
+            {"god_id": self.god_id, "stone_ids": self.stone_ids},
+            separators=(",", ":"),
+            ensure_ascii=True,
+        )
         return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
     def to_dict(self) -> dict:
-        return {"god_id": self.god_id, "stone_ids": list(self.stone_ids), "deck_hash": self.deck_hash}
+        return {
+            "god_id": self.god_id,
+            "stone_ids": list(self.stone_ids),
+            "deck_hash": self.deck_hash,
+        }

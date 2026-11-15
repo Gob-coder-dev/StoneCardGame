@@ -1,97 +1,118 @@
 # SamStone RL
 
-Ce dossier entraîne les six futurs boss de SamStone. L'entraînement est local :
-les règles du jeu sont simulées rapidement en Python, tandis que Godot reste la
-référence pour les évaluations et la validation finale. Aucun serveur n'est
-requis pour le boss embarqué dans l'APK.
+Entraînement hors ligne des six boss : collecte rapide en Python, apprentissage
+PPO avec PyTorch, évaluations et certifications dans le moteur Godot du jeu.
+Le contrat couvre les matchs **4 × 4, huit cartes et 128 actions**. Les tutoriels
+3 × 3 ne font pas partie de ce format.
 
-## Chemin officiel
+## Installation et utilisation
 
-La phase 4 utilise `configs/ppo_phase4_vectorized.yaml` et produit ses
-artefacts dans `runs/ppo_phase4_vectorized/`. Le moteur vectorise les coups
-contrefactuels, les menaces de riposte, les auras et les faiblesses sur des
-lots de 256 parties. Essaim et Pillage sont eux aussi traités exactement dans
-le noyau vectorisé, sans retour au simulateur partie par partie. PPO tourne sur
-DirectML afin d'utiliser aussi les GPU AMD sous Windows. Godot reste obligatoire
-pour toutes les promotions.
+Python **3.11** et Godot **4.7.2** sont utilisés pour les vérifications.
+Les environnements CPU et DirectML possèdent chacun leurs dépendances
+verrouillées, outils de construction inclus.
 
-La politique `tactical_actor_critic` évalue chaque coup légal avec les données
-publiques du plateau : carte, case, capture immédiate, menace de riposte et
-variation de contrôle. Ce calcul fait partie du boss final ; il n'est pas un
-outil d'entraînement temporaire.
-
-Le curriculum est :
-
-```text
-precision 0 -> 0,25 -> 0,50 -> 1,00
--> anticipation 25 % -> 50 % -> 75 % -> 100 %
+```powershell
+# Depuis rl/ : choisir CPU ou DirectML, puis installer le paquet local.
+py -3.11 -m venv .venv311
+.\.venv311\Scripts\python.exe -m pip install -r requirements-directml.lock
+.\.venv311\Scripts\python.exe -m pip install --no-build-isolation --no-deps -e .
+.\.venv311\Scripts\python.exe -m pip check
+$env:GODOT_BIN = "C:\chemin\vers\Godot_v4.7.2-stable_win64_console.exe"
 ```
 
-Chaque palier demande deux évaluations indépendantes de 500 parties avec au
-moins 85 % de victoires et au plus 7 % de défaites. La validation finale de la
-phase 4 est plus stricte : 85 % de victoires et au plus 5 % de défaites, sur
-tous les paliers, dieux, camps et ordres de départ.
+Pour CPU, utiliser `requirements-cpu.lock` et `device: cpu` dans le YAML.
+Chaque processus du pont Godot dispose de données utilisateur temporaires :
+il ne modifie pas la sauvegarde personnelle du joueur.
 
-Lors d'une première création avec `--weights-only`, une pré-évaluation parcourt
-immédiatement les paliers déjà maîtrisés. Elle conserve les deux évaluations
-indépendantes exigées par palier, mais n'entraîne pas entre elles. Au premier
-échec, PPO reprend normalement sur ce palier ; ce point est sauvegardé dans
-`latest.pt`.
+Le [guide des commandes](GUIDE_COMMANDES.md) détaille migration, entraînement,
+validations et export. Les critères sont dans le [plan](PLAN_DE_DEVELOPPEMENT.md).
+Le [bilan de validation](VALIDATION.md) détaille les corrections, contrôles et mesures.
 
-## Structure
+## Contrats et compatibilité
+
+- Le catalogue provient de `game/data/stones/manifest.json` et de ses familles.
+  Ses définitions Python sont accessibles en lecture seule.
+- L'observation v1 contient 929 valeurs ; les features tactiques v2 contiennent
+  79 valeurs par action. Python et Godot partagent leur signification, leurs
+  normalisations et leur générateur d'aperçus déterministes.
+- L'estimation de riposte des features du réseau est une enveloppe publique
+  stable. Le bot Godot conserve son propre modèle de riposte, d'aura et de fin
+  de partie : améliorer ce bot ne change pas implicitement les entrées du réseau.
+- Les checkpoints v2 conservent architecture, schémas, poids, optimiseur,
+  curriculum, compteurs d'évaluation, RNG, provenance et identité de l'arbitre.
+- La reprise complète exige des contrats compatibles. Les épisodes en cours
+  sont réinitialisés : elle ne promet pas une trajectoire bit à bit identique
+  sur tous les périphériques.
+- Après modification des règles, du contenu ou des schémas, les anciens poids
+  peuvent initialiser un nouveau run avec `--weights-only`. L'optimiseur,
+  les compteurs, le curriculum et les certifications repartent alors de zéro.
+- Un run existant ne peut pas être recréé implicitement. Un verrou système
+  empêche plusieurs entraîneurs d'écrire dans le même dossier.
+
+## Chaîne d'entraînement
+
+1. Phase 4 : politique universelle tactique contre les profils Godot.
+2. Phase 5 : self-play contre une ligue de checkpoints gelés.
+3. Phase 6 : recherche de decks avec une politique universelle certifiée.
+4. Phase 6B : spécialisation d'une politique par dieu et deck final.
+5. Export : fichier `.sspolicy` float32 et inférence incrémentale dans Godot.
+
+La configuration principale est `configs/ppo_phase4_vectorized.yaml` :
+256 environnements Python, huit décisions par environnement, batch PPO de
+2 048 transitions et dix arbitres Godot. Le curriculum comprend quatre niveaux
+de précision puis quatre niveaux d'anticipation.
+
+Les confirmations périodiques renouvellent leurs seeds. Pré-évaluation,
+confirmations, ancrages et tournoi final ont des plages séparées dans la
+configuration officielle. La validation finale de phase 4 conserve ses matchs
+sur disque et reprend les cas manquants à contexte et poids identiques.
+
+Une certification porte sur les poids exacts, leurs contrats et un rapport
+réussi. Une mise à jour PPO produit un nouveau candidat à valider. Le seul
+booléen `completed` ne suffit pas à certifier un modèle.
+
+## Organisation
 
 ```text
-configs/                 configurations actives des phases 4, 5, 6 et 6B
-scripts/                 lancement, suivi, validations et rapports
+configs/                  expériences et critères officiels
+scripts/                  commandes, suivi, benchmarks et export
 src/samstone_rl/
-  batch_engine/          collecte rapide Python
-  bridge/                protocole avec Godot
-  envs/                  environnement Gym et encodage
-  fast_engine/           règles Python contrôlées
-  models/                politique PPO tactique
-  tactics/               features par action
-  vector_engine/         noyaux d'anticipation vectorises et fallbacks exacts
-  training/              PPO, curriculum, self-play et decks
-  specialization/        entraînement des six boss
-tests/                   tests unitaires et intégration Godot
-runs/                    checkpoints et métriques, ignorés par Git
+  fast_engine/            état scalaire, règles et RNG d'aperçus
+  batch_engine/           collecte et encodage avec buffers réutilisables
+  vector_engine/          noyaux tactiques et effets, référence scalaire conservée
+  bridge/                 processus Godot isolés et pool persistant
+  envs/                   contrat Gymnasium et observation publique
+  tactics/                features par action versionnées
+  models/                 construction commune, modèles et export
+  training/               coordination PPO, optimisation, évaluation et checkpoints
+  evaluation/             tournois durables, decks et comparaisons appariées
+  specialization/         registre et apprentissage des six boss
+  observability/          métriques, alertes, agrégation et rendu des rapports
+  utils/                  provenance, certifications, verrouillage et statistiques
+tests/                    unités, raccordement des phases et parité Godot
+runs/, checkpoints/, artifacts/  résultats générés, ignorés par Git
 ```
 
-## Phases restantes
-
-- **Phase 4** : politique universelle tactique contre les bots Godot.
-- **Phase 5** : self-play et ligue de checkpoints.
-- **Phase 6** : recherche de decks et statistiques d'équilibrage.
-- **Phase 6B** : spécialisation d'un boss par dieu.
-- **Phase 7** : export des poids pour Godot.
-- **Phase 8** : observabilité, TensorBoard et rapports.
-
-Le guide complet des commandes est dans [GUIDE_COMMANDES.md](GUIDE_COMMANDES.md).
-L'architecture et les critères de validation sont dans
-[PLAN_DE_DEVELOPPEMENT.md](PLAN_DE_DEVELOPPEMENT.md).
-
-## Vérification développeur
-
-Depuis `rl/` :
+## Vérification
 
 ```powershell
+.\.venv311\Scripts\python.exe -m ruff check src scripts tests
 .\.venv311\Scripts\python.exe -m pytest -q
-.\.venv311\Scripts\python.exe -m ruff check src tests scripts
 ```
 
-Benchmark reproductible du palier tactique principal :
+Définir `GODOT_BIN` pour les tests d'intégration. La CI couvre aussi les
+modifications des règles et données du jeu ; DirectML est vérifié localement.
+Les tests comparent les états et scores tactiques des six dieux, les entrées et
+sorties PyTorch/Godot et les reprises après interruption.
 
-```powershell
-.\.venv311\Scripts\python.exe scripts\benchmark_fast_training.py `
-  --config configs\ppo_phase4_vectorized.yaml `
-  --updates 5 `
-  --batch-size 2048 `
-  --num-envs 256 `
-  --stage precision_100_anticipation_50 `
-  --device directml
-```
+## Statut des modèles
 
-La prédiction auxiliaire de la marge finale est expérimentale et désactivée
-dans le run officiel. Elle apprend sur les épisodes du rollout courant, sans
-imitation du bot et sans mémoire de replay. Son test A/B apparié est décrit dans
-le guide des commandes.
+Les outils d'entraînement, observabilité, export et inférence sont implémentés.
+Les six boss doivent encore être entraînés ou réévalués puis certifiés avec les
+contrats actuels avant leur activation. Les profils existants restent actifs
+par défaut. La latence et la mémoire de l'inférence complète doivent également
+être mesurées sur le téléphone cible.
+
+Les benchmarks précisent matériel, périphérique, configuration, palier,
+échauffement et répétitions. Le débit, le temps complet d'une mise à jour et le
+niveau de jeu à budget égal sont des mesures distinctes.

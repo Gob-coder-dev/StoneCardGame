@@ -22,13 +22,16 @@ class CurriculumStage:
             raise ValueError("le nom du palier ne peut pas etre vide")
         if not 0.0 <= self.precision <= 1.0:
             raise ValueError("la precision doit etre comprise entre 0 et 1")
-        if (self.anticipation_probability is not None
-                and not 0.0 <= self.anticipation_probability <= 1.0):
+        if (
+            self.anticipation_probability is not None
+            and not 0.0 <= self.anticipation_probability <= 1.0
+        ):
             raise ValueError("la probabilite d'anticipation doit etre comprise entre 0 et 1")
 
     def opponent(self) -> GodotProfileOpponent:
         return GodotProfileOpponent(
-            self.precision, self.anticipation, self.anticipation_probability)
+            self.precision, self.anticipation, self.anticipation_probability
+        )
 
     @classmethod
     def from_mapping(cls, value: Mapping[str, Any]) -> CurriculumStage:
@@ -66,14 +69,18 @@ def stages_from_config(values: Sequence[Mapping[str, Any]] | None) -> tuple[Curr
 class CurriculumManager:
     """Promote only on held-out evaluation and replay older opponents."""
 
-    def __init__(self, target_win_rate: float = 0.95, confidence_floor: float = 0.90,
-                 replay_probability: float = 0.20,
-                 stages: tuple[CurriculumStage, ...] = DEFAULT_STAGES,
-                 god_sampling: Mapping[str, Any] | None = None,
-                 terrain_sampling: Mapping[str, Any] | None = None,
-                 maximum_loss_rate: float | None = None,
-                 non_loss_confidence_floor: float | None = None,
-                 promotion_confirmations: int = 1) -> None:
+    def __init__(
+        self,
+        target_win_rate: float = 0.95,
+        confidence_floor: float = 0.90,
+        replay_probability: float = 0.20,
+        stages: tuple[CurriculumStage, ...] = DEFAULT_STAGES,
+        god_sampling: Mapping[str, Any] | None = None,
+        terrain_sampling: Mapping[str, Any] | None = None,
+        maximum_loss_rate: float | None = None,
+        non_loss_confidence_floor: float | None = None,
+        promotion_confirmations: int = 1,
+    ) -> None:
         self.target_win_rate = target_win_rate
         self.confidence_floor = confidence_floor
         self.replay_probability = replay_probability
@@ -88,13 +95,16 @@ class CurriculumManager:
         self.bootstrap_evaluation_completed = False
         self.promotion_confirmations = int(promotion_confirmations)
         self.consecutive_promotion_successes = 0
-        self.maximum_loss_rate = (None if maximum_loss_rate is None
-                                  else float(maximum_loss_rate))
-        self.non_loss_confidence_floor = (None if non_loss_confidence_floor is None
-                                          else float(non_loss_confidence_floor))
+        self.maximum_loss_rate = None if maximum_loss_rate is None else float(maximum_loss_rate)
+        self.non_loss_confidence_floor = (
+            None if non_loss_confidence_floor is None else float(non_loss_confidence_floor)
+        )
         if self.maximum_loss_rate is not None and not 0 <= self.maximum_loss_rate <= 1:
             raise ValueError("maximum_loss_rate doit etre entre 0 et 1")
-        if self.non_loss_confidence_floor is not None and not 0 < self.non_loss_confidence_floor <= 1:
+        if (
+            self.non_loss_confidence_floor is not None
+            and not 0 < self.non_loss_confidence_floor <= 1
+        ):
             raise ValueError("non_loss_confidence_floor doit etre entre 0 et 1")
         if self.promotion_confirmations <= 0:
             raise ValueError("promotion_confirmations doit etre strictement positif")
@@ -137,7 +147,8 @@ class CurriculumManager:
             if self.terrain_sampling_max_attempts <= 0:
                 raise ValueError("max_reset_attempts doit etre strictement positif")
         self._terrain_weights = self._normalize_weights(
-            {str(value): 1.0 for value in self._terrain_values})
+            {str(value): 1.0 for value in self._terrain_values}
+        )
         self._terrain_wilson = {str(value): 0.0 for value in self._terrain_values}
 
     @property
@@ -158,12 +169,14 @@ class CurriculumManager:
         if not names:
             raise ValueError("god_sampling requiert au moins un dieu")
         self._god_names = names
-        self._god_weights = self._normalize_weights({
-            name: self._god_weights.get(name, 1.0) for name in names})
+        self._god_weights = self._normalize_weights(
+            {name: self._god_weights.get(name, 1.0) for name in names}
+        )
         self._god_wilson = {name: self._god_wilson.get(name, 0.0) for name in names}
 
-    def sample_scenario_index(self, scenarios: Sequence[Mapping[str, Any]],
-                              rng: np.random.Generator) -> int:
+    def sample_scenario_index(
+        self, scenarios: Sequence[Mapping[str, Any]], rng: np.random.Generator
+    ) -> int:
         if not scenarios:
             raise ValueError("au moins un scenario est requis")
         if not self.god_sampling_enabled:
@@ -189,23 +202,27 @@ class CurriculumManager:
             god: float(by_god.get(god, {}).get("wilson_lower", self._god_wilson.get(god, 0.0)))
             for god in self._god_names
         }
-        deficits = {god: max(0.0, self.god_sampling_target - score)
-                    for god, score in observed.items()}
+        deficits = {
+            god: max(0.0, self.god_sampling_target - score) for god, score in observed.items()
+        }
         largest = max(deficits.values(), default=0.0)
         if largest <= 1e-12:
             desired = {god: 1.0 for god in self._god_names}
         else:
             spread = self.god_sampling_maximum - self.god_sampling_minimum
             desired = {
-                god: self.god_sampling_minimum + spread * (deficit / largest) ** self.god_sampling_exponent
+                god: self.god_sampling_minimum
+                + spread * (deficit / largest) ** self.god_sampling_exponent
                 for god, deficit in deficits.items()
             }
         desired = self._normalize_weights(desired)
-        self._god_weights = self._normalize_weights({
-            god: (1.0 - self.god_sampling_smoothing) * self._god_weights[god]
-            + self.god_sampling_smoothing * desired[god]
-            for god in self._god_names
-        })
+        self._god_weights = self._normalize_weights(
+            {
+                god: (1.0 - self.god_sampling_smoothing) * self._god_weights[god]
+                + self.god_sampling_smoothing * desired[god]
+                for god in self._god_names
+            }
+        )
         self._god_wilson = observed
         return self.god_sampling_metrics()
 
@@ -227,29 +244,41 @@ class CurriculumManager:
         weights = np.asarray([self._terrain_weights[value] for value in values], dtype=np.float64)
         return int(values[int(rng.choice(len(values), p=weights / weights.sum()))])
 
-    def update_terrain_sampling(self, by_blocked_count: Mapping[str, Mapping[str, Any]]) -> dict[str, Any]:
+    def update_terrain_sampling(
+        self, by_blocked_count: Mapping[str, Mapping[str, Any]]
+    ) -> dict[str, Any]:
         if not self.terrain_sampling_enabled:
             return {}
         names = tuple(str(value) for value in self._terrain_values)
         observed = {
-            name: float(by_blocked_count.get(name, {}).get(
-                "wilson_lower", self._terrain_wilson.get(name, 0.0)))
+            name: float(
+                by_blocked_count.get(name, {}).get(
+                    "wilson_lower", self._terrain_wilson.get(name, 0.0)
+                )
+            )
             for name in names
         }
         desired = self._adaptive_weights(
-            names, observed, self.terrain_sampling_target,
-            self.terrain_sampling_minimum, self.terrain_sampling_maximum,
-            self.terrain_sampling_exponent)
-        self._terrain_weights = self._normalize_weights({
-            name: (1.0 - self.terrain_sampling_smoothing) * self._terrain_weights[name]
-            + self.terrain_sampling_smoothing * desired[name]
-            for name in names
-        })
+            names,
+            observed,
+            self.terrain_sampling_target,
+            self.terrain_sampling_minimum,
+            self.terrain_sampling_maximum,
+            self.terrain_sampling_exponent,
+        )
+        self._terrain_weights = self._normalize_weights(
+            {
+                name: (1.0 - self.terrain_sampling_smoothing) * self._terrain_weights[name]
+                + self.terrain_sampling_smoothing * desired[name]
+                for name in names
+            }
+        )
         self._terrain_wilson = observed
         return self.terrain_sampling_metrics()
 
-    def terrain_sampling_metrics(self, sampled: Mapping[str, int] | None = None,
-                                 reset_attempts: int = 0) -> dict[str, Any]:
+    def terrain_sampling_metrics(
+        self, sampled: Mapping[str, int] | None = None, reset_attempts: int = 0
+    ) -> dict[str, Any]:
         if not self.terrain_sampling_enabled:
             return {}
         metrics: dict[str, Any] = {
@@ -258,32 +287,48 @@ class CurriculumManager:
         }
         if sampled is not None:
             metrics["episodes"] = {
-                str(value): int(sampled.get(str(value), 0)) for value in self._terrain_values}
+                str(value): int(sampled.get(str(value), 0)) for value in self._terrain_values
+            }
             metrics["reset_attempts"] = int(reset_attempts)
         return metrics
 
     def promotion_metrics(self, wins: int, draws: int, games: int) -> dict[str, float | bool | int]:
         losses = games - wins - draws
         if games <= 0 or losses < 0:
-            return {"win_rate": 0.0, "loss_rate": 1.0, "non_loss_rate": 0.0,
-                    "non_loss_wilson_lower": 0.0, "eligible": False,
-                    "promotion_confirmations": self.promotion_confirmations,
-                    "consecutive_promotion_successes": self.consecutive_promotion_successes}
+            return {
+                "win_rate": 0.0,
+                "loss_rate": 1.0,
+                "non_loss_rate": 0.0,
+                "non_loss_wilson_lower": 0.0,
+                "eligible": False,
+                "promotion_confirmations": self.promotion_confirmations,
+                "consecutive_promotion_successes": self.consecutive_promotion_successes,
+            }
         win_rate = wins / games
         loss_rate = losses / games
         non_losses = wins + draws
         non_loss_rate = non_losses / games
         non_loss_lower = wilson_lower(non_losses, games)
         if self.maximum_loss_rate is None or self.non_loss_confidence_floor is None:
-            eligible = win_rate >= self.target_win_rate and wilson_lower(wins, games) >= self.confidence_floor
+            eligible = (
+                win_rate >= self.target_win_rate
+                and wilson_lower(wins, games) >= self.confidence_floor
+            )
         else:
-            eligible = (win_rate >= self.target_win_rate
-                        and loss_rate <= self.maximum_loss_rate
-                        and non_loss_lower >= self.non_loss_confidence_floor)
-        return {"win_rate": win_rate, "loss_rate": loss_rate, "non_loss_rate": non_loss_rate,
-                "non_loss_wilson_lower": non_loss_lower, "eligible": eligible,
-                "promotion_confirmations": self.promotion_confirmations,
-                "consecutive_promotion_successes": self.consecutive_promotion_successes}
+            eligible = (
+                win_rate >= self.target_win_rate
+                and loss_rate <= self.maximum_loss_rate
+                and non_loss_lower >= self.non_loss_confidence_floor
+            )
+        return {
+            "win_rate": win_rate,
+            "loss_rate": loss_rate,
+            "non_loss_rate": non_loss_rate,
+            "non_loss_wilson_lower": non_loss_lower,
+            "eligible": eligible,
+            "promotion_confirmations": self.promotion_confirmations,
+            "consecutive_promotion_successes": self.consecutive_promotion_successes,
+        }
 
     def consider_promotion(self, wins: int, games: int, draws: int = 0) -> bool:
         if games <= 0 or self.completed or self.awaiting_final_validation:
@@ -316,34 +361,45 @@ class CurriculumManager:
         self.bootstrap_evaluation_completed = True
 
     def state_dict(self) -> dict:
-        return {"stage_index": self.stage_index, "awaiting_final_validation": self.awaiting_final_validation,
-                "completed": self.completed, "current": asdict(self.current),
-                "bootstrap_evaluation_completed": self.bootstrap_evaluation_completed,
-                "target_win_rate": self.target_win_rate,
-                "confidence_floor": self.confidence_floor,
-                "maximum_loss_rate": self.maximum_loss_rate,
-                "non_loss_confidence_floor": self.non_loss_confidence_floor,
-                "promotion_confirmations": self.promotion_confirmations,
-                "consecutive_promotion_successes": self.consecutive_promotion_successes,
-                "replay_probability": self.replay_probability,
-                "god_sampling": {
-                    "weights": self._god_weights,
-                    "wilson_lower": self._god_wilson,
-                },
-                "terrain_sampling": {
-                    "weights": self._terrain_weights,
-                    "wilson_lower": self._terrain_wilson,
-                }}
+        return {
+            "stage_index": self.stage_index,
+            "awaiting_final_validation": self.awaiting_final_validation,
+            "completed": self.completed,
+            "current": asdict(self.current),
+            "bootstrap_evaluation_completed": self.bootstrap_evaluation_completed,
+            "target_win_rate": self.target_win_rate,
+            "confidence_floor": self.confidence_floor,
+            "maximum_loss_rate": self.maximum_loss_rate,
+            "non_loss_confidence_floor": self.non_loss_confidence_floor,
+            "promotion_confirmations": self.promotion_confirmations,
+            "consecutive_promotion_successes": self.consecutive_promotion_successes,
+            "replay_probability": self.replay_probability,
+            "god_sampling": {
+                "weights": self._god_weights,
+                "wilson_lower": self._god_wilson,
+            },
+            "terrain_sampling": {
+                "weights": self._terrain_weights,
+                "wilson_lower": self._terrain_wilson,
+            },
+        }
 
     def load_state_dict(self, state: Mapping[str, Any]) -> None:
-        self.stage_index = int(state.get("stage_index", 0))
+        stage_index = int(state.get("stage_index", 0))
+        if not 0 <= stage_index < len(self.stages):
+            raise ValueError("palier du checkpoint incompatible avec le curriculum")
+        if "current" in state and state["current"] != asdict(self.stages[stage_index]):
+            raise ValueError("definition du palier differente du checkpoint")
+        self.stage_index = stage_index
         self.awaiting_final_validation = bool(state.get("awaiting_final_validation", False))
         self.completed = bool(state.get("completed", False))
         self.bootstrap_evaluation_completed = bool(
-            state.get("bootstrap_evaluation_completed", False))
+            state.get("bootstrap_evaluation_completed", False)
+        )
         self.consecutive_promotion_successes = min(
             max(0, int(state.get("consecutive_promotion_successes", 0))),
-            self.promotion_confirmations - 1)
+            self.promotion_confirmations - 1,
+        )
         sampling = state.get("god_sampling", {})
         if self.god_sampling_enabled and isinstance(sampling, Mapping):
             weights = sampling.get("weights", {})
@@ -358,8 +414,9 @@ class CurriculumManager:
             lower = terrain.get("wilson_lower", {})
             expected = {str(value) for value in self._terrain_values}
             if isinstance(weights, Mapping):
-                self._terrain_weights = self._normalize_weights({
-                    name: float(weights.get(name, 1.0)) for name in expected})
+                self._terrain_weights = self._normalize_weights(
+                    {name: float(weights.get(name, 1.0)) for name in expected}
+                )
             if isinstance(lower, Mapping):
                 self._terrain_wilson = {name: float(lower.get(name, 0.0)) for name in expected}
 
@@ -372,15 +429,23 @@ class CurriculumManager:
         return {name: value / mean for name, value in positive.items()}
 
     @classmethod
-    def _adaptive_weights(cls, names: Sequence[str], observed: Mapping[str, float], target: float,
-                          minimum: float, maximum: float, exponent: float) -> dict[str, float]:
+    def _adaptive_weights(
+        cls,
+        names: Sequence[str],
+        observed: Mapping[str, float],
+        target: float,
+        minimum: float,
+        maximum: float,
+        exponent: float,
+    ) -> dict[str, float]:
         deficits = {name: max(0.0, target - observed[name]) for name in names}
         largest = max(deficits.values(), default=0.0)
         if largest <= 1e-12:
             return {name: 1.0 for name in names}
         spread = maximum - minimum
-        return cls._normalize_weights({
-            name: minimum + spread * (deficit / largest) ** exponent
-            for name, deficit in deficits.items()
-        })
-
+        return cls._normalize_weights(
+            {
+                name: minimum + spread * (deficit / largest) ** exponent
+                for name, deficit in deficits.items()
+            }
+        )
