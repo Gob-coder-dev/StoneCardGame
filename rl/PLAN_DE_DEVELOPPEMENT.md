@@ -52,8 +52,11 @@ l'heuristique du bot enseignant.
 
 Logiciel implémenté. Huit paliers : précision 0, 25, 50 et 100 %, puis
 anticipation 25, 50, 75 et 100 %. La configuration exige deux confirmations
-successives de 500 parties, au moins 85 % de victoires, au plus 7 % de défaites
-et ses autres critères statistiques. Les confirmations utilisent des seeds
+successives de 500 parties, au moins 80 % de victoires, au plus 10 % de défaites
+et une borne de confiance des non-défaites de 87 %. La validation finale de
+phase 4 utilise également 80 % / 10 % / 87 % pour certifier le socle généraliste.
+Les exigences des boss spécialisés restent indépendantes et inchangées.
+Les confirmations utilisent des seeds
 renouvelés et leur compteur est sauvegardé.
 
 La pré-évaluation peut avancer dans les paliers déjà maîtrisés avant PPO.

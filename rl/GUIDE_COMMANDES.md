@@ -12,7 +12,7 @@ Pour DirectML sous Windows :
 py -3.11 -m venv .venv311
 .\.venv311\Scripts\python.exe -m pip install -r requirements-directml.lock
 .\.venv311\Scripts\python.exe -m pip install --no-build-isolation --no-deps -e .
-$env:GODOT_BIN = "C:\chemin\vers\Godot_v4.7.2-stable_win64_console.exe"
+$env:GODOT_BIN = "C:\chemin\vers\Godot_v4.7.2-stable_win64.exe"
 .\.venv311\Scripts\python.exe scripts\check_environment.py --strict-lock
 ```
 
@@ -265,10 +265,22 @@ les hyperparamètres.
 - **Run déjà initialisé** : reprendre son `latest.pt` ou choisir un dossier neuf.
 - **Run utilisé** : arrêter l'autre entraîneur ou évaluateur qui possède son verrou.
 - **Provenance incompatible** : importer les poids dans une nouvelle expérience.
+- **Seul le code Python diffère** : après vérification des modifications (par
+  exemple une option d'affichage), reprendre avec `--resume ... --allow-python-source-change`.
+  Cette autorisation conserve le curriculum, Adam et les compteurs ; elle est
+  enregistrée dans le manifeste et ne permet pas de changer les règles, le contenu,
+  les schémas, le modèle, les récompenses ou le moteur Godot.
 - **Certification absente ou périmée** : réévaluer le checkpoint exact avec le jeu actuel.
 - **Checksum invalide** : restaurer une copie saine ; le journal récupère uniquement
   une transaction interrompue dont il reconnaît les octets.
-- **Godot indisponible** : vérifier `GODOT_BIN`, sa version et le chemin console.
+- **Godot indisponible** : vérifier `GODOT_BIN`, sa version et le chemin vers
+  l'exécutable principal `Godot_*_win64.exe` pour un lancement direct.
+- **Évaluation initiale figée sur `completed_games: 0` avec DirectML** : les
+  premières copies CPU → GPU pouvaient se bloquer dans les threads d'évaluation.
+  Le trainer initialise désormais une inférence déterministe dans le thread
+  principal avant de lancer les matchs en parallèle. Arrêter l'ancien processus
+  puis relancer avec le code corrigé ; le choix du lanceur console Godot ne
+  corrige pas ce blocage.
 - **Conflit de dépendances** : recréer un venv depuis le verrou correspondant au périphérique.
 
 Les messages Windows sur le magasin de certificats racine sont distingués des

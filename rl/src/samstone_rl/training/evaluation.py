@@ -5,7 +5,9 @@ from __future__ import annotations
 import json
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
-from typing import Any
+from contextlib import nullcontext
+from threading import Lock
+from typing import Any, Callable
 
 import numpy as np
 import torch
@@ -22,6 +24,36 @@ from samstone_rl.utils.checkpoints import policy_checksum
 
 
 class EvaluationMixin:
+    def _prepare_evaluation_inference(self) -> None:
+        """Initialize DirectML and serialize its inference across match workers.
+
+        Concurrent DirectML host-to-device transfers can deadlock in the
+        backend, even after warmup. Match simulation remains parallel, but
+        workers share a lock covering transfers, inference and synchronization.
+        The deterministic warmup takes no random samples or optimizer steps.
+        """
+        if self.device.type != "privateuseone" or getattr(
+            self, "_evaluation_inference_ready", False
+        ):
+            return
+        self._evaluation_inference_lock = Lock()
+        observations = np.zeros((1, *self.env.observation_space.shape), dtype=np.float32)
+        masks = np.ones((1, self.env.action_space.n), dtype=bool)
+        features = (
+            np.zeros((1, self.env.action_space.n, self.tactical_feature_dim), dtype=np.float32)
+            if self.tactical_features_enabled
+            else None
+        )
+        with torch.no_grad():
+            action, _, _ = self._act(
+                torch.as_tensor(observations, device=self.device),
+                torch.as_tensor(masks, device=self.device),
+                None if features is None else torch.as_tensor(features, device=self.device),
+                True,
+            )
+            action.item()
+        self._evaluation_inference_ready = True
+
     def _evaluation_action_feature_args(self, info: dict[str, Any]) -> tuple[torch.Tensor, ...]:
         if not self.tactical_features_enabled:
             return ()
@@ -34,6 +66,7 @@ class EvaluationMixin:
         return (torch.as_tensor(features, dtype=torch.float32, device=self.device).unsqueeze(0),)
 
     def evaluate(self, seed_offset: int = 0) -> dict[str, Any]:
+        self._prepare_evaluation_inference()
         evaluation = self.config["evaluation"]
         games, wins, draws = int(evaluation["games"]), 0, 0
         margins: list[float] = []
@@ -48,9 +81,31 @@ class EvaluationMixin:
             list(range(worker, games, self.evaluation_num_envs))
             for worker in range(self.evaluation_num_envs)
         ]
+        progress_callback = getattr(self, "_evaluation_progress_callback", None)
+        completed_games = 0
+        progress_lock = Lock()
+
+        def on_game_completed() -> None:
+            """Aggregate worker progress before notifying the training thread.
+
+            Evaluation workers run concurrently, whereas the tracker is shared
+            with the trainer.  A single counter keeps progress monotonic and
+            gives the bootstrap phase a visible heartbeat without affecting
+            match determinism.
+            """
+            nonlocal completed_games
+            if progress_callback is None:
+                return
+            with progress_lock:
+                completed_games += 1
+                progress_callback(completed_games, games)
+
         if self.evaluation_num_envs == 1:
             completed = self._evaluate_offsets(
-                self.evaluation_envs[0], chunks[0], int(evaluation["seed_base"]) + seed_offset
+                self.evaluation_envs[0],
+                chunks[0],
+                int(evaluation["seed_base"]) + seed_offset,
+                on_game_completed,
             )
         else:
             with ThreadPoolExecutor(max_workers=self.evaluation_num_envs) as executor:
@@ -60,6 +115,7 @@ class EvaluationMixin:
                         self.evaluation_envs,
                         chunks,
                         [int(evaluation["seed_base"]) + seed_offset] * len(chunks),
+                        [on_game_completed] * len(chunks),
                         strict=True,
                     ),
                 )
@@ -104,6 +160,7 @@ class EvaluationMixin:
         env: SamStoneEnv,
         offsets: list[int],
         seed_base: int,
+        on_game_completed: Callable[[], None] | None = None,
     ) -> list[tuple[int, int, int, dict[str, Any]]]:
         evaluation = self.config["evaluation"]
         max_attempts = int(evaluation.get("godot_retry_attempts", 2))
@@ -126,6 +183,8 @@ class EvaluationMixin:
                     max_attempts,
                 )
                 completed.append((offset, agent_player, first_player, info))
+                if on_game_completed is not None:
+                    on_game_completed()
         finally:
             env.opponent, env.agent_player = previous, previous_player
         return completed
@@ -204,6 +263,7 @@ class EvaluationMixin:
         seed = int(settings["seed_base"])
         if self.evaluation_backend != "godot":
             raise RuntimeError("la certification finale exige le moteur Godot")
+        self._prepare_evaluation_inference()
         oracle = self._evaluation_manifest()
         cases = []
         for stage_index, stage in enumerate(self.curriculum.stages):
@@ -316,7 +376,9 @@ class EvaluationMixin:
         obs, info = env.reset(seed=seed, options=options)
         done = False
         while not done:
-            with torch.no_grad():
+            # DirectML's shared transfer/inference context must not be entered
+            # concurrently. Keep action.item() inside: it synchronizes the GPU.
+            with getattr(self, "_evaluation_inference_lock", nullcontext()), torch.no_grad():
                 feature_args = self._evaluation_action_feature_args(info)
                 action_features = feature_args[0] if feature_args else None
                 action, _, _ = self._act(
@@ -327,7 +389,8 @@ class EvaluationMixin:
                     action_features,
                     True,
                 )
-            obs, _, terminated, truncated, info = env.step(int(action.item()))
+                action_index = int(action.item())
+            obs, _, terminated, truncated, info = env.step(action_index)
             done = terminated or truncated
         return info
 

@@ -109,6 +109,29 @@ actuelles. Il ne certifie pas les huit paliers : la différence entre ces deux
 résultats n’est pas significative au test des signes (`p = 0,5`). L’import de
 poids dans un nouveau run reste explicite et ne transmet aucune certification.
 
+## Blocage DirectML des évaluations parallèles — 15 novembre 2026
+
+Le démarrage à froid des dix évaluateurs a reproduit un blocage natif dans
+`torch.as_tensor(..., device=directml)`, lors du transfert des features tactiques.
+Les connexions Godot étaient établies et les simulations seules fonctionnaient.
+Le choix entre les exécutables principal et console de Godot n'était donc pas
+la cause démontrée. Une initialisation seule du réseau ne suffisait pas sur un
+lot prolongé : les transferts, l'inférence et la lecture de l'action sont désormais
+protégés par un verrou commun aux évaluateurs DirectML. Les simulations Godot
+restent parallèles ; CPU et CUDA conservent leur fonctionnement précédent.
+
+Contrôle isolé avec la configuration vectorisée officielle, l'import de
+`runs/ppo_phase4_vectorized/best.pt`, dix processus Godot et 500 parties au palier
+`precision_0` (offset de seed `400100000`) : **492 victoires, 6 nuls, 2 défaites**, en
+**31,2 secondes démarrage compris**, première partie terminée à **3,6 secondes**.
+Ces mesures décrivent cet essai local ; elles ne certifient pas les autres paliers.
+Le run utilisateur et ses checkpoints n'ont pas été modifiés par ce contrôle.
+
+Un test de non-régression lance une évaluation DirectML à froid dans un nouveau
+processus, avec dix évaluateurs et une limite de temps. Il vérifie la fin des dix
+parties, la progression et la conservation de l'état aléatoire PyTorch. Ce test
+reproduisait le blocage avant la protection des transferts et passe après.
+
 ## Travail expérimental restant
 
 La correction du logiciel ne produit pas automatiquement six boss validés.

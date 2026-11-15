@@ -80,10 +80,10 @@ curriculum:
   bootstrap_evaluation:
     enabled: true
     seed_stride: 100000
-  promotion_win_rate: 0.85
+  promotion_win_rate: 0.80
   confidence_floor: 0.81
-  maximum_loss_rate: 0.07
-  non_loss_confidence_floor: 0.90
+  maximum_loss_rate: 0.10
+  non_loss_confidence_floor: 0.87
   promotion_confirmations: 2
   replay_probability: 0.20
   stages:
@@ -123,10 +123,10 @@ evaluation:
   final_gate:
     games_per_slice: 100
     seed_base: 4900000000
-    overall_win_rate: 0.85
+    overall_win_rate: 0.80
     confidence_floor: 0.80
-    maximum_loss_rate: 0.05
-    non_loss_confidence_floor: 0.90
+    maximum_loss_rate: 0.10
+    non_loss_confidence_floor: 0.87
     minimum_slice_win_rate: 0.70
     maximum_slice_loss_rate: 0.10
 

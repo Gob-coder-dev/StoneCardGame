@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import json
+import subprocess
+import sys
 from pathlib import Path
 
 import numpy as np
+import pytest
 import torch
 import yaml
 
@@ -199,6 +202,47 @@ def test_bootstrap_evaluation_promotes_solved_stages_before_training(tmp_path: P
     finally:
         trainer._close_training_envs()
         trainer.tracker.close()
+
+
+def test_directml_parallel_evaluation_cold_start(tmp_path: Path):
+    """A fresh process must finish without a prior inference on its main thread."""
+    pytest.importorskip("torch_directml")
+    source = Path(__file__).resolve().parents[1] / "configs" / "ppo_phase4_vectorized.yaml"
+    config = yaml.safe_load(source.read_text(encoding="utf-8"))
+    config["output_dir"] = str(tmp_path / "run")
+    # Keep this regression independent of Godot and time-bound the native
+    # backend deadlock: subprocess.run kills the probe if it stops responding.
+    config["environment"].update(backend="python", evaluation_backend="python")
+    config["ppo"]["num_envs"] = 2
+    config["monitoring"]["tensorboard"] = False
+    config["evaluation"].update(games=10, num_envs=10)
+    path = tmp_path / "cold_directml.yaml"
+    path.write_text(yaml.safe_dump(config), encoding="utf-8")
+    probe = """
+import sys
+import torch
+from samstone_rl.training.ppo_cleanrl import PPOTrainer
+
+with PPOTrainer(sys.argv[1]) as trainer:
+    trainer._evaluation_manifest()
+    progress = []
+    trainer._evaluation_progress_callback = lambda completed, total: progress.append(completed)
+    rng_before = torch.get_rng_state().clone()
+    result = trainer.evaluate(seed_offset=400100000)
+    assert result['games'] == 10
+    assert progress == list(range(1, 11))
+    assert torch.equal(rng_before, torch.get_rng_state())
+    print('cold DirectML evaluation completed', flush=True)
+"""
+    result = subprocess.run(
+        [sys.executable, "-u", "-c", probe, str(path)],
+        capture_output=True,
+        text=True,
+        timeout=60,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "cold DirectML evaluation completed" in result.stdout
 
 
 def test_adaptive_terrain_is_drawn_directly_without_rejected_resets(tmp_path: Path, monkeypatch):

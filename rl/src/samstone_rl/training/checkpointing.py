@@ -98,19 +98,51 @@ class CheckpointMixin:
         save_checkpoint(target, payload)
 
     def load_checkpoint(
-        self, path: str | Path, load_optimizer: bool = True, load_training_state: bool = True
+        self,
+        path: str | Path,
+        load_optimizer: bool = True,
+        load_training_state: bool = True,
+        *,
+        allow_python_source_change: bool = False,
     ) -> dict:
         checkpoint_path = Path(path).resolve()
         # torch-directml cannot currently be passed directly as map_location.
         # Loading on CPU is portable; load_state_dict then copies tensors to
         # the model and optimizer device.
         checkpoint = read_checkpoint(checkpoint_path)
+        source_change = None
         if load_training_state:
             if checkpoint.get("provenance") != self.provenance:
-                raise ValueError(
-                    "regles/contenu/version incompatibles pour une reprise; "
-                    "importer les poids avec --weights-only dans un nouveau run"
+                saved = checkpoint.get("provenance")
+                changed = (
+                    {
+                        key
+                        for key in saved.keys() | self.provenance.keys()
+                        if saved.get(key) != self.provenance.get(key)
+                    }
+                    if isinstance(saved, dict)
+                    else set()
                 )
+                source_only = changed == {"python_source"} and all(
+                    isinstance(identity.get("python_source"), str)
+                    and bool(identity["python_source"])
+                    for identity in (saved, self.provenance)
+                )
+                if not (source_only and allow_python_source_change):
+                    detail = (
+                        "seul le code Python differe; apres verification des changements, "
+                        "utiliser --allow-python-source-change pour conserver la progression"
+                        if source_only
+                        else "regles/contenu/version incompatibles pour une reprise; "
+                        "importer les poids avec --weights-only dans un nouveau run"
+                    )
+                    raise ValueError(detail)
+                source_change = {
+                    "checkpoint": str(checkpoint_path),
+                    "checkpoint_sha256": file_checksum(checkpoint_path),
+                    "previous": saved,
+                    "current": self.provenance,
+                }
             saved_oracle = checkpoint.get("oracle_manifest")
             if saved_oracle is not None and saved_oracle != self._evaluation_manifest():
                 raise ValueError("moteur d evaluation different du checkpoint")
@@ -162,6 +194,14 @@ class CheckpointMixin:
         self._weight_source = checkpoint.get("weight_source")
         curriculum = checkpoint.get("curriculum", {})
         self.curriculum.load_state_dict(curriculum)
+        # Confirmations must use the same promotion contract. Preserve the
+        # learned stage and optimizer, but evaluate amended thresholds afresh.
+        previous_curriculum = checkpoint.get("config", {}).get("curriculum", {})
+        if any(
+            previous_curriculum.get(key) != self.config["curriculum"].get(key)
+            for key in ("promotion_win_rate", "maximum_loss_rate", "non_loss_confidence_floor")
+        ):
+            self.curriculum.consecutive_promotion_successes = 0
         self.best_win_rate = float(
             checkpoint.get("best_win_rate", checkpoint.get("evaluation", {}).get("win_rate", -1.0))
         )
@@ -187,6 +227,8 @@ class CheckpointMixin:
             torch.set_rng_state(rng["torch"].cpu())
         if torch.cuda.is_available() and "torch_cuda" in rng:
             torch.cuda.set_rng_state_all(rng["torch_cuda"])
+        if source_change is not None:
+            self.tracker.update_manifest(extra={"resume_source_change": source_change})
         return checkpoint
 
     @staticmethod

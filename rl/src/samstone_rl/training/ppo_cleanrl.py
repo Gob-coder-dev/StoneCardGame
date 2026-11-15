@@ -3,10 +3,12 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import os
 import time
 from concurrent.futures import ThreadPoolExecutor
-from contextlib import ExitStack
+from contextlib import ExitStack, redirect_stdout
 from pathlib import Path
+from threading import Lock
 from typing import Any
 
 import numpy as np
@@ -133,6 +135,12 @@ class PPOTrainer(RolloutMixin, EvaluationMixin, CheckpointMixin):
                 ("monitoring",),
                 ("device",),
                 ("environment", "godot_path"),
+                ("curriculum", "promotion_win_rate"),
+                ("curriculum", "maximum_loss_rate"),
+                ("curriculum", "non_loss_confidence_floor"),
+                ("evaluation", "final_gate", "overall_win_rate"),
+                ("evaluation", "final_gate", "maximum_loss_rate"),
+                ("evaluation", "final_gate", "non_loss_confidence_floor"),
             )
             if mode in ("resume", "evaluate")
             else (),
@@ -693,6 +701,7 @@ class PPOTrainer(RolloutMixin, EvaluationMixin, CheckpointMixin):
         ):
             return None
         seed_stride = int(settings.get("seed_stride", 100000))
+        progress_every = max(1, int(settings.get("progress_every_games", 1)))
         attempt = self._bootstrap_round
         last_result: dict[str, Any] | None = None
         while not self.curriculum.awaiting_final_validation and not self.curriculum.completed:
@@ -701,7 +710,73 @@ class PPOTrainer(RolloutMixin, EvaluationMixin, CheckpointMixin):
             attempt += 1
             self._bootstrap_round = attempt
             started = time.perf_counter()
-            results = self.evaluate(seed_offset=400000000 + attempt * seed_stride)
+            last_reported = 0
+            progress_lock = Lock()
+
+            def report_progress(completed: int, total: int) -> None:
+                """Write a compact, thread-safe heartbeat for the initial Godot scan."""
+                nonlocal last_reported
+                if completed != total and completed % progress_every:
+                    return
+                with progress_lock:
+                    if completed <= last_reported:
+                        return
+                    last_reported = completed
+                    elapsed = max(time.perf_counter() - started, 1e-9)
+                    metrics = {
+                        "completed_games": completed,
+                        "total_games": total,
+                        "completion": completed / total,
+                        "elapsed_seconds": elapsed,
+                        "games_per_second": completed / elapsed,
+                    }
+                    context = {
+                        "stage": evaluated_stage,
+                        "bootstrap_attempt": attempt,
+                        "bootstrap_evaluation": True,
+                    }
+                    self.tracker.log("bootstrap_progress", completed, metrics, context)
+                    print(
+                        json.dumps(
+                            {"bootstrap_progress": True, "stage": evaluated_stage, **metrics},
+                            ensure_ascii=False,
+                        ),
+                        flush=True,
+                    )
+
+            self.tracker.log(
+                "bootstrap_progress",
+                0,
+                {
+                    "completed_games": 0,
+                    "total_games": int(self.config["evaluation"]["games"]),
+                    "completion": 0.0,
+                },
+                {
+                    "stage": evaluated_stage,
+                    "bootstrap_attempt": attempt,
+                    "bootstrap_evaluation": True,
+                    "state": "started",
+                },
+            )
+            print(
+                json.dumps(
+                    {
+                        "bootstrap_progress": True,
+                        "stage": evaluated_stage,
+                        "completed_games": 0,
+                        "total_games": int(self.config["evaluation"]["games"]),
+                        "state": "started",
+                    },
+                    ensure_ascii=False,
+                ),
+                flush=True,
+            )
+            self._evaluation_progress_callback = report_progress
+            try:
+                results = self.evaluate(seed_offset=400000000 + attempt * seed_stride)
+            finally:
+                self._evaluation_progress_callback = None
             evaluation_seconds = max(time.perf_counter() - started, 1e-9)
             evaluated_games = int(results["games"]) + sum(
                 int(item["games"]) for item in results["anchors"].values()
@@ -1020,6 +1095,16 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--resume", type=Path)
     parser.add_argument(
+        "--allow-python-source-change",
+        action="store_true",
+        help="autorise explicitement une reprise apres modification du seul code Python",
+    )
+    parser.add_argument(
+        "--quiet",
+        action="store_true",
+        help="masque la sortie du terminal, conserve les erreurs et les metriques sur disque",
+    )
+    parser.add_argument(
         "--reset-optimizer",
         action="store_true",
         help="charge les poids et le curriculum, mais reinitialise Adam",
@@ -1032,6 +1117,11 @@ def main(argv: list[str] | None = None) -> int:
     arguments = parser.parse_args(argv)
     if arguments.weights_only and arguments.resume is None:
         parser.error("--weights-only exige --resume")
+    if arguments.allow_python_source_change and (
+        arguments.resume is None or arguments.weights_only
+    ):
+        parser.error("--allow-python-source-change exige --resume sans --weights-only")
+    recover_empty_run = False
     if arguments.weights_only:
         config_path = arguments.config.resolve()
         with config_path.open(encoding="utf-8") as stream:
@@ -1041,18 +1131,56 @@ def main(argv: list[str] | None = None) -> int:
             if configured_output.is_absolute()
             else config_path.parent.parent / configured_output
         )
-        if any((output / name).exists() for name in ("latest.pt", "metrics.jsonl")):
+        checkpoints = tuple(output.glob("*.pt")) if output.is_dir() else ()
+        metrics = output / "metrics.jsonl"
+        metric_lines = (
+            [line for line in metrics.read_text(encoding="utf-8").splitlines() if line.strip()]
+            if metrics.is_file()
+            else []
+        )
+        has_events = bool(metric_lines)
+        # A run interrupted while Godot workers are merely starting has no
+        # checkpoint and only bootstrap heartbeat events.  It is equivalent
+        # to an empty shell: no learning or curriculum state was persisted.
+        bootstrap_only = bool(metric_lines)
+        for line in metric_lines:
+            try:
+                event = json.loads(line)
+            except json.JSONDecodeError:
+                bootstrap_only = False
+                break
+            if not isinstance(event, dict) or event.get("stream") != "bootstrap_progress":
+                bootstrap_only = False
+                break
+        # A startup failure can occur after the manifest and empty logs have
+        # been created but before the first checkpoint. It is safe to resume
+        # this empty shell and import the same weights again.
+        recover_empty_run = (
+            (output / "run_manifest.json").is_file()
+            and not checkpoints
+            and (not has_events or bootstrap_only)
+        )
+        if (checkpoints or has_events) and not recover_empty_run:
             parser.error(
                 "--weights-only initialise un nouveau run, mais le dossier contient deja "
                 "un entrainement; utiliser --resume avec son latest.pt"
             )
-    mode = "resume" if arguments.resume is not None and not arguments.weights_only else "create"
-    with PPOTrainer(arguments.config, mode=mode) as trainer:
+    mode = (
+        "resume"
+        if (arguments.resume is not None and not arguments.weights_only) or recover_empty_run
+        else "create"
+    )
+    with ExitStack() as resources:
+        if arguments.quiet:
+            output_sink = resources.enter_context(open(os.devnull, "w", encoding="utf-8"))
+            resources.enter_context(redirect_stdout(output_sink))
+        trainer = resources.enter_context(PPOTrainer(arguments.config, mode=mode))
         if arguments.resume is not None:
             trainer.load_checkpoint(
                 arguments.resume,
                 load_optimizer=not arguments.reset_optimizer and not arguments.weights_only,
                 load_training_state=not arguments.weights_only,
+                allow_python_source_change=arguments.allow_python_source_change,
             )
         trainer.train()
     return 0

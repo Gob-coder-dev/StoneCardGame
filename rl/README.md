@@ -17,7 +17,7 @@ py -3.11 -m venv .venv311
 .\.venv311\Scripts\python.exe -m pip install -r requirements-directml.lock
 .\.venv311\Scripts\python.exe -m pip install --no-build-isolation --no-deps -e .
 .\.venv311\Scripts\python.exe -m pip check
-$env:GODOT_BIN = "C:\chemin\vers\Godot_v4.7.2-stable_win64_console.exe"
+$env:GODOT_BIN = "C:\chemin\vers\Godot_v4.7.2-stable_win64.exe"
 ```
 
 Pour CPU, utiliser `requirements-cpu.lock` et `device: cpu` dans le YAML.

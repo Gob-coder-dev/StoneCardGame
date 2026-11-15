@@ -240,6 +240,33 @@ def test_resume_allows_budget_change_and_explicit_optimizer_reset(tmp_path):
         PPOTrainer(path, mode="resume")
 
 
+def test_resume_source_change_requires_opt_in_and_preserves_other_guards(tmp_path):
+    path = tiny_config(tmp_path)
+    with PPOTrainer(path) as trainer:
+        trainer.train()
+    checkpoint = tmp_path / "run/latest.pt"
+    payload = load_checkpoint(checkpoint)
+    payload["provenance"]["python_source"] = "previous-python-source"
+    save_checkpoint(checkpoint, payload)
+    with PPOTrainer(path, mode="resume") as trainer:
+        with pytest.raises(ValueError, match="allow-python-source-change"):
+            trainer.load_checkpoint(checkpoint)
+        trainer.load_checkpoint(checkpoint, allow_python_source_change=True)
+        assert trainer._resume_global_step == payload["global_step"] == 16
+        assert trainer._resume_update == payload["update"] == 1
+        assert trainer.curriculum.state_dict() == payload["curriculum"]
+        assert trainer.optimizer.state_dict()["state"]
+        assert torch.equal(torch.get_rng_state(), payload["rng"]["torch"])
+    manifest = json.loads((tmp_path / "run/run_manifest.json").read_text(encoding="utf-8"))
+    assert manifest["extra"]["resume_source_change"]["previous"] == payload["provenance"]
+    for key in ("content", "game_rules", "schema", "feature_schema"):
+        incompatible = {**payload, "provenance": {**payload["provenance"], key: "changed"}}
+        save_checkpoint(checkpoint, incompatible)
+        with PPOTrainer(path, mode="resume") as trainer:
+            with pytest.raises(ValueError, match="incompatibles"):
+                trainer.load_checkpoint(checkpoint, allow_python_source_change=True)
+
+
 def test_tournament_resumes_only_missing_cases_and_invalidates_other_policy(tmp_path):
     calls = []
     cases = [{"seed": i} for i in range(5)]

@@ -8,6 +8,7 @@ import sys
 from collections.abc import Mapping
 from datetime import UTC, datetime
 from pathlib import Path
+from threading import RLock
 from typing import Any, Self
 
 import gymnasium
@@ -89,6 +90,7 @@ class RunTracker:
         self.metrics_path = self.output / "metrics.jsonl"
         self.alerts_path = self.output / "alerts.jsonl"
         self.manifest_path = self.output / "run_manifest.json"
+        self._log_lock = RLock()
         self._metrics = self.metrics_path.open("a", encoding="utf-8", buffering=1)
         self.tensorboard = None
         try:
@@ -186,41 +188,44 @@ class RunTracker:
         metrics: Mapping[str, Any],
         context: Mapping[str, Any] | None = None,
     ) -> dict[str, Any]:
-        event = {
-            "schema_version": 1,
-            "timestamp": utc_now(),
-            "run_type": self.run_type,
-            "stream": stream,
-            "step": int(step),
-            "metrics": json_value(metrics),
-            "context": json_value(context or {}),
-        }
-        self._metrics.write(json.dumps(event, ensure_ascii=False, allow_nan=False) + "\n")
-        if self.tensorboard is not None:
-            for name, value in flatten_metrics(metrics).items():
-                if np.isfinite(value):
-                    self.tensorboard.add_scalar(f"{stream}/{name}", value, int(step))
+        with self._log_lock:
+            event = {
+                "schema_version": 1,
+                "timestamp": utc_now(),
+                "run_type": self.run_type,
+                "stream": stream,
+                "step": int(step),
+                "metrics": json_value(metrics),
+                "context": json_value(context or {}),
+            }
+            self._metrics.write(json.dumps(event, ensure_ascii=False, allow_nan=False) + "\n")
+            if self.tensorboard is not None:
+                for name, value in flatten_metrics(metrics).items():
+                    if np.isfinite(value):
+                        self.tensorboard.add_scalar(f"{stream}/{name}", value, int(step))
         return event
 
     def log_alert(self, alert: Mapping[str, Any]) -> None:
-        payload = {"schema_version": 1, "timestamp": utc_now(), **json_value(alert)}
-        self._alerts.write(json.dumps(payload, ensure_ascii=False, allow_nan=False) + "\n")
-        if self.tensorboard is not None:
-            step = int(payload.get("step", 0))
-            self.tensorboard.add_text(
-                f"alerts/{payload.get('severity', 'warning')}/{payload.get('code', 'unknown')}",
-                str(payload.get("message", "")),
-                step,
-            )
+        with self._log_lock:
+            payload = {"schema_version": 1, "timestamp": utc_now(), **json_value(alert)}
+            self._alerts.write(json.dumps(payload, ensure_ascii=False, allow_nan=False) + "\n")
+            if self.tensorboard is not None:
+                step = int(payload.get("step", 0))
+                self.tensorboard.add_text(
+                    f"alerts/{payload.get('severity', 'warning')}/{payload.get('code', 'unknown')}",
+                    str(payload.get("message", "")),
+                    step,
+                )
 
     def close(self) -> None:
-        if not self._metrics.closed:
-            self._metrics.close()
-        if not self._alerts.closed:
-            self._alerts.close()
-        if self.tensorboard is not None:
-            self.tensorboard.close()
-            self.tensorboard = None
+        with self._log_lock:
+            if not self._metrics.closed:
+                self._metrics.close()
+            if not self._alerts.closed:
+                self._alerts.close()
+            if self.tensorboard is not None:
+                self.tensorboard.close()
+                self.tensorboard = None
 
 
 def _git_metadata(start: Path) -> dict[str, Any]:
