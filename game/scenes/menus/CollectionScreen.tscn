@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://scripts/ui/CollectionScreenController.gd" id="1_controller"]
 [ext_resource type="Script" path="res://scripts/ui/MenuBackground.gd" id="2_background"]
 [ext_resource type="PackedScene" path="res://scenes/ui/BottomNav.tscn" id="3_nav"]
-[ext_resource type="PackedScene" path="res://scenes/ui/StoneInfoSheet.tscn" id="4_info"]
+[ext_resource type="PackedScene" path="res://scenes/ui/MonsterInfoSheet.tscn" id="4_info"]
 [ext_resource type="PackedScene" path="res://scenes/ui/ReplacementPanel.tscn" id="5_replacement"]
 [ext_resource type="Script" path="res://scripts/ui/input/TouchScrollContainer.gd" id="6_touch_scroll"]
 [ext_resource type="Script" path="res://scripts/ui/input/TouchButton.gd" id="7_touch_button"]
@@ -373,7 +373,7 @@ mouse_filter = 2
 [node name="BottomNav" parent="." instance=ExtResource("3_nav")]
 current_tab = 1
 
-[node name="StoneInfoSheet" parent="." instance=ExtResource("4_info")]
+[node name="MonsterInfoSheet" parent="." instance=ExtResource("4_info")]
 
 [node name="ReplacementPanel" parent="." instance=ExtResource("5_replacement")]
 

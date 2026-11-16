@@ -37,13 +37,13 @@ theme_override_constants/separation = 16
 theme_type_variation = &"ScreenTitle"
 layout_mode = 2
 theme_override_font_sizes/font_size = 48
-text = "REMPLACER UNE PIERRE"
+text = "REMPLACER UN MONSTRE"
 horizontal_alignment = 1
 
 [node name="Instruction" type="Label" parent="Panel/Content"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 30
-text = "TOUCHE UNE PIERRE DU DECK"
+text = "TOUCHE UN MONSTRE DU DECK"
 horizontal_alignment = 1
 
 [node name="DeckGrid" type="GridContainer" parent="Panel/Content"]
@@ -56,7 +56,7 @@ theme_override_constants/v_separation = 14
 layout_mode = 2
 custom_minimum_size = Vector2(0, 70)
 theme_override_font_sizes/font_size = 30
-text = "Choisis une pierre du deck à remplacer."
+text = "Choisis un monstre du deck à remplacer."
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 2
@@ -64,7 +64,7 @@ autowrap_mode = 2
 [node name="CandidateLabel" type="Label" parent="Panel/Content"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 30
-text = "NOUVELLE PIERRE"
+text = "NOUVEAU MONSTRE"
 horizontal_alignment = 1
 
 [node name="Candidate" type="CenterContainer" parent="Panel/Content"]

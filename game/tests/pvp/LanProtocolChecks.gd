@@ -181,7 +181,7 @@ func _test_series_messages() -> void:
 	_check(LanProtocol.validate(LanProtocol.KIND_LOADOUT_REVEAL, loadout)["ok"],
 		"protocole : un loadout local complet est accepté")
 	var too_expensive := loadout.duplicate()
-	too_expensive["total_quarters"] = DeckRules.DECK_BUDGET * StoneCostRules.COST_SCALE + 1
+	too_expensive["total_quarters"] = DeckRules.DECK_BUDGET * MonsterCostRules.COST_SCALE + 1
 	_check(not LanProtocol.validate(LanProtocol.KIND_LOADOUT_REVEAL, too_expensive)["ok"],
 		"protocole : un total de loadout hors budget est refusé")
 	var ready_loadout := ids.duplicate()
@@ -214,7 +214,7 @@ func _test_series_messages() -> void:
 	_check(not LanProtocol.validate(LanProtocol.KIND_DRAFT_OFFERS, wrong_viewer)["ok"],
 		"protocole : le destinataire des offres doit être un camp valide")
 	var choice := ids.duplicate()
-	choice.merge({"own_step": 0, "stone_id": ProfileFixture.DECK[0]})
+	choice.merge({"own_step": 0, "monster_id": ProfileFixture.DECK[0]})
 	_check(LanProtocol.validate(LanProtocol.KIND_DRAFT_CHOICE, choice)["ok"],
 		"protocole : un choix de draft valide est accepté")
 	var duplicate_choice := choice.duplicate()
@@ -293,7 +293,7 @@ func _test_start_request() -> void:
 
 func _test_moves() -> void:
 	var intent := {"match_id": "match-1", "player": GameState.PLAYER_ONE,
-		"row": 0, "col": 1, "stone_id": "de_boiteux_n1"}
+		"row": 0, "col": 1, "monster_id": "de_boiteux_n1"}
 	_check(LanProtocol.validate(LanProtocol.KIND_MOVE_INTENT, intent)["ok"],
 		"une intention de coup minimale est valide")
 	var accepted := intent.duplicate(true)
@@ -312,13 +312,13 @@ func _test_moves() -> void:
 	bad_col["col"] = -1
 	_check(not LanProtocol.validate(LanProtocol.KIND_MOVE_INTENT, bad_col)["ok"],
 		"une colonne négative est refusée")
-	var bad_stone := intent.duplicate(true)
-	bad_stone["stone_id"] = ""
-	_check(not LanProtocol.validate(LanProtocol.KIND_MOVE_INTENT, bad_stone)["ok"],
+	var bad_monster := intent.duplicate(true)
+	bad_monster["monster_id"] = ""
+	_check(not LanProtocol.validate(LanProtocol.KIND_MOVE_INTENT, bad_monster)["ok"],
 		"une carte vide est refusée")
-	var long_stone := intent.duplicate(true)
-	long_stone["stone_id"] = "x".repeat(LanProtocol.MAX_STONE_ID_LENGTH + 1)
-	_check(not LanProtocol.validate(LanProtocol.KIND_MOVE_INTENT, long_stone)["ok"],
+	var long_monster := intent.duplicate(true)
+	long_monster["monster_id"] = "x".repeat(LanProtocol.MAX_MONSTER_ID_LENGTH + 1)
+	_check(not LanProtocol.validate(LanProtocol.KIND_MOVE_INTENT, long_monster)["ok"],
 		"une carte trop longue est refusée")
 	var wrong_side := intent.duplicate(true)
 	wrong_side["player"] = 7

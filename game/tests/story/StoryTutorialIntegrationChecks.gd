@@ -200,7 +200,7 @@ func _test_board_guidance(service: CampaignService) -> void:
 		if place_step:
 			await _close_dialogue_lines(4)
 		var placement_ready := await _wait_until(func() -> bool:
-			return StoryLayer._spotlight.visible and StoryService._tutorial._wait_for == "stone_placed", 180)
+			return StoryLayer._spotlight.visible and StoryService._tutorial._wait_for == "monster_placed", 180)
 		var cell: Control = StoryService.get_anchor("board.cell.0.0")
 		_check(placement_ready and StoryLayer._spotlight._target == cell
 			and cell != null and cell.mouse_filter == Control.MOUSE_FILTER_STOP,
@@ -212,7 +212,7 @@ func _test_board_guidance(service: CampaignService) -> void:
 	_check(placed and state.get_cell(0, 1)["owner"] == GameState.PLAYER_NONE,
 		"guidage : la première pose ne capture encore rien")
 	var bot_played := await _wait_until(func() -> bool:
-		return state.get_cell(2, 2)["owner"] == GameState.PLAYER_AI and str(state.get_cell(2, 2)["stone_id"]) == "le_drape_du_seuil_n1", 420)
+		return state.get_cell(2, 2)["owner"] == GameState.PLAYER_AI and str(state.get_cell(2, 2)["monster_id"]) == "le_drape_du_seuil_n1", 420)
 	_check(bot_played, "guidage : le bot pose le Drap dans le coin opposé, sans hasard")
 	StoryService.stop_tutorial()
 	board.queue_free()
@@ -237,11 +237,11 @@ func _test_collection_swap() -> void:
 	profile["decks_by_god"]["neutral"][0] = deck.duplicate()
 	profile["selected_deck_by_god"]["neutral"] = 0
 	var inventory := InventoryModel.from_dict(profile.get("inventory", {}))
-	for stone_id in deck + [SWAP_INCOMING]:
-		inventory.add_copies(StoneLoader.stone_lineage(str(stone_id)), 1)
+	for monster_id in deck + [SWAP_INCOMING]:
+		inventory.add_copies(MonsterLoader.monster_lineage(str(monster_id)), 1)
 	profile["inventory"] = inventory.to_dict()
 	PlayerData._apply_profile(profile)
-	_check(PlayerData.owns_stone(SWAP_INCOMING)
+	_check(PlayerData.owns_monster(SWAP_INCOMING)
 		and PlayerData.get_active_deck().size() == DeckRules.DECK_SIZE,
 		"échange : le profil de test possède la nouvelle carte et un deck plein")
 	var collection: Control = (load("res://scenes/menus/CollectionScreen.tscn") as PackedScene).instantiate()
@@ -261,8 +261,8 @@ func _test_collection_swap() -> void:
 		_check(target_ready, "échange : une carte du deck à remplacer est mise en surbrillance")
 		if target_ready:
 			var target := StoryService.get_anchor("collection.replace.first")
-			var old_card := target.get_child(0) as StoneCard
-			var old_id := old_card.get_stone_id()
+			var old_card := target.get_child(0) as MonsterCard
+			var old_id := old_card.get_monster_id()
 			collection._on_replacement_requested(old_id)
 			var current := PlayerData.get_active_deck()
 			_check(current.has(SWAP_INCOMING) and not current.has(old_id),

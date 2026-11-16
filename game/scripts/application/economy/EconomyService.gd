@@ -44,11 +44,11 @@ func grant_reward(transaction_id: String, souls: int, cards: Array = [],
 	if not starter_deck_cards.is_empty() and PlayerData.player_god_id == "":
 		var current := PlayerData.get_active_deck()
 		if current.size() < DeckRules.DECK_SIZE:
-			for raw_stone_id in starter_deck_cards:
-				var stone_id := str(raw_stone_id)
-				if next.owns_stone(stone_id) and current.size() < DeckRules.DECK_SIZE \
-						and DeckRules.lineage_index(current, StoneLoader.stone_lineage(stone_id)) < 0:
-					current.append(stone_id)
+			for raw_monster_id in starter_deck_cards:
+				var monster_id := str(raw_monster_id)
+				if next.owns_monster(monster_id) and current.size() < DeckRules.DECK_SIZE \
+						and DeckRules.lineage_index(current, MonsterLoader.monster_lineage(monster_id)) < 0:
+					current.append(monster_id)
 			deck_override = current
 	var error := PlayerData.commit_economy(next, deck_override)
 	if error != OK:
@@ -81,7 +81,7 @@ func god_price() -> int:
 
 
 func buy_god(god_id: String) -> Dictionary:
-	if StoneLoader.get_god(god_id).is_empty():
+	if MonsterLoader.get_god(god_id).is_empty():
 		return _fail("Dieu inconnu.")
 	var next := InventoryModel.from_dict(PlayerData.inventory_dict())
 	if next.has_god(god_id):
@@ -95,7 +95,7 @@ func buy_god(god_id: String) -> Dictionary:
 	if not gifts is Array or gifts.size() != 2:
 		return _fail("Les cartes offertes de ce dieu sont mal configurées.")
 	for lineage_id in gifts:
-		if StoneLoader.lineage_max_level(str(lineage_id)) <= 0:
+		if MonsterLoader.lineage_max_level(str(lineage_id)) <= 0:
 			return _fail("Carte offerte inconnue : %s." % lineage_id)
 	next.souls -= price
 	next.unlock_god(god_id)
@@ -131,20 +131,20 @@ func grant_development_candles(amount: int) -> Error:
 
 func unlock_all_for_development(copies_per_lineage: int = 1000) -> Error:
 	var next := InventoryModel.from_dict(PlayerData.inventory_dict())
-	for god in StoneLoader.get_all_gods():
+	for god in MonsterLoader.get_all_gods():
 		next.unlock_god(str(god.get("id", "")))
 	# Le profil de développement reçoit déjà tout le catalogue : aucune
 	# récompense différée ne doit rester en double dans la sauvegarde.
 	next.pending_card_rewards.clear()
 	next.first_god_discount_used = true
 	var seen := {}
-	for stone in StoneLoader.get_all_stones():
-		var lineage_id := StoneLoader.stone_lineage(str(stone.get("id", "")))
+	for monster in MonsterLoader.get_all_monsters():
+		var lineage_id := MonsterLoader.monster_lineage(str(monster.get("id", "")))
 		if seen.has(lineage_id):
 			continue
 		seen[lineage_id] = true
 		next.cards[lineage_id] = {
-			"unlocked_level": StoneLoader.lineage_max_level(lineage_id),
+			"unlocked_level": MonsterLoader.lineage_max_level(lineage_id),
 			"copies": maxi(0, copies_per_lineage),
 		}
 	return PlayerData.commit_inventory(next)

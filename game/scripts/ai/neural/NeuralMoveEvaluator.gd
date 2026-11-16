@@ -25,7 +25,7 @@ func random_samples() -> int:
 
 
 func evaluate(move: Dictionary, _sample: int) -> Dictionary:
-	var slot := _state.ai_hand.find(str(move["stone_id"]))
+	var slot := _state.ai_hand.find(str(move["monster_id"]))
 	var action := slot * 16 + int(move["row"]) * 4 + int(move["col"])
 	var features := PackedFloat32Array()
 	if str(_policy.metadata["policy_spec"]["architecture"]) == "tactical_actor_critic":

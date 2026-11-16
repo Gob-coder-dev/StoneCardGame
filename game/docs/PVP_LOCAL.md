@@ -82,7 +82,7 @@ session ENet.
 
 `LanDiscovery` :
 
-- l'hôte diffuse toutes les `1.0 s` une annonce JSON de marque `samstone`
+- l'hôte diffuse toutes les `1.0 s` une annonce JSON de marque `beastpact`
   (pseudo, port de jeu, nombre de joueurs, version) vers `255.255.255.255:45454` ;
 - le client écoute sur le même port, dédoublonne par clé `ip:port`, conserve au
   plus `8` parties et oublie une annonce non revue depuis `3.5 s` ;
@@ -267,7 +267,7 @@ Un coup est une intention minimale :
   "player": 2,
   "row": 0,
   "col": 1,
-  "stone_id": "avortons_des_caves_n2"
+  "monster_id": "avortons_des_caves_n2"
 }
 ```
 
@@ -331,8 +331,8 @@ même `peer_id`.
 `StateFingerprint.of(state)` produit un SHA-256 d'une représentation canonique :
 version de schéma, joueur courant, cases jouables restantes, compteur
 d'instances, scores, dieux, mains, `random_seed`/`random_state`, puis chaque case
-avec son type, son propriétaire, son `placed_by`, son `stone_id` et les faces de
-sa pierre dans l'ordre fixe de `StoneSide.ALL`. Aucun ordre de dictionnaire
+avec son type, son propriétaire, son `placed_by`, son `monster_id` et les faces de
+son monstre dans l'ordre fixe de `MonsterSide.ALL`. Aucun ordre de dictionnaire
 implicite n'intervient, et deux états identiques donnent la même empreinte.
 
 ## Ce que le PVP ne fait pas

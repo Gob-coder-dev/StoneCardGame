@@ -77,7 +77,7 @@ func _test_profiles() -> void:
 		and is_equal_approx(ai.think_delay, 0.8), "create_ai règle l'IA unique avec le profil donné")
 	var expected := {"easy": RANDOM, "medium": HALF, "hard": CAREFUL}
 	var levels_match := true
-	for npc in StoneLoader.get_npcs_ordered():
+	for npc in MonsterLoader.get_npcs_ordered():
 		levels_match = levels_match and npc.get("ai") == expected.get(npc.get("difficulty"))
 	_check(levels_match, "les adversaires faciles jouent au hasard, les moyens à mi-précision et les difficiles anticipent")
 
@@ -90,7 +90,7 @@ func _test_ai_moves() -> void:
 		var view := state.clone_for_ai()
 		var random_before := view.random_state
 		var move: Dictionary = _ai(data).choose_move(view)
-		_check(not move.is_empty() and PlacementRules.is_valid(state, move["row"], move["col"], move["stone_id"], GameState.PLAYER_AI)
+		_check(not move.is_empty() and PlacementRules.is_valid(state, move["row"], move["col"], move["monster_id"], GameState.PLAYER_AI)
 			and view.random_state == random_before and view.ai_hand.size() == 3 and view.empty_playable_cells == GameState.total_cells() - 1
 			and view.get_cell(1, 1)["owner"] == GameState.PLAYER_HUMAN,
 			"précision %.1f%s : coup légal avec les pouvoirs, état reçu intact" % [data["precision"],
@@ -104,17 +104,17 @@ func _test_evaluation() -> void:
 	# Seul fx_attack2 posé en (1,1) capture la pierre humaine : 2 lames contre 1.
 	var state := _state_with_hands([], ["fx_plain", "fx_attack2"])
 	_force_instance(state, 1, 2, "fx_plain", GameState.PLAYER_HUMAN)
-	_check(_ai(GREEDY).choose_move(state.clone_for_ai()) == {"row": 1, "col": 1, "stone_id": "fx_attack2"},
+	_check(_ai(GREEDY).choose_move(state.clone_for_ai()) == {"row": 1, "col": 1, "monster_id": "fx_attack2"},
 		"à précision 1, l'IA joue le coup qui capture")
 	var piercing := _state_with_hands([], ["fx_ranged"])
 	_force_instance(piercing, 1, 1, "fx_wall", GameState.PLAYER_HUMAN)
 	_force_instance(piercing, 1, 2, "fx_ranged_target", GameState.PLAYER_HUMAN)
 	var outcome := MoveEvaluatorModel.new(piercing.clone_for_ai(), false).evaluate(
-		{"row": 1, "col": 0, "stone_id": "fx_ranged"}, 0)
+		{"row": 1, "col": 0, "monster_id": "fx_ranged"}, 0)
 	_check(is_equal_approx(outcome["value"], 2.0) and not outcome["random"],
 		"l'évaluation compte les captures transperçantes")
 	var fortune := MoveEvaluatorModel.new(_state_with_hands([], ["de_boiteux_n1"]).clone_for_ai(), false).evaluate(
-		{"row": 1, "col": 1, "stone_id": "de_boiteux_n1"}, 0)
+		{"row": 1, "col": 1, "monster_id": "de_boiteux_n1"}, 0)
 	_check(fortune["random"], "un coup qui utilise le hasard est signalé pour être évalué sur plusieurs tirages")
 
 
@@ -123,7 +123,7 @@ func _test_precision() -> void:
 	var state := _state_with_hands([], ["fx_plain", "fx_attack2"])
 	_force_instance(state, 1, 2, "fx_plain", GameState.PLAYER_HUMAN)
 	var view := state.clone_for_ai()
-	var best := {"row": 1, "col": 1, "stone_id": "fx_attack2"}
+	var best := {"row": 1, "col": 1, "monster_id": "fx_attack2"}
 	var counts := {}
 	for data in [RANDOM, HALF, GREEDY]:
 		var ai = _ai(data, 2026)
@@ -150,10 +150,10 @@ func _test_opponent_model() -> void:
 	_check(captured["owner"] == GameState.PLAYER_AI and captured["placed_by"] == GameState.PLAYER_HUMAN,
 		"une case capturée garde l'auteur de sa pose")
 	var cards := Opponent.possible_cards(state.clone_for_ai())
-	_check(cards.size() == StoneLoader.get_stones_for_god("kharun").size() - StoneLoader.lineage_max_level("chevalier_sans_visage") and not cards.has("chevalier_sans_visage_n1")
+	_check(cards.size() == MonsterLoader.get_monsters_for_god("kharun").size() - MonsterLoader.lineage_max_level("chevalier_sans_visage") and not cards.has("chevalier_sans_visage_n1")
 		and cards.has("avortons_des_caves_n4") and cards.has("osselet_blinde_n3") and not cards.has("de_boiteux_n1"),
 		"l'IA suppose les cartes du dieu adverse et les neutres, moins celles déjà posées")
-	_check(Opponent.possible_cards(_state_with_hands([""], [])).size() == StoneLoader.get_all_stones().size(),
+	_check(Opponent.possible_cards(_state_with_hands([""], [])).size() == MonsterLoader.get_all_monsters().size(),
 		"avec un dieu inconnu, toutes les cartes du catalogue restent possibles")
 	# Main de 2 cartes parmi 4 possibles : la plus forte est en main une fois
 	# sur deux ; sinon la deuxième (1/3), sinon la troisième (1/6).
@@ -187,7 +187,7 @@ func _trap_state(human_hand: Array) -> GameState:
 func _test_anticipation_trap() -> void:
 	var catalog := _use_catalog(["fx_strong_wall"])
 	var greedy: Dictionary = _ai(GREEDY).choose_move(_trap_state(["le_nud_hurlant_n2"]).clone_for_ai())
-	_check(greedy == {"row": 1, "col": 1, "stone_id": "fx_attack2"}, "sans anticipation, l'IA prend la capture immédiate")
+	_check(greedy == {"row": 1, "col": 1, "monster_id": "fx_attack2"}, "sans anticipation, l'IA prend la capture immédiate")
 	var all_careful := true
 	for seed_value in range(6):
 		var careful: Dictionary = _ai(CAREFUL, seed_value).choose_move(_trap_state(["le_nud_hurlant_n2"]).clone_for_ai())
@@ -195,8 +195,8 @@ func _test_anticipation_trap() -> void:
 	_check(all_careful, "avec anticipation, l'IA renonce à une capture qui offre une riposte plus forte")
 	var view := _trap_state(["le_nud_hurlant_n2"]).clone_for_ai()
 	var evaluator := MoveEvaluatorModel.new(view, true)
-	var trap_value: float = evaluator.evaluate({"row": 1, "col": 1, "stone_id": "fx_attack2"}, 0)["value"]
-	var safe_value: float = evaluator.evaluate({"row": 0, "col": 1, "stone_id": "fx_attack2"}, 0)["value"]
+	var trap_value: float = evaluator.evaluate({"row": 1, "col": 1, "monster_id": "fx_attack2"}, 0)["value"]
+	var safe_value: float = evaluator.evaluate({"row": 0, "col": 1, "monster_id": "fx_attack2"}, 0)["value"]
 	_check(is_equal_approx(trap_value, -2.0) and is_equal_approx(safe_value, -1.0) and not evaluator.is_endgame(),
 		"la valeur d'un coup retire la meilleure riposte adverse")
 	_restore_catalog(catalog)
@@ -213,21 +213,21 @@ func _test_threat_by_direction() -> void:
 	_force_instance(state, 2, 1, "fx_ranged_target", GameState.PLAYER_AI)
 	_force_instance(state, 0, 0, "fx_ranged_target", GameState.PLAYER_AI)
 	var card_ids: Array[String] = []
-	for definition in StoneLoader.get_all_stones():
+	for definition in MonsterLoader.get_all_monsters():
 		card_ids.append(str(definition["id"]))
 	var same := true
 	for variants in Opponent.attack_variants(card_ids):
-		for stone in variants:
+		for monster in variants:
 			for cell in RulesEngine.get_free_cells(state):
 				var by_direction := 0
-				for side in StoneSide.ALL:
-					var normal_count: int = stone.normal_blades(side)
-					var long_count: int = int(stone.long_blades.get(side, 0))
+				for side in MonsterSide.ALL:
+					var normal_count: int = monster.normal_blades(side)
+					var long_count: int = int(monster.long_blades.get(side, 0))
 					if normal_count + long_count > 0:
 						by_direction += CombatResolverModel.find_captures(state, cell["row"], cell["col"],
 							GameState.PLAYER_HUMAN, RiposteModel.make_shot(side, normal_count, long_count)).size()
 				same = same and by_direction == CombatResolverModel.find_captures(state, cell["row"], cell["col"],
-					GameState.PLAYER_HUMAN, stone).size()
+					GameState.PLAYER_HUMAN, monster).size()
 	_check(same, "compter la riposte direction par direction donne les captures de la carte entière")
 	_test_threat_reuse()
 
@@ -253,7 +253,7 @@ func _test_threat_reuse() -> void:
 		var moves := RulesEngine.get_valid_moves(view, GameState.PLAYER_AI)
 		for move in moves:
 			var simulation := view.clone()
-			CombatResolverModel.apply_move(simulation, move["row"], move["col"], move["stone_id"], GameState.PLAYER_AI)
+			CombatResolverModel.apply_move(simulation, move["row"], move["col"], move["monster_id"], GameState.PLAYER_AI)
 			var fresh := RiposteModel.new(simulation)
 			same = same and is_equal_approx(reused.threat(simulation), fresh.threat(simulation))
 		_check(same and moves.size() > 40,
@@ -285,7 +285,7 @@ func _test_endgame() -> void:
 	var view := last.clone_for_ai()
 	_check(MoveEvaluatorModel.new(view, true).is_endgame() and not MoveEvaluatorModel.new(view, false).is_endgame(),
 		"le calcul exact de fin de partie est réservé aux IA qui anticipent")
-	_check(_ai(CAREFUL).choose_move(view) == {"row": 2, "col": 2, "stone_id": "fx_strong_wall"},
+	_check(_ai(CAREFUL).choose_move(view) == {"row": 2, "col": 2, "monster_id": "fx_strong_wall"},
 		"en fin de partie, l'IA joue le coup qui finit avec le meilleur score")
 
 	# Deux cases libres, (0,1) et (2,2). Posée en (0,1), la seule carte possible
@@ -300,11 +300,11 @@ func _test_endgame() -> void:
 		_force_instance(aura, index / 3, index % 3, "fx_strong_wall", GameState.PLAYER_AI)
 	_force_instance(aura, 1, 1, "fx_ranged_target", GameState.PLAYER_AI)
 	var exact := MoveEvaluatorModel.new(aura.clone_for_ai(), true)
-	var blocks: float = exact.evaluate({"row": 0, "col": 1, "stone_id": "fx_ranged_target"}, 0)["value"]
-	var leaves: float = exact.evaluate({"row": 2, "col": 2, "stone_id": "fx_ranged_target"}, 0)["value"]
+	var blocks: float = exact.evaluate({"row": 0, "col": 1, "monster_id": "fx_ranged_target"}, 0)["value"]
+	var leaves: float = exact.evaluate({"row": 2, "col": 2, "monster_id": "fx_ranged_target"}, 0)["value"]
 	_check(exact.is_endgame() and is_equal_approx(blocks, 2.5) and is_equal_approx(leaves, 1.5),
 		"le calcul exact pose la riposte et compte son aura d'Essaim (écart final divisé par deux)")
-	_check(_ai(CAREFUL).choose_move(aura.clone_for_ai()) == {"row": 0, "col": 1, "stone_id": "fx_ranged_target"},
+	_check(_ai(CAREFUL).choose_move(aura.clone_for_ai()) == {"row": 0, "col": 1, "monster_id": "fx_ranged_target"},
 		"en fin de partie, l'IA occupe la case où la riposte aurait reçu une aura")
 	var after_move := aura.clone_for_ai()
 	CombatResolverModel.apply_move(after_move, 0, 1, "fx_ranged_target", GameState.PLAYER_AI)
@@ -327,7 +327,7 @@ func _test_turn_runner() -> void:
 	manager.turn_started.connect(func(player: int):
 		if player == GameState.PLAYER_AI:
 			runner.run_turn())
-	var deck: Array = StoneLoader.get_npc("maitre_carcasses")["deck"]
+	var deck: Array = MonsterLoader.get_npc("maitre_carcasses")["deck"]
 	manager.start_game(deck, deck, [], "maitre_carcasses", GameState.PLAYER_AI, "enigma", "enigma")
 	var frames := 0
 	while manager.get_state().ai_hand.size() == DeckRules.DECK_SIZE and frames < 300:
@@ -364,12 +364,12 @@ func _test_turn_runner() -> void:
 
 
 func _test_complete_matches() -> void:
-	for npc in StoneLoader.get_npcs_ordered():
+	for npc in MonsterLoader.get_npcs_ordered():
 		var god_id := str(npc.get("god_id", ""))
 		var deck: Array = npc.get("deck", [])
 		var legal_family := true
-		for stone_id in deck:
-			legal_family = legal_family and StoneLoader.is_stone_available_to_god(stone_id, god_id)
+		for monster_id in deck:
+			legal_family = legal_family and MonsterLoader.is_monster_available_to_god(monster_id, god_id)
 		_check(legal_family and deck.size() == DeckRules.DECK_SIZE, "%s possède un deck cohérent avec son dieu" % npc.get("name", "NPC"))
 		var all_complete := true
 		for sample in range(3):
@@ -391,7 +391,7 @@ func _test_complete_matches() -> void:
 					move = {} if moves.is_empty() else moves[state.draw_random_index(moves.size())]
 				if move.is_empty():
 					break
-				var result := CombatResolverModel.apply_move(state, move["row"], move["col"], move["stone_id"], player)
+				var result := CombatResolverModel.apply_move(state, move["row"], move["col"], move["monster_id"], player)
 				if not result.get("success", false):
 					break
 				player = GameState.PLAYER_AI if player == GameState.PLAYER_HUMAN else GameState.PLAYER_HUMAN

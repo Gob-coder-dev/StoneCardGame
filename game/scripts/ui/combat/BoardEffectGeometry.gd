@@ -1,6 +1,6 @@
 ## Conversion des événements logiques en points du plateau. Aucun dessin ni règle.
 extends RefCounted
-const FACE_DIRECTIONS = StoneSide.SCREEN
+const FACE_DIRECTIONS = MonsterSide.SCREEN
 const GAP = BoardView.GAP
 var _board: BoardView
 
@@ -19,10 +19,10 @@ func _attack_point(row: int, col: int, side: String) -> Vector2:
 		point.x = clampf(point.x, first.position.x - first.size.x * 0.10, last.position.x + last.size.x * 1.10)
 		point.y = clampf(point.y, first.position.y - first.size.y * 0.10, last.position.y + last.size.y * 1.10)
 		return point
-	var target: StoneCard = _board.card_at(row, col)
+	var target: MonsterCard = _board.card_at(row, col)
 	if target != null:
 		var to_board := get_global_transform().affine_inverse() * target.get_global_transform()
-		return to_board * target.face_center(StoneSide.opposite(side))
+		return to_board * target.face_center(MonsterSide.opposite(side))
 	var slot: Panel = _board.slot_at(row, col)
 	return slot.position + slot.size * 0.5 - FACE_DIRECTIONS[side] * slot.size.x * 0.48
 
@@ -71,7 +71,7 @@ func weakness_targets(events: Array) -> Array:
 		var col := int(event.get("col", -1))
 		if row < 0 or col < 0:
 			continue
-		var card: StoneCard = _board.card_at(row, col)
+		var card: MonsterCard = _board.card_at(row, col)
 		if card == null:
 			continue
 		var transform_to_board := get_global_transform().affine_inverse() * card.get_global_transform()
@@ -112,7 +112,7 @@ func _add_swarm_link_position(positions: Dictionary, instance_id: int,
 	if positions.has(instance_id) or row < 0 or col < 0 \
 		or row >= _board.board_size() or col >= _board.board_size():
 		return
-	var card: StoneCard = _board.card_at(row, col)
+	var card: MonsterCard = _board.card_at(row, col)
 	if card == null:
 		return
 	var transform_to_board := get_global_transform().affine_inverse() * card.get_global_transform()
@@ -128,11 +128,11 @@ func pillage_transfers(event: Dictionary) -> Array:
 	var transfers: Array = []
 	for transfer_value in event.get("transfers", []):
 		var transfer: Dictionary = transfer_value
-		var target: StoneCard = _board.card_at(int(transfer["row"]), int(transfer["col"]))
-		if target == null or target.displayed_stone() == null:
+		var target: MonsterCard = _board.card_at(int(transfer["row"]), int(transfer["col"]))
+		if target == null or target.displayed_monster() == null:
 			continue
 		var side := str(transfer["defense_side"])
-		var markers := target.displayed_stone().markers_for_side(side)
+		var markers := target.displayed_monster().markers_for_side(side)
 		var marker_index := int(transfer.get("marker_index", -1))
 		if marker_index < 0 or marker_index >= markers.size():
 			continue
@@ -146,7 +146,7 @@ func pillage_transfers(event: Dictionary) -> Array:
 		transfers.append(visual)
 	return transfers
 
-func attack_paths(card: StoneCard, attacks: Array) -> Array:
+func attack_paths(card: MonsterCard, attacks: Array) -> Array:
 	var to_board := get_global_transform().affine_inverse() * card.get_global_transform()
 	var paths: Array = []
 	for attack in attacks:
@@ -174,7 +174,7 @@ func swarm_data(event: Dictionary) -> Dictionary:
 		var col := int(member.get("col", -1))
 		if row < 0 or col < 0 or row >= _board.board_size() or col >= _board.board_size():
 			continue
-		var card: StoneCard = _board.card_at(row, col)
+		var card: MonsterCard = _board.card_at(row, col)
 		if card == null:
 			continue
 		var transform_to_board := get_global_transform().affine_inverse() * card.get_global_transform()
@@ -192,7 +192,7 @@ func swarm_data(event: Dictionary) -> Dictionary:
 	var source_col := int(event.get("source_col", -1))
 	var source_center: Vector2
 	if source_row >= 0 and source_col >= 0 and source_row < _board.board_size() and source_col < _board.board_size():
-		var source_card: StoneCard = _board.card_at(source_row, source_col)
+		var source_card: MonsterCard = _board.card_at(source_row, source_col)
 		if source_card != null:
 			var source_transform := get_global_transform().affine_inverse() * source_card.get_global_transform()
 			source_center = source_transform * (source_card.size * 0.5)

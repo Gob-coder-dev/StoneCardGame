@@ -2,8 +2,8 @@
 ## Lectures pures d'un GameState : score, fin de partie et coups possibles.
 ## Fonctions statiques, sans effet sur la partie.
 ##
-## Les définitions restent dans StoneLoader et les modifications de combat dans
-## BattleStone. CombatResolver est l'unique chemin qui applique un coup ; l'IA
+## Les définitions restent dans MonsterLoader et les modifications de combat dans
+## BattleMonster. CombatResolver est l'unique chemin qui applique un coup ; l'IA
 ## l'appelle sur des copies (voir scripts/ai/MoveEvaluator.gd).
 class_name RulesEngine
 extends RefCounted
@@ -49,11 +49,11 @@ static func get_free_cells(state: GameState) -> Array:
 
 ## ─── Coups valides ────────────────────────────────────────────────────────────
 
-## Tous les coups { "row", "col", "stone_id" } de la main du joueur, utilisés par les IA.
+## Tous les coups { "row", "col", "monster_id" } de la main du joueur, utilisés par les IA.
 static func get_valid_moves(state: GameState, player: int) -> Array:
 	var moves: Array = []
 	var hand: Array = state.hand_of(player)
 	for cell in get_free_cells(state):
-		for stone_id in hand:
-			moves.append({ "row": cell["row"], "col": cell["col"], "stone_id": stone_id })
+		for monster_id in hand:
+			moves.append({ "row": cell["row"], "col": cell["col"], "monster_id": monster_id })
 	return moves

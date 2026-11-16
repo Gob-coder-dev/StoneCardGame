@@ -1,5 +1,5 @@
 ## Règles pures des niveaux. Les statistiques de chaque forme restent dans le catalogue.
-class_name StoneEvolutionRules
+class_name MonsterEvolutionRules
 extends RefCounted
 
 const MAX_PREVIEW_LEVEL := 4

@@ -12,7 +12,7 @@ const Shuffle := preload("res://scripts/domain/SeededShuffle.gd")
 const PowerTierRules := preload("res://scripts/domain/CardPowerTierRules.gd")
 
 var deck_size: int = DeckRules.DECK_SIZE
-var budget_quarters: int = DeckRules.DECK_BUDGET * StoneCostRules.COST_SCALE
+var budget_quarters: int = DeckRules.DECK_BUDGET * MonsterCostRules.COST_SCALE
 
 var _cards: Array = []
 var _cards_by_id: Dictionary = {}
@@ -30,10 +30,10 @@ const TARGET_POOL_DIVISOR: int = 2
 func _init(pool: Array = [], size: int = DeckRules.DECK_SIZE,
 		budget_points: float = float(DeckRules.DECK_BUDGET)) -> void:
 	deck_size = size
-	budget_quarters = int(roundf(budget_points * float(StoneCostRules.COST_SCALE)))
+	budget_quarters = int(roundf(budget_points * float(MonsterCostRules.COST_SCALE)))
 	var source: Array = pool
 	if source.is_empty():
-		source = StoneLoader.get_all_stones()
+		source = MonsterLoader.get_all_monsters()
 	_ingest(source)
 
 
@@ -69,8 +69,8 @@ func _cost_quarters(definition: Dictionary) -> int:
 	if definition.has("cost_q"):
 		return int(definition["cost_q"])
 	if definition.has("cost_points"):
-		return int(roundf(float(definition["cost_points"]) * float(StoneCostRules.COST_SCALE)))
-	return StoneCostRules.cost_quarters(definition)
+		return int(roundf(float(definition["cost_points"]) * float(MonsterCostRules.COST_SCALE)))
+	return MonsterCostRules.cost_quarters(definition)
 
 
 static func _rng(value: int) -> RandomNumberGenerator:
@@ -118,16 +118,16 @@ func lineages_for_god(god_id: String, max_tier: int) -> Dictionary:
 	return options.duplicate(true)
 
 
-func card(stone_id: String) -> Dictionary:
-	return (_cards_by_id.get(stone_id, {}) as Dictionary).duplicate(true)
+func card(monster_id: String) -> Dictionary:
+	return (_cards_by_id.get(monster_id, {}) as Dictionary).duplicate(true)
 
 
-func cost_quarters(stone_id: String) -> int:
-	return int((_cards_by_id.get(stone_id, {}) as Dictionary).get("cost_q", -1))
+func cost_quarters(monster_id: String) -> int:
+	return int((_cards_by_id.get(monster_id, {}) as Dictionary).get("cost_q", -1))
 
 
-func lineage_of(stone_id: String) -> String:
-	return str((_cards_by_id.get(stone_id, {}) as Dictionary).get("lineage", ""))
+func lineage_of(monster_id: String) -> String:
+	return str((_cards_by_id.get(monster_id, {}) as Dictionary).get("lineage", ""))
 
 
 ## ─── Totaux réalisables ─────────────────────────────────────────────────────
@@ -224,7 +224,7 @@ func generate_random(generation_seed: int, god_ids: Array, max_tier: int,
 				"deck_one": deck_one,
 				"deck_two": deck_two,
 				"total_quarters": target,
-				"total_points": float(target) / float(StoneCostRules.COST_SCALE),
+				"total_points": float(target) / float(MonsterCostRules.COST_SCALE),
 				"seed": generation_seed,
 			}
 	return _fail("Aucun couple de decks légaux n'atteint un total commun.")
@@ -248,7 +248,7 @@ func generate_for_god(generation_seed: int, god_id: String, max_tier: int) -> Di
 			"god_id": god_id,
 			"deck": deck,
 			"total_quarters": target,
-			"total_points": float(target) / float(StoneCostRules.COST_SCALE),
+			"total_points": float(target) / float(MonsterCostRules.COST_SCALE),
 			"seed": generation_seed,
 		}
 	return _fail("Aucun deck légal pour ce dieu.")
@@ -279,7 +279,7 @@ func generate_mirror(generation_seed: int, god_ids: Array, max_tier: int,
 			"god_id": god_id,
 			"deck": deck,
 			"total_quarters": target,
-			"total_points": float(target) / float(StoneCostRules.COST_SCALE),
+			"total_points": float(target) / float(MonsterCostRules.COST_SCALE),
 			"seed": generation_seed,
 		}
 	return _fail("Aucun deck légal pour le dieu tiré.")
@@ -384,8 +384,8 @@ func _search_exact(order: Array, candidates: Dictionary, index: int, count: int,
 
 func deck_cost_sum(deck: Array) -> int:
 	var total := 0
-	for stone_id in deck:
-		total += cost_quarters(str(stone_id))
+	for monster_id in deck:
+		total += cost_quarters(str(monster_id))
 	return total
 
 

@@ -44,13 +44,13 @@ static func problems(config: Dictionary = {}) -> Array[String]:
 		var deck: Array = starter.get("deck", [])
 		if deck.size() != 5:
 			result.append("Le deck de départ doit contenir cinq cartes.")
-		for stone_id in deck:
-			if not StoneLoader.has_stone(str(stone_id)):
-				result.append("Carte de départ inconnue : %s." % stone_id)
-			elif StoneLoader.stone_affinity(str(stone_id)) != "neutral" \
-					or StoneLoader.stone_rarity(str(stone_id)) != "common" \
-					or StoneLoader.stone_level(str(stone_id)) != 1:
-				result.append("La carte de départ '%s' doit être une commune neutre N1." % stone_id)
+		for monster_id in deck:
+			if not MonsterLoader.has_monster(str(monster_id)):
+				result.append("Carte de départ inconnue : %s." % monster_id)
+			elif MonsterLoader.monster_affinity(str(monster_id)) != "neutral" \
+					or MonsterLoader.monster_rarity(str(monster_id)) != "common" \
+					or MonsterLoader.monster_level(str(monster_id)) != 1:
+				result.append("La carte de départ '%s' doit être une commune neutre N1." % monster_id)
 	var candle_rewards: Variant = value.get("campaign_candles_by_chapter", {})
 	if not candle_rewards is Dictionary or candle_rewards.is_empty():
 		result.append("La progression des bougies de campagne est absente.")
@@ -62,16 +62,16 @@ static func problems(config: Dictionary = {}) -> Array[String]:
 	if not gifts is Dictionary:
 		result.append("Les cadeaux des dieux sont absents.")
 	else:
-		for god in StoneLoader.get_all_gods():
+		for god in MonsterLoader.get_all_gods():
 			var god_id := str(god.get("id", ""))
 			var lines: Variant = gifts.get(god_id, [])
 			if not lines is Array or lines.size() != 2:
 				result.append("Le dieu '%s' doit offrir deux cartes." % god_id)
 				continue
 			for lineage_id in lines:
-				var stone_id := StoneLoader.variant_id(str(lineage_id), 1)
-				if stone_id == "" or StoneLoader.stone_affinity(stone_id) != god_id \
-						or StoneLoader.stone_rarity(stone_id) != "common":
+				var monster_id := MonsterLoader.variant_id(str(lineage_id), 1)
+				if monster_id == "" or MonsterLoader.monster_affinity(monster_id) != god_id \
+						or MonsterLoader.monster_rarity(monster_id) != "common":
 					result.append("Cadeau commun invalide '%s' pour '%s'." % [lineage_id, god_id])
 	return result
 

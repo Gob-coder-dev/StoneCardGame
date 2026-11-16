@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://cngc5egqo2naj"
-path="res://.godot/imported/stone_place_1.wav-e38b483c0309ec4bdf4c52efb4c7e8b3.sample"
+path="res://.godot/imported/monster_place_1.wav-9f7fbd2ef16d2424907d64fdd063a43b.sample"
 
 [deps]
 
-source_file="res://data/audio/sfx/combat/stone_place_1.wav"
-dest_files=["res://.godot/imported/stone_place_1.wav-e38b483c0309ec4bdf4c52efb4c7e8b3.sample"]
+source_file="res://data/audio/sfx/combat/monster_place_1.wav"
+dest_files=["res://.godot/imported/monster_place_1.wav-9f7fbd2ef16d2424907d64fdd063a43b.sample"]
 
 [params]
 

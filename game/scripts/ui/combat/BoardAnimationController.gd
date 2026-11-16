@@ -83,13 +83,13 @@ func _hold_swarm_preview(events: Array) -> void:
 	for event in events:
 		for member in event.get("members", []):
 			var card := _board.card_at(member["row"], member["col"])
-			if card != null and card.get_battle_stone() != null:
-				var preview = card.get_battle_stone().clone()
+			if card != null and card.get_battle_monster() != null:
+				var preview = card.get_battle_monster().clone()
 				preview.swarm_blades = member["before"].duplicate()
 				card.set_combat_preview(preview)
 
 func animate_capture(row: int, col: int, new_owner: int) -> void:
-	var card: StoneCard = _board.card_at(row, col)
+	var card: MonsterCard = _board.card_at(row, col)
 	if card == null:
 		return
 	# Le cadre de la carte reste dédié à sa rareté. La case révèle le
@@ -117,7 +117,7 @@ func _create_tracked_tween() -> Tween:
 
 
 func animate_placement(row: int, col: int) -> void:
-	var card: StoneCard = _board.card_at(row, col)
+	var card: MonsterCard = _board.card_at(row, col)
 	if card == null:
 		return
 	card.hide_placement_power()
@@ -130,8 +130,8 @@ func animate_placement(row: int, col: int) -> void:
 		_batch.track(tween.finished)
 
 
-func animate_attacks(row: int, col: int, attacks: Array, stone_owner: int, duration: float) -> void:
-	var card: StoneCard = _board.card_at(row, col)
+func animate_attacks(row: int, col: int, attacks: Array, monster_owner: int, duration: float) -> void:
+	var card: MonsterCard = _board.card_at(row, col)
 	if card == null or attacks.is_empty():
 		return
 	var paths := _geometry.attack_paths(card, attacks)
@@ -141,12 +141,12 @@ func animate_attacks(row: int, col: int, attacks: Array, stone_owner: int, durat
 	add_child(animation)
 	_track(animation)
 	animation.target_hit.connect(_on_attack_hit)
-	animation.play(card, paths, attacks, stone_owner, duration)
+	animation.play(card, paths, attacks, monster_owner, duration)
 
 
-func _on_attack_hit(row: int, col: int, success: bool, stone_owner: int) -> void:
+func _on_attack_hit(row: int, col: int, success: bool, monster_owner: int) -> void:
 	if success:
-		animate_capture(row, col, stone_owner)
+		animate_capture(row, col, monster_owner)
 	else:
 		Audio.play_sfx(AudioCatalog.SFX_ATTACK_MISS)
 
@@ -166,7 +166,7 @@ func animate_effects(events: Array, duration: float = 0.0) -> void:
 		var col := int(event.get("col", -1))
 		if row < 0 or col < 0:
 			continue
-		var card: StoneCard = _board.card_at(row, col)
+		var card: MonsterCard = _board.card_at(row, col)
 		if card == null:
 			continue
 		if event_type == CombatEvents.SHIELD_THEFT:
@@ -194,7 +194,7 @@ func animate_effects(events: Array, duration: float = 0.0) -> void:
 			_animate_weakness_repair(visible_repairs, duration)
 
 
-## Une traînée par source : l'aura du Miasme peut partir de plusieurs pierres
+## Une traînée par source : l'aura du Miasme peut partir de plusieurs monstres
 ## dans le même coup. Une cible touchée deux fois n'a qu'un seul aperçu, du
 ## premier « avant » au dernier « après », pour éviter deux animations rivales.
 func _animate_weakening(events: Array, duration: float) -> void:

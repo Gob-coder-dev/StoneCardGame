@@ -29,24 +29,24 @@ func _make_state() -> GameState:
 
 
 ## Joue la pierre avec le résolveur de la partie et renvoie ses captures.
-func _captures(state: GameState, row: int, col: int, stone_id: String, owner: int) -> Array:
-	state.hand_of(owner).append(stone_id)
-	return CombatResolverModel.apply_move(state, row, col, stone_id, owner).get("captures", [])
+func _captures(state: GameState, row: int, col: int, monster_id: String, owner: int) -> Array:
+	state.hand_of(owner).append(monster_id)
+	return CombatResolverModel.apply_move(state, row, col, monster_id, owner).get("captures", [])
 
 
 ## ─── Direction opposée ───────────────────────────────────────────────────────
 
 func test_opposite_top_is_bottom() -> void:
-	assert_eq(StoneSide.opposite("top"), "bottom")
+	assert_eq(MonsterSide.opposite("top"), "bottom")
 
 func test_opposite_bottom_is_top() -> void:
-	assert_eq(StoneSide.opposite("bottom"), "top")
+	assert_eq(MonsterSide.opposite("bottom"), "top")
 
 func test_opposite_left_is_right() -> void:
-	assert_eq(StoneSide.opposite("left"), "right")
+	assert_eq(MonsterSide.opposite("left"), "right")
 
 func test_opposite_right_is_left() -> void:
-	assert_eq(StoneSide.opposite("right"), "left")
+	assert_eq(MonsterSide.opposite("right"), "left")
 
 
 ## ─── Validation du placement ─────────────────────────────────────────────────
@@ -78,7 +78,7 @@ func test_placement_invalid_on_occupied_cell() -> void:
 	_force_instance(state, 0, 0, "t_4444", GameState.PLAYER_AI)
 	assert_false(PlacementRules.is_valid(state, 0, 0, "t_1111", GameState.PLAYER_HUMAN))
 
-func test_placement_invalid_stone_not_in_hand() -> void:
+func test_placement_invalid_monster_not_in_hand() -> void:
 	var state := _make_state()
 	state.human_hand = []
 	assert_false(PlacementRules.is_valid(state, 0, 0, "t_1111", GameState.PLAYER_HUMAN))
@@ -105,7 +105,7 @@ func test_no_capture_equal_blades() -> void:
 	_force_instance(state, 0, 1, "t_0020", GameState.PLAYER_AI)
 	assert_eq(_captures(state, 0, 0, "t_0002", GameState.PLAYER_HUMAN).size(), 0)
 
-func test_no_capture_own_stone() -> void:
+func test_no_capture_own_monster() -> void:
 	## Pierre alliée non capturable
 	var state := _make_state()
 	_force_instance(state, 0, 1, "t_1111", GameState.PLAYER_HUMAN)
@@ -119,7 +119,7 @@ func test_capture_two_neighbors_simultaneously() -> void:
 	var captures := _captures(state, 1, 1, "t_0303", GameState.PLAYER_HUMAN)
 	assert_eq(captures.size(), 2)
 
-func test_no_capture_when_placed_stone_is_weaker() -> void:
+func test_no_capture_when_placed_monster_is_weaker() -> void:
 	## right=1 vs left=4 → pas de capture
 	var state := _make_state()
 	_force_instance(state, 0, 1, "t_0400", GameState.PLAYER_AI)
@@ -239,13 +239,13 @@ func run() -> void:
 	test_placement_invalid_out_of_bounds_col()
 	test_placement_invalid_on_blocked_cell()
 	test_placement_invalid_on_occupied_cell()
-	test_placement_invalid_stone_not_in_hand()
+	test_placement_invalid_monster_not_in_hand()
 	test_no_capture_on_empty_board()
 	test_capture_right_neighbor_weaker()
 	test_no_capture_equal_blades()
-	test_no_capture_own_stone()
+	test_no_capture_own_monster()
 	test_capture_two_neighbors_simultaneously()
-	test_no_capture_when_placed_stone_is_weaker()
+	test_no_capture_when_placed_monster_is_weaker()
 	test_capture_top_neighbor()
 	test_capture_bottom_neighbor()
 	test_capture_left_neighbor()

@@ -111,10 +111,10 @@ func _test_intro_mirrors() -> void:
 		var god_id := str(expected[node_id])
 		var all_common_n1 := one != null and one.deck.size() == DeckRules.DECK_SIZE
 		if one != null:
-			for stone_id in one.deck:
+			for monster_id in one.deck:
 				all_common_n1 = all_common_n1 \
-					and StoneLoader.stone_rarity(str(stone_id)) == "common" \
-					and StoneLoader.stone_level(str(stone_id)) == 1
+					and MonsterLoader.monster_rarity(str(monster_id)) == "common" \
+					and MonsterLoader.monster_level(str(monster_id)) == 1
 		_check(one != null and two != null and one.god_id == god_id
 			and two.god_id == god_id and one.deck == two.deck
 			and _affinity_count(one.deck, god_id) == 4
@@ -145,8 +145,8 @@ func _test_early_curve() -> void:
 		var node := _graph.node(node_id)
 		var tier_one := 0
 		var tier_two := 0
-		for stone_id in node.fixed_deck():
-			var tier := CardPowerTierRules.effective_tier(StoneLoader.get_stone(str(stone_id)))
+		for monster_id in node.fixed_deck():
+			var tier := CardPowerTierRules.effective_tier(MonsterLoader.get_monster(str(monster_id)))
 			tier_one += 1 if tier == 1 else 0
 			tier_two += 1 if tier == 2 else 0
 		_check(node.max_power_tier() == 2 and tier_one == 6 and tier_two == 2
@@ -281,7 +281,7 @@ func _test_special_minis() -> void:
 func _affinity_count(deck: Array, god_id: String) -> int:
 	var count := 0
 	for raw_id in deck:
-		if StoneLoader.stone_affinity(str(raw_id)) == god_id:
+		if MonsterLoader.monster_affinity(str(raw_id)) == god_id:
 			count += 1
 	return count
 

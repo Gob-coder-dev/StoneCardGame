@@ -226,7 +226,7 @@ static func _deck_affinity(graph: CampaignGraph) -> Dictionary:
 		if node.fixed_god_id() != "":
 			var same_god := 0
 			for card in node.fixed_deck():
-				if StoneLoader.stone_affinity(str(card)) == node.fixed_god_id():
+				if MonsterLoader.monster_affinity(str(card)) == node.fixed_god_id():
 					same_god += 1
 			fixed_god_deck_counts[node.id] = same_god
 			if same_god < MIN_GOD_CARDS:
@@ -363,7 +363,7 @@ static func _lineages(deck: Array) -> Dictionary:
 	var result := {}
 	for raw_id in deck:
 		var card_id := str(raw_id)
-		var lineage := StoneLoader.stone_lineage(card_id)
+		var lineage := MonsterLoader.monster_lineage(card_id)
 		if lineage == "":
 			lineage = card_id
 		result[lineage] = true

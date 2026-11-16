@@ -367,7 +367,7 @@ func _on_card_art_ready(path: String, texture: Texture2D) -> void:
 
 
 func _god_name(god_id: String) -> String:
-	return str(StoneLoader.get_god(god_id).get("name", god_id))
+	return str(MonsterLoader.get_god(god_id).get("name", god_id))
 
 
 func _label(text: String, font_size: int, color: Color,

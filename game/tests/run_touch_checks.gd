@@ -160,7 +160,7 @@ func _check_collection() -> void:
 	var page := await _open_scene("res://scenes/menus/CollectionScreen.tscn")
 	var scroll: ScrollContainer = page.get_node("Content/Scroll")
 	var deck_rows: VBoxContainer = scroll.get_node("Page/DeckPanel/DeckContent/DeckRows")
-	var first_card: StoneCard = deck_rows.get_child(0).get_child(0).get_child(0)
+	var first_card: MonsterCard = deck_rows.get_child(0).get_child(0).get_child(0)
 	await _swipe(_center(first_card), Vector2(0, -150))
 	_check(scroll.scroll_vertical > 50, "deck : glisser depuis une carte fait défiler")
 	_check(not is_instance_valid(page._action_drawer), "deck : un glissement n'ouvre pas le tiroir")
@@ -198,7 +198,7 @@ func _check_collection() -> void:
 	_check(not is_instance_valid(page._action_drawer), "deck : toucher une zone vide referme le tiroir")
 
 	# Les cartes du deck sont masquées dans la collection : prendre la première affichée.
-	var collection_card: StoneCard = null
+	var collection_card: MonsterCard = null
 	for wrapper in scroll.get_node("Page/CollectionRows").get_child(0).get_children():
 		if wrapper.visible:
 			collection_card = wrapper.get_child(0)
@@ -272,9 +272,9 @@ func _check_collection() -> void:
 		_check(not page.info_sheet.visible, "fenêtre : toucher le fond ferme la fiche")
 
 	var incoming_id := ""
-	for stone in StoneLoader.get_stones_for_god(PlayerData.player_god_id):
-		if not page._current_deck.has(str(stone["id"])):
-			incoming_id = str(stone["id"])
+	for monster in MonsterLoader.get_monsters_for_god(PlayerData.player_god_id):
+		if not page._current_deck.has(str(monster["id"])):
+			incoming_id = str(monster["id"])
 			break
 	var replacement: ReplacementPanel = page.replacement_panel
 	replacement.open_for(page._current_deck, incoming_id)
@@ -308,9 +308,9 @@ func _check_evolution_inputs() -> void:
 	await _tap(_center(fourth))
 	_check(page._preview_level == 4 and not page.level_menu.visible and PlayerData.get_active_deck().is_empty(),
 		"niveaux : sélectionner quatre modifie uniquement l'aperçu de collection")
-	var card: StoneCard = null
+	var card: MonsterCard = null
 	for wrapper in page.collection_rows.get_child(0).get_children():
-		if wrapper.get_child(0).get_stone_id() == "avortons_des_caves_n4":
+		if wrapper.get_child(0).get_monster_id() == "avortons_des_caves_n4":
 			card = wrapper.get_child(0)
 	if card == null:
 		_check(false, "niveaux : la forme quatre est disponible dans la collection")
@@ -324,7 +324,7 @@ func _check_evolution_inputs() -> void:
 	await get_tree().process_frame
 	var info_button: Button = page._action_drawer.info_button
 	await _tap(_center(info_button))
-	var info: StoneInfoSheet = page.info_sheet
+	var info: MonsterInfoSheet = page.info_sheet
 	_check(info.visible and info._shown_variant == "avortons_des_caves_n4", "niveaux : Infos ouvre au toucher la forme affichée")
 	var second: Button = info.get_node("InfoPanel/InfoContent/Levels").get_child(1)
 	await _tap(_center(second))
@@ -565,7 +565,7 @@ func _check_pvp_draft_touch() -> void:
 	_check(cards.size() == 2 and view.draft_deck_grid.get_child_count() == 0,
 		"draft tactile : deux offres locales et un deck vide sont affichés")
 	if cards.size() == 2:
-		await _tap(_center(cards[0] as StoneCard))
+		await _tap(_center(cards[0] as MonsterCard))
 	_check(view.draft_deck_grid.get_child_count() == 1
 		and view.draft_status.text.contains("Choix enregistré"),
 		"draft tactile : un toucher sélectionne une seule offre et actualise le deck")
@@ -688,9 +688,9 @@ func _check_battle_touch() -> void:
 	BattleContext.forced_first_player = GameState.PLAYER_HUMAN
 	var board := await _open_scene("res://scenes/game/Board.tscn")
 	var hand: HandView = board.get_node("Root/HandView")
-	var card: StoneCard = hand.get_child(0).get_child(0)
+	var card: MonsterCard = hand.get_child(0).get_child(0)
 	await _tap(_center(card))
-	_check(board._selected_stone_id != "", "combat : sélectionner une carte avec un toucher natif")
+	_check(board._selected_monster_id != "", "combat : sélectionner une carte avec un toucher natif")
 	var slot: Panel = board.get_node("Root/BoardArea/BoardView/cell_1_1")
 	var state: GameState = board.turn_manager.get_state()
 	# Le plateau peut comporter une case bloquée : choisir une case libre.
@@ -717,7 +717,7 @@ func _check_battle_drag() -> void:
 	var view: BoardView = board.get_node("Root/BoardArea/BoardView")
 	var state: GameState = board.turn_manager.get_state()
 	var cell := _free_cell(state)
-	var card: StoneCard = hand.get_child(0).get_child(0)
+	var card: MonsterCard = hand.get_child(0).get_child(0)
 	var start := _center(card)
 	var lift: float = board._card_drag.TOUCH_LIFT * view.slot_at(0, 0).size.y
 	var release := _center(view.slot_at(cell.x, cell.y)) + Vector2(0, lift)
@@ -754,14 +754,14 @@ func _check_battle_drag() -> void:
 	state = board.turn_manager.get_state()
 	card = hand.get_child(0).get_child(0)
 	await _drag_touch(_center(card), _center(card) + Vector2(0, 260))
-	_check(state.human_hand.size() == DeckRules.DECK_SIZE and board._selected_stone_id == ""
+	_check(state.human_hand.size() == DeckRules.DECK_SIZE and board._selected_monster_id == ""
 		and is_equal_approx(card.modulate.a, 1.0) and board._card_drag.get_child_count() == 0,
 		"glisser : relâcher hors du plateau ne joue rien et la carte revient sans sélection")
 	_press(_center(card))
 	_drag(_center(card) + Vector2(8, 0), Vector2(8, 0))
 	_release(_center(card) + Vector2(8, 0))
 	await _settle()
-	_check(board._selected_stone_id == card.get_stone_id() and state.human_hand.size() == DeckRules.DECK_SIZE,
+	_check(board._selected_monster_id == card.get_monster_id() and state.human_hand.size() == DeckRules.DECK_SIZE,
 		"glisser : un petit mouvement reste un appui qui sélectionne la carte")
 	await _remove(board)
 
@@ -910,10 +910,10 @@ func _center(control: Control) -> Vector2:
 	return _point(control, control.size * 0.5)
 
 
-func _find_visible_card(node: Node, rect: Rect2) -> StoneCard:
+func _find_visible_card(node: Node, rect: Rect2) -> MonsterCard:
 	if node is CanvasItem and not node.is_visible_in_tree():
 		return null
-	if node is StoneCard and rect.has_point(_center(node)):
+	if node is MonsterCard and rect.has_point(_center(node)):
 		return node
 	for child in node.get_children():
 		var found := _find_visible_card(child, rect)

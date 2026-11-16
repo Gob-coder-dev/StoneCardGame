@@ -22,15 +22,15 @@ func run() -> void:
 
 func _god_ids() -> Array:
 	var result: Array = []
-	for god in StoneLoader.get_all_gods():
+	for god in MonsterLoader.get_all_gods():
 		result.append(str(god["id"]))
 	return result
 
 
 func _first_form(rarity: String, level: int = 1) -> Dictionary:
-	for stone in StoneLoader.get_all_stones():
-		if str(stone.get("rarity", "")) == rarity and int(stone.get("level", 0)) == level:
-			return stone
+	for monster in MonsterLoader.get_all_monsters():
+		if str(monster.get("rarity", "")) == rarity and int(monster.get("level", 0)) == level:
+			return monster
 	return {}
 
 
@@ -101,8 +101,8 @@ func _validate_deck(gen: LoadoutGenerator, deck: Array, god_id: String,
 	var lineages := {}
 	var sum := 0
 	for raw_id in deck:
-		var stone_id := str(raw_id)
-		var card := gen.card(stone_id)
+		var monster_id := str(raw_id)
+		var card := gen.card(monster_id)
 		if card.is_empty() or int(card["tier"]) > max_tier:
 			return false
 		var affinity := str(card["god_id"])
@@ -112,7 +112,7 @@ func _validate_deck(gen: LoadoutGenerator, deck: Array, god_id: String,
 			return false
 		lineages[str(card["lineage"])] = true
 		sum += int(card["cost_q"])
-	return sum == total_q and sum <= DeckRules.DECK_BUDGET * StoneCostRules.COST_SCALE
+	return sum == total_q and sum <= DeckRules.DECK_BUDGET * MonsterCostRules.COST_SCALE
 
 
 func _test_random() -> void:
@@ -129,7 +129,7 @@ func _test_random() -> void:
 		and second["deck_one"] == first["deck_one"] and second["deck_two"] == first["deck_two"]
 		and int(second["total_quarters"]) == int(first["total_quarters"]),
 		"aléatoire : la même graine reproduit exactement dieux, cartes et total")
-	_check(int(first["total_quarters"]) <= DeckRules.DECK_BUDGET * StoneCostRules.COST_SCALE,
+	_check(int(first["total_quarters"]) <= DeckRules.DECK_BUDGET * MonsterCostRules.COST_SCALE,
 		"aléatoire : le budget maximal est respecté")
 	_check(gen.card(str((first["deck_one"] as Array)[0]))["tier"] <= 4
 		and gen.card(str((first["deck_two"] as Array)[0]))["tier"] <= 4,

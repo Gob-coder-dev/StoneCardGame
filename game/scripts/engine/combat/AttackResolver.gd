@@ -1,12 +1,12 @@
 ## Plan d'attaque pur. Les impacts sont calculés avant toute capture ou effet.
 extends RefCounted
-const BattleStoneModel := preload("res://scripts/engine/BattleStone.gd")
-const SIDES = StoneSide.ALL
+const BattleMonsterModel := preload("res://scripts/engine/BattleMonster.gd")
+const SIDES = MonsterSide.ALL
 const Board := preload("res://scripts/engine/combat/CombatBoard.gd")
-const DIRECTIONS = StoneSide.GRID
-const OPPOSITE = StoneSide.OPPOSITE
+const DIRECTIONS = MonsterSide.GRID
+const OPPOSITE = MonsterSide.OPPOSITE
 
-static func resolve(state: GameState, row: int, col: int, player: int, source: BattleStoneModel) -> Dictionary:
+static func resolve(state: GameState, row: int, col: int, player: int, source: BattleMonsterModel) -> Dictionary:
 	var captures: Array = []
 	var attacks: Array = []
 	for direction in SIDES:
@@ -33,7 +33,7 @@ static func resolve(state: GameState, row: int, col: int, player: int, source: B
 			if not Board.is_enemy(target_cell, player):
 				continue
 			adjacent_enemy = adjacent_enemy or distance == 1
-			var target := Board.stone_at(target_cell)
+			var target := Board.monster_at(target_cell)
 			var defense_side: String = OPPOSITE[direction]
 			var strength := source.attack(direction) if distance == 1 else source.ranged_attack(direction)
 			var defense := target.defense(defense_side)
@@ -58,7 +58,7 @@ static func resolve(state: GameState, row: int, col: int, player: int, source: B
 	return {"captures": captures, "attacks": attacks}
 
 
-static func _capture_result(row: int, col: int, direction: String, distance: int, target: BattleStoneModel, defense_side: String) -> Dictionary:
+static func _capture_result(row: int, col: int, direction: String, distance: int, target: BattleMonsterModel, defense_side: String) -> Dictionary:
 	return {
 		"row": row,
 		"col": col,

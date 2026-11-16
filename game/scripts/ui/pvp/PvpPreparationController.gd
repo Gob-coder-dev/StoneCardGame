@@ -157,15 +157,15 @@ func _update_timer() -> void:
 	preparation_view.set_remaining_seconds(_flow.remaining_seconds() if _flow != null else 0.0)
 
 
-func _on_card_chosen(stone_id: String) -> void:
+func _on_card_chosen(monster_id: String) -> void:
 	if _flow == null or _leaving:
 		return
 	var step := int(_state.get("draft", {}).get("own_step", -1))
-	if not _flow.choose_local(stone_id):
+	if not _flow.choose_local(monster_id):
 		status_label.text = "Cette carte n'est plus disponible."
 		return
 	_pending_choice_step = step
-	_pending_choice_id = stone_id
+	_pending_choice_id = monster_id
 	_refresh(_flow.public_state())
 	# L'hôte peut recevoir sa paire suivante dans le même appel ; ce texte reste
 	# néanmoins le retour immédiat du toucher, sans explication supplémentaire.

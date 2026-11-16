@@ -159,8 +159,8 @@ edges = [
 ]
 
 definition = {
-    "id": "samstone_campaign",
-    "title": "La Carte de SamStone",
+    "id": "beastpact_campaign",
+    "title": "La Carte de Beastpact",
     "campaign_version": 1,
     "map": {"width": 1080, "height": 2400},
     "start_node_id": "tuto_01",

@@ -52,7 +52,7 @@ func play(members: Array, links_before: Array, links_after: Array,
 		var distance: float = _source_center.distance_to(member.get("center", _source_center))
 		member["arrival"] = 0.46 + distance / max_distance * 0.13
 		member["showing_after"] = false
-		var card: StoneCard = member.get("card")
+		var card: MonsterCard = member.get("card")
 		if is_instance_valid(card):
 			card.set_combat_preview(_preview_with_swarm(card, member.get("before", {})))
 	_update_members()
@@ -68,18 +68,18 @@ func _begin_transition() -> void:
 	transition_started.emit()
 
 
-func _preview_with_swarm(card: StoneCard, blades: Dictionary):
-	var stone = card.get_battle_stone()
-	if stone == null:
+func _preview_with_swarm(card: MonsterCard, blades: Dictionary):
+	var monster = card.get_battle_monster()
+	if monster == null:
 		return null
-	var preview = stone.clone()
+	var preview = monster.clone()
 	preview.swarm_blades = _complete_side_map(blades)
 	return preview
 
 
 func _update_members() -> void:
 	for member in _members:
-		var card: StoneCard = member.get("card")
+		var card: MonsterCard = member.get("card")
 		if not is_instance_valid(card):
 			continue
 		var before: Dictionary = member.get("before", {})
@@ -87,7 +87,7 @@ func _update_members() -> void:
 		var arrival := float(member.get("arrival", 0.52))
 		if progress < arrival:
 			var retract := smoothstep(0.04, 0.28, progress)
-			for side in BattleStone.SIDES:
+			for side in BattleMonster.SIDES:
 				var before_count := int(before.get(side, 0))
 				var after_count := int(after.get(side, 0))
 				for swarm_index in range(after_count, before_count):
@@ -100,7 +100,7 @@ func _update_members() -> void:
 			member["showing_after"] = true
 		var growth_time := clampf(inverse_lerp(arrival, minf(0.88, arrival + 0.22), progress), 0.0, 1.0)
 		var growth := _growth_with_bounce(growth_time)
-		for side in BattleStone.SIDES:
+		for side in BattleMonster.SIDES:
 			var before_count := int(before.get(side, 0))
 			var after_count := int(after.get(side, 0))
 			for swarm_index in range(before_count, after_count):
@@ -108,11 +108,11 @@ func _update_members() -> void:
 					_swarm_marker_start(card, side) + swarm_index, growth)
 
 
-func _swarm_marker_start(card: StoneCard, side: String) -> int:
-	var stone = card.get_battle_stone()
-	if stone == null:
+func _swarm_marker_start(card: MonsterCard, side: String) -> int:
+	var monster = card.get_battle_monster()
+	if monster == null:
 		return 0
-	return stone.marker_offset("swarm", side)
+	return monster.marker_offset("swarm", side)
 
 
 func _growth_with_bounce(value: float) -> float:
@@ -133,7 +133,7 @@ func _exit_tree() -> void:
 
 func _restore_cards() -> void:
 	for member in _members:
-		var card: StoneCard = member.get("card")
+		var card: MonsterCard = member.get("card")
 		if is_instance_valid(card):
 			card.clear_marker_growth()
 			card.set_combat_preview(null)
@@ -265,6 +265,6 @@ func _draw_member_pulses() -> void:
 
 func _complete_side_map(source: Dictionary) -> Dictionary:
 	var result := {}
-	for side in BattleStone.SIDES:
+	for side in BattleMonster.SIDES:
 		result[side] = int(source.get(side, 0))
 	return result

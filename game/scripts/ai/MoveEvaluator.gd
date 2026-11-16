@@ -3,7 +3,7 @@
 ## Les graines de simulation ne révèlent ni ne consomment le hasard réel.
 extends RefCounted
 
-const BattleStoneModel := preload("res://scripts/engine/BattleStone.gd")
+const BattleMonsterModel := preload("res://scripts/engine/BattleMonster.gd")
 const Resolver := preload("res://scripts/engine/CombatResolver.gd")
 const Opponent := preload("res://scripts/ai/OpponentModel.gd")
 const Riposte := preload("res://scripts/ai/RiposteModel.gd")
@@ -58,13 +58,13 @@ func evaluate(move: Dictionary, sample: int) -> Dictionary:
 	# Les appels synchrones des tests et des outils restent valides ; MoveSearch
 	# prépare normalement ce modèle avant la première évaluation.
 	prepare_step()
-	var stone_id: String = move["stone_id"]
+	var monster_id: String = move["monster_id"]
 	var row: int = move["row"]
 	var col: int = move["col"]
 	var simulation := _state.clone()
-	simulation.set_random_seed(hash("preview:%s:%d:%d:%d" % [stone_id, row, col, sample]))
+	simulation.set_random_seed(hash("preview:%s:%d:%d:%d" % [monster_id, row, col, sample]))
 	var seeded_state := simulation.random_state
-	var result := Resolver.apply_move(simulation, row, col, stone_id, GameState.PLAYER_AI)
+	var result := Resolver.apply_move(simulation, row, col, monster_id, GameState.PLAYER_AI)
 	var used_random := simulation.random_state != seeded_state
 	var value: float
 	if _endgame:
@@ -82,8 +82,8 @@ func evaluate(move: Dictionary, sample: int) -> Dictionary:
 static func aura_blades(state: GameState) -> int:
 	var total := 0
 	for cell in state.board:
-		var stone = cell["stone"]
-		if cell["owner"] == GameState.PLAYER_AI and stone is BattleStoneModel:
-			for side in StoneSide.ALL:
-				total += int(stone.swarm_blades[side])
+		var monster = cell["monster"]
+		if cell["owner"] == GameState.PLAYER_AI and monster is BattleMonsterModel:
+			for side in MonsterSide.ALL:
+				total += int(monster.swarm_blades[side])
 	return total

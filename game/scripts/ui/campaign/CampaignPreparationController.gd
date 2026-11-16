@@ -75,8 +75,8 @@ func _show_missing_session() -> void:
 	confirm_button.visible = false
 
 
-func _on_card_chosen(stone_id: String) -> void:
-	if BattleContext.choose_draft_card(stone_id):
+func _on_card_chosen(monster_id: String) -> void:
+	if BattleContext.choose_draft_card(monster_id):
 		_refresh()
 
 

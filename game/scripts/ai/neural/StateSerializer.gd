@@ -1,7 +1,7 @@
 ## Observation publique canonique pour n'importe lequel des deux joueurs.
 extends RefCounted
 
-const BattleStoneModel := preload("res://scripts/engine/BattleStone.gd")
+const BattleMonsterModel := preload("res://scripts/engine/BattleMonster.gd")
 
 
 static func serialize_for_player(state: GameState, observer: int) -> Dictionary:
@@ -9,21 +9,21 @@ static func serialize_for_player(state: GameState, observer: int) -> Dictionary:
 		return {}
 	var board: Array = []
 	for cell in state.board:
-		var stone = cell.get("stone")
-		var stone_data = null
-		if stone is BattleStoneModel:
-			stone_data = _battle_stone(stone, str(cell.get("stone_id", "")))
+		var monster = cell.get("monster")
+		var monster_data = null
+		if monster is BattleMonsterModel:
+			monster_data = _battle_monster(monster, str(cell.get("monster_id", "")))
 		board.append({
 			"cell_type": int(cell.get("cell_type", 0)),
 			"owner": int(cell.get("owner", 0)),
 			"placed_by": int(cell.get("placed_by", 0)),
-			"stone": stone_data
+			"monster": monster_data
 		})
 	var own_hand := state.hand_of(observer)
 	var opponent := GameState.PLAYER_AI if observer == GameState.PLAYER_HUMAN else GameState.PLAYER_HUMAN
 	var hand: Array = []
-	for stone_id in own_hand:
-		hand.append(_definition(str(stone_id)))
+	for monster_id in own_hand:
+		hand.append(_definition(str(monster_id)))
 	return {
 		"schema_version": 1,
 		"observer": observer,
@@ -42,11 +42,11 @@ static func serialize_for_player(state: GameState, observer: int) -> Dictionary:
 	}
 
 
-static func _definition(stone_id: String) -> Dictionary:
-	var definition := StoneLoader.get_stone(stone_id)
+static func _definition(monster_id: String) -> Dictionary:
+	var definition := MonsterLoader.get_monster(monster_id)
 	return {
-		"stone_id": stone_id,
-		"affinity": StoneLoader.stone_affinity(stone_id),
+		"monster_id": monster_id,
+		"affinity": MonsterLoader.monster_affinity(monster_id),
 		"level": int(definition.get("level", 1)),
 		"blades": definition.get("blades", {}).duplicate(),
 		"long_blades": definition.get("long_blades", {}).duplicate(),
@@ -57,18 +57,18 @@ static func _definition(stone_id: String) -> Dictionary:
 	}
 
 
-static func _battle_stone(stone: BattleStoneModel, stone_id: String) -> Dictionary:
-	var data := _definition(stone_id)
+static func _battle_monster(monster: BattleMonsterModel, monster_id: String) -> Dictionary:
+	var data := _definition(monster_id)
 	data.merge({
-		"instance_id": stone.instance_id,
-		"base_blades": stone.base_blades.duplicate(),
-		"random_blade_sides": stone.random_blades.duplicate(),
-		"long_blade_sides": stone.long_blades.duplicate(),
-		"shield_sides": stone.shields.duplicate(),
-		"swarm_blades": stone.swarm_blades.duplicate(),
-		"miasma_weakness": stone.miasma_weakness,
-		"temporary_weakness": stone.temporary_weakness,
-		"temporary_weakness_owner": stone.temporary_weakness_owner,
-		"coin_flipped": stone.coin_flipped
+		"instance_id": monster.instance_id,
+		"base_blades": monster.base_blades.duplicate(),
+		"random_blade_sides": monster.random_blades.duplicate(),
+		"long_blade_sides": monster.long_blades.duplicate(),
+		"shield_sides": monster.shields.duplicate(),
+		"swarm_blades": monster.swarm_blades.duplicate(),
+		"miasma_weakness": monster.miasma_weakness,
+		"temporary_weakness": monster.temporary_weakness,
+		"temporary_weakness_owner": monster.temporary_weakness_owner,
+		"coin_flipped": monster.coin_flipped
 	}, true)
 	return data

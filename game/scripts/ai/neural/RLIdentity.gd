@@ -6,27 +6,27 @@ extends RefCounted
 
 static func content_checksum() -> String:
 	var gods: Array[String] = []
-	for god in StoneLoader.get_all_gods():
+	for god in MonsterLoader.get_all_gods():
 		gods.append(str(god["id"]))
 	gods.sort()
-	var rows: Array[String] = ["samstone-content-v2", ",".join(gods)]
-	var stones: Array = StoneLoader.get_all_stones().duplicate()
-	stones.sort_custom(func(a: Dictionary, b: Dictionary): return str(a["id"]) < str(b["id"]))
-	for stone in stones:
-		var stone_id := str(stone["id"])
-		var fields: Array[String] = [stone_id, StoneLoader.stone_lineage(stone_id),
-			str(StoneLoader.stone_level(stone_id)),
-			str(StoneLoader.lineage_max_level(StoneLoader.stone_lineage(stone_id))),
-			StoneLoader.stone_affinity(stone_id)]
+	var rows: Array[String] = ["beastpact-content-v2", ",".join(gods)]
+	var monsters: Array = MonsterLoader.get_all_monsters().duplicate()
+	monsters.sort_custom(func(a: Dictionary, b: Dictionary): return str(a["id"]) < str(b["id"]))
+	for monster in monsters:
+		var monster_id := str(monster["id"])
+		var fields: Array[String] = [monster_id, MonsterLoader.monster_lineage(monster_id),
+			str(MonsterLoader.monster_level(monster_id)),
+			str(MonsterLoader.lineage_max_level(MonsterLoader.monster_lineage(monster_id))),
+			MonsterLoader.monster_affinity(monster_id)]
 		for key in ["blades", "long_blades", "shields"]:
 			var values: Array[String] = []
-			for side in StoneSide.ALL:
-				values.append(str(int(stone.get(key, {}).get(side, 0))))
+			for side in MonsterSide.ALL:
+				values.append(str(int(monster.get(key, {}).get(side, 0))))
 			fields.append(",".join(values))
-		var effects: Array = stone.get("effects", []).duplicate()
+		var effects: Array = monster.get("effects", []).duplicate()
 		effects.sort()
-		fields.append_array([str(int(stone.get("random_blades", 0))),
-			str(stone.get("coin_flip", "")), ",".join(effects)])
+		fields.append_array([str(int(monster.get("random_blades", 0))),
+			str(monster.get("coin_flip", "")), ",".join(effects)])
 		rows.append("|".join(fields))
 	return "\n".join(rows).sha256_text()
 

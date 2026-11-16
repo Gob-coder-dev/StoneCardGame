@@ -35,7 +35,7 @@ static func from_profile(profile: Dictionary, side: int, series: SeriesState,
 		return null
 	if series.mode != GameModeRules.MODE_CLASSIC:
 		for raw_id in deck:
-			if not CardPowerTierRules.is_allowed(StoneLoader.get_stone(str(raw_id)),
+			if not CardPowerTierRules.is_allowed(MonsterLoader.get_monster(str(raw_id)),
 					series.power_tier):
 				return null
 	return Loadout.create(god_id, deck, side, series.series_id, preparation_id,

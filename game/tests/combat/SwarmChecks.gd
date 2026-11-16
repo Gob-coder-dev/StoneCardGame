@@ -8,9 +8,9 @@ func _test_swarm() -> void:
 	CombatResolverModel.apply_move(state, 0, 0, "fx_swarm_a", GameState.PLAYER_HUMAN)
 	var second := CombatResolverModel.apply_move(state, 0, 1, "fx_swarm_b", GameState.PLAYER_HUMAN)
 	var third := CombatResolverModel.apply_move(state, 0, 2, "fx_swarm_c", GameState.PLAYER_HUMAN)
-	var a: BattleStoneModel = state.get_cell(0, 0)["stone"]
-	var b: BattleStoneModel = state.get_cell(0, 1)["stone"]
-	var c: BattleStoneModel = state.get_cell(0, 2)["stone"]
+	var a: BattleMonsterModel = state.get_cell(0, 0)["monster"]
+	var b: BattleMonsterModel = state.get_cell(0, 1)["monster"]
+	var c: BattleMonsterModel = state.get_cell(0, 2)["monster"]
 	# Trois membres : deux autres membres × 2 lames, soit le plafond de 4.
 	_check(_sum(a.swarm_blades) == 4 and _sum(b.swarm_blades) == 4 and _sum(c.swarm_blades) == 4,
 		"tout le groupe Swarm reçoit l'aura plafonnée")
@@ -51,9 +51,9 @@ func _test_swarm() -> void:
 		_force_instance(cross, cell[0], cell[1], "fx_swarm_a", GameState.PLAYER_HUMAN)
 	_force_instance(cross, 3, 3, "fx_swarm_a", GameState.PLAYER_HUMAN)
 	CombatResolverModel.recalculate_swarm(cross)
-	_check(_sum(cross.get_cell(1, 1)["stone"].swarm_blades) == 4
-		and _sum(cross.get_cell(0, 1)["stone"].swarm_blades) == 4
-		and _sum(cross.get_cell(3, 3)["stone"].swarm_blades) == 0,
+	_check(_sum(cross.get_cell(1, 1)["monster"].swarm_blades) == 4
+		and _sum(cross.get_cell(0, 1)["monster"].swarm_blades) == 4
+		and _sum(cross.get_cell(3, 3)["monster"].swarm_blades) == 0,
 		"un groupe de cinq atteint +4 pour chaque membre ; une pierre isolée ne gagne rien")
 
 	_test_god_rule()
@@ -67,8 +67,8 @@ func _test_god_rule() -> void:
 	_force_instance(state, 0, 0, "fx_swarm_okuni_a", GameState.PLAYER_HUMAN)
 	_force_instance(state, 0, 1, "fx_swarm_okuni_b", GameState.PLAYER_HUMAN)
 	CombatResolverModel.recalculate_swarm(state)
-	var first: BattleStoneModel = state.get_cell(0, 0)["stone"]
-	var second: BattleStoneModel = state.get_cell(0, 1)["stone"]
+	var first: BattleMonsterModel = state.get_cell(0, 0)["monster"]
+	var second: BattleMonsterModel = state.get_cell(0, 1)["monster"]
 	_check(_sum(first.swarm_blades) == 2 and _sum(second.swarm_blades) == 2,
 		"deux pierres Essaim reliées dans le camp d'Ōkuninushi gagnent 2 lames chacune")
 	state.get_cell(0, 0)["owner"] = GameState.PLAYER_AI

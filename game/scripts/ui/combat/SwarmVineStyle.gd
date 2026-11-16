@@ -31,7 +31,7 @@ static func curve_points(start: Vector2, finish: Vector2, square: float,
 static func _anchor_offset(index: int, count: int, square: float, generation_seed: int) -> float:
 	var ratio := float(index) / float(count - 1)
 	# Un très léger décalage déterministe casse la régularité des ancrages tout
-	# en les gardant répartis sur presque toute la face de la pierre.
+	# en les gardant répartis sur presque toute la face du monstre.
 	var jitter := sin(float(generation_seed * 13 + index * 19)) * square * 0.012
 	return lerpf(-square * ANCHOR_SPAN, square * ANCHOR_SPAN, ratio) + jitter
 

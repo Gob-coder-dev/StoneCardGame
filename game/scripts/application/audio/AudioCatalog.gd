@@ -15,8 +15,8 @@ const META_SILENT := "audio_silent"
 const SFX_BUTTON := "button"
 const SFX_BUTTON_2 := "button_2"
 const SFX_PURCHASE := "purchase"
-const SFX_STONE_PLACE_LOCAL := "stone_place_local"
-const SFX_STONE_PLACE_REMOTE := "stone_place_remote"
+const SFX_MONSTER_PLACE_LOCAL := "monster_place_local"
+const SFX_MONSTER_PLACE_REMOTE := "monster_place_remote"
 const SFX_ATTACK := "attack"
 const SFX_ATTACK_MISS := "attack_miss"
 const SFX_CAPTURED := "captured"
@@ -53,8 +53,8 @@ const SFX_PATHS := {
 	SFX_BUTTON: "res://data/audio/sfx/ui/button.mp3",
 	SFX_BUTTON_2: "res://data/audio/sfx/ui/button_2.mp3",
 	SFX_PURCHASE: "res://data/audio/sfx/economy/purchase.wav",
-	SFX_STONE_PLACE_LOCAL: "res://data/audio/sfx/combat/stone_place_1.wav",
-	SFX_STONE_PLACE_REMOTE: "res://data/audio/sfx/combat/stone_place_2.wav",
+	SFX_MONSTER_PLACE_LOCAL: "res://data/audio/sfx/combat/monster_place_1.wav",
+	SFX_MONSTER_PLACE_REMOTE: "res://data/audio/sfx/combat/monster_place_2.wav",
 	SFX_ATTACK: "res://data/audio/sfx/combat/attack.wav",
 	SFX_ATTACK_MISS: "res://data/audio/sfx/combat/attack_miss.wav",
 	SFX_CAPTURED: "res://data/audio/sfx/combat/captured.wav",

@@ -57,7 +57,7 @@ static func _node_problems(node: CampaignNode, version: int,
 			result.append("Sélection '%s' : dieu adverse requis." % node.id)
 			return
 		var service := ModePreparationServiceModel.new()
-		for god in StoneLoader.get_all_gods():
+		for god in MonsterLoader.get_all_gods():
 			var player_god := str(god.get("id", ""))
 			var target_god := opponent_god if opponent_god != "" else player_god
 			var created := service.create_draft(generation_seed, tier,
@@ -78,7 +78,7 @@ static func _node_problems(node: CampaignNode, version: int,
 		return
 	if node.opponent_god_policy() == NodeModel.GOD_PROFILE:
 		var generator := LoadoutGeneratorModel.new()
-		for god in StoneLoader.get_all_gods():
+		for god in MonsterLoader.get_all_gods():
 			var generated := generator.generate_for_god(generation_seed, str(god.get("id", "")), tier)
 			if not bool(generated.get("ok", false)):
 				result.append("deck généré impossible sur '%s' pour '%s'." % [

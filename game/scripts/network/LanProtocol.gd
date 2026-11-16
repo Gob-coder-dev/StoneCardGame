@@ -25,7 +25,7 @@ const MAX_NAME_LENGTH: int = 16
 const MIN_NAME_LENGTH: int = 2
 const MAX_APP_VERSION_LENGTH: int = 24
 const MAX_GOD_ID_LENGTH: int = 32
-const MAX_STONE_ID_LENGTH: int = 64
+const MAX_MONSTER_ID_LENGTH: int = 64
 const MAX_ID_LENGTH: int = 64
 const MAX_REASON_LENGTH: int = 120
 const MAX_STATUS_LENGTH: int = 24
@@ -36,7 +36,7 @@ const MAX_SCORE: int = 16
 ## Taille maximale d'une annonce UDP ou d'un message encodé en JSON.
 const MAX_MESSAGE_CHARS: int = 4096
 const FINGERPRINT_LENGTH: int = 64
-const BEACON_MARKER: String = "samstone"
+const BEACON_MARKER: String = "beastpact"
 ## Délais applicatifs : ENet garantit la livraison, mais pas qu'un pair vivant
 ## continue le protocole. Ces bornes empêchent une attente infinie.
 const START_AGREEMENT_TIMEOUT_SECONDS: float = 30.0
@@ -121,7 +121,7 @@ static func catalogue_fingerprint() -> String:
 
 
 static func _catalogue_paths() -> Array[String]:
-	var paths: Array[String] = ["res://data/stones/manifest.json", "res://data/gods.json"]
+	var paths: Array[String] = ["res://data/monsters/manifest.json", "res://data/gods.json"]
 	var file := FileAccess.open(paths[0], FileAccess.READ)
 	if file == null:
 		return paths
@@ -412,7 +412,7 @@ static func _validate_match_start(payload: Dictionary, require_series: bool) -> 
 
 
 static func _validate_move(payload: Dictionary, with_sequence: bool) -> Dictionary:
-	var keys := ["match_id", "player", "row", "col", "stone_id"]
+	var keys := ["match_id", "player", "row", "col", "monster_id"]
 	if with_sequence:
 		keys.append("sequence")
 	if not _shape(payload, keys):
@@ -423,7 +423,7 @@ static func _validate_move(payload: Dictionary, with_sequence: bool) -> Dictiona
 		return _verdict(false, "Joueur du coup invalide.")
 	if not _coordinate(payload.get("row")) or not _coordinate(payload.get("col")):
 		return _verdict(false, "Coordonnées invalides.")
-	if not _text(payload.get("stone_id"), MAX_STONE_ID_LENGTH) or str(payload["stone_id"]) == "":
+	if not _text(payload.get("monster_id"), MAX_MONSTER_ID_LENGTH) or str(payload["monster_id"]) == "":
 		return _verdict(false, "Carte invalide.")
 	if with_sequence:
 		var sequence := _integer(payload.get("sequence"))
@@ -508,7 +508,7 @@ static func _validate_loadout(payload: Dictionary) -> Dictionary:
 	if not _deck_shape(payload.get("deck")):
 		return _verdict(false, "Deck de loadout invalide.")
 	var total := _integer(payload.get("total_quarters"))
-	if total == INVALID_INT or total < 0 or total > DeckRules.DECK_BUDGET * StoneCostRules.COST_SCALE:
+	if total == INVALID_INT or total < 0 or total > DeckRules.DECK_BUDGET * MonsterCostRules.COST_SCALE:
 		return _verdict(false, "Total de loadout invalide.")
 	return _verdict(true, "")
 
@@ -591,7 +591,7 @@ static func _draft_offers_at_step(value: Variant, step: int) -> bool:
 
 static func _validate_draft_choice(payload: Dictionary) -> Dictionary:
 	if not _shape(payload, ["series_id", "preparation_id", "rules_revision",
-			"round_index", "own_step", "stone_id"]):
+			"round_index", "own_step", "monster_id"]):
 		return _verdict(false, "Choix de draft incomplet.")
 	if not _series_id(payload.get("series_id")) \
 			or not _preparation_id(payload.get("preparation_id")) \
@@ -601,7 +601,7 @@ static func _validate_draft_choice(payload: Dictionary) -> Dictionary:
 	var step := _integer(payload.get("own_step"))
 	if step == INVALID_INT or step < 0 or step >= DeckRules.DECK_SIZE:
 		return _verdict(false, "Étape de choix invalide.")
-	if not _text(payload.get("stone_id"), MAX_STONE_ID_LENGTH) or str(payload.get("stone_id", "")) == "":
+	if not _text(payload.get("monster_id"), MAX_MONSTER_ID_LENGTH) or str(payload.get("monster_id", "")) == "":
 		return _verdict(false, "Carte de choix invalide.")
 	return _verdict(true, "")
 
@@ -798,7 +798,7 @@ static func _god_id(value: Variant) -> bool:
 	if not _text(value, MAX_GOD_ID_LENGTH):
 		return false
 	var god_id := str(value)
-	return god_id == "" or StoneLoader.get_god(god_id).size() > 0
+	return god_id == "" or MonsterLoader.get_god(god_id).size() > 0
 
 
 static func _fingerprint(value: Variant) -> bool:
@@ -827,7 +827,7 @@ static func _deck_shape(value: Variant) -> bool:
 	if deck.size() > MAX_DECK_SIZE:
 		return false
 	for entry in deck:
-		if not _text(entry, MAX_STONE_ID_LENGTH) or (entry as String).length() == 0:
+		if not _text(entry, MAX_MONSTER_ID_LENGTH) or (entry as String).length() == 0:
 			return false
 	return true
 
@@ -884,7 +884,7 @@ static func _offers(value: Variant) -> bool:
 	if not value is Array or (value as Array).size() != 2:
 		return false
 	for entry in value:
-		if not _text(entry, MAX_STONE_ID_LENGTH) or (entry as String).length() == 0:
+		if not _text(entry, MAX_MONSTER_ID_LENGTH) or (entry as String).length() == 0:
 			return false
 	return true
 

@@ -1,5 +1,5 @@
 ## Budget d'une définition de carte, indépendant du chargement et de l'interface.
-class_name StoneCostRules
+class_name MonsterCostRules
 extends RefCounted
 
 const NORMAL_BLADE_COST := 1.0
@@ -21,23 +21,23 @@ const LONG_BLADE_COST := 1.25
 const COST_SCALE: int = 4
 
 
-static func cost_quarters(stone: Dictionary) -> int:
-	return int(roundf(cost(stone) * float(COST_SCALE)))
+static func cost_quarters(monster: Dictionary) -> int:
+	return int(roundf(cost(monster) * float(COST_SCALE)))
 
 
-static func cost(stone: Dictionary) -> float:
-	if stone.is_empty():
+static func cost(monster: Dictionary) -> float:
+	if monster.is_empty():
 		return 0.0
-	var b: Dictionary = stone["blades"]
+	var b: Dictionary = monster["blades"]
 	var total := float(int(b.get("top", 0)) + int(b.get("bottom", 0)) + int(b.get("left", 0)) + int(b.get("right", 0))) * NORMAL_BLADE_COST
-	total += float(stone.get("random_blades", 0)) * RANDOM_BLADE_COST
-	for value in stone.get("shields", {}).values():
+	total += float(monster.get("random_blades", 0)) * RANDOM_BLADE_COST
+	for value in monster.get("shields", {}).values():
 		total += float(value) * SHIELD_COST
-	for value in stone.get("long_blades", {}).values():
+	for value in monster.get("long_blades", {}).values():
 		total += float(value) * LONG_BLADE_COST
-	if _has_family_power(stone):
+	if _has_family_power(monster):
 		total += FAMILY_POWER_COST
-	if not str(stone.get("coin_flip", "")).is_empty():
+	if not str(monster.get("coin_flip", "")).is_empty():
 		total -= COIN_FLIP_DISCOUNT
 	return maxf(0.0, total)
 
@@ -45,14 +45,14 @@ static func cost(stone: Dictionary) -> float:
 ## Les symboles spéciaux et les effets sont les seuls pouvoirs facturés.
 ## Une carte neutre ou une carte de famille composée uniquement de lames
 ## normales ne paie aucun supplément arbitraire.
-static func _has_family_power(stone: Dictionary) -> bool:
-	if int(stone.get("random_blades", 0)) > 0:
+static func _has_family_power(monster: Dictionary) -> bool:
+	if int(monster.get("random_blades", 0)) > 0:
 		return true
-	var effects: Array = stone.get("effects", [])
+	var effects: Array = monster.get("effects", [])
 	if not effects.is_empty():
 		return true
 	for field in ["shields", "long_blades"]:
-		for value in stone.get(field, {}).values():
+		for value in monster.get(field, {}).values():
 			if int(value) > 0:
 				return true
 	return false

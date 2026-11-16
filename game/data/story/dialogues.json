@@ -36,7 +36,7 @@
         },
         {
           "speaker": "pr_stone",
-          "text": "Chaque pierre a quatre faces. Les combiner, c'est inventer les attaques les plus terrifiantes."
+          "text": "Chaque monstre a quatre faces. Les combiner, c'est inventer les attaques les plus terrifiantes."
         },
         {
           "speaker": "pr_stone",
@@ -134,7 +134,7 @@
         },
         {
           "speaker": "pr_stone",
-          "text": "Prends le Rampant des fosses et occupe le terrain. Chaque pierre encore debout comptera à la fin."
+          "text": "Prends le Rampant des fosses et occupe le terrain. Chaque monstre encore debout comptera à la fin."
         }
       ]
     },
@@ -147,7 +147,7 @@
         },
         {
           "speaker": "pr_stone",
-          "text": "Une fois le plateau plein, on compte les pierres. celui qui possède le plus de cartes gagne."
+          "text": "Une fois le plateau plein, on compte les monstres. Celui qui en possède le plus gagne."
         }
       ]
     },
@@ -237,7 +237,7 @@
         },
         {
           "speaker": "pr_stone",
-          "text": "Ses pierres retournent leurs faces quand tu t'y attends le moins. Ne mise pas tout sur une seule direction."
+          "text": "Ses monstres retournent leurs faces quand tu t'y attends le moins. Ne mise pas tout sur une seule direction."
         },
         {
           "speaker": "pr_stone",
@@ -258,7 +258,7 @@
         },
         {
           "speaker": "pr_stone",
-          "text": "Ne colle pas tes pierres à ses Miasmes : chaque voisine perd 1 d'attaque, et une lame affaiblie ne capture plus."
+          "text": "Ne colle pas tes monstres à ses Miasmes : chaque voisine perd 1 d'attaque, et une lame affaiblie ne capture plus."
         },
         {
           "speaker": "pr_stone",
@@ -271,7 +271,7 @@
       "lines": [
         {
           "speaker": "theme_god",
-          "text": "Kharûn, la Muraille. Tu n'auras jamais mes cartes de pierre."
+          "text": "Kharûn, la Muraille. Tu n'auras jamais mes monstres."
         },
         {
           "speaker": "pr_stone",
@@ -313,11 +313,11 @@
         },
         {
           "speaker": "pr_stone",
-          "text": "Un deck miroir de l'Essaim. Chaque pierre connectée gagne en force : leur réseau est leur armure."
+          "text": "Un deck miroir de l'Essaim. Chaque monstre connecté gagne en force : leur réseau est leur armure."
         },
         {
           "speaker": "pr_stone",
-          "text": "Brise le lien : prends une pierre du réseau et ses voisines s'affaiblissent aussitôt."
+          "text": "Brise le lien : prends un monstre du réseau et ses voisins s'affaiblissent aussitôt."
         },
         {
           "speaker": "pr_stone",

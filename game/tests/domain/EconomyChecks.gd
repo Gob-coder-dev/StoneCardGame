@@ -56,9 +56,9 @@ func _test_starter() -> void:
 		and PlayerData.unlocked_god_ids().is_empty(),
 		"économie : le nouveau profil commence sans dieu, sans monnaie et avec cinq cartes")
 	var owned := true
-	for stone_id in deck:
-		owned = owned and PlayerData.owns_stone(str(stone_id)) \
-			and StoneLoader.stone_affinity(str(stone_id)) == "neutral"
+	for monster_id in deck:
+		owned = owned and PlayerData.owns_monster(str(monster_id)) \
+			and MonsterLoader.monster_affinity(str(monster_id)) == "neutral"
 	_check(owned, "économie : les cinq communes neutres N1 sont réellement possédées")
 
 
@@ -70,7 +70,7 @@ func _test_locked_level_ui() -> void:
 	var before := PlayerData.get_active_deck()
 	page._on_info_requested("gueule_de_travers_n1")
 	page.info_sheet._select_level(2)
-	var preview: StoneCard = page.info_sheet.card_container.get_child(0)
+	var preview: MonsterCard = page.info_sheet.card_container.get_child(0)
 	_check(page.info_sheet.use_button.disabled
 		and page.info_sheet.use_button.text == "AMÉLIORER"
 		and page.info_sheet.use_button.theme_type_variation == &"UpgradeButton"
@@ -106,7 +106,7 @@ func _test_collection_economy_ui() -> void:
 		"collection : les cartes absentes vivent dans une section séparée")
 	_check(progress.visible and progress.count_label.text == "1/50",
 		"collection : chaque carte du deck montre une jauge compacte de copies")
-	var starter_lineage := StoneLoader.stone_lineage(PlayerData.get_active_deck()[0])
+	var starter_lineage := MonsterLoader.monster_lineage(PlayerData.get_active_deck()[0])
 	var starter_wrapper: VBoxContainer = page._collection_grid._wrappers[starter_lineage]
 	_check(starter_wrapper.get_parent() == page._collection_grid._owned_grid,
 		"collection : une carte N1 débloquée appartient aux cartes possédées en aperçu N1")
@@ -114,7 +114,7 @@ func _test_collection_economy_ui() -> void:
 	_check(starter_wrapper.get_parent() == page._collection_grid._locked_grid,
 		"collection : sa N2 verrouillée passe dans les cartes non possédées en aperçu N2")
 	page._select_preview_level(1)
-	var deck_card := first_slot.get_child(0) as StoneCard
+	var deck_card := first_slot.get_child(0) as MonsterCard
 	var deck_card_size := deck_card.size
 	var deck_wrapper_size := first_slot.size
 	var deck_row := first_slot.get_parent() as HBoxContainer
@@ -191,7 +191,7 @@ func _test_rewards_and_upgrade() -> void:
 	for _frame in range(4):
 		await get_tree().process_frame
 	page._action_drawer.upgrade_button.pressed.emit()
-	var preview: StoneCard = page.info_sheet.card_container.get_child(0)
+	var preview: MonsterCard = page.info_sheet.card_container.get_child(0)
 	_check(page.info_sheet.visible
 		and page.info_sheet._shown_variant == "gueule_de_travers_n2"
 		and page.info_sheet.use_button.text == "AMÉLIORER"
@@ -231,7 +231,7 @@ func _test_first_tutorial_reward() -> void:
 		{"lineage_id": "le_sac_a_murmures", "copies": 1},
 	], ["avortons_des_caves_n1", "mordeur_des_combles_n1", "mache_mur_n1"])
 	_check(bool(result.get("ok", false)) and PlayerData.get_active_deck().size() == 8
-		and PlayerData.owns_stone("le_sac_a_murmures_n1") and PlayerData.souls() == 12,
+		and PlayerData.owns_monster("le_sac_a_murmures_n1") and PlayerData.souls() == 12,
 		"économie : le premier tutoriel offre quatre cartes et complète le deck avec trois")
 
 
@@ -256,14 +256,14 @@ func _test_deferred_god_reward() -> void:
 		and bool(duplicate.get("already_applied", false))
 		and (reward.get("cards", []) as Array).is_empty()
 		and (reward.get("deferred_cards", []) as Array).size() == 1
-		and not PlayerData.owns_stone("porte_fievre_n1")
+		and not PlayerData.owns_monster("porte_fievre_n1")
 		and int(inventory.get("pending_card_rewards", {}).get(lineage, 0)) == 2
 		and PlayerData.pending_card_reward_count() == 1
 		and PlayerData.pending_card_reward_copy_count() == 2,
 		"économie : une carte divine différée reste hors collection et idempotente")
 	PlayerData._apply_profile(Codec.decode(PlayerData.get_profile()))
 	_check(int(PlayerData.inventory_dict().get("pending_card_rewards", {}).get(lineage, 0)) == 2
-		and not PlayerData.owns_stone("porte_fievre_n1"),
+		and not PlayerData.owns_monster("porte_fievre_n1"),
 		"économie : la récompense différée survit à la sérialisation du profil")
 	service.grant_reward("test:drawer-layout", 0, [
 		{"lineage_id": "avortons_des_caves", "copies": 1},
@@ -284,8 +284,8 @@ func _test_deferred_god_reward() -> void:
 	var lateral_alignment_valid := true
 	for raw_wrapper in collection_wrappers:
 		var tested_wrapper := raw_wrapper as VBoxContainer
-		var tested_card := tested_wrapper.get_child(0) as StoneCard
-		page._open_card_actions(tested_card.get_stone_id(), tested_wrapper,
+		var tested_card := tested_wrapper.get_child(0) as MonsterCard
+		page._open_card_actions(tested_card.get_monster_id(), tested_wrapper,
 			CardActionDrawer.Source.COLLECTION)
 		for _frame in range(4):
 			await get_tree().process_frame
@@ -297,7 +297,7 @@ func _test_deferred_god_reward() -> void:
 	_check(lateral_alignment_valid,
 		"collection : le tiroir reste aligné sur les cartes gauche, centrale et droite")
 	var selected_wrapper := collection_wrappers[1] as VBoxContainer
-	var selected_card := selected_wrapper.get_child(0) as StoneCard
+	var selected_card := selected_wrapper.get_child(0) as MonsterCard
 	var card_size_before := selected_card.size
 	var wrapper_size_before := selected_wrapper.size
 	page._open_card_actions("mordeur_des_combles_n1", selected_wrapper,
@@ -330,7 +330,7 @@ func _test_deferred_god_reward() -> void:
 	var bought := service.buy_god("nerava")
 	await get_tree().process_frame
 	_check(bool(bought.get("ok", false)) and PlayerData.has_unlocked_god("nerava")
-		and PlayerData.owns_stone("porte_fievre_n1")
+		and PlayerData.owns_monster("porte_fievre_n1")
 		and (bought.get("released_cards", []) as Array).size() == 1
 		and not PlayerData.inventory_dict().get("pending_card_rewards", {}).has(lineage)
 		and not page.pending_rewards_badge.visible
@@ -361,7 +361,7 @@ func _test_shop() -> void:
 	var valid: bool = bool(first.get("ok", false)) and offers.size() == 4 \
 		and offers == second.get("offers", [])
 	for offer in offers:
-		var affinity := StoneLoader.stone_affinity(str(offer.get("stone_id", "")))
+		var affinity := MonsterLoader.monster_affinity(str(offer.get("monster_id", "")))
 		valid = valid and (affinity == "neutral" or affinity == "veskar")
 	_check(valid, "boutique : quatre offres stables excluent les dieux verrouillés")
 	var economy := Economy.new()
@@ -396,7 +396,7 @@ func _test_ritual_config_and_transactions() -> void:
 			continue
 		var lineage_id := str(reward.get("lineage_id", ""))
 		lineages[lineage_id] = true
-		eligible = eligible and StoneLoader.stone_affinity(str(reward.get("stone_id", ""))) == "neutral"
+		eligible = eligible and MonsterLoader.monster_affinity(str(reward.get("monster_id", ""))) == "neutral"
 	_check(bool(purchased.get("ok", false)) and PlayerData.candles() == before - 15
 		and lineages.size() == 3 and eligible,
 		"Rituels : l'achat retire 15 bougies, attribue les récompenses et fige trois monstres distincts")
@@ -454,13 +454,13 @@ func _ritual_rarity_counts(rewards: Array) -> Dictionary:
 func _test_ritual_compensation_and_unique() -> void:
 	PlayerData._apply_profile(Codec.starter_profile())
 	var inventory := InventoryModel.from_dict(PlayerData.inventory_dict())
-	for stone in StoneLoader.get_all_stones():
-		var stone_id := str(stone.get("id", ""))
-		if StoneLoader.stone_level(stone_id) != 1 or StoneLoader.stone_affinity(stone_id) != "neutral":
+	for monster in MonsterLoader.get_all_monsters():
+		var monster_id := str(monster.get("id", ""))
+		if MonsterLoader.monster_level(monster_id) != 1 or MonsterLoader.monster_affinity(monster_id) != "neutral":
 			continue
-		var lineage_id := StoneLoader.stone_lineage(stone_id)
+		var lineage_id := MonsterLoader.monster_lineage(monster_id)
 		inventory.cards[lineage_id] = {
-			"unlocked_level": StoneLoader.lineage_max_level(lineage_id), "copies": 0}
+			"unlocked_level": MonsterLoader.lineage_max_level(lineage_id), "copies": 0}
 	inventory.candles = 100
 	_check(PlayerData.commit_inventory(inventory) == OK,
 		"Rituels : préparation atomique d'une collection neutre maximale")
@@ -500,7 +500,7 @@ func _test_ritual_compensation_and_unique() -> void:
 	var neutral_rewards: Array = unique_neutral.get("opening", {}).get("rewards", [])
 	var neutral_card: Dictionary = neutral_rewards[0] if not neutral_rewards.is_empty() else {}
 	_check(bool(unique_neutral.get("ok", false))
-		and PlayerData.owns_stone("avortons_des_caves_n1")
+		and PlayerData.owns_monster("avortons_des_caves_n1")
 		and not bool(neutral_card.get("deferred", false)),
 		"Rituels : l'invocation unique peut débloquer directement une carte neutre")
 
@@ -510,15 +510,15 @@ func _inventory_with_only_missing(missing_lineage: String) -> PlayerInventory:
 	inventory.cards.clear()
 	inventory.pending_card_rewards.clear()
 	var seen := {}
-	for stone in StoneLoader.get_all_stones():
-		var stone_id := str(stone.get("id", ""))
-		var lineage_id := StoneLoader.stone_lineage(stone_id)
+	for monster in MonsterLoader.get_all_monsters():
+		var monster_id := str(monster.get("id", ""))
+		var lineage_id := MonsterLoader.monster_lineage(monster_id)
 		if lineage_id == "" or seen.has(lineage_id):
 			continue
 		seen[lineage_id] = true
 		if lineage_id == missing_lineage:
 			continue
-		if StoneLoader.stone_affinity(stone_id) == "neutral":
+		if MonsterLoader.monster_affinity(monster_id) == "neutral":
 			inventory.cards[lineage_id] = {"unlocked_level": 1, "copies": 0}
 		else:
 			inventory.pending_card_rewards[lineage_id] = 1

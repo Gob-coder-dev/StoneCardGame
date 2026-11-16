@@ -2,12 +2,12 @@
 class_name PlacementRules
 extends RefCounted
 
-static func is_valid(state: GameState, row: int, col: int, stone_id: String, player: int) -> bool:
+static func is_valid(state: GameState, row: int, col: int, monster_id: String, player: int) -> bool:
 	if player != GameState.PLAYER_HUMAN and player != GameState.PLAYER_AI:
 		return false
 	if not state.in_bounds(row, col):
 		return false
 	var cell := state.get_cell(row, col)
 	return cell["cell_type"] != GameState.CELL_BLOCKED \
-		and cell["owner"] == GameState.PLAYER_NONE and cell["stone_id"] == "" \
-		and state.hand_of(player).has(stone_id) and StoneLoader.has_stone(stone_id)
+		and cell["owner"] == GameState.PLAYER_NONE and cell["monster_id"] == "" \
+		and state.hand_of(player).has(monster_id) and MonsterLoader.has_monster(monster_id)

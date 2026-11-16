@@ -16,8 +16,8 @@ func run() -> void:
 
 func _test_catalogue_images() -> void:
 	var paths := {}
-	for stone in StoneLoader.get_all_stones():
-		var path := str(stone.get("asset", ""))
+	for monster in MonsterLoader.get_all_monsters():
+		var path := str(monster.get("asset", ""))
 		if not path.is_empty():
 			paths[path] = true
 	var loadable := not paths.is_empty()
@@ -28,17 +28,17 @@ func _test_catalogue_images() -> void:
 		var texture := load(path) as Texture2D
 		loadable = loadable and texture != null and texture.get_width() > 0 and texture.get_height() > 0
 	_check(loadable, "toutes les illustrations déclarées dans le catalogue se chargent comme textures")
-	_check(not str(StoneLoader.get_stone("avortons_des_caves_n1").get("asset", "")).is_empty(),
+	_check(not str(MonsterLoader.get_monster("avortons_des_caves_n1").get("asset", "")).is_empty(),
 		"les Avortons des caves utilisent leur illustration de groupe")
-	var first := str(StoneLoader.get_stone("porte_fievre_n1").get("asset", ""))
-	var fourth := str(StoneLoader.get_stone("porte_fievre_n4").get("asset", ""))
+	var first := str(MonsterLoader.get_monster("porte_fievre_n1").get("asset", ""))
+	var fourth := str(MonsterLoader.get_monster("porte_fievre_n4").get("asset", ""))
 	_check(not fourth.is_empty() and fourth != first and ResourceLoader.exists(fourth),
 		"le Porte-fièvre niveau quatre utilise sa propre illustration")
 
 
 func _test_art_cache() -> void:
 	CardArtCache.activate_god("veskar", 1, ["avortons_des_caves_n4"])
-	var path := str(StoneLoader.get_stone("avortons_des_caves_n1")["asset"])
+	var path := str(MonsterLoader.get_monster("avortons_des_caves_n1")["asset"])
 	var loaded := load(path) as Texture2D
 	var cached := CardArtCache.texture(path)
 	var progress := CardArtCache.progress_for_god("veskar")
@@ -47,9 +47,9 @@ func _test_art_cache() -> void:
 
 
 func _test_shared_texture_and_missing_artwork() -> void:
-	var definition := StoneLoader.get_stone("avortons_des_caves_n1")
-	var first := StoneCard.new()
-	var second := StoneCard.new()
+	var definition := MonsterLoader.get_monster("avortons_des_caves_n1")
+	var first := MonsterCard.new()
+	var second := MonsterCard.new()
 	first.setup(definition)
 	second.setup(definition.duplicate(true))
 	_check(first._texture != null and first._texture == second._texture,
@@ -76,7 +76,7 @@ func _test_godless_warmup() -> void:
 
 
 func _test_illustration_layout() -> void:
-	var card := StoneCard.new()
+	var card := MonsterCard.new()
 	card._texture = ImageTexture.create_from_image(Image.create(120, 60, false, Image.FORMAT_RGBA8))
 	var bounds := Rect2(20, 30, 80, 120)
 	var fitted := card._illustration_rect(bounds)
@@ -92,8 +92,8 @@ func _test_illustration_layout() -> void:
 
 
 func _test_level_badge_layout() -> void:
-	var card := StoneCard.new()
-	card.setup(StoneLoader.get_stone("devoracle_n1"))
+	var card := MonsterCard.new()
+	card.setup(MonsterLoader.get_monster("devoracle_n1"))
 	var compact_and_aligned := true
 	for edge in [220.0, 964.0]:
 		var art := Rect2(Vector2.ONE * edge * 0.1, Vector2.ONE * edge * 0.7)

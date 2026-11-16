@@ -104,15 +104,15 @@ class Recorder extends RefCounted:
 		state = shared_state
 
 	## Même validation que la production : joueur actif et PlacementRules.
-	func validator(player: int, row: int, col: int, stone_id: String) -> bool:
+	func validator(player: int, row: int, col: int, monster_id: String) -> bool:
 		return player == state.current_player \
-			and PlacementRules.is_valid(state, row, col, stone_id, player)
+			and PlacementRules.is_valid(state, row, col, monster_id, player)
 
 	## Applique la commande acceptée puis passe la main, comme le TurnManager.
 	func apply(command: Dictionary, target: Array) -> void:
 		target.append(command)
 		CombatResolverModel.apply_move(state, int(command["row"]), int(command["col"]),
-			str(command["stone_id"]), int(command["player"]))
+			str(command["monster_id"]), int(command["player"]))
 		state.current_player = GameState.PLAYER_TWO \
 			if int(command["player"]) == GameState.PLAYER_ONE else GameState.PLAYER_ONE
 
@@ -268,7 +268,7 @@ func _test_out_of_turn() -> void:
 		"player": GameState.PLAYER_TWO,
 		"row": 0,
 		"col": 0,
-		"stone_id": _hand_card(state, GameState.PLAYER_TWO),
+		"monster_id": _hand_card(state, GameState.PLAYER_TWO),
 	})
 	var host: LanMatchCoordinator = pair["host"]
 	_check(host.sequence() == 0 and (pair["client_applied"] as Array).is_empty(),
@@ -284,14 +284,14 @@ func _test_invalid_moves() -> void:
 	var card := _hand_card(state, GameState.PLAYER_TWO)
 	pair["client_transport"].push(2, LanProtocol.KIND_MOVE_INTENT, {
 		"match_id": MATCH_ID, "player": GameState.PLAYER_TWO,
-		"row": 9, "col": 0, "stone_id": card,
+		"row": 9, "col": 0, "monster_id": card,
 	})
 	var host: LanMatchCoordinator = pair["host"]
 	_check(host.sequence() == 0, "des coordonnées invalides ne changent pas la partie")
 	var missing_card_pair := _pair(GameState.PLAYER_TWO)
 	missing_card_pair["client_transport"].push(2, LanProtocol.KIND_MOVE_INTENT, {
 		"match_id": MATCH_ID, "player": GameState.PLAYER_TWO,
-		"row": 0, "col": 0, "stone_id": "carte_absente_n1",
+		"row": 0, "col": 0, "monster_id": "carte_absente_n1",
 	})
 	var missing_host: LanMatchCoordinator = missing_card_pair["host"]
 	_check(missing_host.sequence() == 0,
@@ -300,7 +300,7 @@ func _test_invalid_moves() -> void:
 	wrong_match["client_transport"].push(2, LanProtocol.KIND_MOVE_INTENT, {
 		"match_id": "un-autre-match", "player": GameState.PLAYER_TWO,
 		"row": 0, "col": 0,
-		"stone_id": _hand_card(wrong_match["state"], GameState.PLAYER_TWO),
+		"monster_id": _hand_card(wrong_match["state"], GameState.PLAYER_TWO),
 	})
 	var wrong_host: LanMatchCoordinator = wrong_match["host"]
 	_check(wrong_host.sequence() == 0, "un coup d'un autre match est ignoré")
@@ -316,7 +316,7 @@ func _test_duplicate_command() -> void:
 		"player": GameState.PLAYER_TWO,
 		"row": _free_cell(state).x,
 		"col": _free_cell(state).y,
-		"stone_id": _hand_card(state, GameState.PLAYER_TWO),
+		"monster_id": _hand_card(state, GameState.PLAYER_TWO),
 	}
 	pair["client_transport"].push(2, LanProtocol.KIND_MOVE_INTENT, intent)
 	var host: LanMatchCoordinator = pair["host"]
@@ -342,7 +342,7 @@ func _test_sequence_guard() -> void:
 		"player": GameState.PLAYER_ONE,
 		"row": 0,
 		"col": 0,
-		"stone_id": "de_boiteux_n1",
+		"monster_id": "de_boiteux_n1",
 	})
 	_check((pair["client_desync"] as Array).size() == 1 and not client.can_submit(),
 		"une séquence sautée arrête le client au lieu de diverger")

@@ -18,23 +18,23 @@ static func encode(state: GameState, observer: int) -> PackedFloat32Array:
 		var owner := int(cell["owner"])
 		var placed := int(cell["placed_by"])
 		result.append_array([float(int(cell["cell_type"]) == -1),
-			float(cell["stone"] == null and int(cell["cell_type"]) == 0),
+			float(cell["monster"] == null and int(cell["cell_type"]) == 0),
 			float(owner == observer), float(owner == opponent),
 			float(placed == observer), float(placed == opponent)])
-		var stone: Variant = cell["stone"]
-		if stone == null:
+		var monster: Variant = cell["monster"]
+		if monster == null:
 			for _index in range(36):
 				result.append(0.0)
 			continue
 		for key in ["base_blades", "random_blade_sides", "long_blade_sides", "shield_sides", "swarm_blades"]:
-			_append_sides(result, stone.get(key, {}))
-		result.append_array([float(stone["miasma_weakness"]) / 4.0,
-			float(stone["temporary_weakness"]) / 4.0,
-			float(int(stone["temporary_weakness_owner"]) == observer),
-			float(int(stone["temporary_weakness_owner"]) == opponent)])
-		_append_matches(result, EFFECTS, stone["effects"])
-		_append_matches(result, AFFINITIES, [stone["affinity"]])
-		result.append(float(stone["coin_flipped"]))
+			_append_sides(result, monster.get(key, {}))
+		result.append_array([float(monster["miasma_weakness"]) / 4.0,
+			float(monster["temporary_weakness"]) / 4.0,
+			float(int(monster["temporary_weakness_owner"]) == observer),
+			float(int(monster["temporary_weakness_owner"]) == opponent)])
+		_append_matches(result, EFFECTS, monster["effects"])
+		_append_matches(result, AFFINITIES, [monster["affinity"]])
+		result.append(float(monster["coin_flipped"]))
 	for slot in range(8):
 		if slot < raw["hand"].size():
 			result.append_array(_card(raw["hand"][slot]))

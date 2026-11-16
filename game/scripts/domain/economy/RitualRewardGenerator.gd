@@ -73,11 +73,11 @@ static func _eligible_pools(inventory: PlayerInventory,
 	var result := {"common": [], "rare": [], "epic": [], "legendary": []}
 	var allowed := _rarity_set(allowed_rarities)
 	for lineage_id in _all_lineages():
-		var stone_id := StoneLoader.variant_id(lineage_id, 1)
-		var affinity := StoneLoader.stone_affinity(stone_id)
+		var monster_id := MonsterLoader.variant_id(lineage_id, 1)
+		var affinity := MonsterLoader.monster_affinity(monster_id)
 		if affinity != "neutral" and not inventory.has_god(affinity):
 			continue
-		var rarity := StoneLoader.stone_rarity(stone_id)
+		var rarity := MonsterLoader.monster_rarity(monster_id)
 		if result.has(rarity) and allowed.has(rarity):
 			result[rarity].append(lineage_id)
 	return result
@@ -88,13 +88,13 @@ static func _missing_by_rarity(inventory: PlayerInventory,
 	var result := {"common": [], "rare": [], "epic": [], "legendary": []}
 	var allowed := _rarity_set(allowed_rarities)
 	for lineage_id in _all_lineages():
-		var stone_id := StoneLoader.variant_id(lineage_id, 1)
+		var monster_id := MonsterLoader.variant_id(lineage_id, 1)
 		# Une récompense divine déjà rangée dans le coffre est acquise, même si
 		# elle reste inutilisable jusqu'à l'achat de son dieu.
 		if inventory.unlocked_level(lineage_id) > 0 \
 				or int(inventory.pending_card_rewards.get(lineage_id, 0)) > 0:
 			continue
-		var rarity := StoneLoader.stone_rarity(stone_id)
+		var rarity := MonsterLoader.monster_rarity(monster_id)
 		if result.has(rarity) and allowed.has(rarity):
 			result[rarity].append(lineage_id)
 	return result
@@ -114,8 +114,8 @@ static func _rarity_set(raw: Variant) -> Dictionary:
 static func _all_lineages() -> Array[String]:
 	var result: Array[String] = []
 	var seen := {}
-	for stone in StoneLoader.get_all_stones():
-		var lineage_id := StoneLoader.stone_lineage(str(stone.get("id", "")))
+	for monster in MonsterLoader.get_all_monsters():
+		var lineage_id := MonsterLoader.monster_lineage(str(monster.get("id", "")))
 		if lineage_id == "" or seen.has(lineage_id):
 			continue
 		seen[lineage_id] = true
@@ -125,9 +125,9 @@ static func _all_lineages() -> Array[String]:
 
 
 static func _card_reward(lineage_id: String, copies: int) -> Dictionary:
-	var stone_id := StoneLoader.variant_id(lineage_id, 1)
-	return {"type": "card", "lineage_id": lineage_id, "stone_id": stone_id,
-		"rarity": StoneLoader.stone_rarity(stone_id), "copies": copies}
+	var monster_id := MonsterLoader.variant_id(lineage_id, 1)
+	return {"type": "card", "lineage_id": lineage_id, "monster_id": monster_id,
+		"rarity": MonsterLoader.monster_rarity(monster_id), "copies": copies}
 
 
 static func _fail(reason: String) -> Dictionary:

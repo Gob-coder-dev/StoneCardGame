@@ -85,7 +85,7 @@ func _setup_campaign() -> void:
 	var npc_id := BattleContext.effective_opponent_god_id()
 	var human_identity := GodIdentityModel.player(human_id)
 	var npc_identity := GodIdentityModel.bot(npc_id)
-	var npc_is_godless := StoneLoader.get_god(npc_id).is_empty()
+	var npc_is_godless := MonsterLoader.get_god(npc_id).is_empty()
 	background.set_gods(human_identity, npc_identity)
 	_setup_god_identity(player_god_portrait, player_god_name, player_god_family,
 		human_identity, "TOI • %s" % str(human_identity.get("name", "Sans dieu")))

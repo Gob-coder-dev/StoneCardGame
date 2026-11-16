@@ -345,7 +345,7 @@ func _test_invalid_draft_messages() -> void:
 		"rules_revision": 0,
 		"round_index": 1,
 		"own_step": 0,
-		"stone_id": "de_boiteux_n1",
+		"monster_id": "de_boiteux_n1",
 	}
 	client_transport.push(2, LanProtocol.KIND_DRAFT_CHOICE, stale)
 	_check(str(host.public_state()["draft"]["own_offers"]) == before,
@@ -358,8 +358,8 @@ func _test_invalid_draft_messages() -> void:
 
 func _lineages_unique(deck: Array, generator: LoadoutGenerator) -> bool:
 	var seen := {}
-	for stone_id in deck:
-		var lineage := generator.lineage_of(str(stone_id))
+	for monster_id in deck:
+		var lineage := generator.lineage_of(str(monster_id))
 		if lineage == "" or seen.has(lineage):
 			return false
 		seen[lineage] = true

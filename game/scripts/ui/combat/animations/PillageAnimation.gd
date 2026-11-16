@@ -13,10 +13,10 @@ const GATE_SIDES: Array[String] = ["top", "right", "bottom", "left"]
 ## la recherche fait clignoter. Les autres restent éteints.
 var _searchable_gates: Array[int] = []
 
-func play(card: StoneCard, event: Dictionary, transfers: Array, duration: float) -> void:
+func play(card: MonsterCard, event: Dictionary, transfers: Array, duration: float) -> void:
 	_prepare(card)
 	_transfers = transfers
-	var preview: BattleStoneModel = card.get_battle_stone().clone()
+	var preview: BattleMonsterModel = card.get_battle_monster().clone()
 	preview.shields = event["shields_before"].duplicate()
 	var seen := {}
 	for index in range(_transfers.size()):
@@ -30,11 +30,11 @@ func play(card: StoneCard, event: Dictionary, transfers: Array, duration: float)
 		transfer["target"] = target
 		transfer["mouth"] = _card_transform * card.face_center(str(transfer["direction"]))
 		_register_channel(transfer)
-		var origin_card: StoneCard = transfer.get("card")
+		var origin_card: MonsterCard = transfer.get("card")
 		if is_instance_valid(origin_card):
 			origin_card.set_marker_growth(str(transfer["side"]), int(transfer["marker_index"]), 0.0)
 		seen[side] = int(seen.get(side, 0)) + 1
-	for side in BattleStoneModel.SIDES:
+	for side in BattleMonsterModel.SIDES:
 		_face_gates[side] = _card_transform * card.face_center(side)
 	var possible := {}
 	for transfer in _transfers:
@@ -47,7 +47,7 @@ func play(card: StoneCard, event: Dictionary, transfers: Array, duration: float)
 	_start(duration)
 
 func _register_channel(transfer: Dictionary) -> void:
-	var origin_card: StoneCard = transfer.get("card")
+	var origin_card: MonsterCard = transfer.get("card")
 	if not is_instance_valid(origin_card):
 		return
 	var key := "%d:%s" % [origin_card.get_instance_id(), transfer["side"]]
@@ -72,7 +72,7 @@ func _update_stolen_marker_regrowth() -> void:
 		return
 	for index in range(_transfers.size()):
 		var transfer: Dictionary = _transfers[index]
-		var origin_card: StoneCard = transfer.get("card")
+		var origin_card: MonsterCard = transfer.get("card")
 		if not is_instance_valid(origin_card):
 			continue
 		var delay := float(index) / float(maxi(1, _transfers.size())) * 0.08
@@ -83,7 +83,7 @@ func _update_stolen_marker_regrowth() -> void:
 func _restore_stolen_markers() -> void:
 	var restored := {}
 	for transfer in _transfers:
-		var origin_card: StoneCard = transfer.get("card")
+		var origin_card: MonsterCard = transfer.get("card")
 		if is_instance_valid(origin_card) and not restored.has(origin_card.get_instance_id()):
 			origin_card.clear_marker_growth()
 			restored[origin_card.get_instance_id()] = true

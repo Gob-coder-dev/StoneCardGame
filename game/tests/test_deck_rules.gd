@@ -24,7 +24,7 @@ func _small_deck() -> Array:
 	return deck
 
 
-func test_deck_cost_sums_stone_costs() -> void:
+func test_deck_cost_sums_monster_costs() -> void:
 	assert_eq(DeckRules.deck_cost(["deck_4a", "deck_8a", "deck_12a"]), 24)
 
 
@@ -42,8 +42,8 @@ func test_incomplete_deck_cannot_start_a_game() -> void:
 	assert_false(DeckRules.is_deck_valid(deck), "un deck d'une pierre de moins ne permet pas de jouer")
 
 
-func test_unknown_stone_is_rejected() -> void:
-	assert_false(DeckRules.validate_deck(["stone_absente"], false)["valid"])
+func test_unknown_monster_is_rejected() -> void:
+	assert_false(DeckRules.validate_deck(["monster_absente"], false)["valid"])
 
 
 func test_duplicate_is_rejected() -> void:
@@ -51,7 +51,7 @@ func test_duplicate_is_rejected() -> void:
 
 
 func test_sanitize_removes_unknown_duplicates_and_excess_cards() -> void:
-	var dirty := ["deck_4a", "stone_absente", "deck_4a"]
+	var dirty := ["deck_4a", "monster_absente", "deck_4a"]
 	for suffix in CHEAP_SUFFIXES.slice(1):
 		dirty.append("deck_4%s" % suffix)
 	assert_eq(DeckRules.sanitize_deck(dirty), _small_deck())
@@ -133,11 +133,11 @@ func test_replacement_cannot_create_a_duplicate() -> void:
 
 func run() -> void:
 	before_all()
-	test_deck_cost_sums_stone_costs()
+	test_deck_cost_sums_monster_costs()
 	test_complete_valid_deck_is_accepted()
 	test_incomplete_deck_is_valid_while_editing()
 	test_incomplete_deck_cannot_start_a_game()
-	test_unknown_stone_is_rejected()
+	test_unknown_monster_is_rejected()
 	test_duplicate_is_rejected()
 	test_sanitize_removes_unknown_duplicates_and_excess_cards()
 	test_add_returns_a_new_valid_deck()

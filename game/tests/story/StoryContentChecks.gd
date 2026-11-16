@@ -35,10 +35,10 @@ func _test_shipped_content() -> void:
 	_check(welcome_lines.size() >= 3, "scénario : l'accueil installe le Refuge et le cabinet")
 	_check(str(welcome_lines[0].get("text", "")).contains("{player_name}"),
 		"scénario : le nom du joueur reste un modèle remplacé à la lecture")
-	var all_stone := true
+	var all_monster := true
 	for value in welcome_lines:
-		all_stone = all_stone and str(value.get("speaker", "")) == "pr_stone"
-	_check(all_stone, "scénario : l'accueil est réellement prononcé par Pr. Stone")
+		all_monster = all_monster and str(value.get("speaker", "")) == "pr_stone"
+	_check(all_monster, "scénario : l'accueil est réellement prononcé par Pr. Stone")
 	var victory_lines: Array = sequences.get("journey_victory", {}).get("lines", [])
 	var mentions_rewards := false
 	for value in victory_lines:
@@ -64,14 +64,14 @@ func _test_shipped_content() -> void:
 			"scénario : le reflet '%s' se présente une seule fois au lancement" % god_id)
 		var mirror: Dictionary = sequences.get("mirror_%s" % god_id, {})
 		var has_god := false
-		var has_stone := false
+		var has_monster := false
 		for line_value in mirror.get("lines", []):
 			if not line_value is Dictionary:
 				continue
 			var speaker := str(line_value.get("speaker", ""))
 			has_god = has_god or speaker == "theme_god"
-			has_stone = has_stone or speaker == "pr_stone"
-		_check((mirror.get("lines", []) as Array).size() >= 3 and has_god and has_stone,
+			has_monster = has_monster or speaker == "pr_stone"
+		_check((mirror.get("lines", []) as Array).size() >= 3 and has_god and has_monster,
 			"scénario : %s parle, puis Pr. Stone explique comment le battre" % god_id)
 
 	var tutorials: Dictionary = content.get("tutorials", {})
@@ -161,22 +161,22 @@ func _test_shipped_content() -> void:
 	var plan: Array = match_setup.get("opponent_plan", [])
 	_check(int(match_setup.get("board_size", 0)) == 3
 		and int(match_setup.get("first_player", 0)) == 1
-		and (match_setup.get("initial_stones", []) as Array).is_empty()
+		and (match_setup.get("initial_monsters", []) as Array).is_empty()
 		and plan.size() == 4,
 		"tutoriels : le match fournit un plateau vide, le premier joueur et le plan du bot")
 	_check(plan.size() == 4 and int(plan[0].get("row", -1)) == 2
 		and int(plan[0].get("col", -1)) == 2
-		and str(plan[0].get("stone_id", "")) == "le_drape_du_seuil_n1",
+		and str(plan[0].get("monster_id", "")) == "le_drape_du_seuil_n1",
 		"tutoriels : le bot répond par le Drap dans le coin opposé")
 	_check(plan.size() == 4 and int(plan[1].get("row", -1)) == 1
 		and int(plan[1].get("col", -1)) == 0
-		and str(plan[1].get("stone_id", "")) == "mordeur_des_combles_n1",
+		and str(plan[1].get("monster_id", "")) == "mordeur_des_combles_n1",
 		"tutoriels : le bot riposte ensuite avec le Mordeur qui prend la Gueule")
 	for deck_key in ["player_deck", "opponent_deck"]:
 		var deck: Array = match_setup.get(deck_key, [])
-		for stone_id in deck:
-			_check(StoneLoader.has_stone(str(stone_id)),
-				"tutoriels : la carte '%s' du setup existe" % str(stone_id))
+		for monster_id in deck:
+			_check(MonsterLoader.has_monster(str(monster_id)),
+				"tutoriels : la carte '%s' du setup existe" % str(monster_id))
 
 	## Les deux leçons de terrain : taille puis cases bloquées.
 	var tuto_02: Dictionary = chapters.get("tuto_02", {})

@@ -8,8 +8,8 @@ const EconomyConfigModel := preload("res://scripts/data/economy/EconomyConfig.gd
 
 ## Même barème que les Rituels : la moitié du prix unitaire de la rareté.
 static func souls_for(lineage_id: String, copies: int) -> int:
-	var stone_id := StoneLoader.variant_id(lineage_id, 1)
-	var rarity := StoneLoader.stone_rarity(stone_id)
+	var monster_id := MonsterLoader.variant_id(lineage_id, 1)
+	var rarity := MonsterLoader.monster_rarity(monster_id)
 	var rule: Dictionary = EconomyConfigModel.get_config().get("shop", {}).get(rarity, {})
 	var unit_price := int(rule.get("fixed_price", 0))
 	if unit_price <= 0:

@@ -2,36 +2,36 @@
 ## Coordonne la pose, les attaques puis les effets ; chaque règle vit dans son système.
 class_name CombatResolver
 extends RefCounted
-const BattleStoneModel := preload("res://scripts/engine/BattleStone.gd")
+const BattleMonsterModel := preload("res://scripts/engine/BattleMonster.gd")
 const Board := preload("res://scripts/engine/combat/CombatBoard.gd")
 const PlacementEffects := preload("res://scripts/engine/effects/PlacementEffectResolver.gd")
 const Attack := preload("res://scripts/engine/combat/AttackResolver.gd")
 const PostAttackEffects := preload("res://scripts/engine/effects/PostAttackEffectResolver.gd")
 const Swarm := preload("res://scripts/engine/effects/SwarmSystem.gd")
 
-static func apply_move(state: GameState, row: int, col: int, stone_id: String, player: int) -> Dictionary:
-	var placed := place_stone(state, row, col, stone_id, player)
+static func apply_move(state: GameState, row: int, col: int, monster_id: String, player: int) -> Dictionary:
+	var placed := place_monster(state, row, col, monster_id, player)
 	if not placed.get("success", false):
 		return placed
 	var result := finish_move(state, row, col, player)
 	result["placement"] = placed
 	return result
 
-static func place_stone(state: GameState, row: int, col: int, stone_id: String, player: int) -> Dictionary:
-	if not PlacementRules.is_valid(state, row, col, stone_id, player):
+static func place_monster(state: GameState, row: int, col: int, monster_id: String, player: int) -> Dictionary:
+	if not PlacementRules.is_valid(state, row, col, monster_id, player):
 		return {"success": false, "reason": "invalid_placement"}
 	var swarm_before := Swarm.snapshot(state)
-	var definition := StoneLoader.get_stone(stone_id)
-	var battle_stone: BattleStoneModel = BattleStoneModel.new()
-	battle_stone.configure(stone_id, definition, state.take_instance_id())
-	var placement_effects := PlacementEffects.resolve(state, battle_stone, definition)
+	var definition := MonsterLoader.get_monster(monster_id)
+	var battle_monster: BattleMonsterModel = BattleMonsterModel.new()
+	battle_monster.configure(monster_id, definition, state.take_instance_id())
+	var placement_effects := PlacementEffects.resolve(state, battle_monster, definition)
 	var index := state.index_of(row, col)
-	state.board[index]["stone_id"] = stone_id
+	state.board[index]["monster_id"] = monster_id
 	state.board[index]["owner"] = player
 	state.board[index]["placed_by"] = player
-	state.board[index]["stone"] = battle_stone
+	state.board[index]["monster"] = battle_monster
 	state.empty_playable_cells -= 1
-	state.hand_of(player).erase(stone_id)
+	state.hand_of(player).erase(monster_id)
 	Swarm.recalculate(state)
 	var swarm_events := Swarm.transitions(
 		swarm_before, Swarm.snapshot(state), row, col)
@@ -39,18 +39,18 @@ static func place_stone(state: GameState, row: int, col: int, stone_id: String, 
 		"success": true,
 		"row": row,
 		"col": col,
-		"stone_id": stone_id,
+		"monster_id": monster_id,
 		"owner": player,
 		"placement_effects": placement_effects,
 		"swarm_events": swarm_events
 	}
 
 static func finish_move(state: GameState, row: int, col: int, player: int, attack_plan: Dictionary = {}) -> Dictionary:
-	var source := Board.stone_at(state.get_cell(row, col))
+	var source := Board.monster_at(state.get_cell(row, col))
 	if source == null:
 		return {"success": false, "reason": "missing_source", "captures": [], "effects": [], "swarm_events": []}
 	var swarm_before := Swarm.snapshot(state)
-	# place_stone() vient de recalculer l'Essaim : le plan lit déjà ses bonus.
+	# place_monster() vient de recalculer l'Essaim : le plan lit déjà ses bonus.
 	if attack_plan.is_empty():
 		attack_plan = Attack.resolve(state, row, col, player, source)
 	var captures: Array = attack_plan["captures"]
@@ -62,10 +62,10 @@ static func finish_move(state: GameState, row: int, col: int, player: int, attac
 		"effects": effects, "swarm_events": Swarm.transitions(swarm_before, Swarm.snapshot(state), row, col)}
 
 ## Façade stable pour les requêtes des IA et du coordinateur d'écran.
-static func resolve_attacks(state: GameState, row: int, col: int, player: int, source: BattleStoneModel) -> Dictionary:
+static func resolve_attacks(state: GameState, row: int, col: int, player: int, source: BattleMonsterModel) -> Dictionary:
 	return Attack.resolve(state, row, col, player, source)
 
-static func find_captures(state: GameState, row: int, col: int, player: int, source: BattleStoneModel) -> Array:
+static func find_captures(state: GameState, row: int, col: int, player: int, source: BattleMonsterModel) -> Array:
 	return Attack.resolve(state, row, col, player, source)["captures"]
 
 static func recalculate_swarm(state: GameState) -> void:

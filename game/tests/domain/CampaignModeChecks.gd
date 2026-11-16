@@ -139,7 +139,7 @@ func _test_constrained_modes() -> void:
 func _affinity_count(deck: Array, god_id: String) -> int:
 	var count := 0
 	for raw_id in deck:
-		if StoneLoader.stone_affinity(str(raw_id)) == god_id:
+		if MonsterLoader.monster_affinity(str(raw_id)) == god_id:
 			count += 1
 	return count
 

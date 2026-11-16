@@ -1,6 +1,6 @@
 ## Affiche seulement les emplacements du deck et relaie les appuis.
 extends RefCounted
-signal card_requested(stone_id: String, wrapper: VBoxContainer, source: int)
+signal card_requested(monster_id: String, wrapper: VBoxContainer, source: int)
 const Layout := preload("res://scripts/ui/collection/CardGridLayout.gd")
 const CardProgressView := preload("res://scripts/ui/economy/CardProgressBar.gd")
 var deck_rows: VBoxContainer
@@ -30,15 +30,15 @@ func _make_deck_slot(index: int, expand: bool) -> Control:
 	wrapper.add_theme_constant_override("separation", UITheme.GAP_MEDIUM)
 	wrapper.resized.connect(_fit_slot.bind(wrapper))
 	if index < _current_deck.size():
-		var stone_id: String = _current_deck[index]
-		var card := Layout.make_stone_card(StoneLoader.get_stone(stone_id), StoneCard.OWNER_HUMAN, UITheme.CARD_DECK)
+		var monster_id: String = _current_deck[index]
+		var card := Layout.make_monster_card(MonsterLoader.get_monster(monster_id), MonsterCard.OWNER_HUMAN, UITheme.CARD_DECK)
 		card.set_edge_margin_ratio(UITheme.CARD_DECK_EDGE_MARGIN)
-		card.set_marker_scale(StoneCard.BLADE_MARGIN / UITheme.CARD_DECK_EDGE_MARGIN)
+		card.set_marker_scale(MonsterCard.BLADE_MARGIN / UITheme.CARD_DECK_EDGE_MARGIN)
 		card.card_pressed.connect(card_requested.emit.bind(wrapper, CardActionDrawer.Source.DECK))
 		wrapper.add_child(card)
 		var progress := CardProgressView.new()
 		progress.name = "Progress"
-		progress.setup(StoneLoader.stone_lineage(stone_id))
+		progress.setup(MonsterLoader.monster_lineage(monster_id))
 		wrapper.add_child(progress)
 		return wrapper
 	wrapper.add_child(Layout.make_empty_deck_slot())

@@ -23,15 +23,15 @@
     {
       "id": "daily_high_diff",
       "title": "Sans bavarder",
-      "description": "Gagner une manche avec au moins six pierres d'avance.",
+      "description": "Gagner une manche avec au moins six monstres d'avance.",
       "metric": "high_diff_wins",
       "effort": 60,
       "tiers": [{"threshold": 1, "souls": 35}]
     },
     {
       "id": "daily_captures",
-      "title": "Moisson de pierres",
-      "description": "Capturer trente pierres en combat.",
+      "title": "Moisson de monstres",
+      "description": "Capturer trente monstres en combat.",
       "metric": "captures",
       "effort": 55,
       "tiers": [{"threshold": 30, "souls": 30}]
@@ -305,7 +305,7 @@
     {
       "id": "captures",
       "title": "Boucherie méthodique",
-      "description": "Capturer des pierres au total.",
+      "description": "Capturer des monstres au total.",
       "metric": "total_captures",
       "tiers": [{"threshold": 100, "souls": 200}, {"threshold": 1000, "souls": 1000}]
     },
@@ -398,7 +398,7 @@
       "required_gate": "legendary_cards",
       "progress_policy": "since_gate",
       "title": "Les brèches du monde",
-      "description": "Gagner des manches avec au moins six pierres d'avance.",
+      "description": "Gagner des manches avec au moins six monstres d'avance.",
       "metric": "high_diff_wins",
       "tiers": [
         {"threshold": 5, "ritual": "small"},
@@ -447,7 +447,7 @@
       "required_gate": "epic_cards",
       "progress_policy": "since_gate",
       "title": "Le mur des trophées",
-      "description": "Capturer des pierres au total.",
+      "description": "Capturer des monstres au total.",
       "metric": "total_captures",
       "tiers": [
         {"threshold": 1200, "cards": [{"lineage_id": "le_guetteur_trifide", "copies": 2}]},

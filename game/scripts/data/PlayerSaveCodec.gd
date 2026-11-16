@@ -31,7 +31,7 @@ static func decode(raw: Dictionary) -> Dictionary:
 	var legacy_deck: Array = raw.get("player_deck", []) if raw.get("player_deck", []) is Array else []
 	var god := str(raw.get("player_god_id", ""))
 	# Les sauvegardes sans version/dieu utilisent la famille qui conserve le plus de cartes.
-	if god != "" and StoneLoader.get_god(god).is_empty():
+	if god != "" and MonsterLoader.get_god(god).is_empty():
 		god = best_god_for_deck(legacy_deck)
 	if not raw.has("inventory") and god == "":
 		god = best_god_for_deck(legacy_deck)
@@ -62,22 +62,22 @@ static func starter_profile() -> Dictionary:
 	var inventory := InventoryModel.new()
 	inventory.souls = maxi(0, int(starter.get("souls", 0)))
 	inventory.candles = maxi(0, int(starter.get("candles", 0)))
-	for stone_id in deck:
-		inventory.add_copies(StoneLoader.stone_lineage(str(stone_id)), 1)
+	for monster_id in deck:
+		inventory.add_copies(MonsterLoader.monster_lineage(str(monster_id)), 1)
 	return encode(decks, selections, "", "Joueur", default_stats(), inventory.to_dict())
 
 
 ## Choisit le dieu qui conserve le plus de cartes d'un ancien deck. Cette règle
 ## appartient à la migration du profil, pas au catalogue de contenu.
-static func best_god_for_deck(stone_ids: Array) -> String:
-	var best_id := StoneLoader.default_god_id()
+static func best_god_for_deck(monster_ids: Array) -> String:
+	var best_id := MonsterLoader.default_god_id()
 	var best_count := -1
-	for god in StoneLoader.get_all_gods():
+	for god in MonsterLoader.get_all_gods():
 		var god_id := str(god.get("id", ""))
 		var available := 0
-		for raw_id in stone_ids:
-			var stone_id := str(raw_id)
-			if StoneLoader.is_stone_available_to_god(stone_id, god_id):
+		for raw_id in monster_ids:
+			var monster_id := str(raw_id)
+			if MonsterLoader.is_monster_available_to_god(monster_id, god_id):
 				available += 1
 		if available > best_count:
 			best_count = available
@@ -90,7 +90,7 @@ static func best_god_for_deck(stone_ids: Array) -> String:
 static func _decode_decks(raw: Dictionary, active_god: String, legacy_deck: Array) -> Dictionary:
 	var saved: Dictionary = raw.get("decks_by_god", {}) if raw.get("decks_by_god") is Dictionary else {}
 	var decks := _empty_deck_banks()
-	for definition in StoneLoader.get_all_gods():
+	for definition in MonsterLoader.get_all_gods():
 		var god_id := str(definition["id"])
 		var slots: Array = []
 		var saved_slots: Array = saved.get(god_id, []) if saved.get(god_id) is Array else []
@@ -112,7 +112,7 @@ static func _decode_decks(raw: Dictionary, active_god: String, legacy_deck: Arra
 
 static func _empty_deck_banks() -> Dictionary:
 	var decks := {NEUTRAL_DECK_KEY: [[], [], []]}
-	for definition in StoneLoader.get_all_gods():
+	for definition in MonsterLoader.get_all_gods():
 		decks[str(definition["id"])] = [[], [], []]
 	return decks
 
@@ -126,8 +126,8 @@ static func _empty_selections(decks: Dictionary) -> Dictionary:
 
 static func _sanitize_neutral(cards: Array) -> Array:
 	var clean := DeckRules.sanitize_deck(cards)
-	return clean.filter(func(stone_id):
-		return StoneLoader.stone_affinity(str(stone_id)) == "neutral")
+	return clean.filter(func(monster_id):
+		return MonsterLoader.monster_affinity(str(monster_id)) == "neutral")
 
 
 ## Les profils antérieurs à l'économie conservent l'accès à leur contenu. Le
@@ -136,17 +136,17 @@ static func _sanitize_neutral(cards: Array) -> Array:
 static func _legacy_inventory() -> PlayerInventory:
 	var inventory := InventoryModel.new()
 	inventory.first_god_discount_used = true
-	for god in StoneLoader.get_all_gods():
+	for god in MonsterLoader.get_all_gods():
 		inventory.unlock_god(str(god.get("id", "")))
 	var seen := {}
-	for stone in StoneLoader.get_all_stones():
-		var stone_id := str(stone.get("id", ""))
-		var lineage_id := StoneLoader.stone_lineage(stone_id)
+	for monster in MonsterLoader.get_all_monsters():
+		var monster_id := str(monster.get("id", ""))
+		var lineage_id := MonsterLoader.monster_lineage(monster_id)
 		if seen.has(lineage_id):
 			continue
 		seen[lineage_id] = true
 		inventory.cards[lineage_id] = {
-			"unlocked_level": StoneLoader.lineage_max_level(lineage_id),
+			"unlocked_level": MonsterLoader.lineage_max_level(lineage_id),
 			"copies": 0,
 		}
 	return inventory

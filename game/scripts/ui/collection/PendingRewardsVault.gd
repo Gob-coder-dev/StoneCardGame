@@ -78,10 +78,10 @@ func _make_god_section(group: Dictionary) -> PanelContainer:
 
 func _make_reward_card(reward: Dictionary) -> VBoxContainer:
 	var lineage_id := str(reward.get("lineage_id", ""))
-	var stone_id := StoneLoader.variant_id(lineage_id, 1)
+	var monster_id := MonsterLoader.variant_id(lineage_id, 1)
 	var wrapper := CardLayout.make_card_wrapper(true, 220)
-	var card := CardLayout.make_stone_card(
-		StoneLoader.get_stone(stone_id), StoneCard.OWNER_NONE, 220)
+	var card := CardLayout.make_monster_card(
+		MonsterLoader.get_monster(monster_id), MonsterCard.OWNER_NONE, 220)
 	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	card.set_show_cost(false)
 	card.modulate = Color(0.64, 0.64, 0.70, 0.9)

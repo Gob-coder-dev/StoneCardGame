@@ -18,9 +18,9 @@ func _test_weakness_groups() -> void:
 	_force_instance(state, 1, 1, "fx_wall", GameState.PLAYER_AI)
 	_force_instance(state, 0, 0, "fx_wall", GameState.PLAYER_AI)
 	_force_instance(state, 2, 0, "fx_wall", GameState.PLAYER_AI)
-	state.get_cell(1, 1)["stone"].miasma_weakness = 2
-	state.get_cell(0, 0)["stone"].miasma_weakness = 1
-	state.get_cell(2, 0)["stone"].miasma_weakness = 1
+	state.get_cell(1, 1)["monster"].miasma_weakness = 2
+	state.get_cell(0, 0)["monster"].miasma_weakness = 1
+	state.get_cell(2, 0)["monster"].miasma_weakness = 1
 	var events := [
 		CombatEvents.weakness(CombatEvents.WEAKEN, 1, 1, 0, 1, 0, 1),
 		CombatEvents.weakness(CombatEvents.WEAKEN, 1, 1, 1, 2, 2, 1),
@@ -88,17 +88,17 @@ func _test_pillage_view_animation() -> void:
 	view.build()
 	view.refresh(state)
 	view.animations.animate_effects(result["effects"], Timeline.PILLAGE)
-	var card: StoneCard = view.get_node("cell_1_1").get_child(0)
-	_check(_sum(card.displayed_stone().shields) == 0 and _sum(card.get_battle_stone().shields) == 4,
+	var card: MonsterCard = view.get_node("cell_1_1").get_child(0)
+	_check(_sum(card.displayed_monster().shields) == 0 and _sum(card.get_battle_monster().shields) == 4,
 		"les nouveaux boucliers attendent la fin de la répartition aléatoire")
 	var animation: Control = view.animations.get_node("PillageReveal")
-	var robbed: StoneCard = view.get_node("cell_0_1").get_child(0)
+	var robbed: MonsterCard = view.get_node("cell_0_1").get_child(0)
 	_check(animation._transfers.size() == 4 and animation._targets.size() == 4
 		and is_zero_approx(robbed._animated_marker_growth("bottom", 0)),
 		"les symboles volés se détachent et convergent vers leurs bonnes destinations")
 	await get_tree().create_timer(1.85).timeout
 	_check(card._combat_preview == null and state.random_state == saved_rng
-		and _sum(card.displayed_stone().shields) == 4
+		and _sum(card.displayed_monster().shields) == 4
 		and is_equal_approx(robbed._animated_marker_growth("bottom", 0), 1.0),
 		"le Pillage fait repousser les symboles et révèle les boucliers sans nouveau hasard")
 	view.queue_free()
@@ -117,17 +117,17 @@ func _test_weakness_view_animation() -> void:
 	view.refresh(state)
 	view.animations.animate_effects(result["effects"], 0.55)
 	var animation: Control = view.animations.get_node("WeaknessReveal")
-	var target: StoneCard = view.get_node("cell_1_2").get_child(0)
+	var target: MonsterCard = view.get_node("cell_1_2").get_child(0)
 	# La voisine alliée en (1,0) est épargnée : seule la voisine adverse est visée.
 	_check(animation._targets.size() == 1
 		and target.displayed_weakness() == 0,
 		"le Miasme masque les fissures jusqu'à l'arrivée de l'aura locale")
 	await get_tree().create_timer(0.34).timeout
 	var every_face_broken := true
-	for side in BattleStoneModel.SIDES:
+	for side in BattleMonsterModel.SIDES:
 		every_face_broken = every_face_broken and target.broken_blade_count(side) == 1
 	_check(target.displayed_weakness() == 1 and every_face_broken
-		and target.get_battle_stone().shields["left"] == 1,
+		and target.get_battle_monster().shields["left"] == 1,
 		"l'impact brise une lame par face sans désactiver le bouclier")
 	await get_tree().create_timer(0.30).timeout
 	_check(view.animations.get_node_or_null("WeaknessReveal") == null and target._visual_weakness_override == -1,
@@ -171,7 +171,7 @@ func _test_weakness_view_animation() -> void:
 	view.animations.animate_effects(result["effects"], 0.55)
 	animation = view.animations.get_node("WeaknessReveal")
 	target = view.get_node("cell_1_2").get_child(0)
-	var far_card: StoneCard = view.get_node("cell_0_0").get_child(0)
+	var far_card: MonsterCard = view.get_node("cell_0_0").get_child(0)
 	_check(animation._targets.size() == 1 and animation._targets[0]["card"] == target
 		and target.displayed_weakness() == 0,
 		"l'échec corrosif envoie son poison vers la seule pierre qui a résisté")

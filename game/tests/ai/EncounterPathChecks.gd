@@ -15,7 +15,7 @@ func run() -> void:
 
 func _test_level_order() -> void:
 	var sources: Array = []
-	for god in StoneLoader.get_all_gods():
+	for god in MonsterLoader.get_all_gods():
 		sources.append(str(god["id"]))
 	sources.append(OpponentCatalogModel.NEUTRAL_BOT_ID)
 	var unique := {}
@@ -103,7 +103,7 @@ func _test_next_level() -> void:
 func _test_source_lookup() -> void:
 	var opponent := OpponentCatalogModel.build("enigma", "n2", "difficile")
 	var neutral := OpponentCatalogModel.build_neutral("n34", "moyen")
-	var historical := StoneLoader.get_npc("disciple_muraille")
+	var historical := MonsterLoader.get_npc("disciple_muraille")
 	_check(OpponentCatalogModel.source_id_of(opponent) == "enigma"
 		and OpponentCatalogModel.source_id_of(neutral) == OpponentCatalogModel.NEUTRAL_BOT_ID
 		and OpponentCatalogModel.source_id_of(historical) == "",

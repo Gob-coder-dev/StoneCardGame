@@ -55,7 +55,7 @@ func step(action: Dictionary) -> Dictionary:
 	if state.is_game_over:
 		return {"success": false, "error": "la partie est terminee"}
 	var player := state.current_player
-	var result := CombatResolver.apply_move(state, int(action.get("row", -1)), int(action.get("col", -1)), str(action.get("stone_id", "")), player)
+	var result := CombatResolver.apply_move(state, int(action.get("row", -1)), int(action.get("col", -1)), str(action.get("monster_id", "")), player)
 	if not bool(result.get("success", false)):
 		return {"success": false, "error": str(result.get("reason", "action invalide"))}
 	_update_outcome()
@@ -111,7 +111,7 @@ func _validate_config(config: Dictionary) -> String:
 	for side in ["human", "ai"]:
 		var god_key := "%s_god" % side
 		var deck_key := "%s_deck" % side
-		if StoneLoader.get_god(str(config.get(god_key, ""))).is_empty():
+		if MonsterLoader.get_god(str(config.get(god_key, ""))).is_empty():
 			return "dieu inconnu pour %s" % side
 		var deck = config.get(deck_key, [])
 		if not deck is Array:
@@ -178,6 +178,6 @@ func _swap_players(view: GameState) -> void:
 			cell["owner"] = _other_player(int(cell["owner"]))
 		if int(cell["placed_by"]) != GameState.PLAYER_NONE:
 			cell["placed_by"] = _other_player(int(cell["placed_by"]))
-		var stone = cell.get("stone")
-		if stone != null and stone.temporary_weakness_owner != GameState.PLAYER_NONE:
-			stone.temporary_weakness_owner = _other_player(stone.temporary_weakness_owner)
+		var monster = cell.get("monster")
+		if monster != null and monster.temporary_weakness_owner != GameState.PLAYER_NONE:
+			monster.temporary_weakness_owner = _other_player(monster.temporary_weakness_owner)

@@ -1,30 +1,30 @@
 ## Aura continue : groupes alliés, bonus déterministes et liens avant/après.
 extends RefCounted
-const BattleStoneModel := preload("res://scripts/engine/BattleStone.gd")
-const SIDES = StoneSide.ALL
+const BattleMonsterModel := preload("res://scripts/engine/BattleMonster.gd")
+const SIDES = MonsterSide.ALL
 const Board := preload("res://scripts/engine/combat/CombatBoard.gd")
-const Effects := preload("res://scripts/domain/StoneEffects.gd")
+const Effects := preload("res://scripts/domain/MonsterEffects.gd")
 
-## Seules les pierres Essaim d'un camp dont le dieu est celui de la carte
-## reçoivent des lames d'aura. Une pierre Essaim capturée par un autre dieu
-## perd donc son aura. Sans pierre Essaim, il n'y a rien à recalculer.
+## Seuls les monstres Essaim d'un camp dont le dieu est celui de la carte
+## reçoivent des lames d'aura. Un monstre Essaim capturé par un autre dieu
+## perd donc son aura. Sans monstre Essaim, il n'y a rien à recalculer.
 static func recalculate(state: GameState) -> void:
 	var members := _reset_and_active_members(state)
 	for component in _connected_components(state, members):
 		_apply_component_bonus(state, component)
 
 
-## Retire les anciennes auras de toutes les pierres Essaim et renvoie uniquement
+## Retire les anciennes auras de tous les monstres Essaim et renvoie uniquement
 ## celles dont le pouvoir est actif dans leur camp actuel.
 static func _reset_and_active_members(state: GameState) -> Dictionary:
 	var members := {}
 	for index in range(state.board.size()):
 		var cell: Dictionary = state.board[index]
-		var stone := Board.stone_at(cell)
-		if stone == null or not StoneLoader.has_effect(stone.stone_id, Effects.SWARM):
+		var monster := Board.monster_at(cell)
+		if monster == null or not MonsterLoader.has_effect(monster.monster_id, Effects.SWARM):
 			continue
 		for side in SIDES:
-			stone.swarm_blades[side] = 0
+			monster.swarm_blades[side] = 0
 		if Board.has_active_power(state, cell, Effects.SWARM):
 			members[index] = true
 	return members
@@ -59,19 +59,19 @@ static func _apply_component_bonus(state: GameState, component: Array) -> void:
 	var bonus_count := mini(Effects.SWARM_CAP,
 		(component.size() - 1) * Effects.BLADES_PER_ALLY)
 	for member_index in component:
-		var member := Board.stone_at(state.board[member_index])
+		var member := Board.monster_at(state.board[member_index])
 		var contributor := 0
 		for other_index in component:
 			if other_index == member_index or contributor >= bonus_count:
 				continue
-			var other := Board.stone_at(state.board[other_index])
+			var other := Board.monster_at(state.board[other_index])
 			var pair_key := "%d:%d" % [mini(member.instance_id, other.instance_id),
 				maxi(member.instance_id, other.instance_id)]
 			var start := absi(hash(pair_key + ":" + str(member.instance_id))) % SIDES.size()
 			contributor = _add_ally_blades(member, start, contributor, bonus_count)
 
 
-static func _add_ally_blades(member: BattleStoneModel, start: int, contributor: int,
+static func _add_ally_blades(member: BattleMonsterModel, start: int, contributor: int,
 		bonus_count: int) -> int:
 	# Chaque lame d'un même allié part de la face suivante : l'aura se répartit.
 	for blade in range(Effects.BLADES_PER_ALLY):
@@ -98,14 +98,14 @@ static func snapshot(state: GameState) -> Dictionary:
 		var cell: Dictionary = state.board[index]
 		if not Board.has_active_power(state, cell, Effects.SWARM):
 			continue
-		var stone := Board.stone_at(cell)
-		var instance_id := int(stone.instance_id)
+		var monster := Board.monster_at(cell)
+		var instance_id := int(monster.instance_id)
 		members[instance_id] = {
 			"instance_id": instance_id,
 			"row": floori(float(index) / state.board_size),
 			"col": index % state.board_size,
 			"owner": int(cell["owner"]),
-			"blades": stone.swarm_blades.duplicate(true)
+			"blades": monster.swarm_blades.duplicate(true)
 		}
 	for instance_id in members:
 		var member: Dictionary = members[instance_id]
@@ -117,7 +117,7 @@ static func snapshot(state: GameState) -> Dictionary:
 			var other_cell := state.get_cell(next_row, next_col)
 			if int(other_cell["owner"]) != int(member["owner"]) or not Board.has_active_power(state, other_cell, Effects.SWARM):
 				continue
-			var other := Board.stone_at(other_cell)
+			var other := Board.monster_at(other_cell)
 			var other_id := int(other.instance_id)
 			var key := _swarm_link_key(int(instance_id), other_id)
 			component_links[key] = {
@@ -144,7 +144,7 @@ static func links(state: GameState) -> Array:
 	return result
 
 
-## Décrit uniquement le réseau touché. Ajouter une quatrième pierre à un
+## Décrit uniquement le réseau touché. Ajouter un quatrième monstre à un
 ## groupe plafonné anime encore sa nouvelle liaison, sans faire pulser les
 ## éventuels groupes Essaim indépendants du plateau.
 
@@ -220,10 +220,10 @@ static func _member_transitions(affected: Dictionary, before_members: Dictionary
 	for instance_id in member_ids:
 		var old_member: Dictionary = before_members.get(instance_id, {})
 		var new_member: Dictionary = after_members.get(instance_id, {})
-		var reference_stone: Dictionary = new_member if not new_member.is_empty() else old_member
+		var reference_monster: Dictionary = new_member if not new_member.is_empty() else old_member
 		result.append({
 			"instance_id": instance_id,
-			"row": int(reference_stone["row"]), "col": int(reference_stone["col"]),
+			"row": int(reference_monster["row"]), "col": int(reference_monster["col"]),
 			"before": old_member.get("blades", _empty_side_map()).duplicate(true),
 			"after": new_member.get("blades", _empty_side_map()).duplicate(true)
 		})

@@ -1,6 +1,6 @@
 # Direction artistique — Bestiaire d'horreur
 
-Ce document est la référence visuelle active de **SamStone**. Son bestiaire
+Ce document est la référence visuelle active de **Beastpact**. Son bestiaire
 horrifique est organisé autour de six dieux, de leurs familles de cartes et de
 monstres neutres. Le [bestiaire](BESTIAIRE.md) décrit les créatures individuelles.
 
@@ -140,7 +140,7 @@ modifier la créature ne suffit pas.
 Les légendaires doivent être originaux. Une référence peut servir à décrire une
 ambiance ou un type d'horreur, mais une légère modification de nom ou de design ne
 rend pas une adaptation exploitable. Les silhouettes, noms et histoires doivent
-être créés pour SamStone.
+être créés pour Beastpact.
 
 ## Cohérence de production
 
@@ -157,7 +157,7 @@ Avant d'intégrer une illustration, vérifier :
 
 Les portraits de dieux sont enregistrés dans le dossier assets/gods. Les cartes
 sont dans assets/cards, et leur association au jeu se fait par le champ asset de
-`data/stones/`. Une image de niveau peut remplacer l'illustration commune de sa
+`data/monsters/`. Une image de niveau peut remplacer l'illustration commune de sa
 lignée sans changer ses statistiques, ses identifiants ou les sauvegardes.
 
 Le jeu contient actuellement 275 PNG de cartes : 96 N1, 81 N2, 65 N3 et 33 N4.

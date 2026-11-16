@@ -238,13 +238,13 @@ static func _validate_match(chapter_id: String, setup: Dictionary,
 		var first := int(setup.get("first_player", 0))
 		if first != 0 and first != 1 and first != 2:
 			problems.append("Tutoriels : premier joueur invalide dans '%s'." % chapter_id)
-	for stone in setup.get("initial_stones", []):
-		if not stone is Dictionary or str(stone.get("stone_id", "")) == "":
-			problems.append("Tutoriels : pierre initiale invalide dans '%s'." % chapter_id)
+	for monster in setup.get("initial_monsters", []):
+		if not monster is Dictionary or str(monster.get("monster_id", "")) == "":
+			problems.append("Tutoriels : monstre initiale invalide dans '%s'." % chapter_id)
 			continue
-		if int(stone.get("row", -1)) < 0 or int(stone.get("col", -1)) < 0:
+		if int(monster.get("row", -1)) < 0 or int(monster.get("col", -1)) < 0:
 			problems.append("Tutoriels : position initiale invalide dans '%s'." % chapter_id)
-		var owner := int(stone.get("owner", 2))
+		var owner := int(monster.get("owner", 2))
 		if owner != 1 and owner != 2:
 			problems.append("Tutoriels : propriétaire initial invalide dans '%s'." % chapter_id)
 	for pos in setup.get("blocked_cells", []):
@@ -254,7 +254,7 @@ static func _validate_match(chapter_id: String, setup: Dictionary,
 		if int((pos as Array)[0]) < 0 or int((pos as Array)[1]) < 0:
 			problems.append("Tutoriels : case bloquée invalide dans '%s'." % chapter_id)
 	for move in setup.get("opponent_plan", []):
-		if not move is Dictionary or str(move.get("stone_id", "")) == "":
+		if not move is Dictionary or str(move.get("monster_id", "")) == "":
 			problems.append("Tutoriels : coup du bot invalide dans '%s'." % chapter_id)
 			continue
 		if int(move.get("row", -1)) < 0 or int(move.get("col", -1)) < 0:

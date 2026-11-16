@@ -6,7 +6,7 @@
 ## données remplace cette valeur calculée (cartes à puissance exceptionnelle).
 ##
 ## La règle est pure : elle ne lit ni scène, ni réseau, ni sauvegarde. Le
-## catalogue peut l'appeler avec une définition déjà fusionnée par StoneLoader.
+## catalogue peut l'appeler avec une définition déjà fusionnée par MonsterLoader.
 class_name CardPowerTierRules
 extends RefCounted
 

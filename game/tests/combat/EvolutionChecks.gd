@@ -19,25 +19,25 @@ func _test_catalogue() -> void:
 		"echassier_des_brumes": 3, "le_porte_cercueil": 2, "porte_nid": 3, "le_collecteur_zero": 1}
 	var coherent := true
 	for lineage in expected:
-		coherent = coherent and StoneLoader.lineage_max_level(lineage) == expected[lineage]
+		coherent = coherent and MonsterLoader.lineage_max_level(lineage) == expected[lineage]
 		for level in range(1, int(expected[lineage]) + 1):
-			var id := StoneLoader.variant_id(lineage, level)
-			coherent = coherent and StoneLoader.has_stone(id) and StoneLoader.stone_lineage(id) == lineage and StoneLoader.stone_level(id) == level
+			var id := MonsterLoader.variant_id(lineage, level)
+			coherent = coherent and MonsterLoader.has_monster(id) and MonsterLoader.monster_lineage(id) == lineage and MonsterLoader.monster_level(id) == level
 	_check(coherent, "les lignées de référence ont des identifiants stables et le nombre de formes de leur rareté")
-	_check(StoneLoader.variant_id("avortons_des_caves", 0) == "" and StoneLoader.variant_id("avortons_des_caves", 5) == ""
-		and StoneLoader.variant_id("inconnue", 1) == "", "un niveau inexistant est refusé explicitement")
-	_check(StoneLoader.preview_variant("avortons_des_caves_n1", 4) == "avortons_des_caves_n4"
-		and StoneLoader.preview_variant("echassier_des_brumes_n1", 4) == "echassier_des_brumes_n3"
-		and StoneLoader.preview_variant("le_porte_cercueil_n1", 4) == "le_porte_cercueil_n2"
-		and StoneLoader.preview_variant("le_collecteur_zero_n1", 4) == "le_collecteur_zero_n1",
+	_check(MonsterLoader.variant_id("avortons_des_caves", 0) == "" and MonsterLoader.variant_id("avortons_des_caves", 5) == ""
+		and MonsterLoader.variant_id("inconnue", 1) == "", "un niveau inexistant est refusé explicitement")
+	_check(MonsterLoader.preview_variant("avortons_des_caves_n1", 4) == "avortons_des_caves_n4"
+		and MonsterLoader.preview_variant("echassier_des_brumes_n1", 4) == "echassier_des_brumes_n3"
+		and MonsterLoader.preview_variant("le_porte_cercueil_n1", 4) == "le_porte_cercueil_n2"
+		and MonsterLoader.preview_variant("le_collecteur_zero_n1", 4) == "le_collecteur_zero_n1",
 		"l'aperçu niveau quatre conserve les rares, épiques et légendaires à leur vrai maximum")
-	_check(StoneLoader.stone_cost("avortons_des_caves_n1") == 4.0 and StoneLoader.stone_cost("avortons_des_caves_n4") == 16.0
-		and StoneLoader.stone_cost("devoracle_n1") == 3.0 and StoneLoader.stone_cost("echassier_des_brumes_n1") == 5.5,
+	_check(MonsterLoader.monster_cost("avortons_des_caves_n1") == 4.0 and MonsterLoader.monster_cost("avortons_des_caves_n4") == 16.0
+		and MonsterLoader.monster_cost("devoracle_n1") == 3.0 and MonsterLoader.monster_cost("echassier_des_brumes_n1") == 5.5,
 		"chaque coût provient des symboles et d'un point fixe pour un pouvoir")
-	var copy := StoneLoader.get_stone("avortons_des_caves_n4")
+	var copy := MonsterLoader.get_monster("avortons_des_caves_n4")
 	copy["blades"]["top"] = 0
-	_check(StoneLoader.get_stone("avortons_des_caves_n4")["blades"]["top"] == 4
-		and StoneLoader.get_stone("avortons_des_caves_n1")["blades"]["top"] == 1,
+	_check(MonsterLoader.get_monster("avortons_des_caves_n4")["blades"]["top"] == 4
+		and MonsterLoader.get_monster("avortons_des_caves_n1")["blades"]["top"] == 1,
 		"les lectures et les niveaux ne partagent pas leurs dictionnaires modifiables")
 	_check(not Checks.lineage_problems({"id": "broken", "rarity": "common", "levels": []}).is_empty()
 		and not Checks.lineage_problems({"id": "broken", "rarity": "legendary", "levels": [{"id": "x", "god_id": "veskar"}]}).is_empty(),
@@ -70,30 +70,30 @@ func _test_deck_levels() -> void:
 
 
 func _test_form_assets() -> void:
-	var saved_stones := StoneLoader._stones.duplicate()
-	var saved_list := StoneLoader._stones_list.duplicate()
-	var saved_lineages := StoneLoader._lineages.duplicate(true)
+	var saved_monsters := MonsterLoader._monsters.duplicate()
+	var saved_list := MonsterLoader._monsters_list.duplicate()
+	var saved_lineages := MonsterLoader._lineages.duplicate(true)
 	var forms: Array = []
 	for level in range(1, 5):
 		forms.append({"id": "evo_asset_%d" % level, "asset": "res://future_art/form_%d.png" % level})
 	forms[1].erase("asset")
-	StoneLoader._index_lineage({"id": "evo_assets", "rarity": "common", "god_id": "neutral",
+	MonsterLoader._index_lineage({"id": "evo_assets", "rarity": "common", "god_id": "neutral",
 		"asset": "res://future_art/base.png",
 		"blades": {"top": 1, "bottom": 1, "left": 1, "right": 1}, "levels": forms})
-	_check(StoneLoader.get_stone("evo_asset_1")["asset"] == "res://future_art/form_1.png"
-		and StoneLoader.get_stone("evo_asset_2")["asset"] == "res://future_art/base.png"
-		and StoneLoader.get_stone("evo_asset_4")["asset"] == "res://future_art/form_4.png",
+	_check(MonsterLoader.get_monster("evo_asset_1")["asset"] == "res://future_art/form_1.png"
+		and MonsterLoader.get_monster("evo_asset_2")["asset"] == "res://future_art/base.png"
+		and MonsterLoader.get_monster("evo_asset_4")["asset"] == "res://future_art/form_4.png",
 		"chaque forme hérite de l'illustration commune et peut utiliser sa propre image")
-	StoneLoader._stones = saved_stones
-	StoneLoader._stones_list = saved_list
-	StoneLoader._lineages = saved_lineages
+	MonsterLoader._monsters = saved_monsters
+	MonsterLoader._monsters_list = saved_list
+	MonsterLoader._lineages = saved_lineages
 
 
 func _test_profile_decode() -> void:
 	var raw := Codec.decode({"player_god_id": "veskar", "player_deck": ["le_nud_hurlant_n2", "de_boiteux_n1"]})
 	for god in raw["decks_by_god"]:
 		for slot in range(3):
-			raw["decks_by_god"][god][slot] = [StoneLoader.variant_id("avortons_des_caves", slot + 1)]
+			raw["decks_by_god"][god][slot] = [MonsterLoader.variant_id("avortons_des_caves", slot + 1)]
 	raw["player_name"] = "Évolutions"
 	raw["stats"]["wins"] = 9
 	var decoded := Codec.decode(JSON.parse_string(JSON.stringify(raw)))
@@ -122,7 +122,7 @@ func _test_grouped_probabilities() -> void:
 	state.get_cell(0, 0)["owner"] = GameState.PLAYER_AI
 	var possible := Opponent.possible_cards(state)
 	var removed := true
-	for form in StoneLoader.variant_ids("avortons_des_caves"):
+	for form in MonsterLoader.variant_ids("avortons_des_caves"):
 		removed = removed and not possible.has(form)
 	_check(removed and possible.has("devoracle_n4"), "poser une forme exclut toute sa lignée des prévisions, même après sa capture")
 

@@ -24,9 +24,9 @@ BALANCE_CONFIG = json.loads((ROOT / "data" / "campaign" / "authoring" / "balance
 REWARD_CONFIG = json.loads((ROOT / "data" / "campaign" / "authoring" / "reward_profiles.json").read_text(encoding="utf-8"))
 
 
-def load_stone_catalogue() -> dict:
-    """Assemble le catalogue éclaté avec les mêmes entrées que StoneLoader."""
-    manifest_path = ROOT / "data" / "stones" / "manifest.json"
+def load_monster_catalogue() -> dict:
+    """Assemble le catalogue éclaté avec les mêmes entrées que MonsterLoader."""
+    manifest_path = ROOT / "data" / "monsters" / "manifest.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     lineages = []
     for family in manifest["families"]:
@@ -42,16 +42,16 @@ def load_stone_catalogue() -> dict:
     return {"lineages": lineages}
 
 
-STONES = load_stone_catalogue()
+MONSTERS = load_monster_catalogue()
 LINEAGE = {}
 LINEAGE_CATALOG = {}
-STONE_CATALOG = {}
-STONE_GOD = {}
-STONE_RARITY = {}
-STONE_LEVEL = {}
-STONE_TIER = {}
+MONSTER_CATALOG = {}
+MONSTER_GOD = {}
+MONSTER_RARITY = {}
+MONSTER_LEVEL = {}
+MONSTER_TIER = {}
 RARITY_OFFSET = {"common": 0, "rare": 1, "epic": 2, "legendary": 3}
-for lineage in STONES["lineages"]:
+for lineage in MONSTERS["lineages"]:
     lineage_id = str(lineage["id"])
     LINEAGE_CATALOG[lineage_id] = {
         "affinity": str(lineage.get("god_id", "neutral")),
@@ -62,13 +62,13 @@ for lineage in STONES["lineages"]:
         rarity = str(lineage.get("rarity", ""))
         level = int(form.get("level", level_index))
         LINEAGE[form_id] = str(lineage["id"])
-        STONE_GOD[form_id] = str(lineage.get("god_id", "neutral"))
-        STONE_RARITY[form_id] = rarity
-        STONE_LEVEL[form_id] = level
-        STONE_TIER[form_id] = int(form.get("power_tier", level + RARITY_OFFSET[rarity]))
-        STONE_CATALOG[form_id] = {
+        MONSTER_GOD[form_id] = str(lineage.get("god_id", "neutral"))
+        MONSTER_RARITY[form_id] = rarity
+        MONSTER_LEVEL[form_id] = level
+        MONSTER_TIER[form_id] = int(form.get("power_tier", level + RARITY_OFFSET[rarity]))
+        MONSTER_CATALOG[form_id] = {
             "lineage_id": lineage_id,
-            "affinity": STONE_GOD[form_id],
+            "affinity": MONSTER_GOD[form_id],
             "rarity": rarity,
         }
 
@@ -1139,7 +1139,7 @@ for early_id in ["veskar_01", "nerava_01", "kharun_01", "ilyr_01", "sylkha_01"]:
 for node in nodes.values():
     encounter = node["encounter"]
     mirror_deck = encounter.get("mirror_fixed_deck", [])
-    if mirror_deck and any(STONE_TIER.get(card, 99) > encounter["max_power_tier"]
+    if mirror_deck and any(MONSTER_TIER.get(card, 99) > encounter["max_power_tier"]
                            for card in mirror_deck):
         encounter["mirror_fixed_deck"] = []
 
@@ -1156,7 +1156,7 @@ def lineages(deck: list[str]) -> set[str]:
 
 
 def god_card_count(deck: list[str], god_id: str) -> int:
-    return sum(1 for card in deck if STONE_GOD.get(card) == god_id)
+    return sum(1 for card in deck if MONSTER_GOD.get(card) == god_id)
 
 
 reserved_decks = {sorted_deck(deck) for deck in CURATED_DECKS.values()}
@@ -1171,7 +1171,7 @@ for node_id, node in nodes.items():
         continue
     tier = int(enc["max_power_tier"])
     curated = CURATED_DECKS.get(node_id, [])
-    if curated and all(STONE_TIER.get(card, 99) <= tier for card in curated):
+    if curated and all(MONSTER_TIER.get(card, 99) <= tier for card in curated):
         deck = list(curated)
         enc["fixed_deck"] = deck
         used_decks.add(sorted_deck(deck))
@@ -1216,7 +1216,7 @@ for node_id, deck in BOSS_APPROACH_DECK_OVERRIDES.items():
     nodes[node_id]["encounter"]["fixed_deck"] = list(deck)
 
 # Recompenses declaratives par lignee et nombre de copies.
-assign_rewards(nodes, REWARD_CONFIG, STONE_CATALOG, LINEAGE_CATALOG)
+assign_rewards(nodes, REWARD_CONFIG, MONSTER_CATALOG, LINEAGE_CATALOG)
 
 # ── Contrôles de construction ───────────────────────────────────────────────
 # Les réécritures de mode peuvent changer la nature d'une rencontre après sa
@@ -1280,13 +1280,13 @@ for node_id, trial in INTRO_TRIALS.items():
         raise SystemExit(f"initiation miroir invalide sur {node_id}")
     if god_card_count(deck, god) != 4 or god_card_count(deck, "neutral") != 4:
         raise SystemExit(f"initiation {node_id} sans répartition 4/4")
-    if any(STONE_RARITY.get(card) != "common" or STONE_LEVEL.get(card) != 1
-           or STONE_TIER.get(card) != 1 for card in deck):
+    if any(MONSTER_RARITY.get(card) != "common" or MONSTER_LEVEL.get(card) != 1
+           or MONSTER_TIER.get(card) != 1 for card in deck):
         raise SystemExit(f"initiation {node_id} avec une carte hors palier 1")
 
 for node_id in ["veskar_01", "nerava_01", "kharun_01", "ilyr_01", "sylkha_01"]:
     deck = nodes[node_id]["encounter"]["fixed_deck"]
-    tiers = Counter(STONE_TIER.get(card, 0) for card in deck)
+    tiers = Counter(MONSTER_TIER.get(card, 0) for card in deck)
     if tiers != Counter({1: 6, 2: 2}):
         raise SystemExit(f"courbe initiale invalide sur {node_id}: {dict(tiers)}")
 
@@ -1306,8 +1306,8 @@ for edge in edges:
 map_height = max(n["position"]["y"] for n in nodes.values()) + 300
 
 result = {
-    "id": "samstone_campaign",
-    "title": "La Carte de SamStone",
+    "id": "beastpact_campaign",
+    "title": "La Carte de Beastpact",
     "campaign_version": 6,
     "map": {"width": 1080, "height": int(map_height)},
     "start_node_id": "tuto_01",

@@ -185,10 +185,10 @@ func _build_plan(costs_one: Dictionary, costs_two: Dictionary,
 		var pair_two := _pair_ids_for_god(god_two, cost, two, 2)
 		if pair_one.size() != 2 or pair_two.size() != 2:
 			return {"ok": false}
-		for stone_id in pair_one:
-			used_one[generator.lineage_of(str(stone_id))] = true
-		for stone_id in pair_two:
-			used_two[generator.lineage_of(str(stone_id))] = true
+		for monster_id in pair_one:
+			used_one[generator.lineage_of(str(monster_id))] = true
+		for monster_id in pair_two:
+			used_two[generator.lineage_of(str(monster_id))] = true
 		pairs_one.append(pair_one)
 		pairs_two.append(pair_two)
 		chosen_costs.append(cost)
@@ -261,16 +261,16 @@ func _verify_plan(pairs_one: Array, pairs_two: Array, costs: Array) -> bool:
 			return false
 		if str(pair_one[0]) == str(pair_one[1]) or str(pair_two[0]) == str(pair_two[1]):
 			return false
-		for stone_id in pair_one + pair_two:
-			if generator.cost_quarters(str(stone_id)) != cost:
+		for monster_id in pair_one + pair_two:
+			if generator.cost_quarters(str(monster_id)) != cost:
 				return false
-		for stone_id in pair_one:
-			var lineage_one := generator.lineage_of(str(stone_id))
+		for monster_id in pair_one:
+			var lineage_one := generator.lineage_of(str(monster_id))
 			if lineage_one == "" or lineages_one.has(lineage_one):
 				return false
 			lineages_one[lineage_one] = true
-		for stone_id in pair_two:
-			var lineage_two := generator.lineage_of(str(stone_id))
+		for monster_id in pair_two:
+			var lineage_two := generator.lineage_of(str(monster_id))
 			if lineage_two == "" or lineages_two.has(lineage_two):
 				return false
 			lineages_two[lineage_two] = true
@@ -296,8 +296,8 @@ func _verify_plan(pairs_one: Array, pairs_two: Array, costs: Array) -> bool:
 
 func _lineages_unique(selected_deck: Array) -> bool:
 	var seen := {}
-	for stone_id in selected_deck:
-		var lineage := generator.lineage_of(str(stone_id))
+	for monster_id in selected_deck:
+		var lineage := generator.lineage_of(str(monster_id))
 		if lineage == "" or seen.has(lineage):
 			return false
 		seen[lineage] = true
@@ -306,20 +306,20 @@ func _lineages_unique(selected_deck: Array) -> bool:
 
 ## ─── Choix et progression ───────────────────────────────────────────────────
 
-func choose(side: int, stone_id: String) -> Dictionary:
+func choose(side: int, monster_id: String) -> Dictionary:
 	if not _started or complete_for(side):
 		return {"ok": false, "reason": "Le draft n'est pas ouvert pour ce joueur."}
 	if side != GameState.PLAYER_ONE and side != GameState.PLAYER_TWO:
 		return {"ok": false, "reason": "Joueur inconnu."}
-	if not offers_for(side).has(stone_id):
+	if not offers_for(side).has(monster_id):
 		return {"ok": false, "reason": "Carte hors proposition."}
 	if side == GameState.PLAYER_ONE:
-		_deck_one.append(stone_id)
+		_deck_one.append(monster_id)
 		_step_one += 1
 		_complete_one = _step_one >= _deck_size
 		_offers_one = [] if _complete_one else _current_pair(_plan_one, _step_one)
 	else:
-		_deck_two.append(stone_id)
+		_deck_two.append(monster_id)
 		_step_two += 1
 		_complete_two = _step_two >= _deck_size
 		_offers_two = [] if _complete_two else _current_pair(_plan_two, _step_two)
@@ -439,7 +439,7 @@ func result() -> Dictionary:
 		"deck_one": _deck_one.duplicate(),
 		"deck_two": _deck_two.duplicate(),
 		"total_quarters": generator.deck_cost_sum(_deck_one),
-		"total_points": float(generator.deck_cost_sum(_deck_one)) / float(StoneCostRules.COST_SCALE),
+		"total_points": float(generator.deck_cost_sum(_deck_one)) / float(MonsterCostRules.COST_SCALE),
 		"god_one": god_one,
 		"god_two": god_two,
 	}

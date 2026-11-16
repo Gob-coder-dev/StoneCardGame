@@ -1,11 +1,11 @@
-# SamStone — jeu Godot
+# Beastpact — jeu Godot
 
-Ce dossier est le projet Godot autonome du monorepo SamStone. Les commandes de
+Ce dossier est le projet Godot autonome du monorepo Beastpact. Les commandes de
 ce document sont à exécuter depuis `game/`, sauf lorsqu'elles utilisent
 explicitement `--path game`. Voir aussi le [README racine](../README.md).
 
 Jeu de cartes stratégique mobile créé avec Godot. Deux joueurs s'affrontent sur
-un plateau de 4 × 4 cases en posant des pierres-monstres : les lames de chaque
+un plateau de 4 × 4 cases en posant des monstres-monstres : les lames de chaque
 face capturent les cartes adverses, tandis que le dieu choisi donne accès à une
 famille de pouvoirs et à son propre style de jeu.
 
@@ -20,15 +20,15 @@ mais se lance également sur ordinateur avec Godot.
 ## Aperçu du jeu
 
 - Plateau de **4 × 4** cases, avec 0 à 2 cases aléatoirement condamnées.
-- Un deck contient **8 pierres**, pour un budget maximal de **80 points**.
+- Un deck contient **8 monstres**, pour un budget maximal de **80 points**.
 - Chaque face ne peut contenir que **4 symboles** au total : lames, lames
   spéciales et boucliers utilisent les mêmes emplacements.
 - Une capture réussit seulement si l'attaque est strictement supérieure à la
   défense de la face adverse. Une égalité ne capture pas.
-- Le premier joueur est tiré au sort ; le gagnant contrôle le plus de pierres
+- Le premier joueur est tiré au sort ; le gagnant contrôle le plus de monstres
   lorsque toutes les cases jouables sont remplies.
 
-Une pierre se pose par toucher successif (carte, puis case) ou par glisser-déposer.
+Un monstre se pose par toucher successif (carte, puis case) ou par glisser-déposer.
 Les gestes tactiles sont prévus pour laisser défiler les écrans lorsqu'ils ne
 deviennent pas un appui volontaire.
 
@@ -121,7 +121,7 @@ illustrés. Les Avortons des caves ont leurs quatre illustrations propres, avec
 3, 6, 9 puis 12 individus. Toutes les lignées évolutives disposent désormais
 d'une image propre pour chacun de leurs niveaux.
 Les définitions de jeu
-restent dans `data/stones/` : modifier une image ne modifie donc ni les
+restent dans `data/monsters/` : modifier une image ne modifie donc ni les
 statistiques ni les sauvegardes.
 
 Au lancement, `CardArtCache` préchauffe en arrière-plan les illustrations du
@@ -262,7 +262,7 @@ dont le bestiaire et la direction artistique.
 
 Les données de contenu sont validées au démarrage :
 
-- `data/stones/manifest.json` et ses sept familles : lignées, formes, coûts,
+- `data/monsters/manifest.json` et ses sept familles : lignées, formes, coûts,
   symboles et pouvoirs ;
 - `data/gods.json` : dieux, familles, couleurs, descriptions et portraits ;
 - `data/npcs.json` : six adversaires historiques, conservés pour les tests et

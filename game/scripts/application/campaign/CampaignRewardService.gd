@@ -39,7 +39,7 @@ static func apply_victory(service: CampaignService, node_id: String,
 			# Les trois premières complètent automatiquement le deck ; la quatrième
 			# reste dans la collection pour faire découvrir l'éditeur de deck.
 			for card_reward in cards.slice(0, 3):
-				starter_cards.append(StoneLoader.variant_id(
+				starter_cards.append(MonsterLoader.variant_id(
 					str(card_reward.get("lineage_id", "")), 1))
 	var result := Economy.new().grant_reward(transaction_id, souls, cards,
 		starter_cards, candles)
@@ -54,12 +54,12 @@ static func _normalize_card_reward(raw_reward: Variant) -> Dictionary:
 	if raw_reward is Dictionary:
 		var lineage_id := str(raw_reward.get("lineage_id", ""))
 		var copies := int(raw_reward.get("copies", 0))
-		if StoneLoader.lineage_max_level(lineage_id) > 0 and copies > 0:
+		if MonsterLoader.lineage_max_level(lineage_id) > 0 and copies > 0:
 			return {"lineage_id": lineage_id, "copies": copies}
 		return {}
-	var stone_id := str(raw_reward)
-	if StoneLoader.has_stone(stone_id):
-		return {"lineage_id": StoneLoader.stone_lineage(stone_id), "copies": 1}
+	var monster_id := str(raw_reward)
+	if MonsterLoader.has_monster(monster_id):
+		return {"lineage_id": MonsterLoader.monster_lineage(monster_id), "copies": 1}
 	return {}
 
 

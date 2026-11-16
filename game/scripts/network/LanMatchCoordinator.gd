@@ -86,7 +86,7 @@ func close() -> void:
 
 ## Validation réelle fournie par le driver : joueur actif, phase, coordonnées,
 ## présence de la carte et PlacementRules. Signée
-## (player: int, row: int, col: int, stone_id: String) -> bool.
+## (player: int, row: int, col: int, monster_id: String) -> bool.
 func set_move_validator(validator: Callable) -> void:
 	_validator = validator
 
@@ -148,7 +148,7 @@ func is_local_turn() -> bool:
 
 ## Demande de coup du joueur local. L'hôte valide et diffuse ; le client envoie
 ## une intention et attend la commande acceptée.
-func request_move(row: int, col: int, stone_id: String) -> bool:
+func request_move(row: int, col: int, monster_id: String) -> bool:
 	if not can_submit() or not is_local_turn():
 		return false
 	var intent := {
@@ -156,7 +156,7 @@ func request_move(row: int, col: int, stone_id: String) -> bool:
 		"player": _local_side,
 		"row": row,
 		"col": col,
-		"stone_id": stone_id,
+		"monster_id": monster_id,
 	}
 	if _is_host:
 		return _host_accept(intent)
@@ -180,8 +180,8 @@ func _host_accept(intent: Dictionary) -> bool:
 	var player := int(intent.get("player", GameState.PLAYER_NONE))
 	var row := int(intent.get("row", -1))
 	var col := int(intent.get("col", -1))
-	var stone_id := str(intent.get("stone_id", ""))
-	if player != _active_player or not _is_valid_move(player, row, col, stone_id):
+	var monster_id := str(intent.get("monster_id", ""))
+	if player != _active_player or not _is_valid_move(player, row, col, monster_id):
 		return false
 	var command := {
 		"match_id": _match_id,
@@ -189,7 +189,7 @@ func _host_accept(intent: Dictionary) -> bool:
 		"player": player,
 		"row": row,
 		"col": col,
-		"stone_id": stone_id,
+		"monster_id": monster_id,
 	}
 	if not LanProtocol.validate(LanProtocol.KIND_MOVE_ACCEPTED, command)["ok"]:
 		return false
@@ -206,7 +206,7 @@ func _accept(command: Dictionary) -> void:
 		"player": int(command["player"]),
 		"row": int(command["row"]),
 		"col": int(command["col"]),
-		"stone_id": str(command["stone_id"]),
+		"monster_id": str(command["monster_id"]),
 	}
 	_active_player = GameState.PLAYER_TWO if int(command["player"]) == GameState.PLAYER_ONE \
 		else GameState.PLAYER_ONE
@@ -424,8 +424,8 @@ func _on_intent(from_peer: int, payload: Dictionary) -> void:
 		return
 	var row := int(payload.get("row", -1))
 	var col := int(payload.get("col", -1))
-	var stone_id := str(payload.get("stone_id", ""))
-	if _active_player != GameState.PLAYER_TWO or not _is_valid_move(GameState.PLAYER_TWO, row, col, stone_id):
+	var monster_id := str(payload.get("monster_id", ""))
+	if _active_player != GameState.PLAYER_TWO or not _is_valid_move(GameState.PLAYER_TWO, row, col, monster_id):
 		_reject(from_peer, "Coup invalide.")
 		return
 	_host_accept(payload)
@@ -513,13 +513,13 @@ func _is_duplicate(intent: Dictionary) -> bool:
 		and int(_last_command["player"]) == int(intent.get("player", 0)) \
 		and int(_last_command["row"]) == int(intent.get("row", -1)) \
 		and int(_last_command["col"]) == int(intent.get("col", -1)) \
-		and str(_last_command["stone_id"]) == str(intent.get("stone_id", ""))
+		and str(_last_command["monster_id"]) == str(intent.get("monster_id", ""))
 
 
-func _is_valid_move(player: int, row: int, col: int, stone_id: String) -> bool:
+func _is_valid_move(player: int, row: int, col: int, monster_id: String) -> bool:
 	if not _validator.is_valid():
 		return false
-	return bool(_validator.call(player, row, col, stone_id))
+	return bool(_validator.call(player, row, col, monster_id))
 
 
 func _reject(peer_id: int, reason: String) -> void:

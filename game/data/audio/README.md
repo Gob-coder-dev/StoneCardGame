@@ -1,4 +1,4 @@
-# Audio — sons et musiques de SamStone
+# Audio — sons et musiques de Beastpact
 
 ## Vue d'ensemble
 
@@ -67,8 +67,8 @@ réel. Les `.gitkeep` inutiles ont également été retirés.
 
 | Fichier | Déclencheur |
 | --- | --- |
-| `res://data/audio/sfx/combat/stone_place_1.wav` | **Pose de carte du joueur local.** Quand le joueur pose une pierre, par toucher carte → case ou par glisser-déposer. |
-| `res://data/audio/sfx/combat/stone_place_2.wav` | **Pose de carte de l'adversaire.** Quand l'IA ou le joueur distant pose une pierre. |
+| `res://data/audio/sfx/combat/monster_place_1.wav` | **Pose de carte du joueur local.** Quand le joueur pose un monstre, par toucher carte → case ou par glisser-déposer. |
+| `res://data/audio/sfx/combat/monster_place_2.wav` | **Pose de carte de l'adversaire.** Quand l'IA ou le joueur distant pose un monstre. |
 | `res://data/audio/sfx/combat/attack.wav` | **Départ d'une attaque.** Quand une carte attaque, avant la résolution des captures. |
 | `res://data/audio/sfx/combat/attack_miss.wav` | **Attaque bloquée.** Attaque qui ne capture pas : mur, défense égale ou supérieure à l'attaque. |
 | `res://data/audio/sfx/combat/captured.wav` | **Carte capturée.** Chaque carte qui change de camp, quel que soit le camp qui capture. |
@@ -124,14 +124,14 @@ Ce fichier n'est affecté à aucun déclencheur pour l'instant. Il reste dans
 
 Ces précisions évitent d'inventer des sons qui n'ont aucun déclencheur réel.
 
-- **Pas de pioche.** La main affiche le deck complet (5 pierres pour le
-  tutoriel, 8 ensuite). Poser une pierre la retire de la main ; il n'y a ni
+- **Pas de pioche.** La main affiche le deck complet (5 monstres pour le
+  tutoriel, 8 ensuite). Poser un monstre le retire de la main ; il n'y a ni
   pioche, ni défausse, ni main qui se remplit au fil des tours.
 - **Pas de mélange en combat.** Le deck est construit dans la Collection avant
   la partie. Aucun shuffle, aucun deck épuisé, aucune carte à piocher.
 - **Pas de chronomètre de tour.** Seuls les drafts de préparation affichent un
   compte à rebours ; aucun son de tic-tac n'est nécessaire pour le plateau.
-- **La main ne se recharge pas.** Une pierre jouée reste jouée jusqu'à la fin de
+- **La main ne se recharge pas.** Un monstre joué reste joué jusqu'à la fin de
   la manche.
 - **Pas de son dédié pour chaque écran.** `button` couvre toutes les sélections,
   y compris la sélection d'une carte en pleine partie. `button_2` couvre les
@@ -148,7 +148,7 @@ sera nécessaire si on veut un comportement parfaitement homogène :
 
 - la plupart des WAV de combat et de Rituel sont en **44,1 kHz / 16 bits / stéréo** ;
 - `random_blade.wav` est en **48 kHz / 16 bits / stéréo** ;
-- `stone_place_1.wav` et `stone_place_2.wav` sont en **96 kHz / 24 bits / mono** ;
+- `monster_place_1.wav` et `monster_place_2.wav` sont en **96 kHz / 24 bits / mono** ;
 - `coin_flip.wav` est en **48 kHz / 24 bits / stéréo** ;
 - `coin_flip_start_battle.wav` est en **44,1 kHz / 16 bits / stéréo** ;
 - `big_flame.wav` et `little_flame.wav` sont en **44,1 kHz / 16 bits / stéréo** ;
@@ -246,7 +246,7 @@ métadonnées permettent de déroger à ce défaut :
 | `button` | Branchement automatique des `BaseButton`. Appels explicites pour les gestes qui ne sont pas des boutons : `BoardController._on_card_selected`, `_on_card_drag_started`, `CollectionScreenController._open_card_actions`, `LoadoutCardGrid._on_card_pressed`, `DialogueOverlay._advance`. Une case du plateau ne joue que le son de pose, jamais le clic générique. |
 | `button_2` | `UpgradePriceButton`, `CardActionDrawer.primary_button`, `PreBattleController.start_button`, `CampaignPreparationController.confirm_button`, `PvpPreparationController.confirm_button`, `PvpLobbyController.ready_button`, récolte de quête, `CampaignLevelDialog.launch_button` / `replay_button`, `EncounterPathController.fight_button`, `RitualOpeningController.finish_button`. |
 | `purchase` | `ShopPurchaseModal.confirm_button` et les boutons d'offre directe de `ShopScreenController`. |
-| `stone_place_1` / `stone_place_2` | `BoardController._on_stone_placed`, en comparant `owner` au camp local. |
+| `monster_place_1` / `monster_place_2` | `BoardController._on_monster_placed`, en comparant `owner` au camp local. |
 | `attack` | `BoardAnimationController.animate_attacks`, au départ de l'animation. |
 | `attack_miss` | `BoardAnimationController._on_attack_hit` quand `success == false`. |
 | `captured` | `BoardAnimationController.animate_capture`, avec garde contre un second signal pour la même carte. |
@@ -271,9 +271,9 @@ métadonnées permettent de déroger à ce défaut :
   `AudioCatalog.gd`. Le service ne connaît que ce catalogue.
 - Ajouter un son se fait en trois endroits : le fichier, l'identifiant et son
   chemin dans `AudioCatalog`, puis l'appel `Audio.play_sfx` au déclencheur.
-- Pour `stone_place_1` / `stone_place_2`, toujours raisonner en **camp local** :
-  sur chaque appareil, la pose du joueur local utilise `stone_place_1` et celle
-  de l'adversaire utilise `stone_place_2`.
+- Pour `monster_place_1` / `monster_place_2`, toujours raisonner en **camp local** :
+  sur chaque appareil, la pose du joueur local utilise `monster_place_1` et celle
+  de l'adversaire utilise `monster_place_2`.
 - Pour les résultats, lire l'état de la série avant de choisir le son : une
   manche intermédiaire ne doit pas jouer `victory` / `defeat`. Ces cinq sons
   passent toujours par `Audio.play_jingle`, jamais par le pool d'effets courts.

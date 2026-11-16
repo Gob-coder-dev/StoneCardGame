@@ -62,11 +62,11 @@ func show_god(god: Dictionary, price: int, soul_balance: int, gifts: Array) -> v
 	gift_row.alignment = BoxContainer.ALIGNMENT_CENTER
 	gift_row.add_theme_constant_override("separation", 18)
 	for lineage_id in gifts:
-		var stone_id := StoneLoader.variant_id(str(lineage_id), 1)
-		var card := StoneCard.new()
+		var monster_id := MonsterLoader.variant_id(str(lineage_id), 1)
+		var card := MonsterCard.new()
 		card.custom_minimum_size = Vector2(145, 145)
 		card.set_show_cost(false)
-		card.setup(StoneLoader.get_stone(stone_id), StoneCard.OWNER_NONE)
+		card.setup(MonsterLoader.get_monster(monster_id), MonsterCard.OWNER_NONE)
 		gift_row.add_child(card)
 	content.add_child(gift_row)
 	visual.add_child(content)

@@ -66,13 +66,13 @@ alignment = 1
 layout_mode = 2
 theme_type_variation = &"ScreenTitle"
 theme_override_font_sizes/font_size = 96
-text = "SAMSTONE"
+text = "BEASTPACT"
 horizontal_alignment = 1
 
 [node name="Subtitle" type="Label" parent="Content/GameTitle" unique_id=1396934591]
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
-text = "LE CABINET DES MONSTRES"
+text = "L'ARÈNE DES MONSTRES"
 horizontal_alignment = 1
 
 [node name="Hero" type="Control" parent="Content" unique_id=1506783815]

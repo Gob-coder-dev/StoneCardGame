@@ -1,4 +1,4 @@
-## Sélection immédiate de la pierre du deck à remplacer.
+## Sélection immédiate du monstre du deck à remplacer.
 class_name ReplacementPanel
 extends Control
 
@@ -36,8 +36,8 @@ func wrapper_for(old_id: String) -> Control:
 	for wrapper in deck_grid.get_children():
 		if wrapper.get_child_count() == 0:
 			continue
-		var card := wrapper.get_child(0) as StoneCard
-		if card != null and card.get_stone_id() == old_id:
+		var card := wrapper.get_child(0) as MonsterCard
+		if card != null and card.get_monster_id() == old_id:
 			return wrapper as Control
 	return null
 
@@ -69,14 +69,14 @@ func _rebuild() -> void:
 	_clear_children(deck_grid)
 	_clear_children(candidate)
 	var current_cost := DeckRules.deck_cost(_deck)
-	var incoming_cost := StoneLoader.stone_cost(_incoming_id)
+	var incoming_cost := MonsterLoader.monster_cost(_incoming_id)
 
 	for old_id in _deck:
 		var wrapper := VBoxContainer.new()
 		wrapper.custom_minimum_size = Vector2(UITheme.CARD_REPLACEMENT + 8.0, UITheme.CARD_REPLACEMENT + 70.0)
 		wrapper.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		wrapper.add_theme_constant_override("separation", 6)
-		var card := _make_card(StoneLoader.get_stone(old_id), StoneCard.OWNER_HUMAN, UITheme.CARD_REPLACEMENT)
+		var card := _make_card(MonsterLoader.get_monster(old_id), MonsterCard.OWNER_HUMAN, UITheme.CARD_REPLACEMENT)
 		card.card_pressed.connect(_on_target_pressed)
 		var new_cost := DeckRules.replacement_cost(_deck, old_id, _incoming_id)
 		var valid := DeckRules.can_replace(_deck, old_id, _incoming_id, PlayerData.player_god_id)
@@ -84,7 +84,7 @@ func _rebuild() -> void:
 			card.modulate = Color(0.55, 0.55, 0.55)
 		var formula := Label.new()
 		formula.text = "%s − %s + %s = %s/%d" % [
-			UIFormat.cost(current_cost), UIFormat.cost(StoneLoader.stone_cost(old_id)),
+			UIFormat.cost(current_cost), UIFormat.cost(MonsterLoader.monster_cost(old_id)),
 			UIFormat.cost(incoming_cost), UIFormat.cost(new_cost), DeckRules.DECK_BUDGET
 		]
 		formula.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -96,19 +96,19 @@ func _rebuild() -> void:
 		wrapper.add_child(formula)
 		deck_grid.add_child(wrapper)
 
-	var incoming_card := _make_card(StoneLoader.get_stone(_incoming_id), StoneCard.OWNER_NONE, 290.0)
+	var incoming_card := _make_card(MonsterLoader.get_monster(_incoming_id), MonsterCard.OWNER_NONE, 290.0)
 	incoming_card.custom_minimum_size.x = 290
 	incoming_card.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	candidate.add_child(incoming_card)
-	status_label.text = "Choisis une pierre du deck à remplacer."
+	status_label.text = "Choisis un monstre du deck à remplacer."
 	status_label.add_theme_color_override("font_color", UITheme.COL_WARNING)
 
 
-func _make_card(stone: Dictionary, stone_owner: int, height: float) -> StoneCard:
-	var card := StoneCard.new()
+func _make_card(monster: Dictionary, monster_owner: int, height: float) -> MonsterCard:
+	var card := MonsterCard.new()
 	card.custom_minimum_size = Vector2(0, height)
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	card.setup(stone, stone_owner)
+	card.setup(monster, monster_owner)
 	card.set_show_cost(true)
 	return card
 

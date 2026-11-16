@@ -2,7 +2,7 @@
 ## Empreinte canonique d'un GameState. Deux moteurs qui ont reçu la même graine
 ## et les mêmes coups doivent produire exactement la même empreinte.
 ##
-## Le calcul ne lit que l'état du moteur (plateau, pierres, mains, hasard) et ne
+## Le calcul ne lit que l'état du moteur (plateau, monstres, mains, hasard) et ne
 ## dépend d'aucune ressource graphique ni d'un ordre de dictionnaire implicite.
 class_name StateFingerprint
 extends RefCounted
@@ -24,15 +24,15 @@ static func of(state: GameState) -> String:
 	lines.append("random:%d,%d" % [state.random_seed, state.random_state])
 	for index in range(state.board.size()):
 		var cell: Dictionary = state.board[index]
-		var stone = cell.get("stone")
-		if stone is BattleStone:
+		var monster = cell.get("monster")
+		if monster is BattleMonster:
 			lines.append("cell:%d:%d,%d,%d,%s,%s" % [index, int(cell.get("cell_type", 0)),
 				int(cell.get("owner", 0)), int(cell.get("placed_by", 0)),
-				str(cell.get("stone_id", "")), _stone(stone)])
+				str(cell.get("monster_id", "")), _monster(monster)])
 		else:
 			lines.append("cell:%d:%d,%d,%d,%s,-" % [index, int(cell.get("cell_type", 0)),
 				int(cell.get("owner", 0)), int(cell.get("placed_by", 0)),
-				str(cell.get("stone_id", ""))])
+				str(cell.get("monster_id", ""))])
 	return "\n".join(lines).sha256_text()
 
 
@@ -43,17 +43,17 @@ static func _join(values: Array) -> String:
 	return ",".join(parts)
 
 
-static func _stone(stone: BattleStone) -> String:
+static func _monster(monster: BattleMonster) -> String:
 	return "%d:%s:%s:%s:%s:%s:%s:%d,%d,%d,%d" % [
-		stone.instance_id, str(stone.stone_id), _sides(stone.base_blades),
-		_sides(stone.random_blades), _sides(stone.long_blades), _sides(stone.shields),
-		_sides(stone.swarm_blades), stone.miasma_weakness, stone.temporary_weakness,
-		stone.temporary_weakness_owner, 1 if stone.coin_flipped else 0,
+		monster.instance_id, str(monster.monster_id), _sides(monster.base_blades),
+		_sides(monster.random_blades), _sides(monster.long_blades), _sides(monster.shields),
+		_sides(monster.swarm_blades), monster.miasma_weakness, monster.temporary_weakness,
+		monster.temporary_weakness_owner, 1 if monster.coin_flipped else 0,
 	]
 
 
 static func _sides(values: Dictionary) -> String:
 	var parts := PackedStringArray()
-	for side in StoneSide.ALL:
+	for side in MonsterSide.ALL:
 		parts.append("%s=%d" % [side, int(values.get(side, 0))])
 	return ".".join(parts)

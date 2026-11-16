@@ -148,7 +148,7 @@ func _test_spotlight_banner_on_tall_phone() -> void:
 	var spotlight := SpotlightModel.new()
 	stage.add_child(spotlight)
 	await get_tree().process_frame
-	spotlight.show_target(target, "Ouvre le cabinet : DECKS.")
+	spotlight.show_target(target, "Ouvre ta collection : DECKS.")
 	var banner_center_y := spotlight._banner.get_global_rect().get_center().y
 	_check(banner_center_y <= stage.size.y * 0.76 + 1.0
 		and banner_center_y >= stage.size.y * 0.24 - 1.0,

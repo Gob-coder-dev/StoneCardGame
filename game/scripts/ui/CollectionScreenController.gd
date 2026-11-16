@@ -55,7 +55,7 @@ var _preview_level := 1
 @onready var sort_menu: PanelContainer = $Content/Scroll/Page/SortMenu
 @onready var sort_options: VBoxContainer = $Content/Scroll/Page/SortMenu/SortOptions
 @onready var status_label: Label = $Content/StatusLabel
-@onready var info_sheet: StoneInfoSheet = $StoneInfoSheet
+@onready var info_sheet: MonsterInfoSheet = $MonsterInfoSheet
 @onready var replacement_panel: ReplacementPanel = $ReplacementPanel
 @onready var confirm_popup: ConfirmPopup = $ConfirmPopup
 @onready var level_button: Button = $Content/Scroll/Page/LevelButton
@@ -66,11 +66,11 @@ var _preview_level := 1
 var _current_deck: Array = []
 var _sort_mode: int = SortMode.FAMILY
 var _action_drawer: CardActionDrawer = null
-var _action_card: StoneCard = null
+var _action_card: MonsterCard = null
 var _action_wrapper: Control = null
-var _action_stone_id: String = ""
+var _action_monster_id: String = ""
 var _action_source: int = -1
-var _replacement_stone_id: String = ""
+var _replacement_monster_id: String = ""
 var _scroll_tap := Gesture.new()
 var _outside_pointer: int = -1
 var _outside_origin := Vector2.ZERO
@@ -99,7 +99,7 @@ func _ready() -> void:
 		$Content/Scroll/Page/GodDeckPanel/GodDeckContent/GodDeckRow/IdentityDeck/DeckSlots,
 		DeckRules.DECKS_PER_GOD, 0
 	)
-	_level_selector = NumberedSelector.new($Content/Scroll/Page/LevelMenu/Levels, StoneEvolutionRules.MAX_PREVIEW_LEVEL)
+	_level_selector = NumberedSelector.new($Content/Scroll/Page/LevelMenu/Levels, MonsterEvolutionRules.MAX_PREVIEW_LEVEL)
 	_deck_panel.card_requested.connect(_open_card_actions)
 	_collection_grid.card_requested.connect(_open_card_actions)
 	_god_selector.god_selected.connect(_select_god)
@@ -193,7 +193,7 @@ func _close_card_panels() -> void:
 	_dismiss_confirm_popup()
 	info_sheet.close_sheet()
 	replacement_panel.close_panel()
-	_replacement_stone_id = ""
+	_replacement_monster_id = ""
 	level_menu.visible = false
 
 
@@ -343,7 +343,7 @@ func _go_back() -> void:
 		return
 	if replacement_panel.visible:
 		replacement_panel.close_panel()
-		_replacement_stone_id = ""
+		_replacement_monster_id = ""
 		return
 	if is_instance_valid(_action_drawer):
 		_close_action_drawer()
@@ -474,9 +474,9 @@ func _register_story_anchors() -> void:
 		for wrapper in row.get_children():
 			if wrapper.get_child_count() == 0:
 				continue
-			var card := wrapper.get_child(0) as StoneCard
+			var card := wrapper.get_child(0) as MonsterCard
 			if card != null:
-				StoryService.register_anchor("collection.deck.%s" % card.get_stone_id(), wrapper)
+				StoryService.register_anchor("collection.deck.%s" % card.get_monster_id(), wrapper)
 	if _collection_grid != null:
 		_collection_grid.register_story_anchors()
 
@@ -488,15 +488,15 @@ func _on_story_spotlight_requested(target: Control, _prompt: String, _show_advan
 		scroll.ensure_control_visible(target)
 
 
-func _open_card_actions(stone_id: String, wrapper: VBoxContainer, source: int) -> void:
+func _open_card_actions(monster_id: String, wrapper: VBoxContainer, source: int) -> void:
 	_suppress_scroll_tap_once()
-	if not StoneLoader.has_stone(stone_id):
+	if not MonsterLoader.has_monster(monster_id):
 		return
-	if not PlayerData.owns_stone(stone_id):
+	if not PlayerData.owns_monster(monster_id):
 		_show_error("Cette carte ou ce niveau n'est pas encore débloqué.")
 		return
 	Audio.play_sfx(AudioCatalog.SFX_BUTTON)
-	if _action_stone_id == stone_id and _action_source == source and is_instance_valid(_action_drawer):
+	if _action_monster_id == monster_id and _action_source == source and is_instance_valid(_action_drawer):
 		_close_action_drawer()
 		return
 	_close_action_drawer()
@@ -505,22 +505,22 @@ func _open_card_actions(stone_id: String, wrapper: VBoxContainer, source: int) -
 	_refresh_god_panel()
 	sort_menu.visible = false
 	_update_sort_labels()
-	_action_stone_id = stone_id
+	_action_monster_id = monster_id
 	_action_source = source
 	_action_wrapper = wrapper
-	_action_card = wrapper.get_child(0) as StoneCard
+	_action_card = wrapper.get_child(0) as MonsterCard
 	if _action_card != null:
 		_action_card.set_selected(true)
 	_action_drawer = ACTION_DRAWER_SCENE.instantiate() as CardActionDrawer
 	action_drawer_layer.add_child(_action_drawer)
-	_action_drawer.setup(stone_id, source)
+	_action_drawer.setup(monster_id, source)
 	_action_drawer.info_requested.connect(_on_info_requested)
 	_action_drawer.primary_requested.connect(_on_primary_requested)
 	_action_drawer.upgrade_requested.connect(_open_upgrade_preview)
 	_action_drawer.visible = false
 	StoryService.register_anchor("collection.action.primary", _action_drawer.primary_button)
 	StoryService.register_anchor("collection.action.info", _action_drawer.info_button)
-	StoryService.notify_event("collection_card_opened", {"stone_id": stone_id, "source": int(source)})
+	StoryService.notify_event("collection_card_opened", {"monster_id": monster_id, "source": int(source)})
 	_position_action_drawer_deferred()
 
 
@@ -597,21 +597,21 @@ func _close_action_drawer() -> void:
 	_action_drawer = null
 	_action_card = null
 	_action_wrapper = null
-	_action_stone_id = ""
+	_action_monster_id = ""
 	_action_source = -1
 	bottom_spacer.custom_minimum_size.y = BOTTOM_SPACER_DEFAULT
 
 
-func _on_info_requested(stone_id: String) -> void:
+func _on_info_requested(monster_id: String) -> void:
 	_close_action_drawer()
-	info_sheet.open_for(stone_id, _current_deck)
+	info_sheet.open_for(monster_id, _current_deck)
 
 
 ## Le tiroir conduit vers l'aperçu grisé du prochain niveau. La transaction
 ## reste exclusivement déclenchée depuis la fiche détaillée.
 func _open_upgrade_preview(lineage_id: String) -> void:
 	var unlocked_level := int(PlayerData.card_entry(lineage_id).get("unlocked_level", 0))
-	var next_id := StoneLoader.variant_id(lineage_id, unlocked_level + 1)
+	var next_id := MonsterLoader.variant_id(lineage_id, unlocked_level + 1)
 	if next_id == "":
 		_show_error("Cette carte est déjà au niveau maximal.")
 		return
@@ -619,24 +619,24 @@ func _open_upgrade_preview(lineage_id: String) -> void:
 	info_sheet.open_for(next_id, _current_deck)
 
 
-func _on_primary_requested(stone_id: String, source: CardActionDrawer.Source) -> void:
+func _on_primary_requested(monster_id: String, source: CardActionDrawer.Source) -> void:
 	if source == CardActionDrawer.Source.DECK:
-		_commit_operation(DeckRules.try_remove(_current_deck, stone_id))
+		_commit_operation(DeckRules.try_remove(_current_deck, monster_id))
 		return
-	_request_use(stone_id)
+	_request_use(monster_id)
 
 
-func _request_use(stone_id: String) -> void:
-	if not PlayerData.owns_stone(stone_id):
+func _request_use(monster_id: String) -> void:
+	if not PlayerData.owns_monster(monster_id):
 		_show_error("Cette carte ou ce niveau n'est pas encore débloqué.")
 		return
-	var lineage := StoneLoader.stone_lineage(stone_id)
+	var lineage := MonsterLoader.monster_lineage(monster_id)
 	var index := DeckRules.lineage_index(_current_deck, lineage)
 	var operation: Dictionary
 	if index >= 0:
-		operation = DeckRules.try_set_level(_current_deck, lineage, StoneLoader.stone_level(stone_id), PlayerData.player_god_id)
+		operation = DeckRules.try_set_level(_current_deck, lineage, MonsterLoader.monster_level(monster_id), PlayerData.player_god_id)
 	else:
-		operation = DeckRules.try_add(_current_deck, stone_id, PlayerData.player_god_id)
+		operation = DeckRules.try_add(_current_deck, monster_id, PlayerData.player_god_id)
 	if operation["success"]:
 		if _commit_operation(operation):
 			info_sheet.close_sheet()
@@ -645,10 +645,10 @@ func _request_use(stone_id: String) -> void:
 		DeckRules.REASON_FULL:
 			_close_action_drawer()
 			info_sheet.close_sheet()
-			_replacement_stone_id = stone_id
-			replacement_panel.open_for(_current_deck, stone_id)
-			_register_replacement_anchor(stone_id)
-			StoryService.notify_event("replacement_opened", {"stone_id": stone_id})
+			_replacement_monster_id = monster_id
+			replacement_panel.open_for(_current_deck, monster_id)
+			_register_replacement_anchor(monster_id)
+			StoryService.notify_event("replacement_opened", {"monster_id": monster_id})
 		DeckRules.REASON_BUDGET:
 			_show_error("Budget dépassé : %s/%d points." % [
 				UIFormat.cost(operation["cost"]), DeckRules.DECK_BUDGET
@@ -656,7 +656,7 @@ func _request_use(stone_id: String) -> void:
 
 
 func _on_replacement_requested(old_id: String) -> void:
-	var incoming_id := _replacement_stone_id
+	var incoming_id := _replacement_monster_id
 	var operation := DeckRules.try_replace(_current_deck, old_id, incoming_id, PlayerData.player_god_id)
 	if not operation["success"]:
 		if operation["reason"] == DeckRules.REASON_BUDGET:
@@ -664,7 +664,7 @@ func _on_replacement_requested(old_id: String) -> void:
 		return
 	if _commit_operation(operation):
 		replacement_panel.close_panel()
-		_replacement_stone_id = ""
+		_replacement_monster_id = ""
 		StoryService.notify_event("deck_card_replaced", {
 			"old_id": old_id, "new_id": incoming_id,
 		})

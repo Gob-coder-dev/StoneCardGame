@@ -55,7 +55,7 @@ func _test_journey_content() -> void:
 		"flux scénario : le parcours est ancré sur l'accueil")
 	var setup := StoryService.match_setup_for_node("tuto_01")
 	_check(not setup.is_empty() and int(setup.get("first_player", 0)) == 1
-		and (setup.get("initial_stones", []) as Array).is_empty(),
+		and (setup.get("initial_monsters", []) as Array).is_empty(),
 		"flux scénario : le match scénarisé part d'un plateau vide")
 	var node := CampaignContext.get_service().node("tuto_01")
 	_check(node != null and node.forced_first_player() == int(setup.get("first_player", 0)),
@@ -104,18 +104,18 @@ func _test_tutorial_match_wins() -> void:
 	var manager := TurnManager.new()
 	add_child(manager)
 	manager.start_game(
-		StoneLoader.build_hand(setup.get("player_deck", [])),
-		StoneLoader.build_hand(setup.get("opponent_deck", [])),
+		MonsterLoader.build_hand(setup.get("player_deck", [])),
+		MonsterLoader.build_hand(setup.get("opponent_deck", [])),
 		setup.get("blocked_cells", []), "tuto_01",
 		int(setup.get("first_player", 1)), "", "", 0,
-		int(setup.get("board_size", 3)), setup.get("initial_stones", []))
+		int(setup.get("board_size", 3)), setup.get("initial_monsters", []))
 	var state: GameState = manager.get_state()
 	var human_moves := [
-		{"row": 0, "col": 0, "stone_id": "gueule_de_travers_n1"},
-		{"row": 2, "col": 1, "stone_id": "ecorche_angle_n1"},
-		{"row": 1, "col": 1, "stone_id": "ogre_droitier_n1"},
-		{"row": 0, "col": 1, "stone_id": "rampant_des_fosses_n1"},
-		{"row": 2, "col": 0, "stone_id": "le_drape_du_seuil_n1"},
+		{"row": 0, "col": 0, "monster_id": "gueule_de_travers_n1"},
+		{"row": 2, "col": 1, "monster_id": "ecorche_angle_n1"},
+		{"row": 1, "col": 1, "monster_id": "ogre_droitier_n1"},
+		{"row": 0, "col": 1, "monster_id": "rampant_des_fosses_n1"},
+		{"row": 2, "col": 0, "monster_id": "le_drape_du_seuil_n1"},
 	]
 	var plan: Array = setup.get("opponent_plan", [])
 	_check(state.current_player == GameState.PLAYER_HUMAN
@@ -128,7 +128,7 @@ func _test_tutorial_match_wins() -> void:
 			played = false
 			break
 		var move: Dictionary = human_moves[index]
-		if not manager.human_play(int(move["row"]), int(move["col"]), str(move["stone_id"])):
+		if not manager.human_play(int(move["row"]), int(move["col"]), str(move["monster_id"])):
 			played = false
 			break
 		if index == 0:
@@ -143,7 +143,7 @@ func _test_tutorial_match_wins() -> void:
 				break
 			var ai_move: Dictionary = plan[index]
 			if not manager.ai_play(int(ai_move.get("row", -1)), int(ai_move.get("col", -1)),
-					str(ai_move.get("stone_id", ""))):
+					str(ai_move.get("monster_id", ""))):
 				played = false
 				break
 	_check(played, "match tuto : tous les coups guidés et scriptés sont valides")

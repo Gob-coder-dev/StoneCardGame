@@ -15,11 +15,11 @@ static func make_card_wrapper(expand: bool, card_size: float) -> VBoxContainer:
 	wrapper.add_theme_constant_override("separation", 0)
 	return wrapper
 
-static func make_stone_card(stone: Dictionary, owner: int, card_size: float) -> StoneCard:
-	var card := StoneCard.new()
+static func make_monster_card(monster: Dictionary, owner: int, card_size: float) -> MonsterCard:
+	var card := MonsterCard.new()
 	card.custom_minimum_size = Vector2(0, card_size)
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	card.setup(stone, owner)
+	card.setup(monster, owner)
 	card.set_show_cost(true)
 	return card
 

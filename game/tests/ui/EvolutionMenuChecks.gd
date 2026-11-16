@@ -19,10 +19,10 @@ func run() -> void:
 	fixture.restore()
 
 
-func _card(page: Control, lineage: String) -> StoneCard:
+func _card(page: Control, lineage: String) -> MonsterCard:
 	for wrapper in page.collection_rows.get_child(0).get_children():
-		var card: StoneCard = wrapper.get_child(0)
-		if StoneLoader.stone_lineage(card.get_stone_id()) == lineage:
+		var card: MonsterCard = wrapper.get_child(0)
+		if MonsterLoader.monster_lineage(card.get_monster_id()) == lineage:
 			return card
 	return null
 
@@ -31,19 +31,19 @@ func _test_preview(page: Control) -> void:
 	var before := PlayerData.get_profile()
 	var card := _card(page, "avortons_des_caves")
 	page._select_preview_level(4)
-	_check(card == _card(page, "avortons_des_caves") and card.get_stone_id() == "avortons_des_caves_n4"
-		and _card(page, "valet_a_lenvers").get_stone_id() == "valet_a_lenvers_n3"
+	_check(card == _card(page, "avortons_des_caves") and card.get_monster_id() == "avortons_des_caves_n4"
+		and _card(page, "valet_a_lenvers").get_monster_id() == "valet_a_lenvers_n3"
 		and PlayerData.get_profile() == before, "le niveau global actualise les mêmes nœuds et sature chaque rareté sans modifier le profil")
 	page._select_god("nerava")
-	_check(_card(page, "le_porte_cercueil").get_stone_id() == "le_porte_cercueil_n2", "changer de dieu conserve le niveau d'aperçu et affiche le maximum épique")
+	_check(_card(page, "le_porte_cercueil").get_monster_id() == "le_porte_cercueil_n2", "changer de dieu conserve le niveau d'aperçu et affiche le maximum épique")
 	page._select_god("enigma")
-	_check(_card(page, "le_collecteur_zero").get_stone_id() == "le_collecteur_zero_n1", "la légendaire reste visible au niveau un avec le filtre quatre")
+	_check(_card(page, "le_collecteur_zero").get_monster_id() == "le_collecteur_zero_n1", "la légendaire reste visible au niveau un avec le filtre quatre")
 	page._select_god("veskar")
 	page._select_sort(1)
 	var previous_cost := -1.0
 	var sorted := true
 	for wrapper in page.collection_rows.get_child(0).get_children():
-		var cost := StoneLoader.stone_cost(wrapper.get_child(0).get_stone_id())
+		var cost := MonsterLoader.monster_cost(wrapper.get_child(0).get_monster_id())
 		sorted = sorted and cost >= previous_cost
 		previous_cost = cost
 	_check(sorted, "le tri utilise le coût de la forme affichée, y compris après un changement de dieu")
@@ -52,7 +52,7 @@ func _test_preview(page: Control) -> void:
 
 func _test_info_and_use(page: Control) -> void:
 	page._on_info_requested("avortons_des_caves_n4")
-	var info: StoneInfoSheet = page.info_sheet
+	var info: MonsterInfoSheet = page.info_sheet
 	var image_card := info.card_container.get_child(0)
 	_check(info.visible and info._shown_variant == "avortons_des_caves_n4"
 		and info.get_node("InfoPanel/InfoContent/Levels").get_child_count() == 4,
@@ -88,7 +88,7 @@ func _test_replacement(page: Control) -> void:
 	page._on_info_requested("avortons_des_caves_n4")
 	page.info_sheet.use_button.pressed.emit()
 	_check(page.replacement_panel.visible and not page.info_sheet.visible
-		and page._replacement_stone_id == "avortons_des_caves_n4", "un deck complet ouvre un unique panneau avec la forme exacte à insérer")
+		and page._replacement_monster_id == "avortons_des_caves_n4", "un deck complet ouvre un unique panneau avec la forme exacte à insérer")
 	page._select_preview_level(1)
 	page._on_replacement_requested("de_boiteux_n1")
 	_check(PlayerData.get_active_deck()[0] == "avortons_des_caves_n4" and not page.replacement_panel.visible,
@@ -96,7 +96,7 @@ func _test_replacement(page: Control) -> void:
 	page._on_info_requested("avortons_des_caves_n4")
 	_check(page.info_sheet._shown_variant == "avortons_des_caves_n4", "Infos depuis le deck ouvre le niveau équipé, indépendamment de la collection")
 	page._select_deck(2)
-	_check(not page.info_sheet.visible and page.info_sheet._shown_variant == "" and page._replacement_stone_id == "",
+	_check(not page.info_sheet.visible and page.info_sheet._shown_variant == "" and page._replacement_monster_id == "",
 		"changer d'emplacement annule les aperçus et les actions de l'ancien deck")
 
 
@@ -109,7 +109,7 @@ func _test_errors(page: Control) -> void:
 		deck.append("evo_menu_budget_%d" % index)
 	page._commit_operation({"success": true, "deck": deck})
 	page._on_info_requested("avortons_des_caves_n1")
-	var info: StoneInfoSheet = page.info_sheet
+	var info: MonsterInfoSheet = page.info_sheet
 	info._select_level(4)
 	info.use_button.pressed.emit()
 	_check(info.visible and info.error_label.visible and info.error_label.text.contains("Budget")
@@ -139,8 +139,8 @@ func _test_battle_level() -> void:
 	var cell: Dictionary = RulesEngine.get_free_cells(state)[0]
 	board.turn_manager.human_play(cell["row"], cell["col"], "avortons_des_caves_n2")
 	await get_tree().process_frame
-	var stone: BattleStone = state.get_cell(cell["row"], cell["col"])["stone"]
-	_check(stone != null and stone.stone_id == "avortons_des_caves_n2" and stone.base_blades["top"] == 2,
+	var monster: BattleMonster = state.get_cell(cell["row"], cell["col"])["monster"]
+	_check(monster != null and monster.monster_id == "avortons_des_caves_n2" and monster.base_blades["top"] == 2,
 		"le combat réel pose la forme sauvegardée avec ses statistiques exactes")
 	board.queue_free()
 	await get_tree().process_frame

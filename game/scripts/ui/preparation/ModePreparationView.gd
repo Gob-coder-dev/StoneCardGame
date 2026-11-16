@@ -4,7 +4,7 @@
 class_name ModePreparationView
 extends VBoxContainer
 
-signal card_chosen(stone_id: String)
+signal card_chosen(monster_id: String)
 
 const LayoutModel := preload("res://scripts/ui/preparation/ModePreparationLayout.gd")
 const GodIdentityModel := preload("res://scripts/data/GodIdentity.gd")
@@ -88,7 +88,7 @@ func show_loadout(loadout: Dictionary, power_tier: int,
 		Color(str(god.get("color", UITheme.COL_TEXT.to_html()))))
 	var deck: Array = loadout.get("deck", [])
 	var total := float(int(loadout.get("total_quarters", 0))) \
-		/ float(StoneCostRules.COST_SCALE)
+		/ float(MonsterCostRules.COST_SCALE)
 	loadout_info.text = "%d cartes • %.2f points • palier %d • %s" % [
 		deck.size(), total, power_tier, series_format.to_upper()
 	]

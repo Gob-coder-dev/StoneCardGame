@@ -11,7 +11,7 @@ func _init(pool: Array = [], god_ids: Array = []) -> void:
 	_generator = LoadoutGenerator.new(pool)
 	_god_ids = god_ids.duplicate()
 	if _god_ids.is_empty():
-		for god in StoneLoader.get_all_gods():
+		for god in MonsterLoader.get_all_gods():
 			_god_ids.append(str(god.get("id", "")))
 
 
@@ -122,7 +122,7 @@ func _mirror(generation_seed: int, max_tier: int, constraints: Dictionary = {}) 
 func _generator_for_god(god_id: String, min_god_cards: int) -> LoadoutGenerator:
 	var pure := min_god_cards >= DeckRules.DECK_SIZE
 	var pool: Array = []
-	for raw in StoneLoader.get_all_stones():
+	for raw in MonsterLoader.get_all_monsters():
 		if not raw is Dictionary:
 			continue
 		var affinity := str((raw as Dictionary).get("god_id", "neutral"))
@@ -137,7 +137,7 @@ static func _generation_constraint_problem(god_id: String,
 		return "Le minimum de cartes du dieu doit être compris entre 0 et %d." % DeckRules.DECK_SIZE
 	if min_god_cards > 0 and god_id == "":
 		return "Un minimum de cartes du dieu exige un dieu imposé."
-	if god_id != "" and StoneLoader.get_god(god_id).is_empty():
+	if god_id != "" and MonsterLoader.get_god(god_id).is_empty():
 		return "Le dieu imposé est inconnu : %s." % god_id
 	return ""
 

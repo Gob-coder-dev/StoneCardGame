@@ -512,10 +512,10 @@ func _confirm_side(side: int) -> bool:
 	return true
 
 
-func _choose_side(side: int, stone_id: String) -> bool:
+func _choose_side(side: int, monster_id: String) -> bool:
 	if _draft == null or _draft.complete_for(side):
 		return false
-	var result := _draft.choose(side, stone_id)
+	var result := _draft.choose(side, monster_id)
 	if not bool(result.get("ok", false)):
 		return false
 	if _draft.complete_for(side):
@@ -586,27 +586,27 @@ func confirm_local() -> bool:
 	return true
 
 
-func choose_local(stone_id: String) -> bool:
+func choose_local(monster_id: String) -> bool:
 	if _closed:
 		return false
 	if _is_host:
-		return _choose_side(_local_side, stone_id)
+		return _choose_side(_local_side, monster_id)
 	if _client_draft.is_empty() or bool(_client_draft.get("own_complete", false)):
 		return false
 	var step := int(_client_draft.get("own_step", -1))
 	if _client_chosen_step == step:
 		return false
 	var offers := _offers_for_client(_local_side)
-	if not offers.has(stone_id):
+	if not offers.has(monster_id):
 		return false
 	var payload := _ids_payload()
 	payload["own_step"] = step
-	payload["stone_id"] = stone_id
+	payload["monster_id"] = monster_id
 	if _transport == null or not _transport.send_to(LanProtocol.SERVER_ID,
 			LanProtocol.KIND_DRAFT_CHOICE, payload):
 		return false
 	_client_chosen_step = step
-	_client_chosen = stone_id
+	_client_chosen = monster_id
 	return true
 
 
@@ -807,7 +807,7 @@ func _offer_cost_from_payload(payload: Dictionary, side: int) -> int:
 	if not offers is Array or (offers as Array).is_empty():
 		return 0
 	var first := str((offers as Array)[0])
-	return StoneLoader.get_stone(first).get("cost_q", 0)
+	return MonsterLoader.get_monster(first).get("cost_q", 0)
 
 
 func _on_loadout_ready(payload: Dictionary) -> void:
@@ -829,7 +829,7 @@ func _on_draft_choice(payload: Dictionary) -> void:
 	var side := _remote_side()
 	if _draft == null or int(payload.get("own_step", -1)) != _draft.step_for(side):
 		return
-	_choose_side(side, str(payload.get("stone_id", "")))
+	_choose_side(side, str(payload.get("monster_id", "")))
 
 
 func _on_round_start(payload: Dictionary) -> void:

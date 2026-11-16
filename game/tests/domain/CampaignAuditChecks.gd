@@ -77,14 +77,14 @@ func run() -> void:
 		var god_cards := 0
 		var neutral_cards := 0
 		var all_common_n1 := deck.size() == DeckRules.DECK_SIZE
-		for stone_id in deck:
-			var affinity := StoneLoader.stone_affinity(str(stone_id))
+		for monster_id in deck:
+			var affinity := MonsterLoader.monster_affinity(str(monster_id))
 			god_cards += 1 if affinity == str(trial_gods[node_id]) else 0
 			neutral_cards += 1 if affinity == "neutral" else 0
 			all_common_n1 = all_common_n1 \
-				and StoneLoader.stone_rarity(str(stone_id)) == "common" \
-				and StoneLoader.stone_level(str(stone_id)) == 1 \
-				and CardPowerTierRules.effective_tier(StoneLoader.get_stone(str(stone_id))) == 1
+				and MonsterLoader.monster_rarity(str(monster_id)) == "common" \
+				and MonsterLoader.monster_level(str(monster_id)) == 1 \
+				and CardPowerTierRules.effective_tier(MonsterLoader.get_monster(str(monster_id))) == 1
 		_check(trial.max_power_tier() == 1 and god_cards == 4 and neutral_cards == 4
 			and all_common_n1,
 			"audit : l'initiation '%s' impose quatre communes du dieu et quatre neutres N1" % node_id)
@@ -93,8 +93,8 @@ func run() -> void:
 		var entry: CampaignNode = graph.node(node_id)
 		var tier_one := 0
 		var tier_two := 0
-		for stone_id in entry.fixed_deck():
-			var tier := CardPowerTierRules.effective_tier(StoneLoader.get_stone(str(stone_id)))
+		for monster_id in entry.fixed_deck():
+			var tier := CardPowerTierRules.effective_tier(MonsterLoader.get_monster(str(monster_id)))
 			tier_one += 1 if tier == 1 else 0
 			tier_two += 1 if tier == 2 else 0
 		_check(tier_one == 6 and tier_two == 2,
@@ -195,8 +195,8 @@ func _test_required_boss_progression(graph: CampaignGraph) -> void:
 	var first_gate := graph.node("boss_required_gate")
 	var tier_one := 0
 	var tier_two := 0
-	for stone_id in convergence.fixed_deck():
-		var tier := CardPowerTierRules.effective_tier(StoneLoader.get_stone(str(stone_id)))
+	for monster_id in convergence.fixed_deck():
+		var tier := CardPowerTierRules.effective_tier(MonsterLoader.get_monster(str(monster_id)))
 		tier_one += 1 if tier == 1 else 0
 		tier_two += 1 if tier == 2 else 0
 	_check(tier_one == 6 and tier_two == 2

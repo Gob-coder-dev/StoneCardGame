@@ -142,12 +142,12 @@ static func _classic_title(winner: int) -> String:
 
 func _apply_background(winner: int) -> void:
 	if winner == GameState.PLAYER_HUMAN:
-		background.set_result_victory(StoneLoader.get_god(BattleContext.effective_player_god_id()))
+		background.set_result_victory(MonsterLoader.get_god(BattleContext.effective_player_god_id()))
 	elif winner == GameState.PLAYER_AI:
-		background.set_result_defeat(StoneLoader.get_god(BattleContext.effective_opponent_god_id()))
+		background.set_result_defeat(MonsterLoader.get_god(BattleContext.effective_opponent_god_id()))
 	else:
-		background.set_result_draw(StoneLoader.get_god(BattleContext.effective_player_god_id()),
-			StoneLoader.get_god(BattleContext.effective_opponent_god_id()))
+		background.set_result_draw(MonsterLoader.get_god(BattleContext.effective_player_god_id()),
+			MonsterLoader.get_god(BattleContext.effective_opponent_god_id()))
 
 
 ## Une manche intermédiaire de série ne doit jamais jouer le verdict final.
@@ -204,16 +204,16 @@ func _refresh_reward() -> void:
 
 
 func _add_reward_card(card_reward: Dictionary, deferred: bool) -> void:
-	var stone_id := StoneLoader.variant_id(str(card_reward.get("lineage_id", "")), 1)
-	if stone_id == "":
+	var monster_id := MonsterLoader.variant_id(str(card_reward.get("lineage_id", "")), 1)
+	if monster_id == "":
 		return
 	var wrapper := VBoxContainer.new()
 	wrapper.custom_minimum_size.x = 144
-	var card := StoneCard.new()
+	var card := MonsterCard.new()
 	card.custom_minimum_size = Vector2(128, 128)
 	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	card.set_show_cost(false)
-	card.setup(StoneLoader.get_stone(stone_id), StoneCard.OWNER_NONE)
+	card.setup(MonsterLoader.get_monster(monster_id), MonsterCard.OWNER_NONE)
 	if deferred:
 		card.modulate = Color(0.72, 0.72, 0.78, 1.0)
 	wrapper.add_child(card)
@@ -223,8 +223,8 @@ func _add_reward_card(card_reward: Dictionary, deferred: bool) -> void:
 	quantity.add_theme_font_size_override("font_size", 24)
 	wrapper.add_child(quantity)
 	if deferred:
-		var god_id := str(card_reward.get("god_id", StoneLoader.stone_affinity(stone_id)))
-		var god_name := str(StoneLoader.get_god(god_id).get("name", god_id))
+		var god_id := str(card_reward.get("god_id", MonsterLoader.monster_affinity(monster_id)))
+		var god_name := str(MonsterLoader.get_god(god_id).get("name", god_id))
 		var status := Label.new()
 		status.text = "APRÈS %s" % god_name.to_upper()
 		status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

@@ -14,17 +14,17 @@ func run() -> void:
 func _test_turn_manager_sequence() -> void:
 	var manager := _animated_manager()
 	var observed := {"preparing": false, "placed": false}
-	var fortune_count := int(StoneLoader.get_stone("de_boiteux_n1").get("random_blades", 0))
-	manager.stone_preparing.connect(func(_row: int, _col: int, events: Array):
+	var fortune_count := int(MonsterLoader.get_monster("de_boiteux_n1").get("random_blades", 0))
+	manager.monster_preparing.connect(func(_row: int, _col: int, events: Array):
 		observed["preparing"] = events.size() == fortune_count
 	)
-	manager.stone_placed.connect(func(_row: int, _col: int, _stone_id: String, _owner: int):
+	manager.monster_placed.connect(func(_row: int, _col: int, _monster_id: String, _owner: int):
 		observed["placed"] = true
 	)
 	manager.start_game(["de_boiteux_n1"], ["fx_plain"], [], "", GameState.PLAYER_HUMAN, "veskar", "kharun")
 	var accepted := manager.human_play(1, 1, "de_boiteux_n1")
 	_check(accepted and observed["placed"] and not observed["preparing"], "la pose commence avant la révélation Fortune")
-	await manager.stone_preparing
+	await manager.monster_preparing
 	_check(observed["preparing"], "Fortune se révèle après le rebond de pose")
 	_check(manager.get_state().current_player == GameState.PLAYER_HUMAN, "le tour ne change pas avant la révélation")
 	await manager.turn_started
@@ -35,7 +35,7 @@ func _test_turn_manager_sequence() -> void:
 func _test_pillage_turn_sequence() -> void:
 	var manager := _animated_manager()
 	var observed := {"captured": false, "effects_after_capture": false}
-	manager.stone_captured.connect(func(_row: int, _col: int, _owner: int):
+	manager.monster_captured.connect(func(_row: int, _col: int, _owner: int):
 		observed["captured"] = true
 	)
 	manager.effects_resolved.connect(func(events: Array):
@@ -97,7 +97,7 @@ func _test_attack_turn_sequence() -> void:
 	_force_instance(manager.get_state(), 1, 2, "fx_plain", GameState.PLAYER_AI)
 	manager.human_play(1, 1, "fx_weaken_attack1")
 	await manager.attacks_started
-	var target: BattleStoneModel = manager.get_state().get_cell(1, 2)["stone"]
+	var target: BattleMonsterModel = manager.get_state().get_cell(1, 2)["monster"]
 	_check(target.miasma_weakness == 0 and not manager.human_play(0, 0, "fx_plain"),
 		"les attaques se jouent avant le Miasme et interdisent un second coup")
 	await manager.turn_started
@@ -157,8 +157,8 @@ func _test_swarm_pillage_presentation() -> void:
 	_force_instance(state, 0, 1, "fx_swarm_bottom", GameState.PLAYER_AI)
 	CombatResolverModel.recalculate_swarm(state)
 	board.refresh(state)
-	var victim: StoneCard = board.card_at(0, 1)
-	var partner: StoneCard = board.card_at(0, 0)
+	var victim: MonsterCard = board.card_at(0, 1)
+	var partner: MonsterCard = board.card_at(0, 0)
 	var gained := [0]
 	manager.effects_resolved.connect(func(events: Array):
 		for event in events:
@@ -172,13 +172,13 @@ func _test_swarm_pillage_presentation() -> void:
 	_check(gained[0] == 2 and pillage != null and pillage._transfers.size() == 2
 		and pillage._transfers[0]["kind"] == "swarm" and pillage._transfers[1]["kind"] == "swarm",
 		"le Pillage anime les lames d'Essaim réellement volées")
-	_check(_sum(victim.displayed_stone().swarm_blades) == 2
-		and _sum(partner.displayed_stone().swarm_blades) == 2
-		and _sum(victim.get_battle_stone().swarm_blades) == 0,
+	_check(_sum(victim.displayed_monster().swarm_blades) == 2
+		and _sum(partner.displayed_monster().swarm_blades) == 2
+		and _sum(victim.get_battle_monster().swarm_blades) == 0,
 		"les lames d'Essaim restent visibles pendant le Pillage, avant leur rétraction")
 	await manager.turn_started
-	_check(_sum(victim.displayed_stone().swarm_blades) == 0
-		and _sum(partner.displayed_stone().swarm_blades) == 0,
+	_check(_sum(victim.displayed_monster().swarm_blades) == 0
+		and _sum(partner.displayed_monster().swarm_blades) == 0,
 		"l'animation Essaim retire ensuite les lames perdues")
 	manager.queue_free()
 	await get_tree().process_frame

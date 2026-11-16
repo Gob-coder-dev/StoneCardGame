@@ -9,7 +9,7 @@ func _ready() -> void:
 	_compile_directory("res://scripts")
 	StoryService.auto_start_tutorials = false
 	# Ignorer le cache : InterfaceTheme a déjà actualisé sa propre instance.
-	var theme := ResourceLoader.load("res://assets/ui/samstone_theme.tres", "Theme",
+	var theme := ResourceLoader.load("res://assets/ui/beastpact_theme.tres", "Theme",
 		ResourceLoader.CACHE_MODE_IGNORE) as Theme
 	_check(theme != null and theme.get_script() == null,
 		"le thème chargé avant l'arbre ne possède pas de constructeur de script")

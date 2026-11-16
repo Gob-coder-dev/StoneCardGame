@@ -146,14 +146,14 @@ func _test_preview_layout() -> void:
 		await get_tree().process_frame
 	var rows: VBoxContainer = page.get_node("Content/Scroll/Page/DeckPanel/DeckContent/DeckRows")
 	var wrapper: VBoxContainer = rows.get_child(0).get_child(0)
-	var card: StoneCard = wrapper.get_child(0)
+	var card: MonsterCard = wrapper.get_child(0)
 	var empty: Control = rows.get_child(1).get_child(3).get_child(0)
 	_check(absf(card.size.x - card.size.y) <= 1.0 and absf(card.size.y - empty.size.y) <= 1.0,
 		"les emplacements remplis et vides du deck occupent des carrés de même taille")
 	page._on_info_requested("devoracle_n1")
 	for frame in range(6):
 		await get_tree().process_frame
-	var info: StoneInfoSheet = page.info_sheet
+	var info: MonsterInfoSheet = page.info_sheet
 	var bounds := info.card_container.get_global_rect()
 	var preview: Control = info.card_container.get_child(0)
 	_check(bounds.size.y > 0 and bounds.encloses(preview.get_global_rect())
@@ -161,7 +161,7 @@ func _test_preview_layout() -> void:
 		and is_equal_approx(preview.size.x, preview.size.y)
 		and bounds.position.y >= info.stats_label.get_global_rect().end.y,
 		"la grande carte utilise la largeur de la fiche sans recouvrir les informations")
-	var expected_fortune := int(StoneLoader.get_stone("devoracle_n1").get("random_blades", 0))
+	var expected_fortune := int(MonsterLoader.get_monster("devoracle_n1").get("random_blades", 0))
 	var explanation_badge: Control = info.power_badges.get_child(0) if info.power_badges.get_child_count() > 0 else null
 	_check(expected_fortune > 0 and explanation_badge != null and info.power_badges.get_child_count() == 1
 		and explanation_badge.kind == "fortune" and explanation_badge.count == expected_fortune
@@ -190,7 +190,7 @@ func _test_home_portraits() -> void:
 	var all_portraits_loaded := true
 	var all_identities_match := true
 	var all_neon_colors_match := true
-	for god in StoneLoader.get_all_gods():
+	for god in MonsterLoader.get_all_gods():
 		PlayerData.player_god_id = str(god["id"])
 		menu._refresh()
 		var texture: Texture2D = menu.god_portrait.texture
@@ -205,8 +205,8 @@ func _test_home_portraits() -> void:
 		and menu.get_node("Background").mouse_filter == Control.MOUSE_FILTER_IGNORE,
 		"le portrait et le décor du refuge laissent passer les gestes vers les commandes")
 	var background: MenuBackground = menu.get_node("Background")
-	var first_god := StoneLoader.get_god("kharun")
-	var second_god := StoneLoader.get_god("nerava")
+	var first_god := MonsterLoader.get_god("kharun")
+	var second_god := MonsterLoader.get_god("nerava")
 	background.set_gods(first_god, second_god)
 	_check(background.neon_primary_color == Color(str(first_god["color"]))
 		and background.neon_secondary_color == Color(str(second_god["color"])),
@@ -234,7 +234,7 @@ func _test_home_portraits() -> void:
 	PlayerData.player_god_id = ""
 	menu._refresh()
 	_check(menu.god_portrait.texture != null and menu.god_name.text == "SANS DIEU"
-		and menu.god_family.text == "Pierres neutres",
+		and menu.god_family.text == "Monstres neutres",
 		"l'accueil affiche la stèle Sans dieu pour un profil sans dieu")
 	PlayerData.player_god_id = original_god
 	menu._refresh()
@@ -368,8 +368,8 @@ func _test_rules_legends() -> void:
 			var badge: Control = row.get_child(0)
 			kinds[badge.kind] = true
 	var all_documented := true
-	for stone in StoneLoader.get_all_stones():
-		for badge in Symbols.badges_for(stone):
+	for monster in MonsterLoader.get_all_monsters():
+		for badge in Symbols.badges_for(monster):
 			all_documented = all_documented and kinds.has(badge["kind"])
 	_check(all_documented and kinds.size() == 9, "les règles montrent et expliquent tous les pictogrammes utilisés sur les cartes")
 	var texts: Array[String] = [page.get_node("Content/Scroll/RulesPanel/Page/RulesText").text]
@@ -377,8 +377,8 @@ func _test_rules_legends() -> void:
 		if row is HBoxContainer:
 			texts.append(row.get_child(1).text)
 	var all_text := "\n".join(texts)
-	_check(not all_text.contains("{") and all_text.contains("coûte %s point" % UIFormat.cost(StoneCostRules.LONG_BLADE_COST))
-		and all_text.contains("jusqu'à +%d" % StoneEffects.SWARM_CAP),
+	_check(not all_text.contains("{") and all_text.contains("coûte %s point" % UIFormat.cost(MonsterCostRules.LONG_BLADE_COST))
+		and all_text.contains("jusqu'à +%d" % MonsterEffects.SWARM_CAP),
 		"les règles affichent les valeurs lues dans le code")
 	_check(all_text.contains("Commune ivoire") and all_text.contains("Rare cyan")
 		and all_text.contains("Épique violette") and all_text.contains("Légendaire dorée")
@@ -439,10 +439,10 @@ func _test_deck_slots() -> void:
 		"l'accueil lit le numéro de deck actif et signale un deck incomplet")
 	menu.queue_free()
 	# Un ancien panneau ne doit jamais pouvoir modifier le nouveau deck.
-	page._replacement_stone_id = "le_nud_hurlant_n2"
+	page._replacement_monster_id = "le_nud_hurlant_n2"
 	page.replacement_panel.open_for(page._current_deck, "le_nud_hurlant_n2")
 	page._select_deck(0)
-	_check(not page.replacement_panel.visible and page._replacement_stone_id == "",
+	_check(not page.replacement_panel.visible and page._replacement_monster_id == "",
 		"changer d'emplacement ferme le remplacement et annule sa carte en attente")
 	var save_path: String = PlayerData._save_path
 	PlayerData._save_path = save_path + "/missing/profile.json"
@@ -546,7 +546,7 @@ func _test_deck_clear() -> void:
 	var remaining_cards := 0
 	for row in page.deck_rows.get_children():
 		for wrapper in row.get_children():
-			if wrapper.get_child_count() > 0 and wrapper.get_child(0) is StoneCard:
+			if wrapper.get_child_count() > 0 and wrapper.get_child(0) is MonsterCard:
 				remaining_cards += 1
 	_check(not page.confirm_popup.visible and PlayerData.get_active_deck().is_empty()
 		and page._current_deck.is_empty() and remaining_cards == 0
@@ -652,7 +652,7 @@ func _test_generated_opponent_battle() -> void:
 	var state: GameState = board.turn_manager.get_state()
 	_check(state.npc_id == opponent["id"]
 		and state.god_of(GameState.PLAYER_AI) == "enigma"
-		and state.hand_of(GameState.PLAYER_AI) == StoneLoader.build_hand(opponent["deck"]),
+		and state.hand_of(GameState.PLAYER_AI) == MonsterLoader.build_hand(opponent["deck"]),
 		"un combat généré reçoit le deck, le dieu et l'identifiant de la rencontre choisie")
 	board.queue_free()
 	await get_tree().process_frame
@@ -773,11 +773,11 @@ func _test_neutral_bot_battle() -> void:
 	await get_tree().process_frame
 	var state: GameState = board.turn_manager.get_state()
 	var all_neutral := true
-	for stone_id in state.hand_of(GameState.PLAYER_AI):
-		all_neutral = all_neutral and StoneLoader.stone_affinity(str(stone_id)) == "neutral"
+	for monster_id in state.hand_of(GameState.PLAYER_AI):
+		all_neutral = all_neutral and MonsterLoader.monster_affinity(str(monster_id)) == "neutral"
 	_check(state.npc_id == opponent["id"]
 		and state.god_of(GameState.PLAYER_AI) == ""
-		and state.hand_of(GameState.PLAYER_AI) == StoneLoader.build_hand(opponent["deck"])
+		and state.hand_of(GameState.PLAYER_AI) == MonsterLoader.build_hand(opponent["deck"])
 		and all_neutral,
 		"un combat contre Pr.Stone fonctionne avec huit cartes neutres et aucun dieu")
 	board.queue_free()
@@ -875,7 +875,7 @@ func _test_result_actions() -> void:
 	BattleContext.last_save_error = OK
 	page._refresh_actions()
 	page._refresh_save_status()
-	var winner_color := Color(str(StoneLoader.get_god(PlayerData.player_god_id)["color"]))
+	var winner_color := Color(str(MonsterLoader.get_god(PlayerData.player_god_id)["color"]))
 	_check(page.background.room == MenuBackground.Room.AFTERMATH
 		and page.background.neon_primary_color == winner_color
 		and page.background._winner_firework_color(0) != page.background._winner_firework_color(1)
@@ -897,7 +897,7 @@ func _test_result_actions() -> void:
 	var defeat_page: Control = (load("res://scenes/menus/Result.tscn") as PackedScene).instantiate()
 	add_child(defeat_page)
 	await get_tree().process_frame
-	var campaign_winner_color := Color(str(StoneLoader.get_god("kharun")["color"]))
+	var campaign_winner_color := Color(str(MonsterLoader.get_god("kharun")["color"]))
 	_check(defeat_page.background.room == MenuBackground.Room.AFTERMATH_DEFEAT
 		and defeat_page.background.neon_primary_color == campaign_winner_color
 		and defeat_page.background.neon_secondary_color == campaign_winner_color
@@ -918,8 +918,8 @@ func _test_cost_format() -> void:
 		"les coûts s'affichent avec la virgule française, sans décimale inutile")
 	_check(UIFormat.cost(1.25) == "1,25" and UIFormat.cost(3.75) == "3,75"
 		and UIFormat.cost(8.25) == "8,25", "les quarts de point ne sont jamais arrondis à un dixième")
-	_check(UIFormat.cost(StoneLoader.stone_cost("veilleur_bifurque_n1")) == "4,75"
-		and UIFormat.cost(StoneLoader.stone_cost("echassier_des_brumes_n3")) == "11,75",
+	_check(UIFormat.cost(MonsterLoader.monster_cost("veilleur_bifurque_n1")) == "4,75"
+		and UIFormat.cost(MonsterLoader.monster_cost("echassier_des_brumes_n3")) == "11,75",
 		"les coûts des cartes Horizon affichent exactement le coût du catalogue")
 
 
@@ -930,14 +930,14 @@ func _test_hand_keeps_remaining_cards() -> void:
 	_check(hand.columns == UITheme.DECK_COLUMNS and is_equal_approx(full_height, 468.0),
 		"la main réserve deux rangées de quatre cartes à sa construction")
 	hand.refresh(["fx_plain", "fx_attack2", "fx_wall"])
-	var kept_first: StoneCard = hand.get_child(0).get_child(0)
-	var kept_last: StoneCard = hand.get_child(2).get_child(0)
+	var kept_first: MonsterCard = hand.get_child(0).get_child(0)
+	var kept_last: MonsterCard = hand.get_child(2).get_child(0)
 	hand.refresh(["fx_plain", "fx_wall"])
 	_check(hand.get_child_count() == 2 and hand.get_child(0).get_child(0) == kept_first
 		and hand.get_child(1).get_child(0) == kept_last and hand.custom_minimum_size.y == full_height,
 		"jouer une carte retire seulement celle-ci de la main")
 	hand.refresh(["fx_target"])
-	_check(hand.get_child_count() == 1 and hand.get_child(0).get_child(0).get_stone_id() == "fx_target",
+	_check(hand.get_child_count() == 1 and hand.get_child(0).get_child(0).get_monster_id() == "fx_target",
 		"une nouvelle main est reconstruite")
 	var phone := BattleLayoutModel.calculate(Vector2(984.0, 2280.0), 271.0,
 		40.0, float(UITheme.GAP_MEDIUM), DeckRules.DECK_SIZE)
@@ -1199,7 +1199,7 @@ func _test_pvp_lobby_screens() -> void:
 		"le client voit les règles sans pouvoir les modifier")
 	waiting_lobby._is_host = true
 	page._fill_lobby()
-	var host_color := Color(str(StoneLoader.get_god("kharun")["color"]))
+	var host_color := Color(str(MonsterLoader.get_god("kharun")["color"]))
 	_check(page.background.neon_primary_color == host_color
 		and page.background.neon_secondary_color == host_color,
 		"le salon en attente garde toutes les parties de l'arche et des épées à la couleur de l'hôte")
@@ -1210,7 +1210,7 @@ func _test_pvp_lobby_screens() -> void:
 	page._fill_lobby()
 	_check(page.background.neon_primary_color == host_color
 		and page.background.neon_secondary_color
-			== Color(str(StoneLoader.get_god("veskar")["color"])),
+			== Color(str(MonsterLoader.get_god("veskar")["color"])),
 		"le salon adopte les deux couleurs une fois le dieu adverse reçu")
 	page._flow.lobby = null
 	page._refresh_status()
@@ -1270,7 +1270,7 @@ func _test_pvp_result() -> void:
 	_check(page.result_label.text == "VICTOIRE !"
 		and page.score_label.text.contains("Hôte 9") and page.score_label.text.contains("4 Client"),
 		"l'écran de fin PVP annonce la victoire et le score du joueur local")
-	var pvp_winner_color := Color(str(StoneLoader.get_god("veskar")["color"]))
+	var pvp_winner_color := Color(str(MonsterLoader.get_god("veskar")["color"]))
 	_check(page.background.room == MenuBackground.Room.AFTERMATH
 		and page.background.neon_primary_color == pvp_winner_color
 		and page.background._winner_firework_color(0) != page.background._winner_firework_color(1)
@@ -1321,7 +1321,7 @@ func _test_pvp_result() -> void:
 	_check(defeat.result_label.text == "DÉFAITE..." and defeat.score_label.text.contains("Client 6")
 		and defeat.score_label.text.contains("12 Hôte"),
 		"le même écran parle au client : son score reste à gauche et la défaite est annoncée")
-	var pvp_remote_winner_color := Color(str(StoneLoader.get_god("kharun")["color"]))
+	var pvp_remote_winner_color := Color(str(MonsterLoader.get_god("kharun")["color"]))
 	_check(defeat.background.room == MenuBackground.Room.AFTERMATH_DEFEAT
 		and defeat.background.neon_primary_color == pvp_remote_winner_color
 		and defeat.background.neon_secondary_color == pvp_remote_winner_color
@@ -1339,8 +1339,8 @@ func _test_pvp_result() -> void:
 	add_child(draw)
 	await get_tree().process_frame
 	_check(draw.background.room == MenuBackground.Room.AFTERMATH_DRAW
-		and draw.background.neon_primary_color == Color(str(StoneLoader.get_god("veskar")["color"]))
-		and draw.background.neon_secondary_color == Color(str(StoneLoader.get_god("kharun")["color"])),
+		and draw.background.neon_primary_color == Color(str(MonsterLoader.get_god("veskar")["color"]))
+		and draw.background.neon_secondary_color == Color(str(MonsterLoader.get_god("kharun")["color"])),
 		"une égalité montre deux épées croisées aux couleurs des dieux des deux joueurs")
 	draw.queue_free()
 	await get_tree().process_frame
@@ -1399,7 +1399,7 @@ func _test_hud_game_over() -> void:
 	var hud := BattleHUD.new()
 	add_child(hud)
 	hud.set_names("Joueur", "Adversaire")
-	hud.set_gods(StoneLoader.get_god("veskar"), StoneLoader.get_god("kharun"))
+	hud.set_gods(MonsterLoader.get_god("veskar"), MonsterLoader.get_god("kharun"))
 	hud.set_active_player(GameState.PLAYER_HUMAN)
 	hud.set_game_over()
 	_check(hud._banner.text == "Partie terminée" and hud._center.text == "VS",
@@ -1432,20 +1432,20 @@ func _test_collection_incremental_refresh() -> void:
 	await get_tree().process_frame
 	var cards := _collection_cards(page)
 	var expected: Array = []
-	for definition in StoneLoader.get_lineages_for_god("veskar"):
-		if DeckRules.lineage_index(PlayerData.get_active_deck(), StoneLoader.stone_lineage(definition["id"])) < 0:
+	for definition in MonsterLoader.get_lineages_for_god("veskar"):
+		if DeckRules.lineage_index(PlayerData.get_active_deck(), MonsterLoader.monster_lineage(definition["id"])) < 0:
 			expected.append(definition["id"])
 	var shown := _shown_collection_ids(page)
 	var shown_sorted := shown.duplicate()
 	shown_sorted.sort()
 	expected.sort()
-	_check(cards.size() == StoneLoader.get_lineages_for_god("veskar").size() and shown_sorted == expected,
+	_check(cards.size() == MonsterLoader.get_lineages_for_god("veskar").size() and shown_sorted == expected,
 		"la collection n'affiche pas les cartes déjà dans le deck")
 	# Tri FAMILLE par défaut : la première carte est la moins chère de Véskar.
 	_check(page._sort_mode == 0 and page.sort_button.text.begins_with("TRIER : FAMILLE")
-		and str(StoneLoader.get_stone(shown[0])["god_id"]) == "veskar" and _is_family_order(shown, "veskar"),
+		and str(MonsterLoader.get_monster(shown[0])["god_id"]) == "veskar" and _is_family_order(shown, "veskar"),
 		"par défaut, les cartes du dieu passent avant les neutres, chaque groupe par coût puis par nom")
-	var de_boiteux_n3: StoneCard = cards["de_boiteux_n1"]
+	var de_boiteux_n3: MonsterCard = cards["de_boiteux_n1"]
 	var identity := de_boiteux_n3.get_instance_id()
 	var without_de_boiteux: Array = PlayerData.get_active_deck()
 	without_de_boiteux.erase("de_boiteux_n1")
@@ -1480,7 +1480,7 @@ func _test_collection_incremental_refresh() -> void:
 		and is_equal_approx(visible_wrappers[3].position.x, visible_wrappers[0].position.x)
 		and visible_wrappers[3].position.y > visible_wrappers[0].position.y,
 		"une carte ajoutée au deck disparaît et la grille referme le trou")
-	var neutral: StoneCard = _collection_cards(page)["avortons_des_caves_n1"]
+	var neutral: MonsterCard = _collection_cards(page)["avortons_des_caves_n1"]
 	page._collection_grid.rebuild("enigma", page._current_deck, page._sort_mode)
 	await get_tree().process_frame
 	var changed_god := _collection_cards(page)
@@ -1496,8 +1496,8 @@ func _test_collection_incremental_refresh() -> void:
 func _is_family_order(ids: Array, god_id: String) -> bool:
 	var seen_neutral := false
 	var group: Array = []
-	for stone_id in ids:
-		var neutral := str(StoneLoader.get_stone(stone_id).get("god_id", "neutral")) == "neutral"
+	for monster_id in ids:
+		var neutral := str(MonsterLoader.get_monster(monster_id).get("god_id", "neutral")) == "neutral"
 		if neutral and not seen_neutral:
 			if not _cost_then_name_ascending(group):
 				return false
@@ -1505,16 +1505,16 @@ func _is_family_order(ids: Array, god_id: String) -> bool:
 			seen_neutral = true
 		elif not neutral and seen_neutral:
 			return false
-		if not neutral and str(StoneLoader.get_stone(stone_id)["god_id"]) != god_id:
+		if not neutral and str(MonsterLoader.get_monster(monster_id)["god_id"]) != god_id:
 			return false
-		group.append(stone_id)
+		group.append(monster_id)
 	return _cost_then_name_ascending(group)
 
 
 func _cost_then_name_ascending(ids: Array) -> bool:
 	for index in range(1, ids.size()):
-		var previous_cost := StoneLoader.stone_cost(ids[index - 1])
-		var current_cost := StoneLoader.stone_cost(ids[index])
+		var previous_cost := MonsterLoader.monster_cost(ids[index - 1])
+		var current_cost := MonsterLoader.monster_cost(ids[index])
 		if previous_cost > current_cost:
 			return false
 		if is_equal_approx(previous_cost, current_cost) and not _names_ascending([ids[index - 1], ids[index]]):
@@ -1524,8 +1524,8 @@ func _cost_then_name_ascending(ids: Array) -> bool:
 
 func _names_ascending(ids: Array) -> bool:
 	for index in range(1, ids.size()):
-		var previous := str(StoneLoader.get_stone(ids[index - 1])["name"])
-		var current := str(StoneLoader.get_stone(ids[index])["name"])
+		var previous := str(MonsterLoader.get_monster(ids[index - 1])["name"])
+		var current := str(MonsterLoader.get_monster(ids[index])["name"])
 		if previous.naturalnocasecmp_to(current) > 0:
 			return false
 	return true
@@ -1534,8 +1534,8 @@ func _names_ascending(ids: Array) -> bool:
 func _collection_cards(page: Control) -> Dictionary:
 	var cards := {}
 	for wrapper in page.collection_rows.get_child(0).get_children():
-		var card: StoneCard = wrapper.get_child(0)
-		cards[card.get_stone_id()] = card
+		var card: MonsterCard = wrapper.get_child(0)
+		cards[card.get_monster_id()] = card
 	return cards
 
 
@@ -1543,5 +1543,5 @@ func _shown_collection_ids(page: Control) -> Array:
 	var ids: Array = []
 	for wrapper in page.collection_rows.get_child(0).get_children():
 		if wrapper.visible:
-			ids.append(wrapper.get_child(0).get_stone_id())
+			ids.append(wrapper.get_child(0).get_monster_id())
 	return ids

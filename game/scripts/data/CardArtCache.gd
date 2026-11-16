@@ -47,8 +47,8 @@ func activate_god(god_id: String, preview_level: int = 1, deck: Array = []) -> v
 	_active_god_id = god_id
 	_direct_paths.clear()
 	_warmup_paths = _paths_for_god(god_id, preview_level)
-	for stone_id in deck:
-		var path := _asset_path(StoneLoader.get_stone(str(stone_id)))
+	for monster_id in deck:
+		var path := _asset_path(MonsterLoader.get_monster(str(monster_id)))
 		if not path.is_empty():
 			_warmup_paths[path] = true
 	_active_paths = _persistent_paths.duplicate()
@@ -65,7 +65,7 @@ func activate_god(god_id: String, preview_level: int = 1, deck: Array = []) -> v
 ## nombre, présents dans plusieurs écrans et conservés pour toute la session.
 ## Ils ne font pas partie de la progression des cartes du dieu actif.
 func preload_god_portraits() -> void:
-	for god in StoneLoader.get_all_gods():
+	for god in MonsterLoader.get_all_gods():
 		var path := str(god.get("asset", ""))
 		if path.is_empty():
 			continue
@@ -81,7 +81,7 @@ func preload_god_portraits() -> void:
 		_request(identity_path, true)
 
 
-## Demande non bloquante utilisée par StoneCard. Une texture déjà chargée est
+## Demande non bloquante utilisée par MonsterCard. Une texture déjà chargée est
 ## rendue immédiatement ; sinon la carte recevra texture_ready plus tard.
 func texture(path: String) -> Texture2D:
 	if path.is_empty():
@@ -206,18 +206,18 @@ func _completed_warmup_count() -> int:
 
 func _paths_for_god(god_id: String, preview_level: int) -> Dictionary:
 	var paths := {}
-	var lineages := StoneLoader.get_neutral_lineages() if god_id == "" \
-		else StoneLoader.get_lineages_for_god(god_id)
+	var lineages := MonsterLoader.get_neutral_lineages() if god_id == "" \
+		else MonsterLoader.get_lineages_for_god(god_id)
 	for base in lineages:
-		var stone_id := StoneLoader.preview_variant(str(base["id"]), preview_level)
-		var path := _asset_path(StoneLoader.get_stone(stone_id))
+		var monster_id := MonsterLoader.preview_variant(str(base["id"]), preview_level)
+		var path := _asset_path(MonsterLoader.get_monster(monster_id))
 		if not path.is_empty():
 			paths[path] = true
 	return paths
 
 
-static func _asset_path(stone: Dictionary) -> String:
-	return str(stone.get("asset", ""))
+static func _asset_path(monster: Dictionary) -> String:
+	return str(monster.get("asset", ""))
 
 
 func _prune_unused_textures() -> void:

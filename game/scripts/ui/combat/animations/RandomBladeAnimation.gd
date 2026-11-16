@@ -2,16 +2,16 @@
 extends "res://scripts/ui/combat/animations/CardRevealAnimation.gd"
 var _targets: Array[Vector2] = []
 
-func play(card: StoneCard, events: Array, duration: float) -> void:
+func play(card: MonsterCard, events: Array, duration: float) -> void:
 	_prepare(card)
-	var preview: BattleStoneModel = card.get_battle_stone().clone()
+	var preview: BattleMonsterModel = card.get_battle_monster().clone()
 	var seen := {}
 	for event in events:
 		var side := str(event["side"])
 		var index := preview.marker_offset("random", side) + int(seen.get(side, 0))
 		_targets.append(_card_transform * card.marker_position(side, index))
 		seen[side] = int(seen.get(side, 0)) + 1
-	for side in StoneSide.ALL:
+	for side in MonsterSide.ALL:
 		preview.random_blades[side] = 0
 	card.set_combat_preview(preview)
 	_start(duration)

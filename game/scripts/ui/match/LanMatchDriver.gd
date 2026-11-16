@@ -58,8 +58,8 @@ func start() -> bool:
 
 	LanSession.enter_match()
 	turn_manager.start_game(
-		StoneLoader.build_hand(one.get("deck", [])),
-		StoneLoader.build_hand(two.get("deck", [])),
+		MonsterLoader.build_hand(one.get("deck", [])),
+		MonsterLoader.build_hand(two.get("deck", [])),
 		PvpMatchContext.blocked_cells,
 		"",
 		PvpMatchContext.starting_player,
@@ -73,7 +73,7 @@ func start() -> bool:
 
 ## Validation autoritaire, exécutée sur le moteur local : joueur actif, phase,
 ## coordonnées, présence de la carte et PlacementRules.
-func _validate_move(player: int, row: int, col: int, stone_id: String) -> bool:
+func _validate_move(player: int, row: int, col: int, monster_id: String) -> bool:
 	var state := turn_manager.get_state()
 	if state == null or state.is_game_over:
 		return false
@@ -81,7 +81,7 @@ func _validate_move(player: int, row: int, col: int, stone_id: String) -> bool:
 		return false
 	if state.current_player != player:
 		return false
-	return PlacementRules.is_valid(state, row, col, stone_id, player)
+	return PlacementRules.is_valid(state, row, col, monster_id, player)
 
 
 func can_submit() -> bool:
@@ -93,11 +93,11 @@ func can_submit() -> bool:
 		and turn_manager.phase == TurnManager.Phase.WAITING_INPUT
 
 
-func request_move(row: int, col: int, stone_id: String) -> bool:
+func request_move(row: int, col: int, monster_id: String) -> bool:
 	if _coordinator == null or not can_submit() \
-			or not _validate_move(local_side, row, col, stone_id):
+			or not _validate_move(local_side, row, col, monster_id):
 		return false
-	return _coordinator.request_move(row, col, stone_id)
+	return _coordinator.request_move(row, col, monster_id)
 
 
 func on_turn_started(_player: int) -> void:
@@ -150,7 +150,7 @@ func _on_command_accepted(command: Dictionary) -> void:
 	if _confirmation_timer != null:
 		_confirmation_timer.start(LanProtocol.TURN_CONFIRM_TIMEOUT_SECONDS)
 	if not turn_manager.play(int(command["player"]), int(command["row"]),
-			int(command["col"]), str(command["stone_id"])):
+			int(command["col"]), str(command["monster_id"])):
 		_leaving = true
 		aborted.emit("Désynchronisation : le moteur local a refusé un coup validé.")
 		return

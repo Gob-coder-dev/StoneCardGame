@@ -85,11 +85,11 @@ func prepare_round() -> Dictionary:
 	return {"ok": true, "requires_draft": false, "reused": false}
 
 
-func choose_player(stone_id: String) -> bool:
+func choose_player(monster_id: String) -> bool:
 	if _draft == null or _draft.complete_for(GameState.PLAYER_ONE):
 		return false
 	var step := _draft.step_for(GameState.PLAYER_ONE)
-	var chosen := _draft.choose(GameState.PLAYER_ONE, stone_id)
+	var chosen := _draft.choose(GameState.PLAYER_ONE, monster_id)
 	if not bool(chosen.get("ok", false)):
 		return false
 	if not _draft.complete_for(GameState.PLAYER_TWO):

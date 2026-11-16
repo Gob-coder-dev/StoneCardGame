@@ -11,20 +11,20 @@ static func default_entry() -> Dictionary:
 
 static func sanitize_entry(lineage_id: String, raw: Variant) -> Dictionary:
 	var result := default_entry()
-	if not raw is Dictionary or StoneLoader.lineage_max_level(lineage_id) <= 0:
+	if not raw is Dictionary or MonsterLoader.lineage_max_level(lineage_id) <= 0:
 		return result
 	result["unlocked_level"] = Integer.read(raw.get("unlocked_level"), 0, 0,
-		StoneLoader.lineage_max_level(lineage_id))
+		MonsterLoader.lineage_max_level(lineage_id))
 	result["copies"] = Integer.read(raw.get("copies"))
 	return result
 
 
 static func requirement(lineage_id: String, unlocked_level: int,
 		config: Dictionary) -> Dictionary:
-	if unlocked_level <= 0 or unlocked_level >= StoneLoader.lineage_max_level(lineage_id):
+	if unlocked_level <= 0 or unlocked_level >= MonsterLoader.lineage_max_level(lineage_id):
 		return {}
-	var first_form := StoneLoader.variant_id(lineage_id, 1)
-	var rarity := StoneLoader.stone_rarity(first_form)
+	var first_form := MonsterLoader.variant_id(lineage_id, 1)
+	var rarity := MonsterLoader.monster_rarity(first_form)
 	var upgrades: Variant = config.get("upgrades", {})
 	if not upgrades is Dictionary:
 		return {}

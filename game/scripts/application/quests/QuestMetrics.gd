@@ -68,7 +68,7 @@ func value(metric: String) -> int:
 
 func _lineages() -> Array[String]:
 	if _lineages_cache.is_empty():
-		_lineages_cache = StoneLoader.lineage_ids()
+		_lineages_cache = MonsterLoader.lineage_ids()
 	return _lineages_cache
 
 
@@ -102,15 +102,15 @@ func _legendary_owned() -> int:
 	for lineage_id in _lineages():
 		if _unlocked(lineage_id) <= 0:
 			continue
-		var first := StoneLoader.variant_id(lineage_id, 1)
-		if first != "" and StoneLoader.stone_rarity(first) == "legendary":
+		var first := MonsterLoader.variant_id(lineage_id, 1)
+		if first != "" and MonsterLoader.monster_rarity(first) == "legendary":
 			total += 1
 	return total
 
 
 func _affinity(lineage_id: String) -> String:
-	var first := StoneLoader.variant_id(lineage_id, 1)
-	return StoneLoader.stone_affinity(first) if first != "" else ""
+	var first := MonsterLoader.variant_id(lineage_id, 1)
+	return MonsterLoader.monster_affinity(first) if first != "" else ""
 
 
 func _tutorial_completed() -> bool:

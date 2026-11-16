@@ -48,7 +48,7 @@ func can_submit() -> bool:
 
 
 ## Transmet un coup du joueur local. Renvoie true s'il a été accepté ou envoyé.
-func request_move(_row: int, _col: int, _stone_id: String) -> bool:
+func request_move(_row: int, _col: int, _monster_id: String) -> bool:
 	return false
 
 

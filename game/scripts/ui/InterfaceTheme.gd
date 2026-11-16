@@ -5,7 +5,7 @@
 ## ici, après création du SceneTree, sans exécuter de code au chargement précoce.
 extends Node
 
-const THEME_PATH: String = "res://assets/ui/samstone_theme.tres"
+const THEME_PATH: String = "res://assets/ui/beastpact_theme.tres"
 const ThemeBuilder := preload("res://scripts/ui/RefugeTheme.gd")
 
 

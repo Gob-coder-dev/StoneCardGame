@@ -4,7 +4,7 @@
       "id": "disciple_muraille",
       "name": "Le Disciple de la Muraille",
       "description": "Une armure éveillée qui apprend à protéger les angles faibles de son deck.",
-      "quote": "Même une pierre fendue peut tenir debout.",
+      "quote": "Même un monstre fendu peut tenir debout.",
       "difficulty": "easy",
       "ai": {
         "precision": 0,

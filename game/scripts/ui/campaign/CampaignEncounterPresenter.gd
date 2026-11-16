@@ -93,10 +93,10 @@ static func _opponent_label(node: CampaignNode, player_god_id: String,
 			if theme_name != "" else "")
 	if god_policy == CampaignNode.GOD_PROFILE:
 		return "Ton dieu — %s" % str(
-			StoneLoader.get_god(player_god_id).get("name", "profil"))
+			MonsterLoader.get_god(player_god_id).get("name", "profil"))
 	if node.fixed_god_id() == "":
 		return OpponentCatalogModel.NEUTRAL_BOT_NAME
-	return str(StoneLoader.get_god(node.fixed_god_id()).get(
+	return str(MonsterLoader.get_god(node.fixed_god_id()).get(
 		"name", node.fixed_god_id()))
 
 
@@ -122,7 +122,7 @@ static func _accent(node: CampaignNode) -> String:
 		return node.accent
 	for god_id in [node.fixed_god_id(), node.generator_god_id()]:
 		if god_id != "":
-			var color := str(StoneLoader.get_god(god_id).get("color", ""))
+			var color := str(MonsterLoader.get_god(god_id).get("color", ""))
 			if color != "":
 				return color
 	return UITheme.COL_NEON_PINK.to_html()
@@ -131,4 +131,4 @@ static func _accent(node: CampaignNode) -> String:
 static func _god_name(god_id: String) -> String:
 	if god_id == "":
 		return ""
-	return str(StoneLoader.get_god(god_id).get("name", god_id))
+	return str(MonsterLoader.get_god(god_id).get("name", god_id))

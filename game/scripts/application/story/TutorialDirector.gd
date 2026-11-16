@@ -95,7 +95,7 @@ func blocks_placement() -> bool:
 		return false
 	if _wait_for == "":
 		return false
-	return _wait_for != "stone_placed" and _wait_for != "cell_pressed"
+	return _wait_for != "monster_placed" and _wait_for != "cell_pressed"
 
 
 ## La sélection n'est acceptée que si l'étape courante l'attend et si la carte
@@ -107,10 +107,10 @@ func allows_selection(payload: Dictionary) -> bool:
 	return _expect_matches(payload)
 
 
-## Même principe pour la pose : la case et la pierre doivent correspondre au
+## Même principe pour la pose : la case et le monstre doivent correspondre au
 ## plan du chapitre. Hors tutoriel, StoryService laisse toujours passer.
 func allows_placement(payload: Dictionary) -> bool:
-	if not _running or not _waiting or _wait_for != "stone_placed":
+	if not _running or not _waiting or _wait_for != "monster_placed":
 		return false
 	return _expect_matches(payload)
 

@@ -1,1 +1,1 @@
-"""Outils de compilation de la campagne SamStone."""
+"""Outils de compilation de la campagne Beastpact."""

@@ -5,14 +5,14 @@ class_name HandView
 extends Container
 
 ## Émis quand le joueur touche une carte de sa main.
-signal card_selected(stone_id: String)
+signal card_selected(monster_id: String)
 ## Émis dès qu'un doigt ou la souris appuie sur une carte : l'appui peut devenir
 ## un glissement vers le plateau (voir CardDragController).
-signal card_press_started(stone_id: String, card: StoneCard, pointer: int, canvas_position: Vector2)
+signal card_press_started(monster_id: String, card: MonsterCard, pointer: int, canvas_position: Vector2)
 
 const DragGesture := preload("res://scripts/ui/input/DragGesture.gd")
 
-var _cards: Array[StoneCard] = []  ## cartes affichées, dans l'ordre de la main
+var _cards: Array[MonsterCard] = []  ## cartes affichées, dans l'ordre de la main
 var _selected_id: String = ""
 var columns: int = UITheme.DECK_COLUMNS
 var _card_size: float = UITheme.CARD_HAND
@@ -62,19 +62,19 @@ func _notification(what: int) -> void:
 			fit_child_in_rect(child, Rect2(card_position, Vector2.ONE * _card_size))
 
 
-## Synchronise la main avec la liste de stone_id du moteur. Pendant un match,
+## Synchronise la main avec la liste de monster_id du moteur. Pendant un match,
 ## la main ne fait que perdre des cartes : seules les cartes jouées sont
 ## retirées. Une liste qui n'en découle pas reconstruit la main.
-func refresh(stone_ids: Array) -> void:
-	var played: Array[StoneCard] = []
+func refresh(monster_ids: Array) -> void:
+	var played: Array[MonsterCard] = []
 	var next := 0
 	for card in _cards:
-		if next < stone_ids.size() and card.get_stone_id() == str(stone_ids[next]):
+		if next < monster_ids.size() and card.get_monster_id() == str(monster_ids[next]):
 			next += 1
 		else:
 			played.append(card)
-	if next < stone_ids.size():
-		_rebuild(stone_ids)
+	if next < monster_ids.size():
+		_rebuild(monster_ids)
 		return
 	for card in played:
 		_cards.erase(card)
@@ -84,12 +84,12 @@ func refresh(stone_ids: Array) -> void:
 	_apply_selection()
 
 
-func _rebuild(stone_ids: Array) -> void:
+func _rebuild(monster_ids: Array) -> void:
 	for child in get_children():
 		remove_child(child)
 		child.queue_free()
 	_cards.clear()
-	for stone_id in stone_ids:
+	for monster_id in monster_ids:
 		var wrapper := AspectRatioContainer.new()
 		wrapper.ratio = 1.0  ## carré : les cartes sont 1:1
 		wrapper.stretch_mode = AspectRatioContainer.STRETCH_FIT
@@ -97,8 +97,8 @@ func _rebuild(stone_ids: Array) -> void:
 		wrapper.alignment_vertical = AspectRatioContainer.ALIGNMENT_CENTER
 		wrapper.custom_minimum_size = Vector2(_card_size, _card_size)
 
-		var card := StoneCard.new()
-		card.setup(StoneLoader.get_stone(str(stone_id)), StoneCard.OWNER_HUMAN)
+		var card := MonsterCard.new()
+		card.setup(MonsterLoader.get_monster(str(monster_id)), MonsterCard.OWNER_HUMAN)
 		card.custom_minimum_size = Vector2(_card_size, _card_size)
 		card.card_pressed.connect(_on_card_pressed)
 		card.gui_input.connect(_on_card_input.bind(card))
@@ -110,15 +110,15 @@ func _rebuild(stone_ids: Array) -> void:
 	queue_sort()
 
 
-func _on_card_pressed(stone_id: String) -> void:
-	emit_signal("card_selected", stone_id)
+func _on_card_pressed(monster_id: String) -> void:
+	emit_signal("card_selected", monster_id)
 
 
 ## Un appui peut devenir un glissement : la position est donnée dans le canevas.
-func _on_card_input(event: InputEvent, card: StoneCard) -> void:
+func _on_card_input(event: InputEvent, card: MonsterCard) -> void:
 	var pointer := DragGesture.pressed_pointer(event)
 	if pointer != DragGesture.NO_POINTER:
-		card_press_started.emit(card.get_stone_id(), card, pointer,
+		card_press_started.emit(card.get_monster_id(), card, pointer,
 			card.get_global_transform_with_canvas() * event.position)
 
 
@@ -126,21 +126,21 @@ func card_count() -> int:
 	return _cards.size()
 
 
-func card_at(index: int) -> StoneCard:
+func card_at(index: int) -> MonsterCard:
 	if index < 0 or index >= _cards.size():
 		return null
 	return _cards[index]
 
 
-func card_for_stone(stone_id: String) -> StoneCard:
+func card_for_monster(monster_id: String) -> MonsterCard:
 	for card in _cards:
-		if card.get_stone_id() == stone_id:
+		if card.get_monster_id() == monster_id:
 			return card
 	return null
 
 
-func set_selected(stone_id: String) -> void:
-	_selected_id = stone_id
+func set_selected(monster_id: String) -> void:
+	_selected_id = monster_id
 	_apply_selection()
 
 
@@ -151,4 +151,4 @@ func clear_selection() -> void:
 
 func _apply_selection() -> void:
 	for card in _cards:
-		card.set_selected(card.get_stone_id() == _selected_id and _selected_id != "")
+		card.set_selected(card.get_monster_id() == _selected_id and _selected_id != "")

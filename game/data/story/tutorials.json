@@ -28,22 +28,22 @@
           {
             "row": 2,
             "col": 2,
-            "stone_id": "le_drape_du_seuil_n1"
+            "monster_id": "le_drape_du_seuil_n1"
           },
           {
             "row": 1,
             "col": 0,
-            "stone_id": "mordeur_des_combles_n1"
+            "monster_id": "mordeur_des_combles_n1"
           },
           {
             "row": 0,
             "col": 2,
-            "stone_id": "avortons_des_caves_n1"
+            "monster_id": "avortons_des_caves_n1"
           },
           {
             "row": 1,
             "col": 2,
-            "stone_id": "ecorche_angle_n1"
+            "monster_id": "ecorche_angle_n1"
           }
         ]
       },
@@ -57,7 +57,7 @@
           "id": "open_decks",
           "scene": "res://scenes/menus/MainMenu.tscn",
           "anchor": "nav.deck",
-          "prompt": "Ouvre le cabinet : DECKS.",
+          "prompt": "Ouvre ta collection : DECKS.",
           "wait_for": "screen_opened",
           "expect": {
             "scene": "res://scenes/menus/CollectionScreen.tscn"
@@ -140,7 +140,7 @@
           "prompt": "Touche la Gueule de travers entourée.",
           "wait_for": "card_selected",
           "expect": {
-            "stone_id": "gueule_de_travers_n1"
+            "monster_id": "gueule_de_travers_n1"
           }
         },
         {
@@ -148,11 +148,11 @@
           "scene": "res://scenes/game/Board.tscn",
           "anchor": "board.cell.0.0",
           "prompt": "Pose-la sur la case entourée.",
-          "wait_for": "stone_placed",
+          "wait_for": "monster_placed",
           "expect": {
             "row": 0,
             "col": 0,
-            "stone_id": "gueule_de_travers_n1",
+            "monster_id": "gueule_de_travers_n1",
             "owner": 1
           }
         },
@@ -173,7 +173,7 @@
           "prompt": "Touche l'Écorché d'angle entouré.",
           "wait_for": "card_selected",
           "expect": {
-            "stone_id": "ecorche_angle_n1"
+            "monster_id": "ecorche_angle_n1"
           }
         },
         {
@@ -181,11 +181,11 @@
           "scene": "res://scenes/game/Board.tscn",
           "anchor": "board.cell.2.1",
           "prompt": "Pose-le juste à gauche du Drap.",
-          "wait_for": "stone_placed",
+          "wait_for": "monster_placed",
           "expect": {
             "row": 2,
             "col": 1,
-            "stone_id": "ecorche_angle_n1",
+            "monster_id": "ecorche_angle_n1",
             "owner": 1
           }
         },
@@ -206,7 +206,7 @@
           "prompt": "Touche l'Ogre droitier entouré.",
           "wait_for": "card_selected",
           "expect": {
-            "stone_id": "ogre_droitier_n1"
+            "monster_id": "ogre_droitier_n1"
           }
         },
         {
@@ -214,11 +214,11 @@
           "scene": "res://scenes/game/Board.tscn",
           "anchor": "board.cell.1.1",
           "prompt": "Pose-le à droite du Mordeur.",
-          "wait_for": "stone_placed",
+          "wait_for": "monster_placed",
           "expect": {
             "row": 1,
             "col": 1,
-            "stone_id": "ogre_droitier_n1",
+            "monster_id": "ogre_droitier_n1",
             "owner": 1
           }
         },
@@ -239,7 +239,7 @@
           "prompt": "Touche le Rampant des fosses entouré.",
           "wait_for": "card_selected",
           "expect": {
-            "stone_id": "rampant_des_fosses_n1"
+            "monster_id": "rampant_des_fosses_n1"
           }
         },
         {
@@ -247,11 +247,11 @@
           "scene": "res://scenes/game/Board.tscn",
           "anchor": "board.cell.0.1",
           "prompt": "Pose-le en (0,1) : il ne frappe personne, mais il tient le terrain.",
-          "wait_for": "stone_placed",
+          "wait_for": "monster_placed",
           "expect": {
             "row": 0,
             "col": 1,
-            "stone_id": "rampant_des_fosses_n1",
+            "monster_id": "rampant_des_fosses_n1",
             "owner": 1
           }
         },
@@ -272,7 +272,7 @@
           "prompt": "Touche le Drap du seuil entouré.",
           "wait_for": "card_selected",
           "expect": {
-            "stone_id": "le_drape_du_seuil_n1"
+            "monster_id": "le_drape_du_seuil_n1"
           }
         },
         {
@@ -280,11 +280,11 @@
           "scene": "res://scenes/game/Board.tscn",
           "anchor": "board.cell.2.0",
           "prompt": "Pose-le en (2,0) : la dernière case est à toi.",
-          "wait_for": "stone_placed",
+          "wait_for": "monster_placed",
           "expect": {
             "row": 2,
             "col": 0,
-            "stone_id": "le_drape_du_seuil_n1",
+            "monster_id": "le_drape_du_seuil_n1",
             "owner": 1
           }
         },
@@ -337,7 +337,7 @@
           "prompt": "Touche la nouvelle carte entourée.",
           "wait_for": "collection_card_opened",
           "expect": {
-            "stone_id": "le_sac_a_murmures_n1"
+            "monster_id": "le_sac_a_murmures_n1"
           }
         },
         {
@@ -347,7 +347,7 @@
           "prompt": "Touche UTILISER.",
           "wait_for": "replacement_opened",
           "expect": {
-            "stone_id": "le_sac_a_murmures_n1"
+            "monster_id": "le_sac_a_murmures_n1"
           }
         },
         {

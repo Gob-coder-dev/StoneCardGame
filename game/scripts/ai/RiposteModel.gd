@@ -3,14 +3,14 @@
 ## Ce modèle reste une estimation : sans lames roses ni aura reçue à la pose.
 extends RefCounted
 
-const BattleStoneModel := preload("res://scripts/engine/BattleStone.gd")
+const BattleMonsterModel := preload("res://scripts/engine/BattleMonster.gd")
 const Resolver := preload("res://scripts/engine/CombatResolver.gd")
 const Opponent := preload("res://scripts/ai/OpponentModel.gd")
 
 var _state: GameState
 var _possible_cards: Array[String] = []
 ## Un tir représente une direction et ses lames normales / longues.
-var _shots: Array[BattleStoneModel] = []
+var _shots: Array[BattleMonsterModel] = []
 ## Par carte : les indices des tirs de chacune de ses orientations possibles.
 var _threat_cards: Array = []
 var _hand_size := 0
@@ -91,20 +91,20 @@ func _advance_preparation(next_phase: PreparationPhase) -> void:
 	_preparation_index = 0
 
 
-func _prepare_card(stone_id: String) -> void:
+func _prepare_card(monster_id: String) -> void:
 	var orientations: Array = []
-	for stone in Opponent.attack_variants_for(stone_id):
+	for monster in Opponent.attack_variants_for(monster_id):
 		var shots := PackedInt32Array()
-		for side in StoneSide.ALL:
-			var normal_count: int = stone.normal_blades(side)
-			var long_count: int = int(stone.long_blades.get(side, 0))
+		for side in MonsterSide.ALL:
+			var normal_count: int = monster.normal_blades(side)
+			var long_count: int = int(monster.long_blades.get(side, 0))
 			if normal_count + long_count == 0:
 				continue
 			var key := "%s:%d:%d" % [side, normal_count, long_count]
 			if not _shot_indices.has(key):
 				_shot_indices[key] = _shots.size()
 				_shots.append(make_shot(side, normal_count, long_count))
-				_shot_sides.append(StoneSide.ALL.find(side))
+				_shot_sides.append(MonsterSide.ALL.find(side))
 			shots.append(_shot_indices[key])
 		orientations.append(shots)
 	_threat_cards.append(orientations)
@@ -115,8 +115,8 @@ func _prepare_line(index: int) -> void:
 	var row := floori(float(index) / _state.board_size)
 	var col := index % _state.board_size
 	var per_side: Array = []
-	for side in StoneSide.ALL:
-		var delta: Vector2i = StoneSide.GRID[side]
+	for side in MonsterSide.ALL:
+		var delta: Vector2i = MonsterSide.GRID[side]
 		var line := PackedInt32Array()
 		var r := row + delta.x
 		var c := col + delta.y
@@ -132,9 +132,9 @@ func _prepare_line(index: int) -> void:
 ## Toutes les données d'une case qui peuvent changer le résultat d'un tir.
 static func _cell_signature(cell: Dictionary) -> Array:
 	var signature: Array = [cell["cell_type"], cell["owner"]]
-	var stone = cell["stone"]
-	for side in StoneSide.ALL:
-		signature.append(stone.defense(side) if stone is BattleStoneModel else 0)
+	var monster = cell["monster"]
+	for side in MonsterSide.ALL:
+		signature.append(monster.defense(side) if monster is BattleMonsterModel else 0)
 	return signature
 
 func _shot_hits(state: GameState, row: int, col: int) -> PackedInt32Array:
@@ -144,10 +144,10 @@ func _shot_hits(state: GameState, row: int, col: int) -> PackedInt32Array:
 		hits[index] = Resolver.find_captures(state, row, col, GameState.PLAYER_HUMAN, _shots[index]).size()
 	return hits
 
-## Pierre qui n'attaque que dans une direction ; les tests comparent ces tirs
+## Monstre qui n'attaque que dans une direction ; les tests comparent ces tirs
 ## à l'attaque d'une carte entière avec le même résolveur.
-static func make_shot(side: String, normal_count: int, long_count: int) -> BattleStoneModel:
-	var shot: BattleStoneModel = BattleStoneModel.new()
+static func make_shot(side: String, normal_count: int, long_count: int) -> BattleMonsterModel:
+	var shot: BattleMonsterModel = BattleMonsterModel.new()
 	shot.configure("", {"blades": {side: normal_count}, "long_blades": {side: long_count}})
 	return shot
 
@@ -167,7 +167,7 @@ func threat(simulation: GameState) -> float:
 	for index in range(simulation.board.size()):
 		changed[index] = 1 if _cell_signature(simulation.board[index]) != _base_signatures[index] else 0
 	var dirty_sides := PackedByteArray()
-	dirty_sides.resize(StoneSide.ALL.size())
+	dirty_sides.resize(MonsterSide.ALL.size())
 	for cell in RulesEngine.get_free_cells(simulation):
 		var cell_index := simulation.index_of(cell["row"], cell["col"])
 		var lines: Array = _lines[cell_index]

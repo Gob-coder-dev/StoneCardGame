@@ -25,7 +25,7 @@ func start_search(state: GameState) -> MoveSearch:
 	var actual: Array = state.ai_hand.duplicate()
 	for cell in state.board:
 		if int(cell["placed_by"]) == GameState.PLAYER_AI:
-			actual.append(str(cell["stone_id"]))
+			actual.append(str(cell["monster_id"]))
 	expected.sort()
 	actual.sort()
 	if actual != expected:
@@ -33,7 +33,7 @@ func start_search(state: GameState) -> MoveSearch:
 		return _fallback.start_search(state)
 	var moves := RulesEngine.get_valid_moves(state, GameState.PLAYER_AI)
 	moves.sort_custom(func(a: Dictionary, b: Dictionary):
-		return state.ai_hand.find(str(a["stone_id"])) * 16 + int(a["row"]) * 4 + int(a["col"]) < state.ai_hand.find(str(b["stone_id"])) * 16 + int(b["row"]) * 4 + int(b["col"]))
+		return state.ai_hand.find(str(a["monster_id"])) * 16 + int(a["row"]) * 4 + int(a["col"]) < state.ai_hand.find(str(b["monster_id"])) * 16 + int(b["row"]) * 4 + int(b["col"]))
 	return Search.new(moves, Evaluator.new(state, _policy), _choose)
 
 

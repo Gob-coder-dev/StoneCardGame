@@ -41,7 +41,7 @@ func to_dict() -> Dictionary:
 
 
 func total_points() -> float:
-	return float(total_quarters) / float(StoneCostRules.COST_SCALE)
+	return float(total_quarters) / float(MonsterCostRules.COST_SCALE)
 
 
 func is_valid() -> bool:

@@ -6,14 +6,14 @@ var _axis: String = ""
 var _flipped: bool = false
 var _outcome_played: bool = false
 
-func play(card: StoneCard, event: Dictionary, duration: float) -> void:
+func play(card: MonsterCard, event: Dictionary, duration: float) -> void:
 	_prepare(card)
 	Audio.play_sfx(AudioCatalog.SFX_COIN_FLIP)
 	_axis = event["axis"]
 	_flipped = event["flipped"]
-	var preview: BattleStoneModel = card.get_battle_stone().clone()
+	var preview: BattleMonsterModel = card.get_battle_monster().clone()
 	if _flipped:
-		var faces := StoneSide.coin_faces(_axis)
+		var faces := MonsterSide.coin_faces(_axis)
 		preview.swap_faces(faces[0], faces[1])
 	card.set_combat_preview(preview)
 	_start(duration)
@@ -59,6 +59,6 @@ func _draw_coin() -> void:
 			draw_line(center + Vector2(-0.36, 0.36) * radius, center + Vector2(0.36, -0.36) * radius, ink, width, true)
 		_draw_caption(("ÉCHANGE ↔" if _axis == "horizontal" else "ÉCHANGE ↕") if _flipped else "INCHANGÉ", Color("#ffe9a8"))
 		if _flipped and progress >= COIN_REVEAL:
-			for side in StoneSide.coin_faces(_axis):
+			for side in MonsterSide.coin_faces(_axis):
 				var point := _card_transform * _card.marker_position(side)
 				draw_arc(point, _square * 0.075, 0.0, TAU, 24, Color("#fff0b8"), maxf(2.0, _square * 0.012), true)

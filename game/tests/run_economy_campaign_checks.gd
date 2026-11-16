@@ -29,7 +29,7 @@ func _ready() -> void:
 			continue
 		var suite = script.new()
 		add_child(suite)
-		suite._register_test_stones()
+		suite._register_test_monsters()
 		await suite.run()
 		passed += suite._passed
 		failed += suite._failed

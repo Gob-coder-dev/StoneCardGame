@@ -114,13 +114,13 @@ static func problems(config: Dictionary = {}) -> Array[String]:
 						continue
 					var card: Dictionary = raw_card
 					var lineage_id := str(card.get("lineage_id", ""))
-					if lineage_id == "" or StoneLoader.variant_id(lineage_id, 1) == "":
+					if lineage_id == "" or MonsterLoader.variant_id(lineage_id, 1) == "":
 						result.append("Lignée inconnue pour '%s' : %s." % [quest_id, lineage_id])
 					elif int(card.get("copies", 0)) <= 0:
 						result.append("Copies invalides pour '%s'." % quest_id)
 					else:
-						var stone_id := StoneLoader.variant_id(lineage_id, 1)
-						var rarity := StoneLoader.stone_rarity(stone_id)
+						var monster_id := MonsterLoader.variant_id(lineage_id, 1)
+						var rarity := MonsterLoader.monster_rarity(monster_id)
 						if rarity == "epic" and required_gate == "":
 							result.append("Récompense épique sans jalon pour '%s'." % quest_id)
 						elif rarity == "legendary" and required_gate != "legendary_cards":

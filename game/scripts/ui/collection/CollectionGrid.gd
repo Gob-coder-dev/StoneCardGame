@@ -2,7 +2,7 @@
 ## Les cartes du deck n'apparaissent pas dans la collection : elles restent
 ## construites mais masquées, et la grille referme les trous sans recréer de carte.
 extends RefCounted
-signal card_requested(stone_id: String, wrapper: VBoxContainer, source: int)
+signal card_requested(monster_id: String, wrapper: VBoxContainer, source: int)
 const CardProgressView := preload("res://scripts/ui/economy/CardProgressBar.gd")
 ## FAMILY : les cartes du dieu, puis les neutres, chaque groupe du moins cher
 ## au plus cher. Chaque tri départage les
@@ -34,9 +34,9 @@ func register_story_anchors() -> void:
 			continue
 		if not wrapper.visible:
 			continue
-		var card := wrapper.get_child(0) as StoneCard
+		var card := wrapper.get_child(0) as MonsterCard
 		if card != null:
-			StoryService.register_anchor("collection.card.%s" % card.get_stone_id(), wrapper)
+			StoryService.register_anchor("collection.card.%s" % card.get_monster_id(), wrapper)
 
 func _init(rows: VBoxContainer, locked_rows: VBoxContainer, locked_title: Label) -> void:
 	collection_rows = rows
@@ -57,9 +57,9 @@ func update_deck(deck: Array) -> void:
 		return
 	for grid in [_owned_grid, _locked_grid]:
 		for wrapper in grid.get_children():
-			var card: StoneCard = wrapper.get_child(0) as StoneCard if wrapper.get_child_count() > 0 else null
+			var card: MonsterCard = wrapper.get_child(0) as MonsterCard if wrapper.get_child_count() > 0 else null
 			if card != null:
-				wrapper.visible = DeckRules.lineage_index(deck, StoneLoader.stone_lineage(card.get_stone_id())) < 0
+				wrapper.visible = DeckRules.lineage_index(deck, MonsterLoader.monster_lineage(card.get_monster_id())) < 0
 
 
 func set_preview_level(level: int) -> void:
@@ -69,31 +69,31 @@ func set_preview_level(level: int) -> void:
 	_populate_collection()
 
 func _populate_collection() -> void:
-	var stones := _displayed_stones()
-	stones.sort_custom(_sorts_before)
+	var monsters := _displayed_monsters()
+	monsters.sort_custom(_sorts_before)
 	_ensure_grids()
 	var desired := {}
-	for stone in stones:
-		desired[StoneLoader.stone_lineage(str(stone["id"]))] = stone
+	for monster in monsters:
+		desired[MonsterLoader.monster_lineage(str(monster["id"]))] = monster
 	var reusable := _detach_obsolete_wrappers(desired)
 	var owned_ordered: Array[VBoxContainer] = []
 	var locked_ordered: Array[VBoxContainer] = []
-	for stone in stones:
-		var lineage := StoneLoader.stone_lineage(str(stone["id"]))
+	for monster in monsters:
+		var lineage := MonsterLoader.monster_lineage(str(monster["id"]))
 		var wrapper: VBoxContainer = _wrappers.get(lineage)
 		if wrapper == null:
 			wrapper = reusable.pop_back() if not reusable.is_empty() else _make_wrapper()
 			_wrappers[lineage] = wrapper
-		var card := wrapper.get_child(0) as StoneCard
-		if card.get_stone_id() != str(stone["id"]):
-			card.setup(stone, StoneCard.OWNER_NONE)
-			card.name = "c_" + str(stone["id"])
-		_update_progress(wrapper, lineage, str(stone["id"]))
+		var card := wrapper.get_child(0) as MonsterCard
+		if card.get_monster_id() != str(monster["id"]):
+			card.setup(monster, MonsterCard.OWNER_NONE)
+			card.name = "c_" + str(monster["id"])
+		_update_progress(wrapper, lineage, str(monster["id"]))
 		wrapper.visible = DeckRules.lineage_index(_current_deck, lineage) < 0
 		# La section décrit exactement la variante actuellement affichée. Posséder
 		# la N1 ne rend donc pas sa N2 possédée tant que cette évolution est verrouillée.
 		var unlocked_level := int(PlayerData.card_entry(lineage).get("unlocked_level", 0))
-		var displayed_level := StoneLoader.stone_level(str(stone["id"]))
+		var displayed_level := MonsterLoader.monster_level(str(monster["id"]))
 		if unlocked_level >= displayed_level:
 			owned_ordered.append(wrapper)
 		else:
@@ -108,14 +108,14 @@ func _populate_collection() -> void:
 	locked_collection_title.visible = not locked_ordered.is_empty()
 
 
-func _displayed_stones() -> Array:
-	var stones: Array = []
-	var lineages := StoneLoader.get_neutral_lineages() if _god_id == "" \
-		else StoneLoader.get_lineages_for_god(_god_id)
+func _displayed_monsters() -> Array:
+	var monsters: Array = []
+	var lineages := MonsterLoader.get_neutral_lineages() if _god_id == "" \
+		else MonsterLoader.get_lineages_for_god(_god_id)
 	for base in lineages:
-		var stone_id := StoneLoader.preview_variant(str(base["id"]), _preview_level)
-		stones.append(StoneLoader.get_stone(stone_id))
-	return stones
+		var monster_id := MonsterLoader.preview_variant(str(base["id"]), _preview_level)
+		monsters.append(MonsterLoader.get_monster(monster_id))
+	return monsters
 
 
 func _ensure_grids() -> void:
@@ -160,7 +160,7 @@ func _detach_obsolete_wrappers(desired: Dictionary) -> Array[VBoxContainer]:
 
 func _make_wrapper() -> VBoxContainer:
 	var wrapper := Layout.make_card_wrapper(true, UITheme.CARD_COLLECTION)
-	var card := Layout.make_stone_card({}, StoneCard.OWNER_NONE, UITheme.CARD_COLLECTION)
+	var card := Layout.make_monster_card({}, MonsterCard.OWNER_NONE, UITheme.CARD_COLLECTION)
 	card.card_pressed.connect(card_requested.emit.bind(wrapper, CardActionDrawer.Source.COLLECTION))
 	wrapper.add_child(card)
 	var progress := CardProgressView.new()
@@ -169,12 +169,12 @@ func _make_wrapper() -> VBoxContainer:
 	return wrapper
 
 
-func _update_progress(wrapper: VBoxContainer, lineage_id: String, shown_stone_id: String) -> void:
-	var card := wrapper.get_child(0) as StoneCard
+func _update_progress(wrapper: VBoxContainer, lineage_id: String, shown_monster_id: String) -> void:
+	var card := wrapper.get_child(0) as MonsterCard
 	var progress := wrapper.get_node("Progress") as CardProgressBar
 	var entry := PlayerData.card_entry(lineage_id)
 	var unlocked := int(entry.get("unlocked_level", 0))
-	var shown_owned := unlocked >= StoneLoader.stone_level(shown_stone_id)
+	var shown_owned := unlocked >= MonsterLoader.monster_level(shown_monster_id)
 	card.modulate = Color.WHITE if shown_owned else Color(0.38, 0.38, 0.43, 0.72)
 	progress.setup(lineage_id)
 
@@ -190,11 +190,11 @@ func _sorts_before(a: Dictionary, b: Dictionary) -> bool:
 			var neutral_b := str(b.get("god_id", "neutral")) == "neutral"
 			if neutral_a != neutral_b:
 				return neutral_b
-			key_a = StoneLoader.stone_cost(a["id"])
-			key_b = StoneLoader.stone_cost(b["id"])
+			key_a = MonsterLoader.monster_cost(a["id"])
+			key_b = MonsterLoader.monster_cost(b["id"])
 		SortMode.COST:
-			key_a = StoneLoader.stone_cost(a["id"])
-			key_b = StoneLoader.stone_cost(b["id"])
+			key_a = MonsterLoader.monster_cost(a["id"])
+			key_b = MonsterLoader.monster_cost(b["id"])
 		SortMode.RARITY:
 			key_a = RARITY_ORDER.get(a.get("rarity", ""), 9)
 			key_b = RARITY_ORDER.get(b.get("rarity", ""), 9)

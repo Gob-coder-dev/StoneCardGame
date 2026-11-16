@@ -25,7 +25,7 @@ SCRIPT_ERRORS = re.compile(r"SCRIPT ERROR:|Parse Error:|Failed to load script", 
 def run_engine(binary: str, name: str, arguments: list[str], output: Path,
                timeout: int, project: Path = PROJECT) -> subprocess.CompletedProcess | None:
     """Every process gets fresh user data, including import and export processes."""
-    with tempfile.TemporaryDirectory(prefix="samstone-check-") as user_dir:
+    with tempfile.TemporaryDirectory(prefix="beastpact-check-") as user_dir:
         env = os.environ.copy()
         for key in ("APPDATA", "LOCALAPPDATA", "XDG_DATA_HOME", "XDG_CONFIG_HOME",
                     "XDG_CACHE_HOME"):
@@ -72,7 +72,7 @@ def run_debugger_check(binary: str, output: Path, timeout: int) -> bool:
     """
     report = output / "StartupChecks.debugger.json"
     report.unlink(missing_ok=True)
-    with tempfile.TemporaryDirectory(prefix="samstone-debugger-") as folder:
+    with tempfile.TemporaryDirectory(prefix="beastpact-debugger-") as folder:
         harness = Path(folder)
         (harness / "project.godot").write_text("config_version=5\n", encoding="utf-8")
         with socket.socket() as endpoint:

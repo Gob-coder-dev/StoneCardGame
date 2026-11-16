@@ -87,7 +87,7 @@ static func stars_text(count: int) -> String:
 ## résultat. Renvoie un dictionnaire vide si le dieu, le palier ou la difficulté
 ## n'existent pas, ou si le catalogue ne permet pas un deck de huit lignées.
 static func build(god_id: String, bracket_id: String, difficulty_id: String) -> Dictionary:
-	var god := StoneLoader.get_god(god_id)
+	var god := MonsterLoader.get_god(god_id)
 	var tier := bracket(bracket_id)
 	var level := difficulty(difficulty_id)
 	if god.is_empty() or tier.is_empty() or level.is_empty():
@@ -146,7 +146,7 @@ static func neutral_source() -> Dictionary:
 static func source_for(source_id: String) -> Dictionary:
 	if source_id == NEUTRAL_BOT_ID:
 		return neutral_source()
-	return StoneLoader.get_god(source_id)
+	return MonsterLoader.get_god(source_id)
 
 
 ## Les quinze niveaux d'un chemin, du palier le plus faible au plus fort puis
@@ -154,7 +154,7 @@ static func source_for(source_id: String) -> Dictionary:
 ## décide des déblocages et ne doit pas être recopié ailleurs.
 static func levels_for(source_id: String) -> Array:
 	var neutral := source_id == NEUTRAL_BOT_ID
-	if not neutral and StoneLoader.get_god(source_id).is_empty():
+	if not neutral and MonsterLoader.get_god(source_id).is_empty():
 		return []
 	var levels: Array = []
 	for chapter_index in range(BRACKETS.size()):
@@ -189,7 +189,7 @@ static func source_id_of(opponent: Dictionary) -> String:
 	var god_id := str(opponent.get("god_id", ""))
 	if god_id == "":
 		return NEUTRAL_BOT_ID
-	return god_id if not StoneLoader.get_god(god_id).is_empty() else ""
+	return god_id if not MonsterLoader.get_god(god_id).is_empty() else ""
 
 
 ## Construit l'adversaire d'un niveau de chemin, avec ou sans dieu.
@@ -227,10 +227,10 @@ static func _build_opponent(opponent_id_value: String, display_name: String, god
 ## difficulté : la composition reste stable pour toute la rencontre.
 static func deck_for(god_id: String, bracket_id: String) -> Array:
 	var tier := bracket(bracket_id)
-	if tier.is_empty() or StoneLoader.get_god(god_id).is_empty():
+	if tier.is_empty() or MonsterLoader.get_god(god_id).is_empty():
 		return []
 	return _make_deck(
-		StoneLoader.get_lineages_for_god(god_id),
+		MonsterLoader.get_lineages_for_god(god_id),
 		tier,
 		_deck_seed(god_id, bracket_id),
 		false
@@ -242,7 +242,7 @@ static func neutral_deck_for(bracket_id: String) -> Array:
 	if tier.is_empty():
 		return []
 	return _make_deck(
-		StoneLoader.get_neutral_lineages(),
+		MonsterLoader.get_neutral_lineages(),
 		tier,
 		_deck_seed(NEUTRAL_BOT_ID, bracket_id),
 		true
@@ -255,11 +255,11 @@ static func _make_deck(lineages: Array, tier: Dictionary, generation_seed: int,
 	var maximum := int(tier["max_level"])
 	var family: Array = []
 	var neutral: Array = []
-	for stone in lineages:
-		var lineage_id := StoneLoader.stone_lineage(str(stone.get("id", "")))
+	for monster in lineages:
+		var lineage_id := MonsterLoader.monster_lineage(str(monster.get("id", "")))
 		if lineage_id == "" or _eligible_variants(lineage_id, minimum, maximum).is_empty():
 			continue
-		if str(stone.get("god_id", "neutral")) == "neutral":
+		if str(monster.get("god_id", "neutral")) == "neutral":
 			neutral.append(lineage_id)
 		elif not neutral_only:
 			family.append(lineage_id)
@@ -289,28 +289,28 @@ static func _make_deck(lineages: Array, tier: Dictionary, generation_seed: int,
 
 static func _eligible_variants(lineage_id: String, minimum: int, maximum: int) -> Array:
 	var result: Array = []
-	for raw_id in StoneLoader.variant_ids(lineage_id):
-		var stone_id := str(raw_id)
+	for raw_id in MonsterLoader.variant_ids(lineage_id):
+		var monster_id := str(raw_id)
 		var effective_level := BotCardTierRulesModel.effective_level(
-			StoneLoader.stone_rarity(stone_id), StoneLoader.stone_level(stone_id))
+			MonsterLoader.monster_rarity(monster_id), MonsterLoader.monster_level(monster_id))
 		if effective_level >= minimum and effective_level <= maximum:
-			result.append(stone_id)
+			result.append(monster_id)
 	return result
 
 
 ## Les sept sources de rencontre, dans l'ordre d'affichage : les six dieux
 ## puis Pr.Stone. La grille et le profil lisent la même liste complète.
 static func sources() -> Array:
-	var result: Array = StoneLoader.get_all_gods().duplicate(true)
+	var result: Array = MonsterLoader.get_all_gods().duplicate(true)
 	result.append(neutral_source())
 	return result
 
 
-## Validation appelée par StoneLoader après le chargement des catalogues.
+## Validation appelée par MonsterLoader après le chargement des catalogues.
 static func problems() -> Array[String]:
 	var result: Array[String] = []
 	var god_ids: Array = []
-	for god in StoneLoader.get_all_gods():
+	for god in MonsterLoader.get_all_gods():
 		god_ids.append(str(god.get("id", "")))
 	if god_ids.is_empty():
 		result.append("aucun dieu chargé pour générer les adversaires.")
@@ -341,21 +341,21 @@ static func _check_deck(god_id: String, bracket_id: String, tier: Dictionary,
 		return
 	var seen: Array = []
 	for raw_id in deck:
-		var stone_id := str(raw_id)
-		var lineage := StoneLoader.stone_lineage(stone_id)
-		if not StoneLoader.has_stone(stone_id) or seen.has(lineage):
+		var monster_id := str(raw_id)
+		var lineage := MonsterLoader.monster_lineage(monster_id)
+		if not MonsterLoader.has_monster(monster_id) or seen.has(lineage):
 			result.append("deck %s/%s invalide." % [deck_label, bracket_id])
 			return
-		if neutral_only and StoneLoader.stone_affinity(stone_id) != "neutral":
-			result.append("carte '%s' non neutre dans le deck %s." % [stone_id, deck_label])
+		if neutral_only and MonsterLoader.monster_affinity(monster_id) != "neutral":
+			result.append("carte '%s' non neutre dans le deck %s." % [monster_id, deck_label])
 			return
-		if not neutral_only and not StoneLoader.is_stone_available_to_god(stone_id, god_id):
-			result.append("carte '%s' inaccessible à '%s'." % [stone_id, god_id])
+		if not neutral_only and not MonsterLoader.is_monster_available_to_god(monster_id, god_id):
+			result.append("carte '%s' inaccessible à '%s'." % [monster_id, god_id])
 			return
 		var effective_level := BotCardTierRulesModel.effective_level(
-			StoneLoader.stone_rarity(stone_id), StoneLoader.stone_level(stone_id))
+			MonsterLoader.monster_rarity(monster_id), MonsterLoader.monster_level(monster_id))
 		if effective_level < int(tier["min_level"]) or effective_level > int(tier["max_level"]):
-			result.append("carte '%s' hors du palier '%s'." % [stone_id, bracket_id])
+			result.append("carte '%s' hors du palier '%s'." % [monster_id, bracket_id])
 			return
 		seen.append(lineage)
 

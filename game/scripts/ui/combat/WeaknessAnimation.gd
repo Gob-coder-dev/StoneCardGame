@@ -16,7 +16,7 @@ var progress: float = 0.0:
 		queue_redraw()
 
 var mode: String = ""
-var _source: StoneCard
+var _source: MonsterCard
 var _source_center := Vector2.ZERO
 var _square: float = 0.0
 var _targets: Array = []
@@ -27,9 +27,9 @@ func _init() -> void:
 	z_index = 20
 
 
-## Une traînée de poison part de la pierre posée vers chaque pierre affaiblie :
+## Une traînée de poison part du monstre posé vers chaque monstre affaibli :
 ## ses voisines adverses pour le Miasme, celles qui ont résisté pour l'Échec corrosif.
-func play_weakening(source: StoneCard, targets: Array, duration: float) -> void:
+func play_weakening(source: MonsterCard, targets: Array, duration: float) -> void:
 	mode = CombatEvents.WEAKEN
 	_source = source
 	_targets = targets
@@ -42,7 +42,7 @@ func play_weakening(source: StoneCard, targets: Array, duration: float) -> void:
 		var distance := _source_center.distance_to(target["center"])
 		var stagger := minf(0.12, maxf(0.0, distance / maxf(_square, 1.0) - 1.2) * 0.06)
 		target["arrival"] = 0.54 + stagger
-		var card: StoneCard = target.get("card")
+		var card: MonsterCard = target.get("card")
 		if is_instance_valid(card):
 			card.set_visual_weakness(int(target["before"]))
 	_start(duration)
@@ -54,7 +54,7 @@ func play_repair(targets: Array, duration: float) -> void:
 	if not _targets.is_empty():
 		_square = float(_targets[0].get("square", 100.0))
 	for target in _targets:
-		var card: StoneCard = target.get("card")
+		var card: MonsterCard = target.get("card")
 		if is_instance_valid(card):
 			card.set_visual_weakness(int(target["before"]))
 	_start(duration)
@@ -68,7 +68,7 @@ func _start(duration: float) -> void:
 
 func _update_target_states() -> void:
 	for target in _targets:
-		var card: StoneCard = target.get("card")
+		var card: MonsterCard = target.get("card")
 		if not is_instance_valid(card):
 			continue
 		var reveal_at := 0.48 if mode == "repair" else float(target.get("arrival", 0.54))
@@ -87,7 +87,7 @@ func _exit_tree() -> void:
 
 func _restore_cards() -> void:
 	for target in _targets:
-		var card: StoneCard = target.get("card")
+		var card: MonsterCard = target.get("card")
 		if is_instance_valid(card):
 			card.clear_visual_weakness()
 

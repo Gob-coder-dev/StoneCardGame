@@ -1,16 +1,16 @@
-## Identifiants des pouvoirs déclarés dans le champ "effects" des catalogues de pierres.
+## Identifiants des pouvoirs déclarés dans le champ "effects" des catalogues de monstres.
 ## Moteur, interface et validation lisent ces constantes au lieu de recopier
 ## les textes ; ContentValidator signale tout identifiant absent de ALL.
 extends RefCounted
 
 ## Déclin : Miasme, aura continue qui affaiblit de 1 les voisines adverses.
 const WEAKEN_ADJACENT := "weaken_adjacent"
-## Déclin : Échec corrosif, chaque pierre adverse qui résiste à l'attaque perd
+## Déclin : Échec corrosif, chaque monstre adverse qui résiste à l'attaque perd
 ## 2 de force jusqu'à la fin du prochain coup du lanceur.
 const WEAKEN_ON_FAILED_ATTACK := "weaken_on_failed_attack"
-## Essaim : aura de groupe entre pierres Essaim alliées reliées.
+## Essaim : aura de groupe entre monstres Essaim alliées reliées.
 const SWARM := "swarm"
-## Pillage : la force vaincue devient des boucliers sur la pierre attaquante.
+## Pillage : la force vaincue devient des boucliers sur le monstre attaquant.
 const SHIELD_THEFT := "shield_theft"
 
 ## Valeurs de gameplay partagées par les systèmes et leurs légendes visuelles.

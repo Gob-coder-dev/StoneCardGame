@@ -5,7 +5,7 @@ const Routes := preload("res://scripts/ui/GameRoutes.gd")
 const GodIdentityModel := preload("res://scripts/data/GodIdentity.gd")
 
 const Badge := preload("res://scripts/ui/PowerBadge.gd")
-const Effects := preload("res://scripts/domain/StoneEffects.gd")
+const Effects := preload("res://scripts/domain/MonsterEffects.gd")
 
 const GOD_RULES := {
 	"veskar": [
@@ -18,9 +18,9 @@ const GOD_RULES := {
 	],
 	"nerava": [
 		{"kind": "weaken_miss", "title": "Échec corrosif −{corrosion}",
-			"text": "Quand cette carte attaque une pierre adverse sans réussir à la capturer, de près ou avec une lame bleue, un poison atteint cette pierre et lui retire {corrosion} de force sur chaque face. Les pierres capturées, non attaquées ou hors de portée ne sont pas touchées. Le malus reste actif pendant le tour adverse puis pendant votre coup suivant, et expire après ce coup. Les lames neutralisées apparaissent fissurées ; les boucliers restent fonctionnels."},
-		{"kind": "weaken_adjacent", "title": "Miasme autour de la pierre",
-			"text": "Le point central et ses quatre voisins représentent les cases adjacentes. Tant que la carte reste dans le camp de Nérava, une aura violette retire 1 force sur chaque face à chaque pierre adverse voisine, y compris à une carte posée plus tard à côté : celle-ci attaque d'abord normalement, puis subit le malus. Deux pierres Miasme voisines retirent 2 de force. Si la carte Miasme est capturée par un autre dieu, ou si la voisine passe dans ton camp, le malus disparaît. Chaque niveau de faiblesse brise visuellement une lame par face, sans affecter les boucliers. Une carte Déclin ne possède qu'un seul pouvoir."}
+			"text": "Quand cette carte attaque un monstre adverse sans réussir à le capturer, de près ou avec une lame bleue, un poison atteint ce monstre et lui retire {corrosion} de force sur chaque face. Les monstres capturés, non attaqués ou hors de portée ne sont pas touchées. Le malus reste actif pendant le tour adverse puis pendant votre coup suivant, et expire après ce coup. Les lames neutralisées apparaissent fissurées ; les boucliers restent fonctionnels."},
+		{"kind": "weaken_adjacent", "title": "Miasme autour du monstre",
+			"text": "Le point central et ses quatre voisins représentent les cases adjacentes. Tant que la carte reste dans le camp de Nérava, une aura violette retire 1 force sur chaque face à chaque monstre adverse voisine, y compris à une carte posée plus tard à côté : celle-ci attaque d'abord normalement, puis subit le malus. Deux monstres Miasme voisines retirent 2 de force. Si la carte Miasme est capturée par un autre dieu, ou si la voisine passe dans ton camp, le malus disparaît. Chaque niveau de faiblesse brise visuellement une lame par face, sans affecter les boucliers. Une carte Déclin ne possède qu'un seul pouvoir."}
 	],
 	"kharun": [
 		{"kind": "shield", "title": "Rempart : le demi-cercle",
@@ -28,15 +28,15 @@ const GOD_RULES := {
 	],
 	"ilyr": [
 		{"kind": "long", "title": "Horizon : la grande lame bleue",
-			"text": "Une lame bleue attaque au contact et sur toute sa ligne. Exemple : 2 lames normales + 2 lames longues = 4 d'attaque voisine et 2 à distance. Après chaque capture, les bleues transpercent la pierre et continuent avec leur force distante inchangée. Elles traversent les alliés et les cases vides ; un ennemi qui résiste ou une case bloquée les arrête. Aucun tir ne part sans ennemi atteignable sur la ligne. À distance, seules les lames bleues s'activent. Une lame longue coûte {long_cost} point."}
+			"text": "Une lame bleue attaque au contact et sur toute sa ligne. Exemple : 2 lames normales + 2 lames longues = 4 d'attaque voisine et 2 à distance. Après chaque capture, les bleues transpercent le monstre et continuent avec leur force distante inchangée. Elles traversent les alliés et les cases vides ; un ennemi qui résiste ou une case bloquée les arrête. Aucun tir ne part sans ennemi atteignable sur la ligne. À distance, seules les lames bleues s'activent. Une lame longue coûte {long_cost} point."}
 	],
 	"sylkha": [
 		{"kind": "swarm", "title": "Essaim : les trois points reliés",
-			"text": "Les pierres Essaim alliées reliées par leurs côtés forment un groupe. Plusieurs lianes vertes croisées restent visibles entre toute la largeur de leurs bords, puis une impulsion y fait pousser leurs lames d'aura. Chaque membre reçoit {swarm_per_ally} lames par autre membre du groupe, jusqu'à +{swarm_cap}, dans ses emplacements libres. Exemple : deux pierres reliées gagnent chacune 2 lames, trois pierres ou plus 4 lames chacune. Seul un joueur dont le dieu est Sylkha relie ses pierres Essaim : une pierre capturée par un autre dieu perd son aura et ne renforce pas l'adversaire. Capturer un maillon coupe les lianes concernées et rétracte les bonus perdus."}
+			"text": "Les monstres Essaim reliés par leurs côtés forment un groupe. Plusieurs lianes vertes croisées restent visibles entre toute la largeur de leurs bords, puis une impulsion y fait pousser leurs lames d'aura. Chaque membre reçoit {swarm_per_ally} lames par autre membre du groupe, jusqu'à +{swarm_cap}, dans ses emplacements libres. Exemple : deux monstres reliés gagnent chacun 2 lames, trois monstres ou plus 4 lames chacun. Seul un joueur dont le dieu est Sylkha relie ses monstres Essaim : un monstre capturé par un autre dieu perd son aura et ne renforce pas l'adversaire. Capturer un maillon coupe les lianes concernées et rétracte les bonus perdus."}
 	],
 	"enigma": [
 		{"kind": "theft", "title": "Pillage : le cercle avec un +",
-			"text": "Après une capture, les symboles vaincus sont aspirés puis un répartiteur orange révèle les boucliers gagnés. Exemple : vaincre une face avec 2 lames et 1 bouclier donne jusqu'à 3 boucliers, distribués au hasard dans les emplacements libres des trois autres faces : la face qui a capturé n'en reçoit pas, et un symbole sans place est perdu. La pierre capturée conserve ses symboles. Chaque face reste limitée à {max_markers} symboles au total."}
+			"text": "Après une capture, les symboles vaincus sont aspirés puis un répartiteur orange révèle les boucliers gagnés. Exemple : vaincre une face avec 2 lames et 1 bouclier donne jusqu'à 3 boucliers, distribués au hasard dans les emplacements libres des trois autres faces : la face qui a capturé n'en reçoit pas, et un symbole sans place est perdu. Le monstre capturé conserve ses symboles. Chaque face reste limitée à {max_markers} symboles au total."}
 	]
 }
 
@@ -51,15 +51,15 @@ func _ready() -> void:
 	$Content/Scroll/RulesPanel/Page/EndSpace.custom_minimum_size.y = UITheme.RULES_END_SPACE
 	var values := _rule_values()
 	rules_text.text = _rules_bbcode().format(values)
-	for god in StoneLoader.get_all_gods():
+	for god in MonsterLoader.get_all_gods():
 		_add_god_rules(god, values)
 	end_text.text = """[color=#{heading}][font_size=44]Fin de partie[/font_size][/color]
 
-Quand toutes les cases jouables sont remplies, on compte les pierres de chaque camp. Celui qui en contrôle le plus gagne.
+Quand toutes les cases jouables sont remplies, on compte les monstres de chaque camp. Celui qui en contrôle le plus gagne.
 
 [color=#{heading}][font_size=44]Conseil[/font_size][/color]
 
-Regarde les côtés faibles déjà exposés et garde une pierre capable de les attaquer au bon moment.""".format(values)
+Regarde les côtés faibles déjà exposés et garde un monstre capable de les attaquer au bon moment.""".format(values)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -91,14 +91,14 @@ static func _rule_values() -> Dictionary:
 		"board_size": GameState.BOARD_SIZE,
 		"deck_size": DeckRules.DECK_SIZE,
 		"deck_budget": DeckRules.DECK_BUDGET,
-		"normal_cost": UIFormat.cost(StoneCostRules.NORMAL_BLADE_COST),
-		"random_cost": UIFormat.cost(StoneCostRules.RANDOM_BLADE_COST),
-		"shield_cost": UIFormat.cost(StoneCostRules.SHIELD_COST),
-		"long_cost": UIFormat.cost(StoneCostRules.LONG_BLADE_COST),
+		"normal_cost": UIFormat.cost(MonsterCostRules.NORMAL_BLADE_COST),
+		"random_cost": UIFormat.cost(MonsterCostRules.RANDOM_BLADE_COST),
+		"shield_cost": UIFormat.cost(MonsterCostRules.SHIELD_COST),
+		"long_cost": UIFormat.cost(MonsterCostRules.LONG_BLADE_COST),
 		"swarm_cap": Effects.SWARM_CAP,
 		"swarm_per_ally": Effects.BLADES_PER_ALLY,
 		"corrosion": Effects.CORROSION_AMOUNT,
-		"max_markers": BattleStone.MAX_MARKERS_PER_SIDE,
+		"max_markers": BattleMonster.MAX_MARKERS_PER_SIDE,
 	}
 
 
@@ -137,31 +137,31 @@ func _make_text(value: String) -> RichTextLabel:
 func _rules_bbcode() -> String:
 	return """[color=#{heading}][font_size=44]But du jeu[/font_size][/color]
 
-Contrôler le plus de pierres possible sur le plateau quand toutes les cases sont remplies.
+Contrôler le plus de monstres possible sur le plateau quand toutes les cases sont remplies.
 
 [color=#{heading}][font_size=44]Le plateau[/font_size][/color]
 
 Une grille de {board_size}×{board_size}. Certaines parties comportent une ou deux cases bloquées (marquées ✕) où personne ne peut jouer.
 
-En combat, la case indique le propriétaire : [color=#{human}]bleu pour ton camp[/color], [color=#{opponent}]rouge pour l'adversaire[/color]. Quand une pierre est capturée, sa case change de couleur au moment de l'impact.
+En combat, la case indique le propriétaire : [color=#{human}]bleu pour ton camp[/color], [color=#{opponent}]rouge pour l'adversaire[/color]. Quand un monstre est capturé, sa case change de couleur au moment de l'impact.
 
-[color=#{heading}][font_size=44]Les pierres[/font_size][/color]
+[color=#{heading}][font_size=44]Les monstres[/font_size][/color]
 
-Chaque pierre possède des symboles sur ses 4 côtés (haut, bas, gauche, droite). Une face contient au maximum [color=#{heading}]{max_markers} symboles au total[/color] : lames normales, lames spéciales et boucliers partagent les mêmes emplacements.
+Chaque monstre possède des symboles sur ses 4 côtés (haut, bas, gauche, droite). Une face contient au maximum [color=#{heading}]{max_markers} symboles au total[/color] : lames normales, lames spéciales et boucliers partagent les mêmes emplacements.
 
-Tu choisis {deck_size} pierres pour ton deck, dans la limite de [color=#{heading}]{deck_budget} points[/color]. Une lame normale coûte {normal_cost} point. Les lames aléatoires, boucliers, lames longues et pouvoirs sont comptés selon leur coût propre.
+Tu choisis {deck_size} monstres pour ton deck, dans la limite de [color=#{heading}]{deck_budget} points[/color]. Une lame normale coûte {normal_cost} point. Les lames aléatoires, boucliers, lames longues et pouvoirs sont comptés selon leur coût propre.
 
 [color=#{heading}][font_size=44]Déroulement d'un tour[/font_size][/color]
 
-Un tirage au sort décide qui commence. À tour de rôle, chaque joueur pose une pierre de sa main sur une case libre. Les animations révèlent ses pouvoirs avant de donner la main au joueur suivant.
+Un tirage au sort décide qui commence. À tour de rôle, chaque joueur pose un monstre de sa main sur une case libre. Les animations révèlent ses pouvoirs avant de donner la main au joueur suivant.
 
-[color=#{heading}][font_size=44]Capturer une pierre[/font_size][/color]
+[color=#{heading}][font_size=44]Capturer un monstre[/font_size][/color]
 
-Quand tu poses une pierre à côté d'une pierre adverse, on compare les côtés qui se touchent.
+Quand tu poses un monstre à côté d'un monstre adverse, on compare les côtés qui se touchent.
 
-Si [color=#{success}]ton attaque est strictement supérieure à sa défense[/color] sur le côté face-à-face, tu captures cette pierre : elle passe dans ton camp.
+Si [color=#{success}]ton attaque est strictement supérieure à sa défense[/color] sur le côté face-à-face, tu captures ce monstre : il passe dans ton camp.
 
-En cas d'[color=#{heading}]égalité[/color], personne ne capture. Une pierre peut capturer plusieurs cibles d'un coup. Il n'y a pas de capture en chaîne.
+En cas d'[color=#{heading}]égalité[/color], personne ne capture. Un monstre peut capturer plusieurs cibles d'un coup. Il n'y a pas de capture en chaîne.
 
 [color=#{heading}][font_size=44]Dieux et logos des pouvoirs[/font_size][/color]
 

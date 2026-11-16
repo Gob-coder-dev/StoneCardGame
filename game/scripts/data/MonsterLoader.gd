@@ -1,24 +1,24 @@
-## StoneLoader.gd
-## Charge et met en cache les données des pierres depuis le manifeste de familles.
+## MonsterLoader.gd
+## Charge et met en cache les données des monstres depuis le manifeste de familles.
 ## Utilisé comme Autoload (singleton) dans le projet.
-## NB : pas de class_name ici — le nom "StoneLoader" est défini dans project.godot
+## NB : pas de class_name ici — le nom "MonsterLoader" est défini dans project.godot
 ##      comme AutoLoad, ce qui le rend accessible globalement sans class_name.
 ##
-## Accès depuis n'importe quel script : StoneLoader.get_stone("avortons_des_caves_n1")
+## Accès depuis n'importe quel script : MonsterLoader.get_monster("avortons_des_caves_n1")
 extends Node
 
 const ContentChecks := preload("res://scripts/data/ContentValidator.gd")
 const OpponentCatalogModel := preload("res://scripts/data/OpponentCatalog.gd")
 
-const STONES_MANIFEST_PATH: String = "res://data/stones/manifest.json"
+const MONSTERS_MANIFEST_PATH: String = "res://data/monsters/manifest.json"
 const NPCS_PATH: String = "res://data/npcs.json"
 const GODS_PATH: String = "res://data/gods.json"
 
-## Dictionnaire indexé par stone_id -> dict complet de la pierre
-var _stones: Dictionary = {}
+## Dictionnaire indexé par monster_id -> dict complet du monstre
+var _monsters: Dictionary = {}
 
 ## Liste ordonnée de toutes les formes ; la collection les regroupe par lignée.
-var _stones_list: Array = []
+var _monsters_list: Array = []
 ## Une lignée contient ses identifiants de formes dans l'ordre des niveaux.
 var _lineages: Dictionary = {}
 
@@ -32,48 +32,48 @@ var _default_god_id: String = ""
 
 
 func _ready() -> void:
-	_load_stones()
+	_load_monsters()
 	_load_gods()
 	_load_npcs()
-	for problem in ContentChecks.find_problems(_stones_list, _gods, _npcs.values(), _default_god_id):
-		push_error("StoneLoader: " + problem)
+	for problem in ContentChecks.find_problems(_monsters_list, _gods, _npcs.values(), _default_god_id):
+		push_error("MonsterLoader: " + problem)
 	for problem in OpponentCatalogModel.problems():
-		push_error("StoneLoader: " + problem)
+		push_error("MonsterLoader: " + problem)
 
 
 ## ─── Chargement ───────────────────────────────────────────────────────────────
 
-func _load_stones() -> void:
-	var manifest := _read_json_dictionary(STONES_MANIFEST_PATH)
+func _load_monsters() -> void:
+	var manifest := _read_json_dictionary(MONSTERS_MANIFEST_PATH)
 	var families: Variant = manifest.get("families")
 	if not families is Array:
-		push_error("StoneLoader: manifeste invalide dans %s" % STONES_MANIFEST_PATH)
+		push_error("MonsterLoader: manifeste invalide dans %s" % MONSTERS_MANIFEST_PATH)
 		return
 	var seen_families := {}
 	for entry in families:
-		_load_stone_family(entry, seen_families)
+		_load_monster_family(entry, seen_families)
 
-	print("StoneLoader: %d pierres chargées." % _stones_list.size())
+	print("MonsterLoader: %d monstres chargés." % _monsters_list.size())
 
 
-func _load_stone_family(entry: Variant, seen_families: Dictionary) -> void:
+func _load_monster_family(entry: Variant, seen_families: Dictionary) -> void:
 	if not entry is Dictionary:
-		push_error("StoneLoader: entrée de famille invalide dans le manifeste.")
+		push_error("MonsterLoader: entrée de famille invalide dans le manifeste.")
 		return
 	var family_id := str(entry.get("id", ""))
 	var path := str(entry.get("path", ""))
 	if family_id.is_empty() or path.is_empty() or seen_families.has(family_id):
-		push_error("StoneLoader: famille de pierres invalide '%s'." % family_id)
+		push_error("MonsterLoader: famille de monstres invalide '%s'." % family_id)
 		return
 	seen_families[family_id] = true
 	var parsed := _read_json_dictionary(path)
 	var lineages: Variant = parsed.get("lineages")
 	if not lineages is Array or str(parsed.get("family_id", "")) != family_id:
-		push_error("StoneLoader: fichier de famille invalide dans %s" % path)
+		push_error("MonsterLoader: fichier de famille invalide dans %s" % path)
 		return
 	for lineage in lineages:
 		if not lineage is Dictionary or str(lineage.get("god_id", "neutral")) != family_id:
-			push_error("StoneLoader: lignée hors de la famille '%s' dans %s." % [family_id, path])
+			push_error("MonsterLoader: lignée hors de la famille '%s' dans %s." % [family_id, path])
 			continue
 		_index_lineage(lineage)
 
@@ -81,39 +81,39 @@ func _load_stone_family(entry: Variant, seen_families: Dictionary) -> void:
 func _read_json_dictionary(path: String) -> Dictionary:
 	var file := FileAccess.open(path, FileAccess.READ)
 	if file == null:
-		push_error("StoneLoader: impossible d'ouvrir %s" % path)
+		push_error("MonsterLoader: impossible d'ouvrir %s" % path)
 		return {}
 	var parsed: Variant = JSON.parse_string(file.get_as_text())
 	file.close()
 	if not parsed is Dictionary:
-		push_error("StoneLoader: format JSON invalide dans %s" % path)
+		push_error("MonsterLoader: format JSON invalide dans %s" % path)
 		return {}
 	return parsed
 
 
-func _index_stone(definition: Dictionary, lineage: String, level: int, maximum: int) -> void:
-	var stone := definition.duplicate(true)
-	stone["lineage_id"] = lineage
-	stone["level"] = level
-	stone["max_level"] = maximum
-	_stones[stone["id"]] = stone
-	_stones_list.append(stone)
+func _index_monster(definition: Dictionary, lineage: String, level: int, maximum: int) -> void:
+	var monster := definition.duplicate(true)
+	monster["lineage_id"] = lineage
+	monster["level"] = level
+	monster["max_level"] = maximum
+	_monsters[monster["id"]] = monster
+	_monsters_list.append(monster)
 	if not _lineages.has(lineage):
 		_lineages[lineage] = []
-	_lineages[lineage].append(stone["id"])
+	_lineages[lineage].append(monster["id"])
 
 
 func _index_lineage(lineage: Dictionary) -> void:
 	var problems := ContentChecks.lineage_problems(lineage)
 	if problems.is_empty():
 		for form in lineage["levels"]:
-			if _stones.has(str(form["id"])):
+			if _monsters.has(str(form["id"])):
 				problems.append("identifiant de forme déjà utilisé '%s'." % form["id"])
 	if _lineages.has(str(lineage.get("id", ""))):
 		problems.append("lignée déjà utilisée '%s'." % lineage.get("id", ""))
 	if not problems.is_empty():
 		for problem in problems:
-			push_error("StoneLoader: " + problem)
+			push_error("MonsterLoader: " + problem)
 		return
 	var common := lineage.duplicate(true)
 	common.erase("levels")
@@ -121,36 +121,36 @@ func _index_lineage(lineage: Dictionary) -> void:
 	for index in range(forms.size()):
 		var definition := common.duplicate(true)
 		definition.merge(forms[index], true)
-		_index_stone(definition, str(lineage["id"]), index + 1, forms.size())
+		_index_monster(definition, str(lineage["id"]), index + 1, forms.size())
 
 
 func _load_npcs() -> void:
 	var file := FileAccess.open(NPCS_PATH, FileAccess.READ)
 	if file == null:
-		push_error("StoneLoader: impossible d'ouvrir %s" % NPCS_PATH)
+		push_error("MonsterLoader: impossible d'ouvrir %s" % NPCS_PATH)
 		return
 	var content := file.get_as_text()
 	file.close()
 
 	var parsed = JSON.parse_string(content)
 	if parsed == null or not parsed.has("npcs"):
-		push_error("StoneLoader: format JSON invalide dans %s" % NPCS_PATH)
+		push_error("MonsterLoader: format JSON invalide dans %s" % NPCS_PATH)
 		return
 
 	for npc in parsed["npcs"]:
 		_npcs[npc["id"]] = npc
 
-	print("StoneLoader: %d NPCs chargés." % _npcs.size())
+	print("MonsterLoader: %d NPCs chargés." % _npcs.size())
 
 
 func _load_gods() -> void:
 	var file := FileAccess.open(GODS_PATH, FileAccess.READ)
 	if file == null:
-		push_error("StoneLoader: impossible d'ouvrir " + GODS_PATH)
+		push_error("MonsterLoader: impossible d'ouvrir " + GODS_PATH)
 		return
 	var parsed = JSON.parse_string(file.get_as_text())
 	if not parsed is Dictionary or not parsed.get("gods") is Array:
-		push_error("StoneLoader: catalogue de dieux invalide")
+		push_error("MonsterLoader: catalogue de dieux invalide")
 		return
 	_default_god_id = str(parsed.get("default_god_id", ""))
 	for god in parsed["gods"]:
@@ -158,31 +158,31 @@ func _load_gods() -> void:
 		_gods_list.append(god)
 
 
-## ─── Accès aux pierres ────────────────────────────────────────────────────────
+## ─── Accès aux monstres ────────────────────────────────────────────────────────
 
 ## Copie complète de la définition : l'appelant peut la modifier sans toucher
 ## au catalogue. Pour une simple question, préférer les lectures ci-dessous.
-func get_stone(stone_id: String) -> Dictionary:
-	return _stones.get(stone_id, {}).duplicate(true)
+func get_monster(monster_id: String) -> Dictionary:
+	return _monsters.get(monster_id, {}).duplicate(true)
 
 
 ## Lectures indexées sans copie, pour les questions posées des milliers de fois
 ## pendant les simulations. Elles ne renvoient qu'un booléen : le catalogue
 ## reste protégé.
-func has_stone(stone_id: String) -> bool:
-	return _stones.has(stone_id)
+func has_monster(monster_id: String) -> bool:
+	return _monsters.has(monster_id)
 
 
-func stone_lineage(stone_id: String) -> String:
-	return str(_stones.get(stone_id, {}).get("lineage_id", stone_id))
+func monster_lineage(monster_id: String) -> String:
+	return str(_monsters.get(monster_id, {}).get("lineage_id", monster_id))
 
 
-func stone_level(stone_id: String) -> int:
-	return int(_stones.get(stone_id, {}).get("level", 1))
+func monster_level(monster_id: String) -> int:
+	return int(_monsters.get(monster_id, {}).get("level", 1))
 
 
-func stone_rarity(stone_id: String) -> String:
-	return str(_stones.get(stone_id, {}).get("rarity", ""))
+func monster_rarity(monster_id: String) -> String:
+	return str(_monsters.get(monster_id, {}).get("rarity", ""))
 
 
 func lineage_max_level(lineage_id: String) -> int:
@@ -191,35 +191,35 @@ func lineage_max_level(lineage_id: String) -> int:
 
 func variant_id(lineage_id: String, level: int) -> String:
 	var forms: Array = _lineages.get(lineage_id, [])
-	return str(forms[level - 1]) if StoneEvolutionRules.is_valid_level(level, forms.size()) else ""
+	return str(forms[level - 1]) if MonsterEvolutionRules.is_valid_level(level, forms.size()) else ""
 
 
 func variant_ids(lineage_id: String) -> Array:
 	return _lineages.get(lineage_id, []).duplicate()
 
 
-func preview_variant(stone_id: String, requested: int) -> String:
-	var lineage := stone_lineage(stone_id)
-	return variant_id(lineage, StoneEvolutionRules.preview_level(requested, lineage_max_level(lineage)))
+func preview_variant(monster_id: String, requested: int) -> String:
+	var lineage := monster_lineage(monster_id)
+	return variant_id(lineage, MonsterEvolutionRules.preview_level(requested, lineage_max_level(lineage)))
 
 
-func has_effect(stone_id: String, effect: String) -> bool:
-	var stone = _stones.get(stone_id)
-	if stone == null:
+func has_effect(monster_id: String, effect: String) -> bool:
+	var monster = _monsters.get(monster_id)
+	if monster == null:
 		return false
-	var effects = stone.get("effects")
+	var effects = monster.get("effects")
 	return effects is Array and effects.has(effect)
 
 
-## Retourne toutes les pierres sous forme de liste.
-func get_all_stones() -> Array:
-	return _stones_list.duplicate(true)
+## Retourne toutes les monstres sous forme de liste.
+func get_all_monsters() -> Array:
+	return _monsters_list.duplicate(true)
 
 
-func get_all_stone_ids() -> Array[String]:
+func get_all_monster_ids() -> Array[String]:
 	var result: Array[String] = []
-	for stone in _stones_list:
-		result.append(str(stone["id"]))
+	for monster in _monsters_list:
+		result.append(str(monster["id"]))
 	return result
 
 
@@ -232,30 +232,30 @@ func lineage_ids() -> Array[String]:
 	return result
 
 
-## Coût d'une pierre du catalogue, 0 si introuvable. La règle vit dans StoneCostRules.
-func stone_cost(stone_id: String) -> float:
-	# StoneCostRules lit seulement la définition : inutile de la copier.
-	return StoneCostRules.cost(_stones.get(stone_id, {}))
+## Coût d'un monstre du catalogue, 0 si introuvable. La règle vit dans MonsterCostRules.
+func monster_cost(monster_id: String) -> float:
+	# MonsterCostRules lit seulement la définition : inutile de la copier.
+	return MonsterCostRules.cost(_monsters.get(monster_id, {}))
 
 
 ## Coût exact en quarts de point : unité de comparaison des générateurs.
-func stone_cost_quarters(stone_id: String) -> int:
-	return StoneCostRules.cost_quarters(_stones.get(stone_id, {}))
+func monster_cost_quarters(monster_id: String) -> int:
+	return MonsterCostRules.cost_quarters(_monsters.get(monster_id, {}))
 
 
 ## Palier de puissance effectif d'une forme. Une éventuelle exception
 ## `power_tier` du catalogue remplace la formule rareté + niveau.
-func stone_power_tier(stone_id: String) -> int:
-	return CardPowerTierRules.effective_tier(_stones.get(stone_id, {}))
+func monster_power_tier(monster_id: String) -> int:
+	return CardPowerTierRules.effective_tier(_monsters.get(monster_id, {}))
 
 
-func build_hand(stone_ids: Array) -> Array:
+func build_hand(monster_ids: Array) -> Array:
 	var hand: Array = []
-	for sid in stone_ids:
-		if _stones.has(sid):
+	for sid in monster_ids:
+		if _monsters.has(sid):
 			hand.append(sid)
 		else:
-			push_error("StoneLoader: pierre '%s' introuvable." % sid)
+			push_error("MonsterLoader: monstre '%s' introuvable." % sid)
 	return hand
 
 ## ─── Accès aux NPCs ───────────────────────────────────────────────────────────
@@ -290,37 +290,37 @@ func default_god_id() -> String:
 	return str(_gods_list[0].get("id", "")) if not _gods_list.is_empty() else ""
 
 
-func is_stone_available_to_god(stone_id: String, god_id: String) -> bool:
+func is_monster_available_to_god(monster_id: String, god_id: String) -> bool:
 	if not _gods.has(god_id):
 		return false
-	var affinity := stone_affinity(stone_id)
+	var affinity := monster_affinity(monster_id)
 	return affinity != "" and (affinity == "neutral" or affinity == god_id)
 
 
-## Lecture du catalogue sans copie : famille de la pierre, ou "" si inconnue.
+## Lecture du catalogue sans copie : famille du monstre, ou "" si inconnue.
 ## L'activation d'un pouvoir posé appartient à CombatBoard, pas au catalogue.
-func stone_affinity(stone_id: String) -> String:
-	var stone: Dictionary = _stones.get(stone_id, {})
-	if stone.is_empty():
+func monster_affinity(monster_id: String) -> String:
+	var monster: Dictionary = _monsters.get(monster_id, {})
+	if monster.is_empty():
 		return ""
-	return str(stone.get("god_id", "neutral"))
+	return str(monster.get("god_id", "neutral"))
 
 
-func get_stones_for_god(god_id: String) -> Array:
+func get_monsters_for_god(god_id: String) -> Array:
 	var result: Array = []
-	for stone_id in get_stone_ids_for_god(god_id):
-		result.append(get_stone(stone_id))
+	for monster_id in get_monster_ids_for_god(god_id):
+		result.append(get_monster(monster_id))
 	return result
 
 
 ## Lecture légère pour l'IA et les index : évite de copier chaque dictionnaire
 ## complet lorsque seuls les identifiants sont nécessaires.
-func get_stone_ids_for_god(god_id: String) -> Array[String]:
+func get_monster_ids_for_god(god_id: String) -> Array[String]:
 	var result: Array[String] = []
-	for stone in _stones_list:
-		var stone_id := str(stone["id"])
-		if is_stone_available_to_god(stone_id, god_id):
-			result.append(stone_id)
+	for monster in _monsters_list:
+		var monster_id := str(monster["id"])
+		if is_monster_available_to_god(monster_id, god_id):
+			result.append(monster_id)
 	return result
 
 
@@ -330,19 +330,19 @@ func get_lineages_for_god(god_id: String) -> Array:
 	# L'index contient déjà une entrée par lignée : seules ses premières formes
 	# sont copiées, au lieu de copier puis dédupliquer toutes les évolutions.
 	for forms in _lineages.values():
-		if not forms.is_empty() and is_stone_available_to_god(str(forms[0]), god_id):
-			result.append(get_stone(str(forms[0])))
+		if not forms.is_empty() and is_monster_available_to_god(str(forms[0]), god_id):
+			result.append(get_monster(str(forms[0])))
 	return result
 
 
 func get_neutral_lineages() -> Array:
 	var result: Array = []
 	var seen := {}
-	for stone in _stones_list:
-		if str(stone.get("god_id", "neutral")) != "neutral":
+	for monster in _monsters_list:
+		if str(monster.get("god_id", "neutral")) != "neutral":
 			continue
-		var lineage := stone_lineage(str(stone["id"]))
+		var lineage := monster_lineage(str(monster["id"]))
 		if not seen.has(lineage):
 			seen[lineage] = true
-			result.append(stone.duplicate(true))
+			result.append(monster.duplicate(true))
 	return result

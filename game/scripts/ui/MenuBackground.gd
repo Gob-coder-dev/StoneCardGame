@@ -427,7 +427,7 @@ func _draw_arena_architecture(outer_accent: Color, inner_accent: Color,
 	_draw_arena_arch(center, 405.0, bottom, Color("#111014"))
 	_draw_arch_outline(center, 510.0, outer_accent, 2.2, bottom)
 	_draw_arch_outline(center, 405.0, inner_accent, 1.2, bottom)
-	_draw_arch_keystone(center, outer_accent)
+	_draw_arch_keymonster(center, outer_accent)
 	_draw_arena_floor(outer_accent, bottom)
 
 
@@ -483,15 +483,15 @@ func _draw_arch_outline(center: Vector2, radius: float, color: Color,
 		Vector2(center.x + radius, bottom), color, width)
 
 
-func _draw_arch_keystone(center: Vector2, color: Color) -> void:
-	var stone := PackedVector2Array([
+func _draw_arch_keymonster(center: Vector2, color: Color) -> void:
+	var monster := PackedVector2Array([
 		Vector2(center.x - 26.0, center.y - 494.0),
 		Vector2(center.x, center.y - 526.0),
 		Vector2(center.x + 26.0, center.y - 494.0),
 	])
-	draw_colored_polygon(stone, Color("#322b34"))
-	_draw_neon_line(stone[0], stone[1], color, 1.4)
-	_draw_neon_line(stone[1], stone[2], color, 1.4)
+	draw_colored_polygon(monster, Color("#322b34"))
+	_draw_neon_line(monster[0], monster[1], color, 1.4)
+	_draw_neon_line(monster[1], monster[2], color, 1.4)
 
 
 func _draw_arena_floor(accent: Color, bottom: float = PVP_ARCH_BOTTOM) -> void:

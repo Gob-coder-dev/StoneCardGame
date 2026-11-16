@@ -2,10 +2,10 @@
 ## celle qui a capturé, tirée au hasard parmi celles qui ont encore une place.
 ## Le tirage utilise le hasard de la partie ; la vue ne relance aucun tirage.
 extends RefCounted
-const BattleStoneModel := preload("res://scripts/engine/BattleStone.gd")
-const SIDES = StoneSide.ALL
+const BattleMonsterModel := preload("res://scripts/engine/BattleMonster.gd")
+const SIDES = MonsterSide.ALL
 
-static func resolve(state: GameState, source: BattleStoneModel, row: int, col: int, captures: Array) -> Array:
+static func resolve(state: GameState, source: BattleMonsterModel, row: int, col: int, captures: Array) -> Array:
 	var effects: Array = []
 	var shields_before := source.shields.duplicate()
 	var placements: Array[String] = []

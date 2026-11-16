@@ -2,7 +2,7 @@
 ## Aucun tirage ni état de combat n'est modifié par ce composant.
 extends RefCounted
 
-const Effects := preload("res://scripts/domain/StoneEffects.gd")
+const Effects := preload("res://scripts/domain/MonsterEffects.gd")
 
 const FORTUNE := Color("#ff55c8")
 const SHIELD := Color("#92e7f2")
@@ -12,19 +12,19 @@ const THEFT := Color("#ef8b45")
 const GOLD := Color("#ffe9a8")
 
 
-static func badges_for(stone: Dictionary) -> Array[Dictionary]:
+static func badges_for(monster: Dictionary) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
-	var count := int(stone.get("random_blades", 0))
+	var count := int(monster.get("random_blades", 0))
 	if count > 0:
 		result.append({"kind": "fortune", "count": count})
-	var axis := str(stone.get("coin_flip", ""))
+	var axis := str(monster.get("coin_flip", ""))
 	if axis != "":
 		result.append({"kind": "coin_" + axis})
-	if _sum(stone.get("shields", {})) > 0:
+	if _sum(monster.get("shields", {})) > 0:
 		result.append({"kind": "shield"})
-	if _sum(stone.get("long_blades", {})) > 0:
+	if _sum(monster.get("long_blades", {})) > 0:
 		result.append({"kind": "long"})
-	for effect in stone.get("effects", []):
+	for effect in monster.get("effects", []):
 		match str(effect):
 			Effects.WEAKEN_ON_FAILED_ATTACK: result.append({"kind": "weaken_miss"})
 			Effects.WEAKEN_ADJACENT: result.append({"kind": "weaken_adjacent"})

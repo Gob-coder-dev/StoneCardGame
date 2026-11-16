@@ -3,7 +3,7 @@
 extends SceneTree
 
 const Builder := preload("res://scripts/ui/RefugeTheme.gd")
-const THEME_PATH := "res://assets/ui/samstone_theme.tres"
+const THEME_PATH := "res://assets/ui/beastpact_theme.tres"
 
 
 func _initialize() -> void:

@@ -18,14 +18,14 @@ const PLAYER_GODLESS_ACCENT := "#8b5e3c"
 ## Identité d'un camp humain. Un identifiant vide ou inconnu devient « Sans
 ## dieu » ; un dieu valide reste inchangé.
 static func player(god_id: String) -> Dictionary:
-	var god := StoneLoader.get_god(god_id)
+	var god := MonsterLoader.get_god(god_id)
 	return god if not god.is_empty() else player_godless()
 
 
 ## Identité d'un adversaire IA. Un bot sans dieu reste Pr.Stone ; un dieu
 ## valide reste inchangé.
 static func bot(god_id: String) -> Dictionary:
-	var god := StoneLoader.get_god(god_id)
+	var god := MonsterLoader.get_god(god_id)
 	return god if not god.is_empty() else bot_godless()
 
 
@@ -34,7 +34,7 @@ static func player_godless() -> Dictionary:
 		"id": "",
 		"name": "Sans dieu",
 		"title": "Deck neutre",
-		"family_name": "Pierres neutres",
+		"family_name": "Monstres neutres",
 		"description": "Un deck entièrement neutre, sans pouvoir divin.",
 		"asset": PLAYER_GODLESS_ASSET,
 		"color": PLAYER_GODLESS_COLOR,

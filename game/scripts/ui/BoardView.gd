@@ -1,5 +1,5 @@
 ## BoardView.gd
-## Vue du plateau : construit les cases, affiche les pierres, anime les captures.
+## Vue du plateau : construit les cases, affiche les monstres, anime les captures.
 ## Ne contient AUCUNE logique de jeu — on lui donne un GameState, il affiche.
 ##
 ## La géométrie est recalculée uniquement lorsque l'espace d'affichage change.
@@ -19,7 +19,7 @@ var animations: Control
 var _board_size: int = GameState.DEFAULT_BOARD_SIZE
 
 var _slots: Array = []        ## Panel par case (index 1D)
-var _cards: Array = []        ## StoneCard par case (ou null)
+var _cards: Array = []        ## MonsterCard par case (ou null)
 var _swarm_link_layer: Control = null
 var _built: bool = false
 ## Portée d'une case pour une carte glissée, en écarts entre deux cases.
@@ -107,7 +107,7 @@ func update_geometry() -> void:
 			slot.position = origin + Vector2(
 				col * (cell_size + GAP), row * (cell_size + GAP))
 			slot.size = Vector2.ONE * cell_size
-			var card: StoneCard = _cards[index]
+			var card: MonsterCard = _cards[index]
 			if card != null:
 				card.position = Vector2.ZERO
 				card.size = slot.size
@@ -158,19 +158,19 @@ func refresh(state: GameState) -> void:
 				continue
 
 			if _cards[idx] == null:
-				_cards[idx] = _spawn_card(slot, cell["stone_id"], cell["owner"], cell.get("stone"))
+				_cards[idx] = _spawn_card(slot, cell["monster_id"], cell["owner"], cell.get("monster"))
 			else:
 				_cards[idx].set_combat_owner(cell["owner"])
-				_cards[idx].set_battle_stone(cell.get("stone"))
+				_cards[idx].set_battle_monster(cell.get("monster"))
 
 
-func _spawn_card(slot: Panel, stone_id: String, owner_val: int, battle_stone = null) -> StoneCard:
-	var card := StoneCard.new()
+func _spawn_card(slot: Panel, monster_id: String, owner_val: int, battle_monster = null) -> MonsterCard:
+	var card := MonsterCard.new()
 	card.mouse_filter = Control.MOUSE_FILTER_IGNORE  ## le clic va à la case
 	card.position = Vector2.ZERO
 	card.size = slot.size
 	slot.add_child(card)
-	card.setup(StoneLoader.get_stone(stone_id), owner_val, battle_stone)
+	card.setup(MonsterLoader.get_monster(monster_id), owner_val, battle_monster)
 	return card
 
 
@@ -186,23 +186,23 @@ func _mark_blocked(slot: Panel) -> void:
 
 ## La capture est montrée à l'impact, avant que le moteur ne publie son état
 ## final. Cette méthode ne change que l'habillage de la case concernée.
-func reveal_cell_owner(row: int, col: int, stone_owner: int) -> void:
+func reveal_cell_owner(row: int, col: int, monster_owner: int) -> void:
 	if not _in_bounds(row, col):
 		return
-	_apply_cell_style(_index(row, col), stone_owner)
+	_apply_cell_style(_index(row, col), monster_owner)
 
 
-func _apply_cell_style(index: int, stone_owner: int, blocked: bool = false) -> void:
+func _apply_cell_style(index: int, monster_owner: int, blocked: bool = false) -> void:
 	var slot: Panel = _slots[index]
-	var style := _cell_style(stone_owner, blocked)
+	var style := _cell_style(monster_owner, blocked)
 	if _drop_target != Vector2i(-1, -1) and index == _index(_drop_target.x, _drop_target.y):
 		_drop_previous_style = style
 		return
 	slot.add_theme_stylebox_override("panel", style)
 
 
-func _cell_style(stone_owner: int, blocked: bool = false) -> StyleBoxFlat:
-	var shown := stone_owner if blocked else _display_owner(stone_owner)
+func _cell_style(monster_owner: int, blocked: bool = false) -> StyleBoxFlat:
+	var shown := monster_owner if blocked else _display_owner(monster_owner)
 	var key := "blocked" if blocked else str(shown)
 	if _cell_styles.has(key):
 		return _cell_styles[key]
@@ -237,14 +237,14 @@ func _cell_style(stone_owner: int, blocked: bool = false) -> StyleBoxFlat:
 
 
 ## Le camp local reste bleu sur son propre téléphone ; l'adversaire reste rouge.
-func _display_owner(stone_owner: int) -> int:
+func _display_owner(monster_owner: int) -> int:
 	if local_owner == GameState.PLAYER_ONE:
-		return stone_owner
-	if stone_owner == GameState.PLAYER_ONE:
+		return monster_owner
+	if monster_owner == GameState.PLAYER_ONE:
 		return GameState.PLAYER_AI
-	if stone_owner == GameState.PLAYER_AI:
+	if monster_owner == GameState.PLAYER_AI:
 		return GameState.PLAYER_HUMAN
-	return stone_owner
+	return monster_owner
 
 
 
@@ -291,7 +291,7 @@ func set_drop_target(cell: Vector2i) -> void:
 
 
 ## Accès géométrique pour le coordinateur d'animations.
-func card_at(row: int, col: int) -> StoneCard:
+func card_at(row: int, col: int) -> MonsterCard:
 	return _cards[_index(row, col)]
 
 func slot_at(row: int, col: int) -> Panel:

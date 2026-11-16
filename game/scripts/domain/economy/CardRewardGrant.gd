@@ -12,12 +12,12 @@ static func apply(inventory: PlayerInventory, raw: Variant,
 	var reward: Dictionary = raw.duplicate(true)
 	var lineage_id := str(reward.get("lineage_id", ""))
 	var copies := int(reward.get("copies", 0))
-	var stone_id := StoneLoader.variant_id(lineage_id, 1)
-	if stone_id == "" or copies <= 0:
+	var monster_id := MonsterLoader.variant_id(lineage_id, 1)
+	if monster_id == "" or copies <= 0:
 		return _fail("Récompense de carte inconnue ou quantité invalide : %s." % lineage_id)
-	var affinity := StoneLoader.stone_affinity(stone_id)
+	var affinity := MonsterLoader.monster_affinity(monster_id)
 	if compensate_maxed and inventory.unlocked_level(lineage_id) \
-			>= StoneLoader.lineage_max_level(lineage_id):
+			>= MonsterLoader.lineage_max_level(lineage_id):
 		var souls := Compensation.souls_for(lineage_id, copies)
 		inventory.souls += souls
 		reward["maxed"] = true

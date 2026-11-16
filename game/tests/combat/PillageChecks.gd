@@ -11,11 +11,11 @@ func _test_theft() -> void:
 	_force_instance(state, 1, 0, "fx_wall", GameState.PLAYER_AI)
 	_force_instance(state, 1, 2, "fx_wall", GameState.PLAYER_AI)
 	var result := CombatResolverModel.apply_move(state, 1, 1, "fx_thief", GameState.PLAYER_HUMAN)
-	var thief: BattleStoneModel = state.get_cell(1, 1)["stone"]
+	var thief: BattleMonsterModel = state.get_cell(1, 1)["monster"]
 	_check(result["captures"].size() == 3, "la pierre de pillage capture plusieurs cibles")
 	var event: Dictionary = result["effects"][0]
 	var capped := true
-	for side in BattleStoneModel.SIDES:
+	for side in BattleMonsterModel.SIDES:
 		capped = capped and thief.marker_count(side) <= 4
 	# Six symboles volés pour quatre places libres : chaque place peut venir
 	# d'une capture faite par une autre face, toutes sont donc remplies.
@@ -38,7 +38,7 @@ func _test_theft() -> void:
 	_check(never_on_attacking_face,
 		"avec plusieurs captures, aucun symbole volé n'arrive sur la face qui l'a capturé")
 	_check(event["origins"].size() == 3 and transfers_match
-		and state.get_cell(0, 1)["stone"].shields["bottom"] == 1,
+		and state.get_cell(0, 1)["monster"].shields["bottom"] == 1,
 		"l'aura relie chaque symbole volé à sa vraie destination sans le retirer du modèle")
 
 
@@ -47,7 +47,7 @@ func _test_single_capture_avoids_attacking_face() -> void:
 	var state := _state_with_hands(["fx_thief"], [])
 	_force_instance(state, 1, 2, "fx_wall", GameState.PLAYER_AI)
 	var result := CombatResolverModel.apply_move(state, 1, 1, "fx_thief", GameState.PLAYER_HUMAN)
-	var thief: BattleStoneModel = state.get_cell(1, 1)["stone"]
+	var thief: BattleMonsterModel = state.get_cell(1, 1)["monster"]
 	var event: Dictionary = result["effects"][0]
 	var candidates_ok := true
 	for transfer in event["transfers"]:
@@ -62,6 +62,6 @@ func _test_full_other_faces() -> void:
 	var state := _state_with_hands(["fx_thief_right_open"], [])
 	_force_instance(state, 1, 2, "fx_plain", GameState.PLAYER_AI)
 	var result := CombatResolverModel.apply_move(state, 1, 1, "fx_thief_right_open", GameState.PLAYER_HUMAN)
-	var thief: BattleStoneModel = state.get_cell(1, 1)["stone"]
+	var thief: BattleMonsterModel = state.get_cell(1, 1)["monster"]
 	_check(result["captures"].size() == 1 and _sum(thief.shields) == 0 and result["effects"].is_empty(),
 		"si les trois autres faces sont pleines, le pillage ne place aucun bouclier")

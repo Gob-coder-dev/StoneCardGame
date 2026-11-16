@@ -1,4 +1,4 @@
-# Architecture de SamStone
+# Architecture de Beastpact
 
 Le moteur calcule les résultats. La présentation les montre, puis annonce sa fin.
 Une IA appelle le même moteur sur une copie pour essayer un coup instantanément.
@@ -16,7 +16,7 @@ même moteur. `BoardController` ne choisit qu'un `MatchDriver` :
 | `MatchDriver` | `setup`, `start`, `request_move`, `on_turn_started`, `on_turn_ended` | contrat commun : `local_side`, `can_submit()`, `records_campaign_stats`, `aborted`, `finished` |
 | `CampaignMatchDriver` | `start` | adversaire du catalogue, deck du bot, `AITurnRunner`, statistiques de campagne |
 | `LanMatchDriver` | `start`, `request_move` | commandes réseau validées par l'hôte, camp local, aucune statistique |
-| `TurnManager` | `play`, `human_play`, `ai_play` | entrée générique `play(player, row, col, stone_id)` ; les deux wrappers restent pour la campagne |
+| `TurnManager` | `play`, `human_play`, `ai_play` | entrée générique `play(player, row, col, monster_id)` ; les deux wrappers restent pour la campagne |
 
 `GameState` nomme ses camps `PLAYER_ONE` et `PLAYER_TWO` ; `PLAYER_HUMAN` et
 `PLAYER_AI` restent des alias vers ces deux valeurs. `CombatResolver`,
@@ -182,7 +182,7 @@ Les déclencheurs détaillés, les fichiers et les règles d'extension sont dans
 
 | Fichier | Fonction principale | Responsabilité |
 | --- | --- | --- |
-| `data/stones/manifest.json` + familles | — | Définition complète de chaque carte, regroupée par famille et chargée au démarrage |
+| `data/monsters/manifest.json` + familles | — | Définition complète de chaque carte, regroupée par famille et chargée au démarrage |
 | `data/gods.json` | — | Dieux, familles, couleurs et descriptions |
 | `data/npcs.json` | — | Six adversaires historiques, leurs decks et profils d'IA |
 | `data/campaign/campaign_v2.json` | `CampaignContentLoader` | Définition consolidée du graphe : 162 nœuds, rencontres, positions et arêtes |
@@ -216,8 +216,8 @@ Les déclencheurs détaillés, les fichiers et les règles d'extension sont dans
 | `LoadoutGenerator` | `generate_random`, `generate_mirror`, `reachable_totals` | Dieux et decks légaux au même total, solveur exact et contraintes de draft |
 | `DraftEngine` | `start`, `choose`, `advance`, `public_state` | Draft parallèle de 60 s, plan de huit paires vérifié, choix privés et complétion indépendante |
 | `BotCardTierRules` | `effective_level` | Adaptateur historique des bots : niveau de forme et plancher de rareté, sans changer leur niveau de jeu |
-| `StoneLoader` | `get_stone`, `has_stone`, `has_effect`, `stone_affinity`, `stone_rarity`, `get_neutral_lineages`, `get_god`, `get_npc` | Charge les catalogues, fournit des copies et des lectures sans copie |
-| `ContentValidator` | `find_problems` | Liste les incohérences des catalogues ; `StoneLoader` les signale au démarrage |
+| `MonsterLoader` | `get_monster`, `has_monster`, `has_effect`, `monster_affinity`, `monster_rarity`, `get_neutral_lineages`, `get_god`, `get_npc` | Charge les catalogues, fournit des copies et des lectures sans copie |
+| `ContentValidator` | `find_problems` | Liste les incohérences des catalogues ; `MonsterLoader` les signale au démarrage |
 | `PlayerInventory`, `CardProgressionRules` | `to_dict`, `from_dict`, `upgrade_cost`, `progress` | État économique sérialisable (âmes, bougies, cartes et coffre) et règles pures d’évolution |
 | `EconomyService`, `ShopService` | `grant`, `upgrade_card`, `buy_god`, `state`, `buy_offer` | Transactions atomiques et rotation déterministe de la boutique |
 | `ContentAccessState`, `ProgressionAccessService` | `allows_rarity`, `state` | Projection immuable des accès depuis la campagne ; aucune duplication dans le profil |
@@ -229,9 +229,9 @@ Les déclencheurs détaillés, les fichiers et les règles d'extension sont dans
 | `CardArtCache` | `activate_god`, `texture`, `progress_for_god` | Préchauffe les illustrations utiles hors du thread principal et borne les références conservées |
 | `PlayerSaveStorage` | `write`, `read` | Écriture sûre du profil sur le disque |
 | `BattleContext` | `enter_campaign_node`, `select_opponent`, `begin_mode`, `prepare_result`, `persist_result` | Rencontre, loadouts temporaires de campagne, nœud actif, premier joueur et résultat |
-| `StoneCostRules` | `cost` | Règle du coût d'une carte |
-| `StoneEffects` | — | Identifiants et valeurs des pouvoirs (corrosion, renfort et plafond d'Essaim) |
-| `StoneEvolutionRules` | `max_level`, `preview_level`, `is_valid_level` | Limites par rareté et saturation des seuls aperçus |
+| `MonsterCostRules` | `cost` | Règle du coût d'une carte |
+| `MonsterEffects` | — | Identifiants et valeurs des pouvoirs (corrosion, renfort et plafond d'Essaim) |
+| `MonsterEvolutionRules` | `max_level`, `preview_level`, `is_valid_level` | Limites par rareté et saturation des seuls aperçus |
 | `DeckRules` | `try_add`, `try_remove`, `try_replace` | Composition du deck et nombre d'emplacements par dieu (`DECKS_PER_GOD`) |
 | `UIFormat` | `cost` | Affichage des nombres dans l'interface |
 
@@ -301,20 +301,20 @@ valeurs puis ne marque la progression comme enregistrée qu'après le succès de
 `PlayerData.record_game()`. En cas d'erreur disque, le résultat affiche la cause,
 propose un nouvel essai et n'ouvre pas prématurément le niveau suivant.
 
-`get_stone()` renvoie une copie modifiable. Les questions répétées pendant les
-simulations (`has_stone`, `has_effect`, `stone_cost`) lisent l'index du catalogue
-sans copie. Les coûts unitaires sont des constantes de `StoneCostRules`, reprises
+`get_monster()` renvoie une copie modifiable. Les questions répétées pendant les
+simulations (`has_monster`, `has_effect`, `monster_cost`) lisent l'index du catalogue
+sans copie. Les coûts unitaires sont des constantes de `MonsterCostRules`, reprises
 par l'écran des règles. Moteur, interface et validation désignent les pouvoirs par
-les constantes de `StoneEffects`, y compris les valeurs numériques affichées
+les constantes de `MonsterEffects`, y compris les valeurs numériques affichées
 dans les légendes : celles-ci ne chargent pas les systèmes du moteur.
 `ContentValidator` signale tout pouvoir ou axe
-de pile ou face inconnu dans les catalogues de pierres.
+de pile ou face inconnu dans les catalogues de monstres.
 
 ### Lignées et formes
 
-Les sept fichiers déclarés par `data/stones/manifest.json` contiennent 96 lignées
+Les sept fichiers déclarés par `data/monsters/manifest.json` contiennent 96 lignées
 de monstres et 275 formes, sans ancien tableau
-`stones`. Le tableau `lineages` décrit les lignées : identité commune et tableau
+`monsters`. Le tableau `lineages` décrit les lignées : identité commune et tableau
 `levels` de définitions explicites. Les quatre raretés modernes imposent 4/3/2/1
 formes. Chaque forme peut fournir ses statistiques, son nom, son texte et son
 image `asset` ; famille et rareté sont communes. Les nombres de symboles doivent
@@ -330,7 +330,7 @@ les statistiques ou les sauvegardes. Les originaux et les imports restent pour
 l'instant à leur résolution complète, en compression sans perte et sans limite
 de taille ; leur réduction est une optimisation d'assets distincte.
 
-`StoneCard._load_texture_if_any()` demande la ressource à `CardArtCache` au
+`MonsterCard._load_texture_if_any()` demande la ressource à `CardArtCache` au
 changement de définition, sans bloquer le thread principal. La carte reçoit le
 signal `texture_ready` et se redessine lorsque l'image arrive. `_illustration_rect()`
 calcule le rectangle proportionnel et centré ; `_draw()` affiche la texture sur
@@ -338,9 +338,9 @@ fond sombre puis les badges et le nom. Aucun fichier n'est chargé pendant le
 dessin et le moteur n'accède jamais aux textures. Le même composant couvre
 collection, fiche, main et plateau.
 
-`StoneLoader` valide puis indexe les définitions complètes une fois au chargement.
-`get_stone(form_id)` reste le contrat commun au moteur et aux vues.
-`stone_lineage`, `stone_level`, `lineage_max_level`, `variant_id` et `variant_ids`
+`MonsterLoader` valide puis indexe les définitions complètes une fois au chargement.
+`get_monster(form_id)` reste le contrat commun au moteur et aux vues.
+`monster_lineage`, `monster_level`, `lineage_max_level`, `variant_id` et `variant_ids`
 fournissent des lectures de l'index ; `get_lineages_for_god` fournit une entrée
 par monstre pour la collection. Une forme demandée hors limites est refusée ;
 seul `preview_variant` sature le niveau demandé. Les identifiants décrivent
@@ -363,27 +363,27 @@ n'est conservée dans le jeu.
 Les decks restent des tableaux d'identifiants de formes. `DeckRules.lineage_index`
 centralise la recherche d'une lignée ; les validations et les opérations de
 remplacement interdisent deux formes du même monstre. `try_set_level` réutilise
-le remplacement et son calcul de budget. `CombatResolver`, `BattleStone` et
+le remplacement et son calcul de budget. `CombatResolver`, `BattleMonster` et
 `TurnManager` reçoivent directement les statistiques de la forme et n'appliquent
 aucun multiplicateur de niveau pendant le combat.
 
 ## Résolution d'un coup
 
 `GameState` contient le plateau, les mains et le hasard propre à la partie.
-Chaque pierre posée possède une `BattleStone` mutable ; le catalogue reste intact.
+Chaque monstre posé possède une `BattleMonster` mutable ; le catalogue reste intact.
 Une case garde aussi l'auteur de sa pose (`placed_by`), que les captures ne changent pas.
-`StoneSide` centralise les côtés, leurs directions et leurs opposés.
+`MonsterSide` centralise les côtés, leurs directions et leurs opposés.
 `PlacementRules.is_valid()` est la validation commune aux coups réels et simulés.
 
 ```text
-CombatResolver.place_stone()
+CombatResolver.place_monster()
   ├─ PlacementRules.is_valid()
-  ├─ création de BattleStone
+  ├─ création de BattleMonster
   ├─ PlacementEffectResolver.resolve()
   │    ├─ RandomBladeEffect.resolve()
   │    └─ CoinFlipEffect.resolve()
   ├─ insertion sur le plateau et retrait de la main
-  └─ SwarmSystem.recalculate() + transitions()   (rien à faire sans pierre Essaim)
+  └─ SwarmSystem.recalculate() + transitions()   (rien à faire sans monstre Essaim)
 
 CombatResolver.resolve_attacks()
   └─ AttackResolver.resolve()
@@ -395,7 +395,7 @@ CombatResolver.finish_move()
   │    ├─ WeaknessSystem.update_miasma()         aura continue, recalculée à chaque coup
   │    ├─ ShieldTheftSystem.resolve()             autres faces que celle qui a capturé
   │    ├─ WeaknessSystem.expire_for_player()
-  │    └─ WeaknessSystem.apply_failed_attack()    pierres qui ont résisté à l'attaque
+  │    └─ WeaknessSystem.apply_failed_attack()    monstres qui ont résisté à l'attaque
   └─ SwarmSystem.recalculate() + transitions()
 ```
 
@@ -405,17 +405,17 @@ l'Échec corrosif ses attaques ratées. Chaque transfert de Pillage indique ses
 faces possibles (`candidate_sides`), que `PillageAnimation` fait clignoter.
 `RulesEngine` fournit score, fin de partie et liste des coups disponibles.
 `CombatBoard` est l'accès partagé aux instances des cases : une case occupée
-porte toujours sa `BattleStone`, y compris dans les tests.
+porte toujours sa `BattleMonster`, y compris dans les tests.
 `CombatBoard.has_active_power(state, cell, effect)` centralise l'activation des
-pouvoirs continus : propriétaire, pierre, effet présent et affinité compatible
-avec le dieu du camp. Une pierre neutre agit dans tous les camps. Le catalogue
-ne fournit que `stone_affinity(id)` ; cette activation ne s'applique pas aux
+pouvoirs continus : propriétaire, monstre, effet présent et affinité compatible
+avec le dieu du camp. Un monstre neutre agit dans tous les camps. Le catalogue
+ne fournit que `monster_affinity(id)` ; cette activation ne s'applique pas aux
 symboles physiques (boucliers et lames longues).
-`BattleStone.markers_for_side()` décrit les symboles ; le moteur connaît leur type
+`BattleMonster.markers_for_side()` décrit les symboles ; le moteur connaît leur type
 et leur indice stable, tandis que l'interface calcule leurs positions.
-L'ordre des types est `BattleStone.MARKER_KINDS` et la capacité d'une face
+L'ordre des types est `BattleMonster.MARKER_KINDS` et la capacité d'une face
 `MAX_MARKERS_PER_SIDE`. La vue passe par `markers_for_side()` et `marker_offset()`
-sans recopier cet ordre ; `StoneSide.coin_faces()` donne les faces d'un pile ou face.
+sans recopier cet ordre ; `MonsterSide.coin_faces()` donne les faces d'un pile ou face.
 
 Les événements de pouvoirs sont construits dans `CombatEvents` avec des paramètres
 typés. Leurs données restent des dictionnaires sérialisables, sans nœuds Godot
@@ -446,15 +446,15 @@ TurnManager
 Sans interface connectée, une étape se termine à la frame suivante.
 Un redémarrage ou une fermeture annule les présentations en cours.
 
-Les cartes du plateau affichent la `BattleStone` du moteur, déjà dans son état
+Les cartes du plateau affichent la `BattleMonster` du moteur, déjà dans son état
 final : chaque animation montre un aperçu de l'ancien état jusqu'à sa révélation.
 Une étape PLACEMENT ou EFFECTS transmet dans `pending_swarm` le changement
 d'Essaim révélé par l'étape SWARM suivante ; `BoardAnimationController` garde
 son état « avant » pendant l'étape. Le Pillage lit donc les symboles volés sur
-la carte affichée (`StoneCard.displayed_stone()`), avec les indices du moteur ;
+la carte affichée (`MonsterCard.displayed_monster()`), avec les indices du moteur ;
 `BoardEffectGeometry.pillage_transfers()` les convertit en positions.
 
-Les réglages de `StoneCard` (aperçu, croissance d'un symbole, affaiblissement
+Les réglages de `MonsterCard` (aperçu, croissance d'un symbole, affaiblissement
 affiché, propriétaire, sélection) ne redessinent la carte que si la valeur change.
 Une animation peut donc les appeler à chaque image sans coût inutile.
 `BoardView.refresh()` ne redessine que les cartes dont une valeur dessinée a
@@ -465,7 +465,7 @@ sa durée prévue (`CombatTimeline.step_duration`) de `WATCHDOG_MARGIN` secondes
 Il écrit un avertissement, nettoie les animations, puis termine l'étape : la
 partie continue avec l'état déjà calculé. Le minuteur est un enfant interne du
 contrôleur, arrêté à chaque fin d'étape et libéré avec la scène.
-Les signaux `stone_placed`, `stone_preparing`, `attacks_started`, `effects_resolved`
+Les signaux `monster_placed`, `monster_preparing`, `attacks_started`, `effects_resolved`
 et `swarm_changed` annoncent les faits ; ils ne contrôlent pas la fin des animations.
 
 `BoardView` construit les cases, synchronise les cartes, reçoit les gestes et
@@ -510,9 +510,9 @@ et les cartes masquées dans la collection, sans recréer celle-ci. Changer de
 contexte referme les panneaux de carte et annule tout remplacement en attente.
 L'interface reste silencieuse en cas de succès et affiche les erreurs d'écriture.
 
-Le niveau global de collection, le niveau consulté dans `StoneInfoSheet` et
+Le niveau global de collection, le niveau consulté dans `MonsterInfoSheet` et
 la forme sauvegardée dans le deck sont trois états distincts. Le contrôleur
-achemine le tiroir et `StoneInfoSheet.use_requested` vers `_request_use`, puis
+achemine le tiroir et `MonsterInfoSheet.use_requested` vers `_request_use`, puis
 vers `DeckRules` et `PlayerData`. La fiche n'écrit jamais le profil. Sa carte
 est réutilisée entre niveaux ; son contenu peut défiler et son bouton Utiliser
 reste accessible. Les erreurs de budget ou d'écriture sont affichées dans le
@@ -526,7 +526,7 @@ neutres et recycle les douze emplacements de famille. Une lignée équipée est
 entièrement masquée. `CardArtCache` préchauffe hors du thread principal les
 illustrations du dieu, du niveau et du deck actifs. Il garde les six portraits
 de dieux pour la session, mais relâche ses références fortes aux anciens groupes
-de cartes afin de ne pas mettre les 275 images en mémoire. `StoneCard` affiche
+de cartes afin de ne pas mettre les 275 images en mémoire. `MonsterCard` affiche
 la texture dès son arrivée et reste utilisable avec son repli neutre pendant le
 chargement. Il affiche aussi un petit repère de niveau pour les lignées évolutives
 et utilise leur champ `asset` existant. Une image absente affiche seulement un
@@ -555,13 +555,13 @@ deck complet, puis garde cette hauteur pendant le combat : jouer une carte ne
 déplace donc jamais le plateau. `CARD_HAND`, `CARD_DECK` et
 `CARD_REPLACEMENT` restent des tailles indépendantes pour les autres vues.
 
-`CardActionDrawer`, `StoneInfoSheet` et `ReplacementPanel` gèrent leurs panneaux.
+`CardActionDrawer`, `MonsterInfoSheet` et `ReplacementPanel` gèrent leurs panneaux.
 `TapGesture`, `TouchButton` et `TouchScrollContainer` conservent les gestes tactiles.
 
 L'habillage du refuge est commun aux écrans : `UITheme` fournit la palette et
 les fabriques de styles, `RefugeTheme` construit le thème global depuis ces
 constantes après création du SceneTree, via l'autoload `InterfaceTheme`.
-La ressource `samstone_theme.tres` ne porte aucun script : son chargement précoce
+La ressource `beastpact_theme.tres` ne porte aucun script : son chargement précoce
 ne peut donc pas exécuter un constructeur avant l'arbre. Ses styles enregistrés
 servent aussi d'aperçu dans l'éditeur. Après un changement de palette, les
 régénérer avec `--script res://tools/BakeInterfaceTheme.gd` ; les identifiants
@@ -669,11 +669,11 @@ forme utilisé par le moteur : commun et rare commencent au palier 1, épique au
 palier 3 et légendaire au palier 4. Le niveau effectif est le maximum du niveau
 de forme et de ce plancher. La collection, l'évolution, les coûts et le combat
 continuent donc d'utiliser les données originales des cartes. Les règles de
-`DeckRules` restent réservées aux decks des joueurs ; `StoneLoader` fournit à la
+`DeckRules` restent réservées aux decks des joueurs ; `MonsterLoader` fournit à la
 fabrique les lignées neutres et la rareté des formes.
 
 `BattleContext.select_opponent()` conserve la rencontre ; `current_opponent()`
-retombe sur `StoneLoader.get_npc()` pour les adversaires historiques de
+retombe sur `MonsterLoader.get_npc()` pour les adversaires historiques de
 `npcs.json`. `PreBattle`, `BoardController` et l'écran de résultat lisent la même
 source. `BattleContext.selected_source_id` retient le chemin ouvert, ce qui
 permet à `PreBattle` et au résultat d'y revenir ; `source_id_of()` déduit la
@@ -752,7 +752,7 @@ propres à l'IA. Avec `anticipation` :
 La riposte immédiate est découpée en tirs : une attaque est un plan pur où chaque
 direction est indépendante. `RiposteModel` demande au résolveur, pour chaque case
 libre, chaque tir différent (face, lames, lames bleues) une seule fois, avec une
-pierre qui n'attaque que dans cette direction (`make_shot`), puis additionne les
+monstre qui n'attaque que dans cette direction (`make_shot`), puis additionne les
 tirs de chaque carte. Le coût dépend du nombre de tirs différents, qui plafonne,
 et non du nombre de cartes. Les captures de chaque tir sont aussi calculées une
 fois sur l'état reçu : pour un coup évalué, seuls les tirs dont la ligne traverse
@@ -782,11 +782,11 @@ Relever ce seuil demanderait de nouveaux tests et de nouvelles mesures.
 
 Avec `anticipation` (niveau 3), la valeur d'un coup gagne aussi 0,3 capture par
 lame d'aura d'Essaim obtenue (`AURA_WEIGHT`) : l'aura reste et sert aux coups
-suivants, ce qui pousse l'IA à relier ses pierres Essaim.
+suivants, ce qui pousse l'IA à relier ses monstres Essaim.
 
 `OpponentModel` déduit les cartes possibles du dieu du joueur et des poses déjà
 faites (`placed_by`) : `clone_for_ai()` cache la main humaine et le prochain tirage
-réel, et l'IA ne lit jamais la vraie main. La riposte immédiate utilise des pierres
+réel, et l'IA ne lit jamais la vraie main. La riposte immédiate utilise des monstres
 non posées, avec les deux issues d'un pile ou face (`CoinFlipEffect.apply_outcome`) ;
 elle ignore les lames roses et l'aura d'Essaim que la carte recevrait. Le calcul
 exact de fin de partie pose réellement les cartes.
@@ -805,11 +805,11 @@ appel à `step()`.
 
 ## Ajouter un pouvoir
 
-1. Définir ses données dans le fichier de famille déclaré par `data/stones/manifest.json`.
+1. Définir ses données dans le fichier de famille déclaré par `data/monsters/manifest.json`.
 2. Placer son calcul dans `engine/effects/` selon son déclenchement.
 3. L'appeler depuis `PlacementEffectResolver` ou `PostAttackEffectResolver`.
 4. Décrire son résultat dans `CombatEvents` sans données d'affichage.
-5. Lui associer une animation dans `BoardAnimationController` et un logo via `StoneSymbols`.
+5. Lui associer une animation dans `BoardAnimationController` et un logo via `MonsterSymbols`.
 6. Ajouter les vérifications dans la suite de règles et la suite visuelle concernées.
 
 L'IA joue ses coups avec le même résolveur : un nouveau pouvoir y est compté
@@ -820,8 +820,8 @@ pas leurs pouvoirs de pose, à part le pile ou face.
 Un nouveau système continu peut suivre `SwarmSystem`, avec un instantané et une
 transition avant/après. `CombatResolver` garde uniquement l'ordre général des phases.
 Le Miasme est le second système continu : `WeaknessSystem.update_miasma()` recalcule
-après les captures de chaque coup le malus `BattleStone.miasma_weakness` et émet un
-`WEAKEN` par pierre plus affaiblie ou un `WEAKNESS_EXPIRED` par pierre soulagée.
+après les captures de chaque coup le malus `BattleMonster.miasma_weakness` et émet un
+`WEAKEN` par monstre plus affaibli ou un `WEAKNESS_EXPIRED` par monstre soulagé.
 `BoardEffectGeometry` fusionne les malus par cible et prépare les groupes par
 source ; `BoardAnimationController` lance leurs traînées. Les deux systèmes
 continus appliquent la règle unique de `CombatBoard.has_active_power()` : une carte de famille n'agit que dans le

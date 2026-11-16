@@ -5,7 +5,7 @@ const Identity := preload("res://scripts/ai/neural/RLIdentity.gd")
 
 
 func _get_name() -> String:
-	return "SamStoneRLIdentity"
+	return "BeastpactRLIdentity"
 
 
 func _export_begin(_features: PackedStringArray, _is_debug: bool, _path: String, _flags: int) -> void:

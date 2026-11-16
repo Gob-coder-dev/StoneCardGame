@@ -22,7 +22,7 @@ STAGE_MAX_RARITY = {
 
 
 def assign_rewards(nodes: dict[str, dict[str, Any]], config: dict[str, Any],
-                   stone_catalog: dict[str, dict[str, str]],
+                   monster_catalog: dict[str, dict[str, str]],
                    lineage_catalog: dict[str, dict[str, str]]) -> None:
     interval = max(1, int(config.get("normal_card_interval", 4)))
     chapter_indices: dict[str, int] = defaultdict(int)
@@ -44,14 +44,14 @@ def assign_rewards(nodes: dict[str, dict[str, Any]], config: dict[str, Any],
         elif node["type"] in {"mini_boss", "boss"}:
             profile_id = "boss" if node["type"] == "boss" else "mini_boss"
             cards = _cards_for(node, config["profiles"][profile_id],
-                               stone_catalog, lineage_catalog)
+                               monster_catalog, lineage_catalog)
         elif node["type"] == "normal" and encounter["game_mode"] in {"classic", "draft"}:
             index = chapter_indices[node["chapter"]]
             chapter_indices[node["chapter"]] += 1
             if index > 0 and index % interval == interval - 1:
                 profile_id = "normal_two" if (index // interval) % 2 else "normal_one"
                 cards = _cards_for(node, config["profiles"][profile_id],
-                                   stone_catalog, lineage_catalog)
+                                   monster_catalog, lineage_catalog)
         node["rewards"] = {
             "souls_min": int(base),
             "souls_max": int(base + 5 + tier),
@@ -60,7 +60,7 @@ def assign_rewards(nodes: dict[str, dict[str, Any]], config: dict[str, Any],
 
 
 def _cards_for(node: dict[str, Any], profile: dict[str, Any],
-               stones: dict[str, dict[str, str]],
+               monsters: dict[str, dict[str, str]],
                lineages: dict[str, dict[str, str]]) -> list[dict[str, Any]]:
     slots = int(profile["card_slots"])
     copies = int(profile["copies_per_slot"])
@@ -68,8 +68,8 @@ def _cards_for(node: dict[str, Any], profile: dict[str, Any],
     candidates: list[str] = []
     seen: set[str] = set()
     theme = str(node.get("theme_god_id", ""))
-    for stone_id in node["encounter"].get("fixed_deck", []):
-        lineage_id = stones.get(stone_id, {}).get("lineage_id", "")
+    for monster_id in node["encounter"].get("fixed_deck", []):
+        lineage_id = monsters.get(monster_id, {}).get("lineage_id", "")
         if (lineage_id and lineage_id not in seen
                 and lineages.get(lineage_id, {}).get("affinity") == theme):
             seen.add(lineage_id)

@@ -3,24 +3,24 @@
 ## posées. Le dieu et l'auteur de chaque pose sont des informations publiques.
 extends RefCounted
 
-const BattleStoneModel := preload("res://scripts/engine/BattleStone.gd")
+const BattleMonsterModel := preload("res://scripts/engine/BattleMonster.gd")
 const CoinFlip := preload("res://scripts/engine/effects/CoinFlipEffect.gd")
 
 
 ## Cartes que le joueur humain peut encore avoir en main. Avec un dieu inconnu,
 ## toutes les cartes du catalogue restent possibles.
 static func possible_cards(state: GameState) -> Array[String]:
-	var stone_ids := StoneLoader.get_stone_ids_for_god(state.human_god_id)
-	if stone_ids.is_empty():
-		stone_ids = StoneLoader.get_all_stone_ids()
+	var monster_ids := MonsterLoader.get_monster_ids_for_god(state.human_god_id)
+	if monster_ids.is_empty():
+		monster_ids = MonsterLoader.get_all_monster_ids()
 	var placed := {}
 	for cell in state.board:
 		if cell["placed_by"] == GameState.PLAYER_HUMAN:
-			placed[StoneLoader.stone_lineage(str(cell["stone_id"]))] = true
+			placed[MonsterLoader.monster_lineage(str(cell["monster_id"]))] = true
 	var result: Array[String] = []
-	for stone_id in stone_ids:
-		if not placed.has(StoneLoader.stone_lineage(stone_id)):
-			result.append(stone_id)
+	for monster_id in monster_ids:
+		if not placed.has(MonsterLoader.monster_lineage(monster_id)):
+			result.append(monster_id)
 	return result
 
 
@@ -62,7 +62,7 @@ static func expected_from_variants(card_ids: Array, values: Array[float], hand_s
 	var groups := {}
 	var group_ids: Array[String] = []
 	for card in card_ids:
-		var group := StoneLoader.stone_lineage(str(card))
+		var group := MonsterLoader.monster_lineage(str(card))
 		group_ids.append(group)
 		groups[group] = int(groups.get(group, 0)) + 1
 	var held := mini(hand_size, groups.size())
@@ -102,24 +102,24 @@ static func expected_from_variants(card_ids: Array, values: Array[float], hand_s
 	return expected
 
 
-## Pierres prêtes à attaquer, une liste d'orientations par carte. Un pile ou
+## Monstres prêts à attaquer, une liste d'orientations par carte. Un pile ou
 ## face donne ses deux issues, également probables. Les lames roses, tirées à
 ## la pose, ne sont pas ajoutées : la menace de ces cartes est sous-estimée.
 static func attack_variants(card_ids: Array[String]) -> Array:
 	var result: Array = []
-	for stone_id in card_ids:
-		result.append(attack_variants_for(stone_id))
+	for monster_id in card_ids:
+		result.append(attack_variants_for(monster_id))
 	return result
 
 
-static func attack_variants_for(stone_id: String) -> Array:
-	var definition := StoneLoader.get_stone(stone_id)
-	var stone: BattleStoneModel = BattleStoneModel.new()
-	stone.configure(stone_id, definition)
-	var variants: Array = [stone]
+static func attack_variants_for(monster_id: String) -> Array:
+	var definition := MonsterLoader.get_monster(monster_id)
+	var monster: BattleMonsterModel = BattleMonsterModel.new()
+	monster.configure(monster_id, definition)
+	var variants: Array = [monster]
 	var axis := str(definition.get("coin_flip", ""))
 	if axis != "":
-		var flipped: BattleStoneModel = stone.clone()
+		var flipped: BattleMonsterModel = monster.clone()
 		CoinFlip.apply_outcome(flipped, axis, true)
 		variants.append(flipped)
 	return variants

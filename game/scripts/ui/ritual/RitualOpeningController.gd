@@ -160,15 +160,15 @@ func _build_reward_front(reward: Dictionary) -> void:
 			UITheme.COL_WARNING)
 		_add_reward_label("ÂMES INVOQUÉES", 27, UITheme.COL_TEXT_DIM)
 		return
-	var card := StoneCard.new()
+	var card := MonsterCard.new()
 	card.custom_minimum_size = Vector2(420, 420)
 	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	card.set_show_cost(false)
-	card.setup(StoneLoader.get_stone(str(reward.get("stone_id", ""))), StoneCard.OWNER_NONE)
+	card.setup(MonsterLoader.get_monster(str(reward.get("monster_id", ""))), MonsterCard.OWNER_NONE)
 	reward_content.add_child(card)
 	_add_reward_label("×%d" % int(reward.get("copies", 1)), 50, UITheme.COL_TEXT)
 	if bool(reward.get("deferred", false)):
-		var god := StoneLoader.get_god(str(reward.get("god_id", "")))
+		var god := MonsterLoader.get_god(str(reward.get("god_id", "")))
 		_add_reward_label("CONSERVÉE DANS LE COFFRE — %s" % str(god.get("name", "DIEU VERROUILLÉ")).to_upper(),
 			22, UITheme.COL_WARNING)
 	if bool(reward.get("maxed", false)):
@@ -240,10 +240,10 @@ func _summary_tile(reward: Dictionary, tile_size: int) -> Control:
 		box.add_child(icon)
 		box.add_child(_small_label("×%s" % UIFormat.integer(int(reward.get("amount", 0)))))
 		return box
-	var card := StoneCard.new()
+	var card := MonsterCard.new()
 	card.custom_minimum_size = Vector2(tile_size, tile_size)
 	card.set_show_cost(false)
-	card.setup(StoneLoader.get_stone(str(reward.get("stone_id", ""))), StoneCard.OWNER_NONE)
+	card.setup(MonsterLoader.get_monster(str(reward.get("monster_id", ""))), MonsterCard.OWNER_NONE)
 	box.add_child(card)
 	var suffix := "  •  coffre" if bool(reward.get("deferred", false)) else ""
 	if bool(reward.get("maxed", false)):

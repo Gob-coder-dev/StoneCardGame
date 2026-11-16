@@ -77,7 +77,7 @@ func _process(delta: float) -> void:
 	cancel()
 	if move.is_empty():
 		push_error("AITurnRunner: aucun coup valide trouvé pour l'IA.")
-	elif not _turn_manager.ai_play(move["row"], move["col"], move["stone_id"]):
+	elif not _turn_manager.ai_play(move["row"], move["col"], move["monster_id"]):
 		push_error("AITurnRunner: coup refusé %s." % str(move))
 
 

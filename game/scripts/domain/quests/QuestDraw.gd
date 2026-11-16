@@ -5,7 +5,7 @@
 class_name QuestDraw
 extends RefCounted
 
-const SEED_PREFIX := "samstone-quests"
+const SEED_PREFIX := "beastpact-quests"
 
 
 ## `previous` contient les identifiants de la veille, écartés tant que le

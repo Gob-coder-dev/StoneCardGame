@@ -96,7 +96,7 @@ func _test_ledger_compaction() -> void:
 func _test_atomic_upgrade() -> void:
 	PlayerData._apply_profile(Codec.starter_profile())
 	var inventory := Inventory.from_dict(PlayerData.inventory_dict())
-	var lineage := StoneLoader.stone_lineage(str(PlayerData.get_active_deck()[0]))
+	var lineage := MonsterLoader.monster_lineage(str(PlayerData.get_active_deck()[0]))
 	inventory.souls = 10000
 	inventory.cards[lineage]["copies"] = 1000
 	PlayerData.commit_inventory(inventory)

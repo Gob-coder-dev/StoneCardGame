@@ -130,13 +130,13 @@ func _apply_result_background(winner: int, local_one: bool) -> void:
 	elif winner == GameState.PLAYER_TWO:
 		winning_god_id = PvpMatchContext.remote_god_id if local_one else PvpMatchContext.local_god_id
 	if winner == PvpMatchContext.local_side:
-		background.set_result_victory(StoneLoader.get_god(winning_god_id))
+		background.set_result_victory(MonsterLoader.get_god(winning_god_id))
 	elif winner != GameState.PLAYER_NONE:
-		background.set_result_defeat(StoneLoader.get_god(winning_god_id))
+		background.set_result_defeat(MonsterLoader.get_god(winning_god_id))
 	else:
 		background.set_result_draw(
-			StoneLoader.get_god(PvpMatchContext.local_god_id),
-			StoneLoader.get_god(PvpMatchContext.remote_god_id))
+			MonsterLoader.get_god(PvpMatchContext.local_god_id),
+			MonsterLoader.get_god(PvpMatchContext.remote_god_id))
 
 
 func _local_name() -> String:

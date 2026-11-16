@@ -139,11 +139,11 @@ func _test_draft_composition_and_live_deck() -> void:
 	var opponent_read_only := true
 	var local_interactive := true
 	for wrapper in view.opponent_grid.get_children():
-		var card: StoneCard = wrapper.get_child(0)
+		var card: MonsterCard = wrapper.get_child(0)
 		opponent_read_only = opponent_read_only and card._texture != null \
 			and card.mouse_filter == Control.MOUSE_FILTER_IGNORE
 	for wrapper in view.local_grid.get_children():
-		var card: StoneCard = wrapper.get_child(0)
+		var card: MonsterCard = wrapper.get_child(0)
 		local_interactive = local_interactive and card._texture != null \
 			and card.mouse_filter == Control.MOUSE_FILTER_PASS
 	_check(opponent_read_only, "draft : les propositions adverses sont illustrées et non interactives")
@@ -262,7 +262,7 @@ func _test_responsive_draft_layout() -> void:
 func _grid_ids(grid: LoadoutCardGrid) -> Array:
 	var ids: Array = []
 	for card in grid._cards:
-		ids.append(card.get_stone_id())
+		ids.append(card.get_monster_id())
 	return ids
 
 
@@ -291,7 +291,7 @@ func _test_final_deck_two_columns() -> void:
 		"deck final tablette : les quatre lignes et le dieu tiennent sans scroll")
 	var widest := 0.0
 	for wrapper in view.deck_grid.get_children():
-		var card: StoneCard = wrapper.get_child(0)
+		var card: MonsterCard = wrapper.get_child(0)
 		widest = maxf(widest, card.size.x)
 	_check(page.scroll.size.x <= 0.0 or widest * 2.0 <= page.scroll.size.x + 1.0,
 		"deck final : deux cartes tiennent dans la largeur, sans débordement horizontal")

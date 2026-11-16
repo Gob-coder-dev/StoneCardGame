@@ -432,7 +432,7 @@ func _accent_for(node: CampaignNode) -> Color:
 	if node.accent != "":
 		return Color(node.accent)
 	if node.fixed_god_id() != "":
-		return Color(str(StoneLoader.get_god(node.fixed_god_id()).get("color",
+		return Color(str(MonsterLoader.get_god(node.fixed_god_id()).get("color",
 			UITheme.COL_NEON_PINK.to_html())))
 	return UITheme.COL_NEON_PINK
 
@@ -525,7 +525,7 @@ func _draw_edges() -> void:
 
 func _edge_color(node: CampaignNode) -> Color:
 	if node != null and node.fixed_god_id() != "":
-		return Color(str(StoneLoader.get_god(node.fixed_god_id()).get("color",
+		return Color(str(MonsterLoader.get_god(node.fixed_god_id()).get("color",
 			UITheme.COL_CAMPAIGN_EDGE_LIT.to_html())))
 	return UITheme.COL_CAMPAIGN_EDGE_LIT
 

@@ -1,11 +1,11 @@
-## Fiche détaillée d'une pierre, indépendante de l'écran de collection.
-class_name StoneInfoSheet
+## Fiche détaillée d'un monstre, indépendante de l'écran de collection.
+class_name MonsterInfoSheet
 extends Control
-signal use_requested(stone_id: String)
+signal use_requested(monster_id: String)
 signal upgrade_requested(lineage_id: String)
 const NumberedSelector := preload("res://scripts/ui/collection/NumberedSelector.gd")
 const PowerBadge := preload("res://scripts/ui/PowerBadge.gd")
-const Symbols := preload("res://scripts/ui/StoneSymbols.gd")
+const Symbols := preload("res://scripts/ui/MonsterSymbols.gd")
 
 @onready var title_label: Label = $InfoPanel/InfoContent/Header/Title
 @onready var summary_label: Label = $InfoPanel/InfoContent/Scroll/Page/Summary
@@ -22,7 +22,7 @@ const Symbols := preload("res://scripts/ui/StoneSymbols.gd")
 const Gesture := preload("res://scripts/ui/input/TapGesture.gd")
 var _backdrop_tap := Gesture.new()
 var _selector: NumberedSelector
-var _card: StoneCard
+var _card: MonsterCard
 var _lineage := ""
 var _shown_variant := ""
 var _deck: Array = []
@@ -32,7 +32,7 @@ func _ready() -> void:
 	close_button.pressed.connect(close_sheet)
 	$Backdrop.gui_input.connect(_on_backdrop_input)
 	use_button.pressed.connect(_on_primary_pressed)
-	_card = StoneCard.new()
+	_card = MonsterCard.new()
 	_card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_card.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_card.set_edge_margin_ratio(UITheme.CARD_PREVIEW_EDGE_MARGIN)
@@ -52,39 +52,39 @@ func _fit_card() -> void:
 		card_container.custom_minimum_size.y = side
 
 
-func open_for(stone_id: String, deck: Array = []) -> void:
-	if not StoneLoader.has_stone(stone_id):
+func open_for(monster_id: String, deck: Array = []) -> void:
+	if not MonsterLoader.has_monster(monster_id):
 		return
-	_lineage = StoneLoader.stone_lineage(stone_id)
+	_lineage = MonsterLoader.monster_lineage(monster_id)
 	_deck = deck.duplicate()
 	var row: HBoxContainer = $InfoPanel/InfoContent/Levels
 	for button in row.get_children():
 		row.remove_child(button)
 		button.queue_free()
-	_selector = NumberedSelector.new(row, StoneLoader.lineage_max_level(_lineage))
+	_selector = NumberedSelector.new(row, MonsterLoader.lineage_max_level(_lineage))
 	_selector.value_selected.connect(_select_level)
 	_selector.show_unlocked_through(int(PlayerData.card_entry(_lineage).get("unlocked_level", 0)))
-	_refresh_form(stone_id)
+	_refresh_form(monster_id)
 	$InfoPanel/InfoContent/Scroll.scroll_vertical = 0
 	visible = true
 
 
 func _select_level(level: int) -> void:
-	var id := StoneLoader.variant_id(_lineage, level)
+	var id := MonsterLoader.variant_id(_lineage, level)
 	if id != "":
 		_refresh_form(id)
 
 
-func _refresh_form(stone_id: String) -> void:
-	_shown_variant = stone_id
-	var stone := StoneLoader.get_stone(stone_id)
-	var level := StoneLoader.stone_level(stone_id)
-	var owned := PlayerData.owns_stone(stone_id)
+func _refresh_form(monster_id: String) -> void:
+	_shown_variant = monster_id
+	var monster := MonsterLoader.get_monster(monster_id)
+	var level := MonsterLoader.monster_level(monster_id)
+	var owned := PlayerData.owns_monster(monster_id)
 	var unlocked_level := int(PlayerData.card_entry(_lineage).get("unlocked_level", 0))
 	var is_next_level := not owned and level == unlocked_level + 1
 	_selector.refresh(level)
 	if owned:
-		_set_action_state("UTILISER", _deck.has(stone_id), false)
+		_set_action_state("UTILISER", _deck.has(monster_id), false)
 	elif is_next_level:
 		var upgrade := PlayerData.card_upgrade_state(_lineage)
 		var requirement: Dictionary = upgrade.get("requirement", {})
@@ -93,25 +93,25 @@ func _refresh_form(stone_id: String) -> void:
 	else:
 		_set_action_state("NIVEAU VERROUILLÉ", true, false)
 	error_label.visible = false
-	title_label.text = stone.get("name", stone_id)
-	var god := StoneLoader.get_god(str(stone.get("god_id", "neutral")))
+	title_label.text = monster.get("name", monster_id)
+	var god := MonsterLoader.get_god(str(monster.get("god_id", "neutral")))
 	var family := "Neutre" if god.is_empty() else str(god.get("family_name", ""))
 	summary_label.text = "%s • %s • Niv. %d • %s points" % [
-		_rarity_label(stone.get("rarity", "")), family, level,
-		UIFormat.cost(StoneLoader.stone_cost(stone_id))
+		_rarity_label(monster.get("rarity", "")), family, level,
+		UIFormat.cost(MonsterLoader.monster_cost(monster_id))
 	]
-	description_label.text = stone.get("description", "")
-	power_label.text = str(stone.get("power_text", "Aucun pouvoir de famille : cette pierre est neutre."))
+	description_label.text = monster.get("description", "")
+	power_label.text = str(monster.get("power_text", "Aucun pouvoir de famille : ce monstre est neutre."))
 	power_label.add_theme_color_override(
 		"font_color", Color(str(god.get("color", UITheme.COL_TEXT_DIM.to_html())))
 	)
-	_refresh_power_badges(stone, Color(str(god.get("color", UITheme.COL_TEXT_DIM.to_html()))))
-	var blades: Dictionary = stone.get("blades", {})
+	_refresh_power_badges(monster, Color(str(god.get("color", UITheme.COL_TEXT_DIM.to_html()))))
+	var blades: Dictionary = monster.get("blades", {})
 	stats_label.text = "H %d   •   B %d   •   G %d   •   D %d%s" % [
 		blades.get("top", 0), blades.get("bottom", 0),
-		blades.get("left", 0), blades.get("right", 0), _special_summary(stone)
+		blades.get("left", 0), blades.get("right", 0), _special_summary(monster)
 	]
-	_card.setup(stone, StoneCard.OWNER_NONE)
+	_card.setup(monster, MonsterCard.OWNER_NONE)
 	_card.modulate = Color.WHITE if owned else Color(0.38, 0.38, 0.43, 0.72)
 
 
@@ -130,10 +130,10 @@ func _set_action_state(title: String, disabled: bool, upgrading: bool,
 func _on_primary_pressed() -> void:
 	if _shown_variant == "":
 		return
-	if PlayerData.owns_stone(_shown_variant):
+	if PlayerData.owns_monster(_shown_variant):
 		use_requested.emit(_shown_variant)
 		return
-	var shown_level := StoneLoader.stone_level(_shown_variant)
+	var shown_level := MonsterLoader.monster_level(_shown_variant)
 	var unlocked_level := int(PlayerData.card_entry(_lineage).get("unlocked_level", 0))
 	if shown_level == unlocked_level + 1 \
 			and bool(PlayerData.card_upgrade_state(_lineage).get("can_upgrade", false)):
@@ -151,11 +151,11 @@ func refresh_inventory_state() -> void:
 
 ## Réutilise exactement les pictogrammes des cartes et des règles. Les cartes
 ## neutres gardent toute la largeur pour leur texte puisqu'elles n'ont pas de logo.
-func _refresh_power_badges(stone: Dictionary, family_color: Color) -> void:
+func _refresh_power_badges(monster: Dictionary, family_color: Color) -> void:
 	for child in power_badges.get_children():
 		power_badges.remove_child(child)
 		child.queue_free()
-	for definition in Symbols.badges_for(stone):
+	for definition in Symbols.badges_for(monster):
 		var badge := PowerBadge.new()
 		badge.kind = str(definition["kind"])
 		badge.count = int(definition.get("count", 0))
@@ -193,18 +193,18 @@ func _rarity_label(rarity: String) -> String:
 		_: return ""
 
 
-func _special_summary(stone: Dictionary) -> String:
+func _special_summary(monster: Dictionary) -> String:
 	var pieces: Array[String] = []
-	var random_count := int(stone.get("random_blades", 0))
+	var random_count := int(monster.get("random_blades", 0))
 	if random_count > 0:
 		pieces.append(_count_label(random_count, "hasard"))
 	var shield_count := 0
-	for value in stone.get("shields", {}).values():
+	for value in monster.get("shields", {}).values():
 		shield_count += int(value)
 	if shield_count > 0:
 		pieces.append(_count_label(shield_count, "bouclier"))
 	var long_count := 0
-	for value in stone.get("long_blades", {}).values():
+	for value in monster.get("long_blades", {}).values():
 		long_count += int(value)
 	if long_count > 0:
 		pieces.append(_count_label(long_count, "longue"))

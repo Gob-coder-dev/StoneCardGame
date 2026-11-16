@@ -1,5 +1,5 @@
 ## Convention commune : les lignes/colonnes du modèle et les axes de l'écran.
-class_name StoneSide
+class_name MonsterSide
 extends RefCounted
 
 const ALL: Array[String] = ["top", "bottom", "left", "right"]
@@ -13,7 +13,7 @@ static func opposite(side: String) -> String:
 	assert(OPPOSITE.has(side), "Face inconnue : " + side)
 	return OPPOSITE.get(side, "")
 
-## Valeurs possibles du champ "coin_flip" d'une pierre (vérifiées au chargement).
+## Valeurs possibles du champ "coin_flip" d'un monstre (vérifiées au chargement).
 const COIN_AXES: Array[String] = ["horizontal", "vertical"]
 
 ## Faces échangées par un pile ou face : « horizontal » échange gauche et droite,

@@ -5,7 +5,7 @@ class_name CardActionPlacement
 extends RefCounted
 
 
-static func resolve(layer: Control, wrapper: Control, card: StoneCard,
+static func resolve(layer: Control, wrapper: Control, card: MonsterCard,
 		use_collection_width: bool) -> Dictionary:
 	if layer == null or wrapper == null or card == null:
 		return {}
@@ -32,7 +32,7 @@ static func control_rect_in(layer: Control, control: Control) -> Rect2:
 	return _transformed_rect(relative, Rect2(Vector2.ZERO, control.size))
 
 
-static func _card_visual_bottom_in(layer: Control, card: StoneCard) -> float:
+static func _card_visual_bottom_in(layer: Control, card: MonsterCard) -> float:
 	var relative := layer.get_global_transform().affine_inverse() \
 		* card.get_global_transform()
 	var local_bottom := card.visual_content_bottom()

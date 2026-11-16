@@ -6,10 +6,10 @@ const CombatResolverModel := preload("res://scripts/engine/CombatResolver.gd")
 
 signal coin_flip_result(starting_player: int)
 signal turn_started(player: int)
-signal stone_placed(row: int, col: int, stone_id: String, owner: int)
-signal stone_preparing(row: int, col: int, events: Array)
+signal monster_placed(row: int, col: int, monster_id: String, owner: int)
+signal monster_preparing(row: int, col: int, events: Array)
 signal attacks_started(row: int, col: int, attacks: Array, owner: int)
-signal stone_captured(row: int, col: int, new_owner: int)
+signal monster_captured(row: int, col: int, new_owner: int)
 signal effects_resolved(events: Array)
 signal swarm_changed(events: Array)
 signal presentation_requested(step: CombatPresentation)
@@ -28,7 +28,7 @@ func start_game(human_hand: Array, ai_hand: Array, blocked_cells: Array,
 		npc_id: String = "", forced_first_player: int = 0,
 		human_god_id: String = "", ai_god_id: String = "",
 		random_seed: int = 0, board_size: int = GameState.DEFAULT_BOARD_SIZE,
-		initial_stones: Array = []) -> void:
+		initial_monsters: Array = []) -> void:
 	phase = Phase.WAITING_INPUT
 	_state = GameState.new(board_size)
 	if _pending_step != null:
@@ -39,24 +39,24 @@ func start_game(human_hand: Array, ai_hand: Array, blocked_cells: Array,
 	_state.ai_god_id = ai_god_id
 	_state.set_random_seed(random_seed if random_seed != 0 else randi())
 	_state.apply_blocked_cells(blocked_cells)
-	_apply_initial_stones(initial_stones)
+	_apply_initial_monsters(initial_monsters)
 	_state.setup_hands(human_hand, ai_hand)
 	_coin_flip(forced_first_player)
 
 
-func _apply_initial_stones(entries: Array) -> void:
+func _apply_initial_monsters(entries: Array) -> void:
 	for value in entries:
 		if not value is Dictionary:
 			continue
 		var entry: Dictionary = value
-		var stone_id := str(entry.get("stone_id", ""))
-		var definition := StoneLoader.get_stone(stone_id)
-		if stone_id == "" or definition.is_empty():
+		var monster_id := str(entry.get("monster_id", ""))
+		var definition := MonsterLoader.get_monster(monster_id)
+		if monster_id == "" or definition.is_empty():
 			continue
-		var stone := BattleStone.new()
-		stone.configure(stone_id, definition, _state.take_instance_id())
-		_state.place_initial_stone(int(entry.get("row", -1)), int(entry.get("col", -1)),
-			stone, int(entry.get("owner", GameState.PLAYER_AI)))
+		var monster := BattleMonster.new()
+		monster.configure(monster_id, definition, _state.take_instance_id())
+		_state.place_initial_monster(int(entry.get("row", -1)), int(entry.get("col", -1)),
+			monster, int(entry.get("owner", GameState.PLAYER_AI)))
 
 ## Le premier joueur est normalement tiré avant le combat (écran PreBattle) ;
 ## sans tirage préalable, le même tirage du moteur est utilisé ici.
@@ -74,39 +74,39 @@ func _coin_flip(forced_first_player: int = 0) -> void:
 ## Entrée générique des deux camps. La campagne passe par les deux wrappers
 ## ci-dessous ; le mode PVP local appelle directement `play()` avec le camp
 ## désigné par la commande réseau validée.
-func play(player: int, row: int, col: int, stone_id: String) -> bool:
+func play(player: int, row: int, col: int, monster_id: String) -> bool:
 	if _state == null or _state.is_game_over or phase != Phase.WAITING_INPUT:
 		return false
 	if player != GameState.PLAYER_ONE and player != GameState.PLAYER_TWO:
 		return false
 	if _state.current_player != player:
 		return false
-	return _apply_move(row, col, stone_id, player)
+	return _apply_move(row, col, monster_id, player)
 
 
 ## Wrapper de compatibilité de la campagne : conserve le message affiché quand
 ## le joueur tente de jouer hors de son tour.
-func human_play(row: int, col: int, stone_id: String) -> bool:
+func human_play(row: int, col: int, monster_id: String) -> bool:
 	if _state != null and not _state.is_game_over and phase == Phase.WAITING_INPUT \
 			and _state.current_player != GameState.PLAYER_HUMAN:
 		emit_signal("invalid_move", "Ce n'est pas ton tour.")
 		return false
-	return play(GameState.PLAYER_HUMAN, row, col, stone_id)
+	return play(GameState.PLAYER_HUMAN, row, col, monster_id)
 
 
-func ai_play(row: int, col: int, stone_id: String) -> bool:
-	return play(GameState.PLAYER_AI, row, col, stone_id)
+func ai_play(row: int, col: int, monster_id: String) -> bool:
+	return play(GameState.PLAYER_AI, row, col, monster_id)
 
 
 ## ─── Application d'un coup (orchestration courte) ────────────────────────────
 
-func _apply_move(row: int, col: int, stone_id: String, player: int) -> bool:
-	if not PlacementRules.is_valid(_state, row, col, stone_id, player):
+func _apply_move(row: int, col: int, monster_id: String, player: int) -> bool:
+	if not PlacementRules.is_valid(_state, row, col, monster_id, player):
 		invalid_move.emit("Placement invalide.")
 		return false
 	phase = Phase.PLACING
-	var placement := CombatResolverModel.place_stone(_state, row, col, stone_id, player)
-	stone_placed.emit(row, col, stone_id, player)
+	var placement := CombatResolverModel.place_monster(_state, row, col, monster_id, player)
+	monster_placed.emit(row, col, monster_id, player)
 	_resolve_placed_move(row, col, player, placement, _state)
 	return true
 
@@ -119,14 +119,14 @@ func _resolve_placed_move(row: int, col: int, player: int, placement: Dictionary
 	var preparations: Array = placement["placement_effects"]
 	if not preparations.is_empty():
 		phase = Phase.PREPARING
-		stone_preparing.emit(row, col, preparations)
+		monster_preparing.emit(row, col, preparations)
 		await _present(CombatPresentation.new(CombatPresentation.Kind.PREPARATION, row, col, player, preparations))
 		if _state != move_state:
 			return
 	await _reveal_swarm(placement["swarm_events"], row, col, player)
 	if _state != move_state:
 		return
-	var plan := CombatResolverModel.resolve_attacks(move_state, row, col, player, move_state.get_cell(row, col)["stone"])
+	var plan := CombatResolverModel.resolve_attacks(move_state, row, col, player, move_state.get_cell(row, col)["monster"])
 	if not plan["attacks"].is_empty():
 		phase = Phase.ATTACKING
 		attacks_started.emit(row, col, plan["attacks"], player)
@@ -135,7 +135,7 @@ func _resolve_placed_move(row: int, col: int, player: int, placement: Dictionary
 			return
 	var result := CombatResolverModel.finish_move(move_state, row, col, player, plan)
 	for capture in result["captures"]:
-		stone_captured.emit(capture["row"], capture["col"], player)
+		monster_captured.emit(capture["row"], capture["col"], player)
 	phase = Phase.EFFECTS
 	effects_resolved.emit(result["effects"])
 	var effects := CombatPresentation.new(CombatPresentation.Kind.EFFECTS, row, col, player, result["effects"])

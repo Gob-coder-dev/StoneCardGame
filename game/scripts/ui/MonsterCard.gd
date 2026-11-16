@@ -1,24 +1,24 @@
-## StoneCard.gd
-## Composant carte réutilisable de SamStone.
-## Dessine entièrement une carte par code (_draw) à partir des données d'une pierre :
+## MonsterCard.gd
+## Composant carte réutilisable de Beastpact.
+## Dessine entièrement une carte par code (_draw) à partir des données d'un monstre :
 ##   - cadre minéral sombre à la couleur de la famille
 ##   - lames triangulaires sur les 4 côtés (le nombre = la valeur du côté)
 ##   - contour extérieur simple indiquant la rareté
 ##   - illustration PNG, ou indicateur neutre quand l'image manque
 ##   - bandeau de nom
 ##
-## Si la pierre a un champ "asset" non vide pointant vers une image existante,
+## Si le monstre a un champ "asset" non vide pointant vers une image existante,
 ## cette image est affichée. Une ressource absente reste explicitement signalée.
 ##
 ## Utilisé partout : collection, main, plateau.
-class_name StoneCard
+class_name MonsterCard
 extends Control
 
-const BattleStoneModel := preload("res://scripts/engine/BattleStone.gd")
-const Symbols := preload("res://scripts/ui/StoneSymbols.gd")
+const BattleMonsterModel := preload("res://scripts/engine/BattleMonster.gd")
+const Symbols := preload("res://scripts/ui/MonsterSymbols.gd")
 
 ## ─── Signaux ──────────────────────────────────────────────────────────────────
-signal card_pressed(stone_id: String)
+signal card_pressed(monster_id: String)
 
 ## ─── Propriétaires (miroir de GameState pour éviter la dépendance dure) ───────
 const OWNER_NONE: int = 0
@@ -37,21 +37,21 @@ const COL_ILLUSTRATION_BG := Color("#151319")
 const COL_NAME_BG := Color("#202733")
 const COL_NAME_TEXT := UITheme.COL_TEXT
 
-## ─── Données de la pierre ─────────────────────────────────────────────────────
-var _stone: Dictionary = {}
+## ─── Données du monstre ─────────────────────────────────────────────────────
+var _monster: Dictionary = {}
 var _owner: int = OWNER_NONE
 var _selected: bool = false
 var _texture: Texture2D = null  ## illustration si disponible
 var _asset_path := ""
 var _show_cost: bool = false
-var _battle_stone: BattleStoneModel = null
-var _combat_preview: BattleStoneModel = null
-## Pierre sans état de combat, construite une fois depuis le catalogue pour
+var _battle_monster: BattleMonsterModel = null
+var _combat_preview: BattleMonsterModel = null
+## Monstre sans état de combat, construite une fois depuis le catalogue pour
 ## dessiner les cartes hors plateau (main, collection, fiches).
-var _catalog_preview: BattleStoneModel = null
-## Copie des valeurs dessinées de _battle_stone : le moteur modifie la pierre
+var _catalog_preview: BattleMonsterModel = null
+## Copie des valeurs dessinées de _battle_monster : le moteur modifie le monstre
 ## sur place, cette copie dit si un rafraîchissement doit la redessiner.
-var _drawn_stone_state: Array = []
+var _drawn_monster_state: Array = []
 var _attacking_faces: Dictionary = {}
 var _marker_growth: Dictionary = {}
 var _visual_weakness_override: int = -1
@@ -76,7 +76,7 @@ var _power_badge_scale: float = 1.0
 
 ## ─── API publique ─────────────────────────────────────────────────────────────
 
-## Configure la carte avec une pierre et un propriétaire.
+## Configure la carte avec un monstre et un propriétaire.
 func _init() -> void:
 	# Les cartes restent interactives et laissent les gestes atteindre
 	# le ScrollContainer parent, y compris lorsqu'ils débutent sur l'image.
@@ -85,20 +85,20 @@ func _init() -> void:
 	CardArtCache.texture_ready.connect(_on_texture_ready)
 
 
-func setup(stone: Dictionary, stone_owner: int = OWNER_NONE, battle_stone = null) -> void:
-	_stone = stone
-	_owner = stone_owner
-	_battle_stone = battle_stone if battle_stone is BattleStoneModel else null
-	_drawn_stone_state = _stone_state(_battle_stone)
+func setup(monster: Dictionary, monster_owner: int = OWNER_NONE, battle_monster = null) -> void:
+	_monster = monster
+	_owner = monster_owner
+	_battle_monster = battle_monster if battle_monster is BattleMonsterModel else null
+	_drawn_monster_state = _monster_state(_battle_monster)
 	_catalog_preview = null
 	_load_texture_if_any()
 	queue_redraw()
 
 
-func set_combat_owner(stone_owner: int) -> void:
-	if stone_owner == _owner:
+func set_combat_owner(monster_owner: int) -> void:
+	if monster_owner == _owner:
 		return
-	_owner = stone_owner
+	_owner = monster_owner
 
 
 func get_combat_owner() -> int:
@@ -130,9 +130,9 @@ func attack_markers(side: String, include_normal: bool) -> Array:
 ## L'indice stable permet de masquer un symbole sans changer ses statistiques.
 func face_markers(side: String) -> Array:
 	var markers: Array = []
-	if _battle_stone == null:
+	if _battle_monster == null:
 		return markers
-	for marker in _battle_stone.markers_for_side(side):
+	for marker in _battle_monster.markers_for_side(side):
 		marker["position"] = marker_position(side, int(marker["index"]))
 		markers.append(marker)
 	return markers
@@ -162,40 +162,40 @@ func _animated_marker_growth(side: String, index: int) -> float:
 
 
 func face_center(side: String) -> Vector2:
-	var count := _battle_stone.marker_count(side) if _battle_stone != null else 1
+	var count := _battle_monster.marker_count(side) if _battle_monster != null else 1
 	return (marker_position(side, 0) + marker_position(side, maxi(0, count - 1))) * 0.5
 
 
 ## Appelé à chaque rafraîchissement du plateau : la carte n'est redessinée que si
-## la pierre ou l'une de ses valeurs dessinées a changé depuis le dernier appel.
-func set_battle_stone(value) -> void:
-	var stone: BattleStoneModel = value if value is BattleStoneModel else null
-	var state := _stone_state(stone)
-	if stone == _battle_stone and state == _drawn_stone_state:
+## le monstre ou l'une de ses valeurs dessinées a changé depuis le dernier appel.
+func set_battle_monster(value) -> void:
+	var monster: BattleMonsterModel = value if value is BattleMonsterModel else null
+	var state := _monster_state(monster)
+	if monster == _battle_monster and state == _drawn_monster_state:
 		return
-	_battle_stone = stone
-	_drawn_stone_state = state
+	_battle_monster = monster
+	_drawn_monster_state = state
 	queue_redraw()
 
 
-static func _stone_state(stone: BattleStoneModel) -> Array:
-	if stone == null:
+static func _monster_state(monster: BattleMonsterModel) -> Array:
+	if monster == null:
 		return []
-	return [stone.base_blades.duplicate(), stone.random_blades.duplicate(),
-		stone.swarm_blades.duplicate(), stone.long_blades.duplicate(),
-		stone.shields.duplicate(), stone.weakness()]
+	return [monster.base_blades.duplicate(), monster.random_blades.duplicate(),
+		monster.swarm_blades.duplicate(), monster.long_blades.duplicate(),
+		monster.shields.duplicate(), monster.weakness()]
 
 
 ## Aperçu visuel seulement : le moteur a déjà calculé le résultat.
-func set_combat_preview(value: BattleStoneModel) -> void:
+func set_combat_preview(value: BattleMonsterModel) -> void:
 	if value == _combat_preview:
 		return
 	_combat_preview = value
 	queue_redraw()
 
 
-func get_battle_stone() -> BattleStoneModel:
-	return _battle_stone
+func get_battle_monster() -> BattleMonsterModel:
+	return _battle_monster
 
 
 ## La logique est déjà résolue quand l'aura commence. Cette valeur permet à la
@@ -218,11 +218,11 @@ func clear_visual_weakness() -> void:
 func displayed_weakness() -> int:
 	if _visual_weakness_override >= 0:
 		return _visual_weakness_override
-	return _battle_stone.weakness() if _battle_stone != null else 0
+	return _battle_monster.weakness() if _battle_monster != null else 0
 
 
 func broken_blade_count(side: String) -> int:
-	var displayed := displayed_stone()
+	var displayed := displayed_monster()
 	if displayed == null:
 		return 0
 	var blade_count := displayed.normal_blades(side) + int(displayed.long_blades.get(side, 0))
@@ -232,44 +232,44 @@ func broken_blade_count(side: String) -> int:
 ## La pose précède la révélation Fortune : aucune face tirée au sort ne doit
 ## apparaître pendant le rebond initial. Seule une copie visuelle est masquée.
 func hide_placement_power() -> void:
-	if _battle_stone == null:
+	if _battle_monster == null:
 		return
-	var random_count := int(_stone.get("random_blades", 0))
-	var axis := str(_stone.get("coin_flip", ""))
+	var random_count := int(_monster.get("random_blades", 0))
+	var axis := str(_monster.get("coin_flip", ""))
 	if random_count == 0 and axis == "":
 		return
-	var preview: BattleStoneModel = _battle_stone.clone()
-	for side in BattleStoneModel.SIDES:
+	var preview: BattleMonsterModel = _battle_monster.clone()
+	for side in BattleMonsterModel.SIDES:
 		preview.random_blades[side] = 0
 	if preview.coin_flipped:
-		var faces := StoneSide.coin_faces(axis)
+		var faces := MonsterSide.coin_faces(axis)
 		preview.swap_faces(faces[0], faces[1])
 	set_combat_preview(preview)
 
 
-## Version de la pierre visible à l'écran : l'aperçu d'une animation en cours,
+## Version du monstre visible à l'écran : l'aperçu d'une animation en cours,
 ## sinon l'état du moteur.
-func displayed_stone() -> BattleStoneModel:
-	return _combat_preview if _combat_preview != null else _battle_stone
+func displayed_monster() -> BattleMonsterModel:
+	return _combat_preview if _combat_preview != null else _battle_monster
 
 
 ## Coordonnée locale d'un symbole dans la disposition finale de la face.
 func marker_position(side: String, index: int = -1) -> Vector2:
-	return _marker_position_in(_battle_stone, side, index)
+	return _marker_position_in(_battle_monster, side, index)
 
 
 ## Coordonnée locale d'un symbole tel qu'il est dessiné maintenant, aperçu compris.
 func displayed_marker_position(side: String, index: int = -1) -> Vector2:
-	return _marker_position_in(displayed_stone(), side, index)
+	return _marker_position_in(displayed_monster(), side, index)
 
 
-func _marker_position_in(stone: BattleStoneModel, side: String, index: int) -> Vector2:
+func _marker_position_in(monster: BattleMonsterModel, side: String, index: int) -> Vector2:
 	var square := minf(size.x, size.y)
 	var margin := square * _edge_margin_ratio
 	var marker_margin := margin * _marker_scale
 	var frame := Rect2((size - Vector2.ONE * square) * 0.5 + Vector2.ONE * margin,
 		Vector2.ONE * (square - margin * 2.0))
-	var count := stone.marker_count(side) if stone != null else 1
+	var count := monster.marker_count(side) if monster != null else 1
 	var slot_index := count - 1 if index < 0 else index
 	var along := frame.size.x * 0.14 + frame.size.x * 0.72 * (slot_index + 0.5) / float(maxi(1, count))
 	match side:
@@ -320,8 +320,8 @@ func set_power_badge_scale(value: float) -> void:
 	queue_redraw()
 
 
-func get_stone_id() -> String:
-	return _stone.get("id", _stone.get("stone_id", ""))
+func get_monster_id() -> String:
+	return _monster.get("id", _monster.get("monster_id", ""))
 
 
 ## Limite basse réellement dessinée dans le repère local. Contrairement au
@@ -332,9 +332,9 @@ func visual_content_bottom() -> float:
 	var origin := (size - Vector2.ONE * square_side) * 0.5
 	var margin := square_side * _edge_margin_ratio
 	var frame_bottom := origin.y + square_side - margin
-	var displayed := displayed_stone()
+	var displayed := displayed_monster()
 	if displayed == null:
-		displayed = _catalog_stone()
+		displayed = _catalog_monster()
 	var depth_factor := 0.0
 	for marker in displayed.markers_for_side("bottom"):
 		match str(marker.get("kind", "")):
@@ -348,7 +348,7 @@ func visual_content_bottom() -> float:
 
 func _load_texture_if_any() -> void:
 	_texture = null
-	_asset_path = str(_stone.get("asset", ""))
+	_asset_path = str(_monster.get("asset", ""))
 	if not _asset_path.is_empty():
 		_texture = CardArtCache.texture(_asset_path)
 
@@ -364,13 +364,13 @@ func _on_texture_ready(path: String, loaded: Texture2D) -> void:
 
 func _gui_input(event: InputEvent) -> void:
 	if _tap.update(event, self) == Gesture.Result.TAP:
-		card_pressed.emit(get_stone_id())
+		card_pressed.emit(get_monster_id())
 
 
 ## ─── Dessin ───────────────────────────────────────────────────────────────────
 
 func _draw() -> void:
-	if _stone.is_empty():
+	if _monster.is_empty():
 		return
 	var square_side: float = min(size.x, size.y)
 	var origin := (size - Vector2.ONE * square_side) * 0.5
@@ -414,14 +414,14 @@ func _draw_artwork(art_rect: Rect2, square_side: float, family_color: Color) -> 
 	else:
 		_draw_missing_artwork(art_rect)
 	_draw_power_badges(art_rect, square_side, family_color)
-	if int(_stone.get("max_level", 1)) > 1:
+	if int(_monster.get("max_level", 1)) > 1:
 		_draw_level_badge(art_rect, square_side)
 
 
 func _draw_level_badge(art_rect: Rect2, square_side: float) -> void:
 	var font := ThemeDB.fallback_font
 	var font_size := maxi(12, int(square_side * 0.07))
-	var text := "N%d" % int(_stone.get("level", 1))
+	var text := "N%d" % int(_monster.get("level", 1))
 	var badge := _level_badge_rect(art_rect, square_side)
 	var padding := maxf(2.0, square_side * 0.008)
 	draw_rect(badge, COL_NAME_BG)
@@ -451,7 +451,7 @@ func _draw_card_overlays(frame_rect: Rect2, square_side: float, border_width: fl
 func _level_badge_rect(art_rect: Rect2, square_side: float) -> Rect2:
 	var font := ThemeDB.fallback_font
 	var font_size := maxi(12, int(square_side * 0.07))
-	var text := "N%d" % int(_stone.get("level", 1))
+	var text := "N%d" % int(_monster.get("level", 1))
 	var padding := maxf(2.0, square_side * 0.008)
 	var text_width := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
 	var extent := Vector2(text_width, font.get_height(font_size)) + Vector2.ONE * padding * 2.0
@@ -469,24 +469,24 @@ func _illustration_rect(bounds: Rect2) -> Rect2:
 
 ## Contour simple de la rareté, placé à l'extérieur du cadre famille.
 func _draw_rarity_outer(bounds: Rect2, width: float) -> void:
-	var rarity := str(_stone.get("rarity", "common")).to_lower()
+	var rarity := str(_monster.get("rarity", "common")).to_lower()
 	var color := UITheme.rarity_color(rarity)
 	var outer := bounds.grow(width * 0.5)
 	draw_rect(outer, color, false, width)
 
 
 func _family_color() -> Color:
-	var god_id := str(_stone.get("god_id", "neutral"))
+	var god_id := str(_monster.get("god_id", "neutral"))
 	if god_id == "neutral":
 		return COL_FRAME_LIGHT
-	var god := StoneLoader.get_god(god_id)
+	var god := MonsterLoader.get_god(god_id)
 	if god.is_empty():
 		return COL_FRAME_LIGHT
 	return Color(str(god.get("color", COL_FRAME_LIGHT.to_html())))
 
 
 func _draw_cost_badge(frame_rect: Rect2, square_side: float) -> void:
-	var cost := StoneLoader.stone_cost(get_stone_id())
+	var cost := MonsterLoader.monster_cost(get_monster_id())
 	var radius := square_side * 0.085
 	var center := frame_rect.position + Vector2(radius * 0.35, radius * 0.35)
 	var font := ThemeDB.fallback_font
@@ -515,12 +515,12 @@ func _draw_cost_badge(frame_rect: Rect2, square_side: float) -> void:
 ## ─── Dessin des lames ─────────────────────────────────────────────────────────
 
 func _draw_combat_edges(frame_rect: Rect2, margin: float) -> void:
-	var displayed := displayed_stone()
+	var displayed := displayed_monster()
 	if displayed == null:
 		# Hors plateau, les lames Fortune inconnues ne sont pas inventées : leur
 		# badge annonce le pouvoir, puis leurs vraies faces apparaissent à la pose.
-		displayed = _catalog_stone()
-	for side in BattleStoneModel.SIDES:
+		displayed = _catalog_monster()
+	for side in BattleMonsterModel.SIDES:
 		var entries: Array = []
 		for marker in displayed.markers_for_side(side):
 			entries.append(marker["kind"])
@@ -529,10 +529,10 @@ func _draw_combat_edges(frame_rect: Rect2, margin: float) -> void:
 		_draw_blade_row(frame_rect, side, entries, margin, broken_count, blade_count)
 
 
-func _catalog_stone() -> BattleStoneModel:
+func _catalog_monster() -> BattleMonsterModel:
 	if _catalog_preview == null:
-		_catalog_preview = BattleStoneModel.new()
-		_catalog_preview.configure(get_stone_id(), _stone)
+		_catalog_preview = BattleMonsterModel.new()
+		_catalog_preview.configure(get_monster_id(), _monster)
 	return _catalog_preview
 
 
@@ -652,7 +652,7 @@ func _draw_power_badges(art_rect: Rect2, square_side: float, family_color: Color
 	var radius := clampf(square_side * 0.064, 7.0, 24.0) * _power_badge_scale
 	var gap := radius * 0.28
 	var right := art_rect.end.x - gap
-	for badge in Symbols.badges_for(_stone):
+	for badge in Symbols.badges_for(_monster):
 		var count := int(badge.get("count", 0))
 		var width := Symbols.badge_width(radius, count)
 		var center := Vector2(right - width + radius, art_rect.position.y + radius + gap)
@@ -710,7 +710,7 @@ func _draw_name(name_rect: Rect2) -> void:
 	var font := ThemeDB.fallback_font
 	var fsize := int(name_rect.size.y * 0.55)
 	fsize = clampi(fsize, 8, UITheme.CARD_NAME_MAX_FONT_SIZE)
-	var text: String = _stone.get("name", "")
+	var text: String = _monster.get("name", "")
 	var text_size := font.get_string_size(text, HORIZONTAL_ALIGNMENT_CENTER, -1, fsize)
 	# Réduire la taille si le texte dépasse
 	while text_size.x > name_rect.size.x - 6.0 and fsize > 8:

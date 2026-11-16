@@ -1,7 +1,7 @@
 ## CampaignMatchDriver.gd
 ## Driver de la campagne : configuration du bot et exécution de son tour.
 ## Le moteur, les règles et l'IA restent exactement ceux d'avant. Un chapitre
-## guidé peut fournir un setup de match (mains, pierres initiales, premier
+## guidé peut fournir un setup de match (mains, monstres initiales, premier
 ## joueur et plan du bot) ; ce setup reste une donnée du scénario, pas du niveau.
 class_name CampaignMatchDriver
 extends MatchDriver
@@ -17,7 +17,7 @@ func start() -> bool:
 		return false
 	_npc_data = BattleContext.current_opponent()
 	if str(_npc_data.get("id", "")) != BattleContext.selected_npc_id:
-		_npc_data = StoneLoader.get_npc(BattleContext.selected_npc_id)
+		_npc_data = MonsterLoader.get_npc(BattleContext.selected_npc_id)
 	if _npc_data.is_empty():
 		push_error("CampaignMatchDriver: adversaire '%s' introuvable." % BattleContext.selected_npc_id)
 		return false
@@ -41,10 +41,10 @@ func start() -> bool:
 	_ai_runner = AITurnRunner.new()
 	add_child(_ai_runner)
 	_ai_runner.setup(_create_ai(story), turn_manager)
-	turn_manager.start_game(StoneLoader.build_hand(hands["player"]),
-		StoneLoader.build_hand(hands["opponent"]), board["blocked"],
+	turn_manager.start_game(MonsterLoader.build_hand(hands["player"]),
+		MonsterLoader.build_hand(hands["opponent"]), board["blocked"],
 		BattleContext.selected_npc_id, board["first_player"], player_god_id,
-		opponent_god_id, 0, board_size, board["initial_stones"])
+		opponent_god_id, 0, board_size, board["initial_monsters"])
 	return true
 
 
@@ -93,10 +93,10 @@ func _prepare_board(story: Dictionary, encounter_setup: Dictionary, board_size: 
 		var scripted_first := int(story.get("first_player", 0))
 		if scripted_first == GameState.PLAYER_HUMAN or scripted_first == GameState.PLAYER_AI:
 			first_player = scripted_first
-	var initial_stones: Array = []
-	if story_match and story.get("initial_stones") is Array:
-		initial_stones = (story.get("initial_stones") as Array).duplicate(true)
-	return {"blocked": blocked, "first_player": first_player, "initial_stones": initial_stones}
+	var initial_monsters: Array = []
+	if story_match and story.get("initial_monsters") is Array:
+		initial_monsters = (story.get("initial_monsters") as Array).duplicate(true)
+	return {"blocked": blocked, "first_player": first_player, "initial_monsters": initial_monsters}
 
 
 func _create_ai(story: Dictionary) -> AIPlayer:
@@ -113,8 +113,8 @@ func can_submit() -> bool:
 		and turn_manager.phase == TurnManager.Phase.WAITING_INPUT
 
 
-func request_move(row: int, col: int, stone_id: String) -> bool:
-	return turn_manager.human_play(row, col, stone_id)
+func request_move(row: int, col: int, monster_id: String) -> bool:
+	return turn_manager.human_play(row, col, monster_id)
 
 
 func on_turn_started(player: int) -> void:

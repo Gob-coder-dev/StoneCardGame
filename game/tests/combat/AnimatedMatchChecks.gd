@@ -1,7 +1,7 @@
 extends "res://tests/support/CombatTestSuite.gd"
 
 func run() -> void:
-	for npc in StoneLoader.get_npcs_ordered():
+	for npc in MonsterLoader.get_npcs_ordered():
 		await _compare_animated_and_instant(npc)
 
 
@@ -27,25 +27,25 @@ func _compare_animated_and_instant(npc: Dictionary) -> void:
 		# pouvoirs continus, au lieu de simplement parcourir les cartes de famille.
 		if god_id == "sylkha" and moves < 3:
 			move = [
-				{"row": 1, "col": 1, "stone_id": "nud_vivant_n3"},
-				{"row": 3, "col": 3, "stone_id": "nud_vivant_n3"},
-				{"row": 1, "col": 2, "stone_id": "porte_nid_n2"}][moves]
+				{"row": 1, "col": 1, "monster_id": "nud_vivant_n3"},
+				{"row": 3, "col": 3, "monster_id": "nud_vivant_n3"},
+				{"row": 1, "col": 2, "monster_id": "porte_nid_n2"}][moves]
 		elif god_id == "nerava" and moves < 2:
-			move = [{"row": 1, "col": 1, "stone_id": "griffe_septique_n1"},
-				{"row": 1, "col": 2, "stone_id": "veuve_des_spores_n1"}][moves]
-		CombatResolverModel.apply_move(simulation, move["row"], move["col"], move["stone_id"], player)
+			move = [{"row": 1, "col": 1, "monster_id": "griffe_septique_n1"},
+				{"row": 1, "col": 2, "monster_id": "veuve_des_spores_n1"}][moves]
+		CombatResolverModel.apply_move(simulation, move["row"], move["col"], move["monster_id"], player)
 		if player == GameState.PLAYER_HUMAN:
-			manager.human_play(move["row"], move["col"], move["stone_id"])
+			manager.human_play(move["row"], move["col"], move["monster_id"])
 		else:
-			manager.ai_play(move["row"], move["col"], move["stone_id"])
+			manager.ai_play(move["row"], move["col"], move["monster_id"])
 		while manager.phase != TurnManager.Phase.WAITING_INPUT and manager.phase != TurnManager.Phase.GAME_OVER:
 			await get_tree().process_frame
 		consistent = consistent and _same_board(simulation, manager.get_state())
 		for cell in simulation.board:
-			var stone = cell["stone"]
-			if stone != null:
-				saw_swarm = saw_swarm or _sum(stone.swarm_blades) > 0
-				saw_miasma = saw_miasma or stone.miasma_weakness > 0
+			var monster = cell["monster"]
+			if monster != null:
+				saw_swarm = saw_swarm or _sum(monster.swarm_blades) > 0
+				saw_miasma = saw_miasma or monster.miasma_weakness > 0
 		moves += 1
 	_check(consistent and moves == GameState.total_cells() and manager.get_state().is_game_over,
 		"partie animée et simulation identiques pour la famille de %s" % npc["name"])
@@ -64,12 +64,12 @@ func _same_board(first: GameState, second: GameState) -> bool:
 	for index in range(first.board.size()):
 		var a: Dictionary = first.board[index]
 		var b: Dictionary = second.board[index]
-		if a["owner"] != b["owner"] or a["stone_id"] != b["stone_id"] or a["placed_by"] != b["placed_by"]:
+		if a["owner"] != b["owner"] or a["monster_id"] != b["monster_id"] or a["placed_by"] != b["placed_by"]:
 			return false
-		if a["stone"] == null:
+		if a["monster"] == null:
 			continue
 		for field in ["instance_id", "base_blades", "random_blades", "long_blades", "shields", "swarm_blades",
 			"miasma_weakness", "temporary_weakness", "temporary_weakness_owner", "coin_flipped"]:
-			if a["stone"].get(field) != b["stone"].get(field):
+			if a["monster"].get(field) != b["monster"].get(field):
 				return false
 	return true

@@ -57,7 +57,7 @@ static func _resolve_mode(node: CampaignNode, player_god_id: String,
 			if random_god != "":
 				result.name = _god_name(random_god)
 				result.description = "Deux decks de %s tirés au hasard, sans carte neutre." % result.name
-				result.portrait = str(StoneLoader.get_god(random_god).get("asset", ""))
+				result.portrait = str(MonsterLoader.get_god(random_god).get("asset", ""))
 			else:
 				result.name = "Adversaire"
 				result.description = "Dieux et decks tirés selon les règles du mode Aléatoire."
@@ -66,7 +66,7 @@ static func _resolve_mode(node: CampaignNode, player_god_id: String,
 			if not node.mirror_fixed_deck().is_empty() and mirror_god != "":
 				result.name = _god_name(mirror_god)
 				result.description = "Un deck miroir fixe de %s, copié pour les deux camps." % result.name
-				result.portrait = str(StoneLoader.get_god(mirror_god).get("asset", ""))
+				result.portrait = str(MonsterLoader.get_god(mirror_god).get("asset", ""))
 			else:
 				result.name = "Reflet"
 				result.description = "Un seul loadout généré, copié pour les deux camps."
@@ -109,7 +109,7 @@ static func _classic_deck(node: CampaignNode, player_deck: Array,
 static func _resolve_identity(resolved: Dictionary) -> Dictionary:
 	var god_id := str(resolved.get("god_id", ""))
 	if god_id != "":
-		var god := StoneLoader.get_god(god_id)
+		var god := MonsterLoader.get_god(god_id)
 		if god.is_empty():
 			return _mode_failure("Dieu adverse introuvable : %s." % god_id)
 		resolved.name = str(god.get("name", god_id))
@@ -178,7 +178,7 @@ static func legacy_opponent_id(node: CampaignNode) -> String:
 static func _god_name(god_id: String) -> String:
 	if god_id == "":
 		return ""
-	return str(StoneLoader.get_god(god_id).get("name", god_id))
+	return str(MonsterLoader.get_god(god_id).get("name", god_id))
 
 
 static func _legacy_bracket(tier: int) -> String:

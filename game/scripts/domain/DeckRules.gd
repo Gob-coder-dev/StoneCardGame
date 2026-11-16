@@ -4,14 +4,14 @@
 class_name DeckRules
 extends RefCounted
 
-## Plateau 4×4 : sans case bloquée, chaque joueur pose 8 pierres.
+## Plateau 4×4 : sans case bloquée, chaque joueur pose 8 monstres.
 const DECK_SIZE: int = 8
-## 10 points en moyenne par pierre.
+## 10 points en moyenne par monstre.
 const DECK_BUDGET: int = 80
 ## Emplacements indépendants sauvegardés pour chaque dieu.
 const DECKS_PER_GOD: int = 3
 
-const REASON_UNKNOWN: String = "unknown_stone"
+const REASON_UNKNOWN: String = "unknown_monster"
 const REASON_DUPLICATE: String = "duplicate"
 const REASON_FULL: String = "full"
 const REASON_BUDGET: String = "budget"
@@ -19,104 +19,104 @@ const REASON_MISSING: String = "missing"
 const REASON_GOD: String = "wrong_god"
 
 
-static func deck_cost(stone_ids: Array) -> float:
+static func deck_cost(monster_ids: Array) -> float:
 	var total: float = 0.0
-	for stone_id in stone_ids:
-		total += StoneLoader.stone_cost(str(stone_id))
+	for monster_id in monster_ids:
+		total += MonsterLoader.monster_cost(str(monster_id))
 	return total
 
 
 ## Total exact en quarts de point, pour les générateurs et les comparaisons
 ## d'égalité. Aucun float n'entre dans cette somme.
-static func deck_quarters(stone_ids: Array) -> int:
+static func deck_quarters(monster_ids: Array) -> int:
 	var total := 0
-	for stone_id in stone_ids:
-		total += StoneLoader.stone_cost_quarters(str(stone_id))
+	for monster_id in monster_ids:
+		total += MonsterLoader.monster_cost_quarters(str(monster_id))
 	return total
 
 
-## Nombre de pierres appartenant réellement au dieu. Les neutres ne comptent
+## Nombre de monstres appartenant réellement au dieu. Les neutres ne comptent
 ## pas : cette règle sert aux loadouts qui imposent une affinité minimale.
-static func affinity_count(stone_ids: Array, god_id: String) -> int:
+static func affinity_count(monster_ids: Array, god_id: String) -> int:
 	var count := 0
-	for stone_id in stone_ids:
-		if StoneLoader.stone_affinity(str(stone_id)) == god_id:
+	for monster_id in monster_ids:
+		if MonsterLoader.monster_affinity(str(monster_id)) == god_id:
 			count += 1
 	return count
 
 
 static func budget_quarters() -> int:
-	return DECK_BUDGET * StoneCostRules.COST_SCALE
+	return DECK_BUDGET * MonsterCostRules.COST_SCALE
 
 
 ## Nettoie un deck chargé depuis une sauvegarde ancienne ou corrompue.
 ## L'ordre est conservé et le résultat peut rester incomplet.
-static func sanitize_deck(stone_ids: Array, god_id: String = "") -> Array:
+static func sanitize_deck(monster_ids: Array, god_id: String = "") -> Array:
 	var clean: Array = []
-	for raw_id in stone_ids:
-		var stone_id := str(raw_id)
-		if not StoneLoader.has_stone(stone_id) or lineage_index(clean, StoneLoader.stone_lineage(stone_id)) >= 0:
+	for raw_id in monster_ids:
+		var monster_id := str(raw_id)
+		if not MonsterLoader.has_monster(monster_id) or lineage_index(clean, MonsterLoader.monster_lineage(monster_id)) >= 0:
 			continue
-		if god_id != "" and not StoneLoader.is_stone_available_to_god(stone_id, god_id):
+		if god_id != "" and not MonsterLoader.is_monster_available_to_god(monster_id, god_id):
 			continue
 		if clean.size() >= DECK_SIZE:
 			break
-		if deck_cost(clean) + StoneLoader.stone_cost(stone_id) <= DECK_BUDGET:
-			clean.append(stone_id)
+		if deck_cost(clean) + MonsterLoader.monster_cost(monster_id) <= DECK_BUDGET:
+			clean.append(monster_id)
 	return clean
 
 
-static func validate_deck(stone_ids: Array, require_full: bool = true, god_id: String = "") -> Dictionary:
+static func validate_deck(monster_ids: Array, require_full: bool = true, god_id: String = "") -> Dictionary:
 	var unique: Array = []
-	for raw_id in stone_ids:
-		var stone_id := str(raw_id)
-		if not StoneLoader.has_stone(stone_id):
-			return {"valid": false, "reason": "Pierre inconnue : %s" % stone_id}
-		if lineage_index(unique, StoneLoader.stone_lineage(stone_id)) >= 0:
-			return {"valid": false, "reason": "Une pierre ne peut apparaître qu'une fois."}
-		if god_id != "" and not StoneLoader.is_stone_available_to_god(stone_id, god_id):
-			return {"valid": false, "reason": "Cette pierre appartient à un autre dieu."}
-		unique.append(stone_id)
+	for raw_id in monster_ids:
+		var monster_id := str(raw_id)
+		if not MonsterLoader.has_monster(monster_id):
+			return {"valid": false, "reason": "Monstre inconnu : %s" % monster_id}
+		if lineage_index(unique, MonsterLoader.monster_lineage(monster_id)) >= 0:
+			return {"valid": false, "reason": "Un monstre ne peut apparaître qu'une fois."}
+		if god_id != "" and not MonsterLoader.is_monster_available_to_god(monster_id, god_id):
+			return {"valid": false, "reason": "Ce monstre appartient à un autre dieu."}
+		unique.append(monster_id)
 	if unique.size() > DECK_SIZE or (require_full and unique.size() != DECK_SIZE):
-		return {"valid": false, "reason": "Le deck doit contenir %d pierres." % DECK_SIZE}
+		return {"valid": false, "reason": "Le deck doit contenir %d monstres." % DECK_SIZE}
 	if deck_cost(unique) > DECK_BUDGET:
 		return {"valid": false, "reason": "Le budget de %d points est dépassé." % DECK_BUDGET}
 	return {"valid": true, "reason": ""}
 
 
-static func is_deck_valid(stone_ids: Array, god_id: String = "") -> bool:
-	return bool(validate_deck(stone_ids, true, god_id)["valid"])
+static func is_deck_valid(monster_ids: Array, god_id: String = "") -> bool:
+	return bool(validate_deck(monster_ids, true, god_id)["valid"])
 
 
-static func replacement_cost(stone_ids: Array, old_id: String, new_id: String) -> float:
-	return deck_cost(stone_ids) - StoneLoader.stone_cost(old_id) + StoneLoader.stone_cost(new_id)
+static func replacement_cost(monster_ids: Array, old_id: String, new_id: String) -> float:
+	return deck_cost(monster_ids) - MonsterLoader.monster_cost(old_id) + MonsterLoader.monster_cost(new_id)
 
 
-static func can_replace(stone_ids: Array, old_id: String, new_id: String, god_id: String = "") -> bool:
-	return bool(try_replace(stone_ids, old_id, new_id, god_id)["success"])
+static func can_replace(monster_ids: Array, old_id: String, new_id: String, god_id: String = "") -> bool:
+	return bool(try_replace(monster_ids, old_id, new_id, god_id)["success"])
 
 
 ## Les opérations suivantes renvoient toujours une copie du deck. En cas
 ## d'échec, cette copie est inchangée et reason explique la cause à l'UI.
-static func try_add(stone_ids: Array, stone_id: String, god_id: String = "") -> Dictionary:
-	var deck := stone_ids.duplicate()
-	if not StoneLoader.has_stone(stone_id):
+static func try_add(monster_ids: Array, monster_id: String, god_id: String = "") -> Dictionary:
+	var deck := monster_ids.duplicate()
+	if not MonsterLoader.has_monster(monster_id):
 		return _operation_result(false, deck, REASON_UNKNOWN)
-	if lineage_index(deck, StoneLoader.stone_lineage(stone_id)) >= 0:
+	if lineage_index(deck, MonsterLoader.monster_lineage(monster_id)) >= 0:
 		return _operation_result(false, deck, REASON_DUPLICATE)
-	if god_id != "" and not StoneLoader.is_stone_available_to_god(stone_id, god_id):
+	if god_id != "" and not MonsterLoader.is_monster_available_to_god(monster_id, god_id):
 		return _operation_result(false, deck, REASON_GOD)
 	if deck.size() >= DECK_SIZE:
 		return _operation_result(false, deck, REASON_FULL)
-	deck.append(stone_id)
+	deck.append(monster_id)
 	if deck_cost(deck) > DECK_BUDGET:
-		return _operation_result(false, stone_ids.duplicate(), REASON_BUDGET, deck_cost(deck))
+		return _operation_result(false, monster_ids.duplicate(), REASON_BUDGET, deck_cost(deck))
 	return _operation_result(true, deck, "", deck_cost(deck))
 
 
-static func try_remove(stone_ids: Array, stone_id: String) -> Dictionary:
-	var deck := stone_ids.duplicate()
-	var index := deck.find(stone_id)
+static func try_remove(monster_ids: Array, monster_id: String) -> Dictionary:
+	var deck := monster_ids.duplicate()
+	var index := deck.find(monster_id)
 	if index < 0:
 		return _operation_result(false, deck, REASON_MISSING)
 	deck.remove_at(index)
@@ -125,42 +125,42 @@ static func try_remove(stone_ids: Array, stone_id: String) -> Dictionary:
 
 ## Vider un deck ne supprime pas son emplacement : seule sa composition est
 ## effacée, et le joueur peut le reconstruire immédiatement.
-static func try_clear(_stone_ids: Array) -> Dictionary:
+static func try_clear(_monster_ids: Array) -> Dictionary:
 	return _operation_result(true, [], "")
 
 
-static func try_replace(stone_ids: Array, old_id: String, new_id: String, god_id: String = "") -> Dictionary:
-	var deck := stone_ids.duplicate()
+static func try_replace(monster_ids: Array, old_id: String, new_id: String, god_id: String = "") -> Dictionary:
+	var deck := monster_ids.duplicate()
 	var index := deck.find(old_id)
 	if index < 0:
 		return _operation_result(false, deck, REASON_MISSING)
-	if not StoneLoader.has_stone(new_id):
+	if not MonsterLoader.has_monster(new_id):
 		return _operation_result(false, deck, REASON_UNKNOWN)
-	if god_id != "" and not StoneLoader.is_stone_available_to_god(new_id, god_id):
+	if god_id != "" and not MonsterLoader.is_monster_available_to_god(new_id, god_id):
 		return _operation_result(false, deck, REASON_GOD)
-	var duplicate_index := lineage_index(deck, StoneLoader.stone_lineage(new_id))
+	var duplicate_index := lineage_index(deck, MonsterLoader.monster_lineage(new_id))
 	if duplicate_index >= 0 and duplicate_index != index:
 		return _operation_result(false, deck, REASON_DUPLICATE)
 	deck[index] = new_id
 	var cost := deck_cost(deck)
 	if cost > DECK_BUDGET:
-		return _operation_result(false, stone_ids.duplicate(), REASON_BUDGET, cost)
+		return _operation_result(false, monster_ids.duplicate(), REASON_BUDGET, cost)
 	return _operation_result(true, deck, "", cost)
 
 
-static func lineage_index(stone_ids: Array, lineage_id: String) -> int:
-	for index in range(stone_ids.size()):
-		if StoneLoader.stone_lineage(str(stone_ids[index])) == lineage_id:
+static func lineage_index(monster_ids: Array, lineage_id: String) -> int:
+	for index in range(monster_ids.size()):
+		if MonsterLoader.monster_lineage(str(monster_ids[index])) == lineage_id:
 			return index
 	return -1
 
 
-static func try_set_level(stone_ids: Array, lineage_id: String, level: int, god_id: String = "") -> Dictionary:
-	var index := lineage_index(stone_ids, lineage_id)
+static func try_set_level(monster_ids: Array, lineage_id: String, level: int, god_id: String = "") -> Dictionary:
+	var index := lineage_index(monster_ids, lineage_id)
 	if index < 0:
-		return _operation_result(false, stone_ids.duplicate(), REASON_MISSING)
-	var variant := StoneLoader.variant_id(lineage_id, level)
-	return try_replace(stone_ids, str(stone_ids[index]), variant, god_id)
+		return _operation_result(false, monster_ids.duplicate(), REASON_MISSING)
+	var variant := MonsterLoader.variant_id(lineage_id, level)
+	return try_replace(monster_ids, str(monster_ids[index]), variant, god_id)
 
 
 static func _operation_result(success: bool, deck: Array, reason: String, cost: float = -1.0) -> Dictionary:

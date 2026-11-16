@@ -243,19 +243,19 @@ func _card_entry(raw: Variant, inventory: PlayerInventory) -> Dictionary:
 	var copies := maxi(0, int((raw as Dictionary).get("copies", 0)))
 	if lineage_id == "" or copies <= 0:
 		return {}
-	var stone_id := StoneLoader.variant_id(lineage_id, 1)
-	if stone_id == "":
+	var monster_id := MonsterLoader.variant_id(lineage_id, 1)
+	if monster_id == "":
 		return {}
-	var stone := StoneLoader.get_stone(stone_id)
-	var affinity := StoneLoader.stone_affinity(stone_id)
+	var monster := MonsterLoader.get_monster(monster_id)
+	var affinity := MonsterLoader.monster_affinity(monster_id)
 	var maxed := inventory.unlocked_level(lineage_id) \
-		>= StoneLoader.lineage_max_level(lineage_id)
+		>= MonsterLoader.lineage_max_level(lineage_id)
 	return {
 		"lineage_id": lineage_id,
 		"copies": copies,
-		"name": str(stone.get("name", lineage_id)),
-		"asset": str(stone.get("asset", "")),
-		"rarity": str(stone.get("rarity", "common")),
+		"name": str(monster.get("name", lineage_id)),
+		"asset": str(monster.get("asset", "")),
+		"rarity": str(monster.get("rarity", "common")),
 		"god_id": affinity,
 		"deferred": affinity != "neutral" and not inventory.has_god(affinity),
 		"maxed": maxed,
@@ -283,8 +283,8 @@ func _grant_cards(inventory: PlayerInventory, raw_cards: Variant) -> Dictionary:
 		if not bool(result.get("ok", false)):
 			return result
 		var reward: Dictionary = result["reward"]
-		var first := StoneLoader.variant_id(str(reward["lineage_id"]), 1)
-		reward["name"] = str(StoneLoader.get_stone(first).get("name", ""))
+		var first := MonsterLoader.variant_id(str(reward["lineage_id"]), 1)
+		reward["name"] = str(MonsterLoader.get_monster(first).get("name", ""))
 		granted.append(reward)
 	return {"ok": true, "cards": granted}
 

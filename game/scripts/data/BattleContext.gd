@@ -142,7 +142,7 @@ func navigation_source_id() -> String:
 func current_opponent() -> Dictionary:
 	if not selected_opponent.is_empty() and str(selected_opponent.get("id", "")) == selected_npc_id:
 		return selected_opponent.duplicate(true)
-	return StoneLoader.get_npc(selected_npc_id)
+	return MonsterLoader.get_npc(selected_npc_id)
 
 
 ## Publie une session déjà préparée. CampaignContext utilise cette opération
@@ -154,10 +154,10 @@ func install_mode_session(session: CampaignModeSession) -> void:
 	_sync_mode_loadouts()
 
 
-func choose_draft_card(stone_id: String) -> bool:
+func choose_draft_card(monster_id: String) -> bool:
 	if campaign_mode_session == null:
 		return false
-	var accepted := campaign_mode_session.choose_player(stone_id)
+	var accepted := campaign_mode_session.choose_player(monster_id)
 	_sync_mode_loadouts()
 	return accepted
 

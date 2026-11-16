@@ -28,7 +28,7 @@ const QuestModel := preload("res://scripts/application/quests/QuestService.gd")
 @onready var background: MenuBackground = $Background
 
 var _driver: MatchDriver = null
-var _selected_stone_id: String = ""
+var _selected_monster_id: String = ""
 var _local_captures: int = 0
 var _card_drag: CardDragController = null  ## couche du glisser-déposer
 var _leaving := false
@@ -109,10 +109,10 @@ func _register_story_anchors() -> void:
 	var state := turn_manager.get_state()
 	if state == null:
 		return
-	for stone_id in state.hand_of(_driver.local_side):
-		var card := hand_view.card_for_stone(str(stone_id))
+	for monster_id in state.hand_of(_driver.local_side):
+		var card := hand_view.card_for_monster(str(monster_id))
 		if card != null:
-			StoryService.register_anchor("board.hand.card.%s" % str(stone_id), card)
+			StoryService.register_anchor("board.hand.card.%s" % str(monster_id), card)
 	# start_game() émet turn_started avant que la vue différée ne soit construite.
 	# Aucune ancre de case ne doit être lue tant que les slots n'existent pas.
 	if not board_view.is_built():
@@ -153,8 +153,8 @@ func _connect_signals() -> void:
 	board_view.cell_pressed.connect(_on_cell_pressed)
 	hand_view.card_selected.connect(_on_card_selected)
 	turn_manager.turn_started.connect(_on_turn_started)
-	turn_manager.stone_placed.connect(_on_stone_placed)
-	turn_manager.stone_captured.connect(_on_stone_captured)
+	turn_manager.monster_placed.connect(_on_monster_placed)
+	turn_manager.monster_captured.connect(_on_monster_captured)
 	turn_manager.turn_ended.connect(_on_turn_ended)
 	turn_manager.game_over.connect(_on_game_over)
 	turn_manager.invalid_move.connect(_on_invalid_move)
@@ -173,58 +173,58 @@ func _connect_signals() -> void:
 
 ## ─── Gestes du joueur ─────────────────────────────────────────────────────────
 
-func _on_card_selected(stone_id: String) -> void:
+func _on_card_selected(monster_id: String) -> void:
 	if _driver == null or not _driver.can_submit():
 		return
-	if not StoryService.selection_allowed({"stone_id": stone_id}):
+	if not StoryService.selection_allowed({"monster_id": monster_id}):
 		return
-	_selected_stone_id = stone_id
-	hand_view.set_selected(stone_id)
+	_selected_monster_id = monster_id
+	hand_view.set_selected(monster_id)
 	Audio.play_sfx(AudioCatalog.SFX_BUTTON)
-	StoryService.notify_event("card_selected", {"stone_id": stone_id})
+	StoryService.notify_event("card_selected", {"monster_id": monster_id})
 
 
 func _on_cell_pressed(row: int, col: int) -> void:
-	if StoryService.blocks_placement() or _selected_stone_id == "":
+	if StoryService.blocks_placement() or _selected_monster_id == "":
 		return
 	if not StoryService.placement_allowed({"row": row, "col": col,
-			"stone_id": _selected_stone_id, "owner": _driver.local_side}):
+			"monster_id": _selected_monster_id, "owner": _driver.local_side}):
 		return
 	StoryService.notify_event("cell_pressed", {"row": row, "col": col})
-	if _driver.request_move(row, col, _selected_stone_id):
-		_selected_stone_id = ""
+	if _driver.request_move(row, col, _selected_monster_id):
+		_selected_monster_id = ""
 		hand_view.clear_selection()
 
 
 ## Le glissement n'est suivi que lorsque le joueur peut réellement jouer.
-func _on_card_press_started(stone_id: String, card: StoneCard, pointer: int, canvas_position: Vector2) -> void:
+func _on_card_press_started(monster_id: String, card: MonsterCard, pointer: int, canvas_position: Vector2) -> void:
 	if _human_can_play():
-		_card_drag.begin(stone_id, card, pointer, canvas_position)
+		_card_drag.begin(monster_id, card, pointer, canvas_position)
 
 
 ## Une carte glissée n'est pas sélectionnée : une sélection précédente est retirée.
-func _on_card_drag_started(_stone_id: String) -> void:
-	_selected_stone_id = ""
+func _on_card_drag_started(_monster_id: String) -> void:
+	_selected_monster_id = ""
 	hand_view.clear_selection()
 	Audio.play_sfx(AudioCatalog.SFX_BUTTON)
 
 
-func _on_card_dropped(stone_id: String, row: int, col: int) -> void:
+func _on_card_dropped(monster_id: String, row: int, col: int) -> void:
 	if StoryService.blocks_placement():
 		return
 	if not StoryService.placement_allowed({"row": row, "col": col,
-			"stone_id": stone_id, "owner": _driver.local_side}):
+			"monster_id": monster_id, "owner": _driver.local_side}):
 		return
-	_driver.request_move(row, col, stone_id)
+	_driver.request_move(row, col, monster_id)
 
 
 ## Mêmes règles que pour un appui : PlacementRules décide, au tour du joueur.
-func _can_drop(stone_id: String, row: int, col: int) -> bool:
+func _can_drop(monster_id: String, row: int, col: int) -> bool:
 	return _human_can_play() \
 		and not StoryService.blocks_placement() \
 		and StoryService.placement_allowed({"row": row, "col": col,
-			"stone_id": stone_id, "owner": _driver.local_side}) \
-		and PlacementRules.is_valid(turn_manager.get_state(), row, col, stone_id, _driver.local_side)
+			"monster_id": monster_id, "owner": _driver.local_side}) \
+		and PlacementRules.is_valid(turn_manager.get_state(), row, col, monster_id, _driver.local_side)
 
 
 func _human_can_play() -> bool:
@@ -267,24 +267,24 @@ func _on_turn_started(player: int) -> void:
 	_driver.on_turn_started(player)
 
 
-func _on_stone_placed(row: int, col: int, _stone_id: String, _owner: int) -> void:
+func _on_monster_placed(row: int, col: int, _monster_id: String, _owner: int) -> void:
 	var state := turn_manager.get_state()
 	board_view.refresh(state)
 	hand_view.refresh(state.hand_of(_driver.local_side))
 	_register_story_anchors()
 	board_view.set_input_enabled(false)
-	Audio.play_sfx(AudioCatalog.SFX_STONE_PLACE_LOCAL if _owner == _driver.local_side
-		else AudioCatalog.SFX_STONE_PLACE_REMOTE)
-	StoryService.notify_event("stone_placed", {
-		"row": row, "col": col, "stone_id": _stone_id, "owner": _owner,
+	Audio.play_sfx(AudioCatalog.SFX_MONSTER_PLACE_LOCAL if _owner == _driver.local_side
+		else AudioCatalog.SFX_MONSTER_PLACE_REMOTE)
+	StoryService.notify_event("monster_placed", {
+		"row": row, "col": col, "monster_id": _monster_id, "owner": _owner,
 	})
 
 
-func _on_stone_captured(row: int, col: int, new_owner: int) -> void:
+func _on_monster_captured(row: int, col: int, new_owner: int) -> void:
 	if new_owner == _driver.local_side:
 		_local_captures += 1
 	board_view.animations.animate_capture(row, col, new_owner)
-	StoryService.notify_event("stone_captured", {
+	StoryService.notify_event("monster_captured", {
 		"row": row, "col": col, "owner": new_owner,
 	})
 

@@ -98,7 +98,7 @@ static func _node_problems(raw_nodes: Array, map_size: Vector2,
 			result.append("mini-boss '%s' sans mini_boss_kind valide." % node_id)
 		if node.type != NodeModel.TYPE_MINI_BOSS and node.mini_boss_kind != "":
 			result.append("mini_boss_kind interdit sur '%s'." % node_id)
-		if node.theme_god_id != "" and StoneLoader.get_god(node.theme_god_id).is_empty():
+		if node.theme_god_id != "" and MonsterLoader.get_god(node.theme_god_id).is_empty():
 			result.append("dieu de thème inconnu '%s' sur '%s'." % [node.theme_god_id, node_id])
 		_encounter_problems(node, result)
 
@@ -291,7 +291,7 @@ static func _encounter_problems(node: CampaignNode, result: Array[String]) -> vo
 		if god_id == "":
 			if deck_policy != NodeModel.DECK_FIXED:
 				result.append("dieu vide sur '%s' : un deck fixe neutre est requis." % node.id)
-		elif StoneLoader.get_god(god_id).is_empty():
+		elif MonsterLoader.get_god(god_id).is_empty():
 			result.append("dieu inconnu '%s' sur '%s'." % [god_id, node.id])
 
 	if deck_policy == NodeModel.DECK_FIXED:
@@ -337,7 +337,7 @@ static func _generator_problems(node: CampaignNode, result: Array[String]) -> vo
 	if generator_god_id != "":
 		if not [GameModeRulesModel.MODE_RANDOM, GameModeRulesModel.MODE_MIRROR].has(mode):
 			result.append("générateur contraint hors Aléatoire/Miroir sur '%s'." % node.id)
-		elif StoneLoader.get_god(generator_god_id).is_empty():
+		elif MonsterLoader.get_god(generator_god_id).is_empty():
 			result.append("dieu de génération inconnu '%s' sur '%s'." % [
 				generator_god_id, node.id])
 	if generator_min > 0 and generator_god_id == "":
@@ -430,11 +430,11 @@ static func _reward_problems(node: CampaignNode, result: Array[String]) -> void:
 		if raw_reward is Dictionary:
 			var lineage_id := str(raw_reward.get("lineage_id", ""))
 			var copies := int(raw_reward.get("copies", 0))
-			if StoneLoader.lineage_max_level(lineage_id) <= 0:
+			if MonsterLoader.lineage_max_level(lineage_id) <= 0:
 				result.append("lignée de récompense inconnue '%s' sur '%s'." % [lineage_id, node.id])
 			if copies <= 0:
 				result.append("nombre de copies invalide sur '%s'." % node.id)
-		elif not StoneLoader.has_stone(str(raw_reward)):
+		elif not MonsterLoader.has_monster(str(raw_reward)):
 			# Compatibilite avec les anciennes fixtures qui declarent une forme N1.
 			result.append("carte de récompense inconnue '%s' sur '%s'." % [raw_reward, node.id])
 
@@ -456,27 +456,27 @@ static func _deck_problems(node: CampaignNode, deck: Array, god_id: String,
 	var lineages := {}
 	var same_god := 0
 	for raw_id in deck:
-		var stone_id := str(raw_id)
-		if not StoneLoader.has_stone(stone_id):
-			result.append("carte inconnue '%s' sur '%s'." % [stone_id, node.id])
+		var monster_id := str(raw_id)
+		if not MonsterLoader.has_monster(monster_id):
+			result.append("carte inconnue '%s' sur '%s'." % [monster_id, node.id])
 			continue
-		var lineage := StoneLoader.stone_lineage(stone_id)
+		var lineage := MonsterLoader.monster_lineage(monster_id)
 		if lineages.has(lineage):
 			result.append("lignée dupliquée '%s' sur '%s'." % [lineage, node.id])
 		lineages[lineage] = true
 		if god_id == "":
-			if StoneLoader.stone_affinity(stone_id) != "neutral":
+			if MonsterLoader.monster_affinity(monster_id) != "neutral":
 				result.append("carte non neutre '%s' sur le bot sans dieu '%s'." % [
-					stone_id, node.id])
-		elif not StoneLoader.is_stone_available_to_god(stone_id, god_id):
+					monster_id, node.id])
+		elif not MonsterLoader.is_monster_available_to_god(monster_id, god_id):
 			result.append("carte '%s' inaccessible au dieu '%s' sur '%s'." % [
-				stone_id, god_id, node.id])
-		if god_id != "" and StoneLoader.stone_affinity(stone_id) == god_id:
+				monster_id, god_id, node.id])
+		if god_id != "" and MonsterLoader.monster_affinity(monster_id) == god_id:
 			same_god += 1
-		var card_tier := CardPowerTierRulesModel.effective_tier(StoneLoader.get_stone(stone_id))
+		var card_tier := CardPowerTierRulesModel.effective_tier(MonsterLoader.get_monster(monster_id))
 		if card_tier > node.max_power_tier():
 			result.append("carte '%s' de palier %d au-dessus du palier %d sur '%s'." % [
-				stone_id, card_tier, node.max_power_tier(), node.id])
+				monster_id, card_tier, node.max_power_tier(), node.id])
 	if god_id != "" and same_god < min_god_cards:
 		result.append("%s de '%s' : au moins %d cartes du dieu '%s' requises (trouvé %d)." % [
 			label, node.id, min_god_cards, god_id, same_god])

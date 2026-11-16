@@ -21,7 +21,7 @@ une identité démoniaque sans gêner la lecture des cartes et des règles.
 | Néon carmin | `#f0449c` |
 
 `UITheme.gd` possède les couleurs et les fabriques de styles. `RefugeTheme.gd`
-construit la ressource `assets/ui/samstone_theme.tres` depuis ces valeurs. Les
+construit la ressource `assets/ui/beastpact_theme.tres` depuis ces valeurs. Les
 variations `PrimaryButton` et `DangerButton` distinguent l'action principale
 et le retrait d'une carte ; les boutons ordinaires héritent de l'ardoise.
 Le thème définit également les états désactivés, le focus clavier, les champs
@@ -199,7 +199,7 @@ téléphones hauts présentent les huit cartes en trois colonnes avec une derni�
 rangée centrée ; les tablettes conservent quatre colonnes. Le surplus du canevas
 ne peut donc plus devenir un espace vide entre le terrain et la main.
 
-Les aperçus utilisent `StoneCard.set_edge_margin_ratio` pour agrandir le cadre :
+Les aperçus utilisent `MonsterCard.set_edge_margin_ratio` pour agrandir le cadre :
 4 % de marge dans le deck, 6 % dans la fiche. Dans le deck, `set_marker_scale`
 conserve la taille normale des lames et boucliers malgré cette marge réduite.
 Les rangées et colonnes réservent 40 pixels entre les cases ; le panneau et les
@@ -212,7 +212,7 @@ La largeur du badge de niveau suit le texte et reste alignée au coin inférieur
 droit de l'illustration. Le dessin et les positions des symboles utilisent les
 mêmes réglages ; aucun calcul permanent n'est ajouté dans `_process`.
 
-Les pictogrammes d'explication utilisent `PowerBadge` et `StoneSymbols`, comme
+Les pictogrammes d'explication utilisent `PowerBadge` et `MonsterSymbols`, comme
 les règles et les cartes. Une carte neutre masque simplement cette zone et rend
 toute la largeur à son texte.
 

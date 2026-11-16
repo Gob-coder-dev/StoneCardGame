@@ -8,11 +8,11 @@ func run() -> void:
 func _test_shields() -> void:
 	var state := _state_with_hands(["fx_wall"], [])
 	CombatResolverModel.apply_move(state, 1, 1, "fx_wall", GameState.PLAYER_HUMAN)
-	var wall: BattleStoneModel = state.get_cell(1, 1)["stone"]
+	var wall: BattleMonsterModel = state.get_cell(1, 1)["monster"]
 	_check(wall.attack("top") == 1, "un bouclier n'augmente pas l'attaque")
 	_check(wall.defense("top") == 2, "un bouclier ajoute un point de défense")
-	var rikishi := BattleStoneModel.new()
-	rikishi.configure("osselet_blinde_n3", StoneLoader.get_stone("osselet_blinde_n3"))
+	var rikishi := BattleMonsterModel.new()
+	rikishi.configure("osselet_blinde_n3", MonsterLoader.get_monster("osselet_blinde_n3"))
 	_check(rikishi.marker_count("bottom") == 4 and rikishi.attack("bottom") == 2 and rikishi.defense("bottom") == 4,
 		"Rikishi partage ses quatre emplacements du bas entre deux lames et deux boucliers")
 	var duel := _state_with_hands(["fx_attack2"], [])
@@ -23,16 +23,16 @@ func _test_shields() -> void:
 
 func _test_long_range() -> void:
 	var useful_catalog := true
-	for stone_id in ["echassier_des_brumes_n1", "echassier_des_brumes_n3", "lil_empale_n2"]:
-		var definition := StoneLoader.get_stone(stone_id)
+	for monster_id in ["echassier_des_brumes_n1", "echassier_des_brumes_n3", "lil_empale_n2"]:
+		var definition := MonsterLoader.get_monster(monster_id)
 		var strongest_long_face := 0
 		for value in definition.get("long_blades", {}).values():
 			strongest_long_face = maxi(strongest_long_face, int(value))
 		useful_catalog = useful_catalog and strongest_long_face >= 2
 	_check(useful_catalog, "chaque carte Horizon possède au moins une face avec plusieurs lames longues")
 	var pass_state := _state_with_hands(["fx_ranged"], [])
-	var preview: BattleStoneModel = BattleStoneModel.new()
-	preview.configure("fx_ranged", StoneLoader.get_stone("fx_ranged"))
+	var preview: BattleMonsterModel = BattleMonsterModel.new()
+	preview.configure("fx_ranged", MonsterLoader.get_monster("fx_ranged"))
 	_check(preview.attack("right") == 3 and preview.ranged_attack("right") == 1, "une lame longue compte au contact mais attaque seule à distance")
 	_force_instance(pass_state, 1, 1, "fx_plain", GameState.PLAYER_HUMAN)
 	_force_instance(pass_state, 1, 2, "fx_ranged_target", GameState.PLAYER_AI)
@@ -107,14 +107,14 @@ func _test_attack_paths() -> void:
 
 	for side in ["top", "bottom", "left", "right"]:
 		var state := _state_with_hands(["fx_ranged"], [])
-		var delta: Vector2i = StoneSide.GRID[side]
+		var delta: Vector2i = MonsterSide.GRID[side]
 		var origin := Vector2i(1, 1) - delta
 		_force_instance(state, 1, 1, "fx_ranged_target", GameState.PLAYER_AI)
 		_force_instance(state, 1 + delta.x, 1 + delta.y, "fx_ranged_target", GameState.PLAYER_AI)
-		var placed := CombatResolverModel.place_stone(state, origin.x, origin.y, "fx_ranged", GameState.PLAYER_HUMAN)
-		var stone: BattleStoneModel = state.get_cell(origin.x, origin.y)["stone"]
-		stone.swap_faces("right", side)
+		var placed := CombatResolverModel.place_monster(state, origin.x, origin.y, "fx_ranged", GameState.PLAYER_HUMAN)
+		var monster: BattleMonsterModel = state.get_cell(origin.x, origin.y)["monster"]
+		monster.swap_faces("right", side)
 		var saved_rng := state.random_state
-		var plan := CombatResolverModel.resolve_attacks(state, origin.x, origin.y, GameState.PLAYER_HUMAN, stone)
+		var plan := CombatResolverModel.resolve_attacks(state, origin.x, origin.y, GameState.PLAYER_HUMAN, monster)
 		_check(placed["success"] and plan["captures"].size() == 2 and state.get_cell(1, 1)["owner"] == GameState.PLAYER_AI
 			and state.random_state == saved_rng, "le plan transperçant est pur et fonctionne vers %s" % side)

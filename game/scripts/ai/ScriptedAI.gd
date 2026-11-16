@@ -50,11 +50,11 @@ func _normalized(source: Dictionary) -> Dictionary:
 	return {
 		"row": int(source.get("row", -1)),
 		"col": int(source.get("col", -1)),
-		"stone_id": str(source.get("stone_id", "")),
+		"monster_id": str(source.get("monster_id", "")),
 	}
 
 
 func _same_move(first: Dictionary, second: Dictionary) -> bool:
 	return int(first.get("row", -1)) == int(second.get("row", -1)) \
 		and int(first.get("col", -1)) == int(second.get("col", -1)) \
-		and str(first.get("stone_id", "")) == str(second.get("stone_id", ""))
+		and str(first.get("monster_id", "")) == str(second.get("monster_id", ""))

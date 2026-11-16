@@ -48,7 +48,7 @@ func _setup_god_menu() -> void:
 	var godless := GodIdentityModel.player_godless()
 	godless["color"] = UITheme.COL_TEXT_DIM.to_html()
 	var choices: Array = [godless]
-	for god in StoneLoader.get_all_gods():
+	for god in MonsterLoader.get_all_gods():
 		if PlayerData.has_unlocked_god(str(god.get("id", ""))):
 			choices.append(god)
 	for god in choices:

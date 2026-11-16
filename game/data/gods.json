@@ -6,7 +6,7 @@
       "name": "Véskar",
       "family_name": "Les Aléators",
       "color": "#e75aa8",
-      "description": "Des lames roses à demi-coût et des pierres qui jouent leur orientation à pile ou face.",
+      "description": "Des lames roses à demi-coût et des monstres qui jouent leur orientation à pile ou face.",
       "title": "le Manipulateur",
       "asset": "res://assets/gods/veskar.png"
     },
@@ -15,7 +15,7 @@
       "name": "Nérava",
       "family_name": "Les Flétris",
       "color": "#9b6bc7",
-      "description": "Le Miasme affaiblit de 1 les voisines adverses tant que son aura est active ; l'Échec corrosif retire 2 de force aux pierres qui résistent à l'attaque, jusqu'à la fin du prochain coup du lanceur.",
+      "description": "Le Miasme affaiblit de 1 les voisines adverses tant que son aura est active ; l'Échec corrosif retire 2 de force aux monstres qui résistent à l'attaque, jusqu'à la fin du prochain coup du lanceur.",
       "title": "la Mère des Fièvres",
       "asset": "res://assets/gods/nerava.png"
     },
@@ -42,7 +42,7 @@
       "name": "Sylkha",
       "family_name": "L’Essaim",
       "color": "#7fc95b",
-      "description": "Les pierres Swarm connectées se renforcent toutes tant qu'elles restent dans le même camp.",
+      "description": "Les monstres Swarm connectés se renforcent tous tant qu'ils restent dans le même camp.",
       "title": "la Mère-Ruche",
       "asset": "res://assets/gods/sylkha.png"
     },
@@ -51,7 +51,7 @@
       "name": "Énigma",
       "family_name": "Les Assimilateurs",
       "color": "#ef8b45",
-      "description": "Après une capture, transforme la force vaincue en boucliers répartis sur les autres faces de la pierre attaquante.",
+      "description": "Après une capture, transforme la force vaincue en boucliers répartis sur les autres faces du monstre attaquant.",
       "title": "la Machine Première",
       "asset": "res://assets/gods/enigma.png"
     }

@@ -164,8 +164,8 @@ Le fichier est la source de vérité du contenu livré. Il est produit par
 
 ```json
 {
-  "id": "samstone_campaign",
-  "title": "La Carte de SamStone",
+  "id": "beastpact_campaign",
+  "title": "La Carte de Beastpact",
   "campaign_version": 6,
   "map": {"width": 1080, "height": 19800},
   "start_node_id": "tuto_01",

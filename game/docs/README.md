@@ -15,6 +15,6 @@ Pour lancer le jeu et ses tests, consulter le [README du projet](../README.md).
 | [PVP local](PVP_LOCAL.md) | Hôte et client, ports, découverte, protocole, déterminisme, permissions Android et dépannage. |
 | [Audio](../data/audio/README.md) | Banque de sons, musiques, déclencheurs, architecture et règles d'extension. |
 
-Les règles de jeu et les statistiques font référence aux fichiers data/stones/
+Les règles de jeu et les statistiques font référence aux fichiers data/monsters/
 et data/gods.json. Les illustrations sont stockées dans assets/cards/ et
 assets/gods/ ; leurs conventions techniques sont documentées près des assets.

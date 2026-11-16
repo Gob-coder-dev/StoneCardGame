@@ -77,7 +77,7 @@ func _generate_offers(rotation_id: int, inventory: PlayerInventory,
 	var rng := RandomNumberGenerator.new()
 	var gods: Array = inventory.unlocked_gods.keys()
 	gods.sort()
-	rng.seed = hash("samstone-shop|%d|%d|%s" % [
+	rng.seed = hash("beastpact-shop|%d|%d|%s" % [
 		rotation_id, access.revision, ",".join(gods)])
 	var by_rarity := _eligible_by_rarity(inventory, access)
 	var slots: Array = config.get("shop", {}).get("slot_rarities", [])
@@ -95,8 +95,8 @@ func _generate_offers(rotation_id: int, inventory: PlayerInventory,
 			break
 		var lineage_id := str(candidates[rng.randi_range(0, candidates.size() - 1)])
 		used[lineage_id] = true
-		var first_form := StoneLoader.variant_id(lineage_id, 1)
-		rarity = StoneLoader.stone_rarity(first_form)
+		var first_form := MonsterLoader.variant_id(lineage_id, 1)
+		rarity = MonsterLoader.monster_rarity(first_form)
 		var rule: Dictionary = config.get("shop", {}).get(rarity, {})
 		var quantity := rng.randi_range(int(rule.get("min_quantity", 1)),
 			int(rule.get("max_quantity", 1)))
@@ -106,7 +106,7 @@ func _generate_offers(rotation_id: int, inventory: PlayerInventory,
 		result.append({
 			"id": "%d:%d" % [rotation_id, index],
 			"lineage_id": lineage_id,
-			"stone_id": first_form,
+			"monster_id": first_form,
 			"rarity": rarity,
 			"quantity": quantity,
 			"price": price,
@@ -118,15 +118,15 @@ func _eligible_by_rarity(inventory: PlayerInventory,
 		access: ContentAccessState) -> Dictionary:
 	var result := {"common": [], "rare": [], "epic": [], "legendary": []}
 	var seen := {}
-	for stone in StoneLoader.get_all_stones():
-		var stone_id := str(stone.get("id", ""))
-		var lineage_id := StoneLoader.stone_lineage(stone_id)
+	for monster in MonsterLoader.get_all_monsters():
+		var monster_id := str(monster.get("id", ""))
+		var lineage_id := MonsterLoader.monster_lineage(monster_id)
 		if seen.has(lineage_id):
 			continue
 		seen[lineage_id] = true
 		if not _lineage_is_eligible(lineage_id, inventory, access):
 			continue
-		var rarity := StoneLoader.stone_rarity(stone_id)
+		var rarity := MonsterLoader.monster_rarity(monster_id)
 		if result.has(rarity):
 			result[rarity].append(lineage_id)
 	return result
@@ -134,15 +134,15 @@ func _eligible_by_rarity(inventory: PlayerInventory,
 
 func _lineage_is_eligible(lineage_id: String, inventory: PlayerInventory,
 		access: ContentAccessState) -> bool:
-	var first := StoneLoader.variant_id(lineage_id, 1)
+	var first := MonsterLoader.variant_id(lineage_id, 1)
 	if first == "":
 		return false
-	if not access.allows_rarity(StoneLoader.stone_rarity(first)):
+	if not access.allows_rarity(MonsterLoader.monster_rarity(first)):
 		return false
-	var affinity := StoneLoader.stone_affinity(first)
+	var affinity := MonsterLoader.monster_affinity(first)
 	if affinity != "neutral" and not inventory.has_god(affinity):
 		return false
-	return inventory.unlocked_level(lineage_id) < StoneLoader.lineage_max_level(lineage_id)
+	return inventory.unlocked_level(lineage_id) < MonsterLoader.lineage_max_level(lineage_id)
 
 
 static func _weighted_rarity(weights: Dictionary, pools: Dictionary, used: Dictionary,

@@ -73,7 +73,7 @@ func _refresh() -> void:
 		card.setup(definition)
 		card.selection_requested.connect(_show_ritual_offer)
 		rituals_grid.add_child(card)
-	for god in StoneLoader.get_all_gods():
+	for god in MonsterLoader.get_all_gods():
 		gods_grid.add_child(_god_panel(god))
 	_update_countdown()
 
@@ -88,8 +88,8 @@ func _offer_panel(offer: Dictionary) -> PanelContainer:
 	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_theme_constant_override("separation", 8)
 	panel.add_child(box)
-	var card := CardLayout.make_stone_card(StoneLoader.get_stone(str(offer["stone_id"])),
-		StoneCard.OWNER_NONE, 210)
+	var card := CardLayout.make_monster_card(MonsterLoader.get_monster(str(offer["monster_id"])),
+		MonsterCard.OWNER_NONE, 210)
 	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(card)
 	var quantity := Label.new()
@@ -165,7 +165,7 @@ func _show_ritual_offer(ritual_id: String) -> void:
 
 
 func _show_god_offer(god_id: String) -> void:
-	var god := StoneLoader.get_god(god_id)
+	var god := MonsterLoader.get_god(god_id)
 	if god.is_empty() or PlayerData.has_unlocked_god(god_id):
 		return
 	var gifts: Array = EconomyConfig.get_config().get("god_gifts", {}).get(god_id, [])

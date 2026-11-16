@@ -1,0 +1,12 @@
+{
+  "catalogue_version": 1,
+  "families": [
+    { "id": "neutral", "path": "res://data/monsters/neutral.json" },
+    { "id": "veskar", "path": "res://data/monsters/veskar.json" },
+    { "id": "nerava", "path": "res://data/monsters/nerava.json" },
+    { "id": "kharun", "path": "res://data/monsters/kharun.json" },
+    { "id": "ilyr", "path": "res://data/monsters/ilyr.json" },
+    { "id": "sylkha", "path": "res://data/monsters/sylkha.json" },
+    { "id": "enigma", "path": "res://data/monsters/enigma.json" }
+  ]
+}

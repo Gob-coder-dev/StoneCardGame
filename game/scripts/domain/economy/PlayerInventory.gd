@@ -33,7 +33,7 @@ static func from_dict(raw: Variant) -> PlayerInventory:
 	if gods is Array:
 		for value in gods:
 			var god_id := str(value)
-			if not StoneLoader.get_god(god_id).is_empty():
+			if not MonsterLoader.get_god(god_id).is_empty():
 				result.unlocked_gods[god_id] = true
 	var raw_cards: Variant = raw.get("cards", {})
 	if raw_cards is Dictionary:
@@ -105,13 +105,13 @@ func unlocked_level(lineage_id: String) -> int:
 	return int(cards.get(lineage_id, {}).get("unlocked_level", 0))
 
 
-func owns_stone(stone_id: String) -> bool:
-	return StoneLoader.has_stone(stone_id) \
-		and unlocked_level(StoneLoader.stone_lineage(stone_id)) >= StoneLoader.stone_level(stone_id)
+func owns_monster(monster_id: String) -> bool:
+	return MonsterLoader.has_monster(monster_id) \
+		and unlocked_level(MonsterLoader.monster_lineage(monster_id)) >= MonsterLoader.monster_level(monster_id)
 
 
 func add_copies(lineage_id: String, amount: int) -> bool:
-	var maximum := StoneLoader.lineage_max_level(lineage_id)
+	var maximum := MonsterLoader.lineage_max_level(lineage_id)
 	if maximum <= 0 or amount <= 0:
 		return false
 	cards[lineage_id] = ProgressionRules.add_copies(entry(lineage_id), amount, maximum)
@@ -173,7 +173,7 @@ func release_pending_for_god(god_id: String) -> Array:
 
 
 func unlock_god(god_id: String) -> bool:
-	if StoneLoader.get_god(god_id).is_empty():
+	if MonsterLoader.get_god(god_id).is_empty():
 		return false
 	unlocked_gods[god_id] = true
 	return true
@@ -200,13 +200,13 @@ static func _clean_shop_state(raw: Variant) -> Dictionary:
 		if not value is Dictionary:
 			return {}
 		var lineage := str(value.get("lineage_id", ""))
-		var stone := StoneLoader.variant_id(lineage, 1)
+		var monster := MonsterLoader.variant_id(lineage, 1)
 		var quantity := Integer.read(value.get("quantity"))
 		var price := Integer.read(value.get("price"))
-		if not value.get("id") is String or stone == "" or quantity <= 0 or price <= 0:
+		if not value.get("id") is String or monster == "" or quantity <= 0 or price <= 0:
 			return {}
-		offers.append({"id": value["id"], "lineage_id": lineage, "stone_id": stone,
-			"rarity": StoneLoader.stone_rarity(stone), "quantity": quantity, "price": price})
+		offers.append({"id": value["id"], "lineage_id": lineage, "monster_id": monster,
+			"rarity": MonsterLoader.monster_rarity(monster), "quantity": quantity, "price": price})
 	var purchased := {}
 	for id in raw.get("purchased_offer_ids", {}):
 		if id is String and raw["purchased_offer_ids"][id] == true:
@@ -216,5 +216,5 @@ static func _clean_shop_state(raw: Variant) -> Dictionary:
 
 
 static func _lineage_affinity(lineage_id: String) -> String:
-	var first_form := StoneLoader.variant_id(lineage_id, 1)
-	return StoneLoader.stone_affinity(first_form) if first_form != "" else ""
+	var first_form := MonsterLoader.variant_id(lineage_id, 1)
+	return MonsterLoader.monster_affinity(first_form) if first_form != "" else ""

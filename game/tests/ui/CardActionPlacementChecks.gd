@@ -12,10 +12,10 @@ func run() -> void:
 	wrapper.position = Vector2(120.0, 210.0)
 	wrapper.size = Vector2(280.0, 360.0)
 	add_child(wrapper)
-	var card := StoneCard.new()
+	var card := MonsterCard.new()
 	card.position = Vector2(30.0, 10.0)
 	card.size = Vector2(200.0, 200.0)
-	card.setup(StoneLoader.get_stone("la_gueule_sous_le_lit_n1"))
+	card.setup(MonsterLoader.get_monster("la_gueule_sous_le_lit_n1"))
 	wrapper.add_child(card)
 	var progress := Control.new()
 	progress.name = "Progress"

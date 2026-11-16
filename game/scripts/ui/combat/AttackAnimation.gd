@@ -4,10 +4,10 @@ extends Control
 
 signal reveal_finished
 
-signal target_hit(row: int, col: int, success: bool, stone_owner: int)
+signal target_hit(row: int, col: int, success: bool, monster_owner: int)
 
 const Timeline := preload("res://scripts/ui/combat/CombatTimeline.gd")
-const Symbols := preload("res://scripts/ui/StoneSymbols.gd")
+const Symbols := preload("res://scripts/ui/MonsterSymbols.gd")
 
 var elapsed: float = 0.0:
 	set(value):
@@ -15,7 +15,7 @@ var elapsed: float = 0.0:
 		_update_reveal()
 		queue_redraw()
 
-var _card: StoneCard
+var _card: MonsterCard
 var _owner: int = 0
 var _square: float = 0.0
 var _flight_end: float = 0.0
@@ -31,9 +31,9 @@ func _init() -> void:
 
 
 ## paths contient les coordonnées calculées par BoardView dans son repère.
-func play(card: StoneCard, paths: Array, attacks: Array, stone_owner: int, duration: float) -> void:
+func play(card: MonsterCard, paths: Array, attacks: Array, monster_owner: int, duration: float) -> void:
 	_card = card
-	_owner = stone_owner
+	_owner = monster_owner
 	_square = minf(card.size.x, card.size.y)
 	_flight_end = Timeline.flight_end(attacks)
 	card.start_attack_animation(attacks)

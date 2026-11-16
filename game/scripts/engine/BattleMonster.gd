@@ -1,10 +1,10 @@
-## Instance mutable d'une pierre pendant une partie.
+## Instance mutable d'un monstre pendant une partie.
 ## La définition du catalogue reste immuable ; seuls les résultats aléatoires,
 ## affaiblissements, boucliers volés et bonus Swarm vivent ici.
-class_name BattleStone
+class_name BattleMonster
 extends Resource
 
-const SIDES = StoneSide.ALL
+const SIDES = MonsterSide.ALL
 ## Une face accueille au plus quatre symboles, tous types confondus.
 const MAX_MARKERS_PER_SIDE: int = 4
 ## Ordre stable des symboles sur une face. Le moteur numérote les symboles dans
@@ -12,13 +12,13 @@ const MAX_MARKERS_PER_SIDE: int = 4
 const MARKER_KINDS: Array[String] = ["normal", "random", "swarm", "long", "shield"]
 
 var instance_id: int = 0
-var stone_id: String = ""
+var monster_id: String = ""
 var base_blades: Dictionary = {}
 var random_blades: Dictionary = {}
 var long_blades: Dictionary = {}
 var shields: Dictionary = {}
 var swarm_blades: Dictionary = {}
-## Malus continu du Miasme : nombre de pierres Miasme adverses actives voisines,
+## Malus continu du Miasme : nombre de monstres Miasme adverses actifs voisins,
 ## recalculé après chaque coup par WeaknessSystem.update_miasma().
 var miasma_weakness: int = 0
 var temporary_weakness: int = 0
@@ -28,7 +28,7 @@ var coin_flipped: bool = false
 
 func configure(id: String, definition: Dictionary, uid: int = 0) -> void:
 	instance_id = uid
-	stone_id = id
+	monster_id = id
 	base_blades = _side_map(definition.get("blades", {}))
 	long_blades = _side_map(definition.get("long_blades", {}))
 	shields = _side_map(definition.get("shields", {}))
@@ -40,7 +40,7 @@ func configure(id: String, definition: Dictionary, uid: int = 0) -> void:
 func clone():
 	var result = get_script().new()
 	result.instance_id = instance_id
-	result.stone_id = stone_id
+	result.monster_id = monster_id
 	result.base_blades = base_blades.duplicate()
 	result.random_blades = random_blades.duplicate()
 	result.long_blades = long_blades.duplicate()

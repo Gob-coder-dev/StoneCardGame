@@ -2,7 +2,7 @@
 ## Contrat commun des IA. La réflexion se fait en deux temps pour être répartie
 ## sur plusieurs images : start_search(état) prépare une MoveSearch, que
 ## AITurnRunner avance puis interroge. choose_move() fait tout d'un coup.
-## Un coup est { "row", "col", "stone_id" }.
+## Un coup est { "row", "col", "monster_id" }.
 class_name AIPlayer
 extends RefCounted
 

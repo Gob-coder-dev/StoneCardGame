@@ -1,11 +1,11 @@
 [gd_scene load_steps=5 format=3]
 
-[ext_resource type="Script" path="res://scripts/ui/collection/StoneInfoSheet.gd" id="1_info"]
+[ext_resource type="Script" path="res://scripts/ui/collection/MonsterInfoSheet.gd" id="1_info"]
 [ext_resource type="Script" path="res://scripts/ui/input/TouchButton.gd" id="2_touch_button"]
 [ext_resource type="Script" path="res://scripts/ui/input/TouchScrollContainer.gd" id="3_scroll"]
 [ext_resource type="Script" path="res://scripts/ui/collection/UpgradePriceButton.gd" id="4_upgrade_button"]
 
-[node name="StoneInfoSheet" type="Control"]
+[node name="MonsterInfoSheet" type="Control"]
 visible = false
 layout_mode = 3
 anchors_preset = 15
@@ -44,7 +44,7 @@ theme_type_variation = &"ScreenTitle"
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 50
-text = "Pierre"
+text = "Monstre"
 vertical_alignment = 1
 autowrap_mode = 2
 
@@ -82,7 +82,7 @@ autowrap_mode = 2
 [node name="Description" type="Label" parent="InfoPanel/InfoContent/Scroll/Page"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 35
-text = "Description de la pierre."
+text = "Description du monstre."
 vertical_alignment = 1
 autowrap_mode = 2
 

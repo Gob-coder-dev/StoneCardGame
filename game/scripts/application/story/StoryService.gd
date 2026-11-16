@@ -352,7 +352,7 @@ func _theme_god_character() -> Dictionary:
 	var node = BattleContext.campaign_service.node(BattleContext.campaign_node_id)
 	if node == null:
 		return {}
-	var god := StoneLoader.get_god(str(node.theme_god_id))
+	var god := MonsterLoader.get_god(str(node.theme_god_id))
 	if god.is_empty():
 		return {}
 	return {

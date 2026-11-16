@@ -492,10 +492,10 @@ func _fill_lobby() -> void:
 	var is_host := bool(lobby["is_host"])
 	var local: Dictionary = lobby["host"] if is_host else lobby["client"]
 	var remote: Dictionary = lobby["client"] if is_host else lobby["host"]
-	var local_god_data := StoneLoader.get_god(str(local.get("god_id", "")))
+	var local_god_data := MonsterLoader.get_god(str(local.get("god_id", "")))
 	var remote_god_id := str(remote.get("god_id", ""))
 	var remote_god_data := local_god_data if remote_god_id == "" \
-		else StoneLoader.get_god(remote_god_id)
+		else MonsterLoader.get_god(remote_god_id)
 	background.set_gods(local_god_data, remote_god_data)
 	var remote_in_game := bool(lobby.get("remote_in_game", false))
 	var header := Presenter.header(lobby)
@@ -593,7 +593,7 @@ func _fill_player(role_label: Label, name_label: Label, god_label: Label,
 	var player_name := str(profile.get("name", ""))
 	var present := player_name != "" and player_name != LobbyCoordinator.UNKNOWN_NAME
 	name_label.text = player_name if present else (waiting_text if waiting_text != "" else "—")
-	var god := StoneLoader.get_god(str(profile.get("god_id", "")))
+	var god := MonsterLoader.get_god(str(profile.get("god_id", "")))
 	if present and not god.is_empty():
 		god_label.text = str(god.get("name", ""))
 		god_label.add_theme_color_override("font_color",

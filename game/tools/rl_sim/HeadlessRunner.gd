@@ -86,7 +86,7 @@ func _handle(line: String) -> void:
 			_send_ok(request_id, DeckApi.catalog())
 		"validate_deck":
 			_send_ok(request_id, DeckApi.validate_deck(
-				request.get("stone_ids", []), str(request.get("god_id", ""))))
+				request.get("monster_ids", []), str(request.get("god_id", ""))))
 		"validate_decks":
 			_send_ok(request_id, {"results": DeckApi.validate_decks(request.get("decks", []))})
 		"get_engine_manifest":

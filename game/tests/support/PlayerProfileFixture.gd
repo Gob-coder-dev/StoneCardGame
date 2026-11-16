@@ -2,7 +2,7 @@
 extends RefCounted
 const Codec := preload("res://scripts/data/PlayerSaveCodec.gd")
 const Storage := preload("res://scripts/data/PlayerSaveStorage.gd")
-const PATH := "user://samstone_test_ui_profile.json"
+const PATH := "user://beastpact_test_ui_profile.json"
 const DECK := ["de_boiteux_n1", "jumeau_de_cuivre_n1", "valet_a_lenvers_n1", "ogre_a_deux_bouches_n1", "le_nud_hurlant_n2", "croupier_manchot_n1", "griffe_a_jetons_n2", "devoracle_n2"]
 var _previous_profile: Dictionary
 var _previous_path: String

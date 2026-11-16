@@ -16,7 +16,7 @@ static func _ai_turn_value(simulation: GameState, hand_size: int, alpha: float, 
 	var best := -INF
 	for move in moves:
 		var child := simulation.clone()
-		Resolver.apply_move(child, move["row"], move["col"], move["stone_id"], GameState.PLAYER_AI)
+		Resolver.apply_move(child, move["row"], move["col"], move["monster_id"], GameState.PLAYER_AI)
 		best = maxf(best, evaluate(child, hand_size))
 		alpha = maxf(alpha, best)
 		if alpha >= beta:
@@ -36,8 +36,8 @@ static func evaluate(simulation: GameState, hand_size: int) -> float:
 		for cell in free_cells:
 			var child := simulation.clone()
 			Resolver.apply_move(child, cell["row"], cell["col"], card, GameState.PLAYER_HUMAN)
-			var used_lineage := StoneLoader.stone_lineage(str(card))
-			child.human_hand = child.human_hand.filter(func(other): return StoneLoader.stone_lineage(str(other)) != used_lineage)
+			var used_lineage := MonsterLoader.monster_lineage(str(card))
+			child.human_hand = child.human_hand.filter(func(other): return MonsterLoader.monster_lineage(str(other)) != used_lineage)
 			# Seule une riposte plus forte que la meilleure trouvée pour cette carte compte.
 			best = minf(best, _ai_turn_value(child, hand_size - 1, -INF, best))
 		values.append(best)

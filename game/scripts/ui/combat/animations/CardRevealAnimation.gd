@@ -1,15 +1,15 @@
 ## Cycle de vie commun des révélations d'une carte. Aucun calcul de règles.
 extends Control
 signal reveal_finished
-const Symbols := preload("res://scripts/ui/StoneSymbols.gd")
-const BattleStoneModel := preload("res://scripts/engine/BattleStone.gd")
+const Symbols := preload("res://scripts/ui/MonsterSymbols.gd")
+const BattleMonsterModel := preload("res://scripts/engine/BattleMonster.gd")
 
 var progress: float = 0.0:
 	set(value):
 		progress = clampf(value, 0.0, 1.0)
 		_update_preview()
 		queue_redraw()
-var _card: StoneCard
+var _card: MonsterCard
 var _card_transform := Transform2D.IDENTITY
 var _center := Vector2.ZERO
 var _square: float = 0.0
@@ -18,7 +18,7 @@ func _init() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	z_index = 20
 
-func _prepare(card: StoneCard) -> void:
+func _prepare(card: MonsterCard) -> void:
 	_card = card
 	_card_transform = get_global_transform().affine_inverse() * card.get_global_transform()
 	_center = _card_transform * (card.size * 0.5)

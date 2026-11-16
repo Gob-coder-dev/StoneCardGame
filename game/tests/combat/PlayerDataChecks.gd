@@ -3,7 +3,7 @@ const Codec := preload("res://scripts/data/PlayerSaveCodec.gd")
 const Storage := preload("res://scripts/data/PlayerSaveStorage.gd")
 const PlayerModel := preload("res://scripts/data/PlayerData.gd")
 ## Fichier propre à ce test : la vraie sauvegarde du joueur n'est jamais touchée.
-const TEST_PATH := "user://samstone_test_profile.json"
+const TEST_PATH := "user://beastpact_test_profile.json"
 
 func run() -> void:
 	_test_codec()
@@ -37,7 +37,7 @@ func _test_codec() -> void:
 
 func _test_banks_codec() -> void:
 	var profile := Codec.decode({})
-	var valid: bool = profile["decks_by_god"].size() == StoneLoader.get_all_gods().size() + 1
+	var valid: bool = profile["decks_by_god"].size() == MonsterLoader.get_all_gods().size() + 1
 	for key in profile["decks_by_god"]:
 		var slots: Array = profile["decks_by_god"][key]
 		valid = valid and slots.size() == DeckRules.DECKS_PER_GOD

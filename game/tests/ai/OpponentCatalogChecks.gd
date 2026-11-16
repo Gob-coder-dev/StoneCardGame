@@ -61,7 +61,7 @@ func _test_generated_decks() -> void:
 	var complete := true
 	var in_bracket := true
 	var built_opponents := 0
-	for god in StoneLoader.get_all_gods():
+	for god in MonsterLoader.get_all_gods():
 		var god_id := str(god["id"])
 		for tier in OpponentCatalogModel.BRACKETS:
 			var bracket_id := str(tier["id"])
@@ -71,15 +71,15 @@ func _test_generated_decks() -> void:
 				continue
 			var seen := {}
 			for raw_id in deck:
-				var stone_id := str(raw_id)
-				var lineage := StoneLoader.stone_lineage(stone_id)
+				var monster_id := str(raw_id)
+				var lineage := MonsterLoader.monster_lineage(monster_id)
 				complete = complete \
-					and StoneLoader.has_stone(stone_id) \
+					and MonsterLoader.has_monster(monster_id) \
 					and not seen.has(lineage) \
-					and StoneLoader.is_stone_available_to_god(stone_id, god_id)
+					and MonsterLoader.is_monster_available_to_god(monster_id, god_id)
 				seen[lineage] = true
 				var level := BotCardTierRulesModel.effective_level(
-					StoneLoader.stone_rarity(stone_id), StoneLoader.stone_level(stone_id))
+					MonsterLoader.monster_rarity(monster_id), MonsterLoader.monster_level(monster_id))
 				in_bracket = in_bracket \
 					and level >= int(tier["min_level"]) \
 					and level <= int(tier["max_level"])
@@ -90,7 +90,7 @@ func _test_generated_decks() -> void:
 					built_opponents += 1
 	_check(complete, "les decks générés contiennent huit lignées distinctes du dieu")
 	_check(in_bracket, "chaque carte générée appartient au palier choisi")
-	_check(built_opponents == StoneLoader.get_all_gods().size()
+	_check(built_opponents == MonsterLoader.get_all_gods().size()
 		* OpponentCatalogModel.BRACKETS.size() * OpponentCatalogModel.DIFFICULTIES.size(),
 		"les six dieux sont disponibles aux trois paliers et aux cinq difficultés")
 
@@ -106,12 +106,12 @@ func _test_neutral_decks() -> void:
 		complete = complete and deck.size() == DeckRules.DECK_SIZE
 		var seen := {}
 		for raw_id in deck:
-			var stone_id := str(raw_id)
-			var lineage := StoneLoader.stone_lineage(stone_id)
+			var monster_id := str(raw_id)
+			var lineage := MonsterLoader.monster_lineage(monster_id)
 			complete = complete and not seen.has(lineage)
-			neutral_only = neutral_only and StoneLoader.stone_affinity(stone_id) == "neutral"
+			neutral_only = neutral_only and MonsterLoader.monster_affinity(monster_id) == "neutral"
 			var level := BotCardTierRulesModel.effective_level(
-				StoneLoader.stone_rarity(stone_id), StoneLoader.stone_level(stone_id))
+				MonsterLoader.monster_rarity(monster_id), MonsterLoader.monster_level(monster_id))
 			in_bracket = in_bracket \
 				and level >= int(tier["min_level"]) \
 				and level <= int(tier["max_level"])

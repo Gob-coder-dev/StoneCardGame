@@ -1,7 +1,7 @@
 ## Même pictogramme que sur les cartes, à une taille lisible dans les règles.
 extends Control
 
-const Symbols := preload("res://scripts/ui/StoneSymbols.gd")
+const Symbols := preload("res://scripts/ui/MonsterSymbols.gd")
 
 var kind: String = ""
 var color := Color.WHITE

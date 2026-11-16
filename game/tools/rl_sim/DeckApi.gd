@@ -1,5 +1,5 @@
 ## Façade de catalogue et validation des decks pour les outils hors ligne.
-## Toutes les contraintes restent déléguées à StoneLoader et DeckRules.
+## Toutes les contraintes restent déléguées à MonsterLoader et DeckRules.
 extends RefCounted
 
 const Identity := preload("res://scripts/ai/neural/RLIdentity.gd")
@@ -7,20 +7,20 @@ const Identity := preload("res://scripts/ai/neural/RLIdentity.gd")
 
 static func catalog() -> Dictionary:
 	var gods: Array = []
-	for god in StoneLoader.get_all_gods():
+	for god in MonsterLoader.get_all_gods():
 		gods.append({"id": str(god.get("id", "")), "name": str(god.get("name", ""))})
 	var variants: Array = []
-	for stone in StoneLoader.get_all_stones():
-		var stone_id := str(stone.get("id", ""))
+	for monster in MonsterLoader.get_all_monsters():
+		var monster_id := str(monster.get("id", ""))
 		variants.append({
-			"stone_id": stone_id,
-			"lineage_id": StoneLoader.stone_lineage(stone_id),
-			"level": StoneLoader.stone_level(stone_id),
-			"max_level": StoneLoader.lineage_max_level(StoneLoader.stone_lineage(stone_id)),
-			"affinity": StoneLoader.stone_affinity(stone_id),
-			"cost": StoneLoader.stone_cost(stone_id)
+			"monster_id": monster_id,
+			"lineage_id": MonsterLoader.monster_lineage(monster_id),
+			"level": MonsterLoader.monster_level(monster_id),
+			"max_level": MonsterLoader.lineage_max_level(MonsterLoader.monster_lineage(monster_id)),
+			"affinity": MonsterLoader.monster_affinity(monster_id),
+			"cost": MonsterLoader.monster_cost(monster_id)
 		})
-	variants.sort_custom(func(a: Dictionary, b: Dictionary): return str(a["stone_id"]) < str(b["stone_id"]))
+	variants.sort_custom(func(a: Dictionary, b: Dictionary): return str(a["monster_id"]) < str(b["monster_id"]))
 	var snapshot := {
 		"schema_version": 1,
 		"deck_size": DeckRules.DECK_SIZE,
@@ -33,12 +33,12 @@ static func catalog() -> Dictionary:
 	return snapshot
 
 
-static func validate_deck(stone_ids: Array, god_id: String) -> Dictionary:
-	var result := DeckRules.validate_deck(stone_ids, true, god_id)
+static func validate_deck(monster_ids: Array, god_id: String) -> Dictionary:
+	var result := DeckRules.validate_deck(monster_ids, true, god_id)
 	return {
 		"valid": bool(result.get("valid", false)),
 		"reason": str(result.get("reason", "")),
-		"cost": DeckRules.deck_cost(stone_ids) if bool(result.get("valid", false)) else -1.0
+		"cost": DeckRules.deck_cost(monster_ids) if bool(result.get("valid", false)) else -1.0
 	}
 
 
@@ -48,7 +48,7 @@ static func validate_decks(requests: Array) -> Array:
 		if not request is Dictionary:
 			results.append({"valid": false, "reason": "requete invalide", "cost": -1.0})
 			continue
-		var result := validate_deck(request.get("stone_ids", []), str(request.get("god_id", "")))
+		var result := validate_deck(request.get("monster_ids", []), str(request.get("god_id", "")))
 		result["candidate_id"] = str(request.get("candidate_id", ""))
 		results.append(result)
 	return results

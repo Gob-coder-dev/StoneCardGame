@@ -275,9 +275,9 @@ func pending_card_rewards_by_god() -> Dictionary:
 	return _inventory.pending_rewards_by_god().duplicate(true)
 
 
-func owns_stone(stone_id: String) -> bool:
+func owns_monster(monster_id: String) -> bool:
 	_ensure_inventory()
-	return _inventory.owns_stone(stone_id)
+	return _inventory.owns_monster(monster_id)
 
 
 ## Projection unique consommée par les jauges, tiroirs et fiches. Les vues ne
@@ -350,10 +350,10 @@ func reset_to_starter_profile() -> Error:
 func _can_store_deck(value: Array, god_id: String) -> bool:
 	if not bool(DeckRules.validate_deck(value, false, god_id)["valid"]):
 		return false
-	for stone_id in value:
-		if not owns_stone(str(stone_id)):
+	for monster_id in value:
+		if not owns_monster(str(monster_id)):
 			return false
-		if god_id == "" and StoneLoader.stone_affinity(str(stone_id)) != "neutral":
+		if god_id == "" and MonsterLoader.monster_affinity(str(monster_id)) != "neutral":
 			return false
 	return true
 

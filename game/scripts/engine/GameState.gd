@@ -1,14 +1,14 @@
 ## GameState.gd
-## Représente l'état complet d'une partie de SamStone.
+## Représente l'état complet d'une partie de Beastpact.
 ## Classe de pure donnée — aucune règle de jeu ici.
 ##
-## Une case garde l'id de catalogue et, une fois occupée, une BattleStone mutable.
+## Une case garde l'id de catalogue et, une fois occupée, une BattleMonster mutable.
 ## Cette instance contient uniquement l'état de combat (hasard, statuts, aura et
-## boucliers volés). La définition de contenu reste dans StoneLoader.
+## boucliers volés). La définition de contenu reste dans MonsterLoader.
 class_name GameState
 extends RefCounted
 
-const BattleStoneModel := preload("res://scripts/engine/BattleStone.gd")
+const BattleMonsterModel := preload("res://scripts/engine/BattleMonster.gd")
 
 ## Taille historique et valeur par défaut. La taille effective appartient à
 ## chaque partie afin que les tutoriels 3×3 n'altèrent jamais le PVP 4×4.
@@ -37,10 +37,10 @@ static func total_cells() -> int:
 ## Structure d'une case :
 ## {
 ##   "cell_type": CELL_EMPTY | CELL_BLOCKED,
-##   "stone_id": String,   # "" si vide
-##   "stone": BattleStone, # null si vide
+##   "monster_id": String,   # "" si vide
+##   "monster": BattleMonster, # null si vide
 ##   "owner": PLAYER_NONE | PLAYER_HUMAN | PLAYER_AI
-##   "placed_by": joueur qui a posé la pierre, inchangé par les captures.
+##   "placed_by": joueur qui a posé le monstre, inchangé par les captures.
 ##                Information publique : l'IA en déduit les cartes déjà jouées.
 ## }
 
@@ -50,7 +50,7 @@ static func total_cells() -> int:
 var board: Array = []
 var board_size: int = DEFAULT_BOARD_SIZE
 
-## Mains des joueurs : listes de stone_id (String) uniquement.
+## Mains des joueurs : listes de monster_id (String) uniquement.
 var human_hand: Array = []
 var ai_hand: Array = []
 
@@ -88,8 +88,8 @@ func _reset_board() -> void:
 	for i in range(cell_count()):
 		board.append({
 			"cell_type": CELL_EMPTY,
-			"stone_id": "",
-			"stone": null,
+			"monster_id": "",
+			"monster": null,
 			"owner": PLAYER_NONE,
 			"placed_by": PLAYER_NONE
 		})
@@ -114,28 +114,28 @@ func apply_blocked_cells(blocked: Array) -> void:
 			empty_playable_cells -= 1
 
 
-## Pose une pierre déjà construite avant le premier tour. Le tutoriel s'en sert
+## Pose un monstre déjà construit avant le premier tour. Le tutoriel s'en sert
 ## pour placer une cible de capture ; aucun autre mode n'appelle cette méthode.
-func place_initial_stone(row: int, col: int, stone: BattleStone, owner: int) -> bool:
-	if stone == null or not in_bounds(row, col):
+func place_initial_monster(row: int, col: int, monster: BattleMonster, owner: int) -> bool:
+	if monster == null or not in_bounds(row, col):
 		return false
 	if owner != PLAYER_HUMAN and owner != PLAYER_AI:
 		return false
 	var cell: Dictionary = board[index_of(row, col)]
 	if cell["cell_type"] == CELL_BLOCKED or cell["owner"] != PLAYER_NONE:
 		return false
-	cell["stone_id"] = stone.stone_id
-	cell["stone"] = stone
+	cell["monster_id"] = monster.monster_id
+	cell["monster"] = monster
 	cell["owner"] = owner
 	cell["placed_by"] = owner
 	empty_playable_cells = maxi(0, empty_playable_cells - 1)
 	return true
 
 
-## Installe les mains (listes de stone_id).
-func setup_hands(human_stone_ids: Array, ai_stone_ids: Array) -> void:
-	human_hand = human_stone_ids.duplicate()
-	ai_hand = ai_stone_ids.duplicate()
+## Installe les mains (listes de monster_id).
+func setup_hands(human_monster_ids: Array, ai_monster_ids: Array) -> void:
+	human_hand = human_monster_ids.duplicate()
+	ai_hand = ai_monster_ids.duplicate()
 
 
 func set_random_seed(value: int) -> void:
@@ -225,7 +225,7 @@ func god_of(player: int) -> String:
 ## ─── Copie pour l'IA ──────────────────────────────────────────────────────────
 ## IMPORTANT (choix de game design) : l'IA ne doit PAS connaître le contenu de
 ## la main du joueur humain. clone_for_ai() masque la main humaine : elle n'en
-## garde que la TAILLE (sous forme de placeholders ""), pas les vraies pierres.
+## garde que la TAILLE (sous forme de placeholders ""), pas les vraies monstres.
 ## L'IA raisonne donc sur le plateau et sa propre main, en aveugle sur la tienne.
 func clone_for_ai() -> GameState:
 	var copy := _clone_common()
@@ -249,10 +249,10 @@ func clone() -> GameState:
 func _clone_common() -> GameState:
 	var copy := GameState.new(board_size, false)
 	for cell in board:
-		# Une case ne contient que des valeurs simples et sa pierre, copiée à part.
+		# Une case ne contient que des valeurs simples et son monstre, copié à part.
 		var cloned_cell: Dictionary = cell.duplicate()
-		var stone = cell.get("stone")
-		cloned_cell["stone"] = stone.clone() if stone is BattleStoneModel else null
+		var monster = cell.get("monster")
+		cloned_cell["monster"] = monster.clone() if monster is BattleMonsterModel else null
 		copy.board.append(cloned_cell)
 	copy.ai_hand = ai_hand.duplicate()
 	copy.current_player = current_player
@@ -274,7 +274,7 @@ func _clone_common() -> GameState:
 func _public_position_key() -> String:
 	var parts: Array[String] = [str(board_size), str(current_player), str(empty_playable_cells)]
 	for cell in board:
-		parts.append("%s:%s" % [cell.get("stone_id", ""), cell.get("owner", PLAYER_NONE)])
-	for stone_id in ai_hand:
-		parts.append(str(stone_id))
+		parts.append("%s:%s" % [cell.get("monster_id", ""), cell.get("owner", PLAYER_NONE)])
+	for monster_id in ai_hand:
+		parts.append(str(monster_id))
 	return "|".join(parts)
