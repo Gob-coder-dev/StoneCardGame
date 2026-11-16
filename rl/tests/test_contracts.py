@@ -42,6 +42,7 @@ def tiny_config(tmp_path):
     config["device"] = "cpu"
     config["output_dir"] = str(tmp_path / "run")
     config["environment"]["evaluation_backend"] = "python"
+    config["environment"]["profile_backend"] = "python_approximate"
     config["model"].update(hidden_dim=16, action_hidden_dim=8)
     config["ppo"].update(
         num_envs=2,
@@ -265,6 +266,33 @@ def test_resume_source_change_requires_opt_in_and_preserves_other_guards(tmp_pat
         with PPOTrainer(path, mode="resume") as trainer:
             with pytest.raises(ValueError, match="incompatibles"):
                 trainer.load_checkpoint(checkpoint, allow_python_source_change=True)
+
+
+def test_exact_teacher_backend_migration_preserves_stage_and_rejects_approximation(tmp_path):
+    path = tiny_config(tmp_path)
+    config = yaml.safe_load(path.read_text(encoding="utf-8"))
+    config["environment"]["profile_backend"] = "godot"
+    path.write_text(yaml.safe_dump(config), encoding="utf-8")
+    with PPOTrainer(path) as trainer:
+        trainer.curriculum.stage_index = 2
+        trainer._record_engine_manifest()
+        trainer._save("latest.pt", 16, {}, 1)
+    config["environment"]["profile_backend"] = "python"
+    path.write_text(yaml.safe_dump(config), encoding="utf-8")
+    with PPOTrainer(path, mode="resume") as trainer:
+        with pytest.raises(ValueError, match="bot enseignant"):
+            trainer.load_checkpoint(tmp_path / "run/latest.pt")
+        trainer.load_checkpoint(tmp_path / "run/latest.pt", allow_python_source_change=True)
+        assert trainer.curriculum.stage_index == 2
+        assert trainer._resume_global_step == 16
+        trainer._record_engine_manifest()
+    manifest = json.loads((tmp_path / "run/run_manifest.json").read_text(encoding="utf-8"))
+    assert manifest["extra"]["profile_backend_migrations"][-1]["current"] == "python"
+    config["environment"]["profile_backend"] = "python_approximate"
+    path.write_text(yaml.safe_dump(config), encoding="utf-8")
+    with PPOTrainer(path, mode="resume") as trainer:
+        with pytest.raises(ValueError, match="bot enseignant"):
+            trainer.load_checkpoint(tmp_path / "run/latest.pt", allow_python_source_change=True)
 
 
 def test_tournament_resumes_only_missing_cases_and_invalidates_other_policy(tmp_path):

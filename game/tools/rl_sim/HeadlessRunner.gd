@@ -5,6 +5,7 @@ const SimulatorModel := preload("res://tools/rl_sim/MatchSimulator.gd")
 const Serializer := preload("res://tools/rl_sim/StateSerializer.gd")
 const DeckApi := preload("res://tools/rl_sim/DeckApi.gd")
 const NeuralApi := preload("res://tools/rl_sim/NeuralApi.gd")
+const ProfileScores := preload("res://tools/rl_sim/ProfileScoreApi.gd")
 
 var _server := TCPServer.new()
 var _peer: StreamPeerTCP = null
@@ -55,6 +56,11 @@ func _handle(line: String) -> void:
 	var request_id := int(request.get("id", 0))
 	var command := str(request.get("cmd", ""))
 	match command:
+		"profile_scores":
+			var results: Array = []
+			for item in request.get("requests", []):
+				results.append(ProfileScores.scores(item))
+			_send_ok(request_id, {"results": results})
 		"ping":
 			_send_ok(request_id, {"pong": true})
 		"reset":

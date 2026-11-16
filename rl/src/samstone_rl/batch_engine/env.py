@@ -77,14 +77,33 @@ class BatchSamStoneEnv:
         vector_tactical: bool = True,
         vector_effects: bool = True,
         tactical_workers: int = 1,
+        profile_backend: str = "python",
+        profile_workers: int = 10,
+        godot_path: str | None = None,
+        python_profile_workers: int = 1,
     ) -> None:
         if num_envs <= 0:
             raise ValueError("num_envs doit etre strictement positif")
         if not 1 <= tactical_workers <= num_envs:
             raise ValueError("tactical_workers doit etre entre 1 et num_envs")
         self.num_envs = int(num_envs)
+        if profile_backend not in ("godot", "python", "python_approximate"):
+            raise ValueError("profile_backend inconnu")
+        self.profile_backend = profile_backend
+        self.profile_oracle = None
+        if profile_backend == "godot":
+            from samstone_rl.bridge.profile_oracle import ProfileOracle
+
+            self.profile_oracle = ProfileOracle(profile_workers, godot_path, game_root)
         self.reward_scheme = reward_scheme
         self.catalog = StoneCatalog(game_root)
+        self.python_profile_pool = None
+        if python_profile_workers <= 0:
+            raise ValueError("python_profile_workers doit etre positif")
+        if profile_backend == "python" and python_profile_workers > 1:
+            from samstone_rl.fast_engine.profile_pool import PythonProfilePool
+
+            self.python_profile_pool = PythonProfilePool(self.catalog, python_profile_workers)
         self.numeric_catalog = NumericStoneCatalog.from_catalog(self.catalog)
         self.encoder = DirectStateEncoder(self.numeric_catalog)
         self.tactical_features_enabled = bool(tactical_features)
@@ -291,10 +310,11 @@ class BatchSamStoneEnv:
         return float(reward), terminated, details
 
     def _play_opponents_batch(self, indices: Sequence[int]) -> dict[int, int]:
-        """Choose profile actions in one dense tactical pass.
+        """Score teacher moves independently of the agent's tactical features.
 
-        Actual rule application remains scalar and authoritative. Only the
-        counterfactual scoring of all legal replies is shared by the batch.
+        The Python backend uses native exact scores, optionally in persistent
+        CPU workers. The Godot backend is retained for conformity diagnostics;
+        the legacy envelope is explicitly named python_approximate.
         """
         captures = {int(index): 0 for index in indices}
         profile_requests: list[tuple[int, bool, GodotProfileOpponent]] = []
@@ -307,7 +327,9 @@ class BatchSamStoneEnv:
                 continue
             opponent = getattr(slot.opponent, "selected", None) or slot.opponent
             if isinstance(opponent, GodotProfileOpponent):
-                if self.vector_tactical is None or opponent.precision <= 0.0:
+                if (
+                    self.vector_tactical is None and self.profile_oracle is None
+                ) or opponent.precision <= 0.0:
                     moves = slot.simulator.legal_actions()
                     move = opponent.choose(slot.bridge, moves, slot.rng, state.current_player)
                     result = slot.simulator.step(move)
@@ -343,8 +365,31 @@ class BatchSamStoneEnv:
             state = simulator.state
             assert state is not None
             self.encoder.action_mask(state, observer, masks[row])
-        assert self.vector_tactical is not None
-        score_batches = self.vector_tactical.evaluate(simulators, observers, masks)
+        if self.profile_oracle is not None:
+            teacher_scores = self.profile_oracle.scores(
+                [
+                    {
+                        "snapshot": simulator.serialize_for_player(observer),
+                        "anticipation": request[1],
+                    }
+                    for simulator, observer, request in zip(
+                        simulators, observers, profile_requests, strict=True
+                    )
+                ]
+            )
+        else:
+            if self.profile_backend == "python":
+                teacher_scores = (
+                    self.python_profile_pool.scores(simulators, [r[1] for r in profile_requests])
+                    if self.python_profile_pool is not None
+                    else [
+                        simulator.profile_action_scores(request[1])
+                        for simulator, request in zip(simulators, profile_requests, strict=True)
+                    ]
+                )
+            else:
+                assert self.vector_tactical is not None
+                score_batches = self.vector_tactical.evaluate(simulators, observers, masks)
         for row, ((index, anticipation, opponent), observer) in enumerate(
             zip(profile_requests, observers, strict=True)
         ):
@@ -365,7 +410,11 @@ class BatchSamStoneEnv:
                 for candidate in moves:
                     cell = int(candidate["row"]) * 4 + int(candidate["col"])
                     action = hand.index(str(candidate["stone_id"])) * 16 + cell
-                    values.append(float(score_batches[row, action, 1 if anticipation else 0]))
+                    values.append(
+                        teacher_scores[row][action]
+                        if self.profile_backend != "python_approximate"
+                        else float(score_batches[row, action, 1 if anticipation else 0])
+                    )
                 best = max(values)
                 temperature = (1.0 - precision) / precision
                 weights = [1.0 if best - value <= 1e-6 else 0.0 for value in values]
@@ -395,6 +444,7 @@ class BatchSamStoneEnv:
             "godot_version": "in-process",
             "backend": self.backend_name,
             "batch_size": self.num_envs,
+            "profile_backend": self.profile_backend,
             "vector_tactical": self.vector_tactical_enabled,
             "vector_effects": bool(self.vector_tactical and self.vector_tactical.vector_effects),
         }
@@ -405,6 +455,12 @@ class BatchSamStoneEnv:
         return {"enabled": 1.0, **self.vector_tactical.metrics(reset=reset)}
 
     def close(self) -> None:
+        if self.python_profile_pool is not None:
+            self.python_profile_pool.close()
+            self.python_profile_pool = None
+        if self.profile_oracle is not None:
+            self.profile_oracle.close()
+            self.profile_oracle = None
         if self.vector_tactical is not None:
             self.vector_tactical.close()
         self.closed = True
@@ -538,5 +594,6 @@ class BatchSamStoneEnv:
                 "opponent_god": str(slot.config.get(opponent_key, "")),
                 "opponent_id": str(getattr(slot.opponent, "selected_name", "")),
                 "opponent_category": str(getattr(slot.opponent, "selected_category", "")),
+                "opponent_stage": str(getattr(slot.opponent, "stage_name", "")),
             }
         return info

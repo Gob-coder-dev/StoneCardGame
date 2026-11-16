@@ -38,6 +38,8 @@ class CheckpointMixin:
         if any(item != engine_checksum for item in worker_checksums):
             raise RuntimeError("les processus Godot ne partagent pas le meme manifeste moteur")
         oracle = self._evaluation_manifest()
+        if getattr(self, "_profile_backend_migration", False):
+            self.tracker.migrate_profile_backend(manifest)
         self.tracker.update_manifest(
             checksums={
                 "oracle": hashlib.sha256(json.dumps(oracle, sort_keys=True).encode()).hexdigest(),
@@ -71,6 +73,7 @@ class CheckpointMixin:
             "config": self.config,
             "checkpoint_schema": 2,
             "policy_spec": policy_spec(self.config),
+            "profile_backend": self.config.get("environment", {}).get("profile_backend", "python"),
             "weight_source": getattr(self, "_weight_source", None),
             "provenance": self.provenance,
             "oracle_manifest": getattr(self, "_oracle_manifest", None),
@@ -149,6 +152,29 @@ class CheckpointMixin:
             if checkpoint.get("policy_spec") != policy_spec(self.config):
                 raise ValueError("contrat de politique incompatible pour une reprise")
             old_config = checkpoint.get("config", {})
+            # New checkpoints record the resolved default explicitly. For
+            # older ones without it, identical source provenance establishes
+            # the same Python default; changed legacy source remains guarded.
+            old_default = (
+                "python"
+                if checkpoint.get("provenance") == self.provenance
+                else "python_approximate"
+            )
+            old_profile = checkpoint.get(
+                "profile_backend",
+                old_config.get("environment", {}).get("profile_backend", old_default),
+            )
+            new_profile = self.config["environment"].get("profile_backend", "python")
+            if old_profile != new_profile:
+                if not allow_python_source_change or {old_profile, new_profile} != {
+                    "godot",
+                    "python",
+                }:
+                    raise ValueError(
+                        "bot enseignant different; importer les poids dans un nouveau run, "
+                        "ou autoriser explicitement la migration Godot/Python fidele"
+                    )
+                self._profile_backend_migration = True
             if (
                 old_config.get("environment", {}).get("reward")
                 != self.config["environment"]["reward"]

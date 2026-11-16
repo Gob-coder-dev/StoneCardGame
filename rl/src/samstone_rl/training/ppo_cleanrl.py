@@ -135,6 +135,8 @@ class PPOTrainer(RolloutMixin, EvaluationMixin, CheckpointMixin):
                 ("monitoring",),
                 ("device",),
                 ("environment", "godot_path"),
+                ("environment", "profile_backend"),
+                ("environment", "python_profile_workers"),
                 ("curriculum", "promotion_win_rate"),
                 ("curriculum", "maximum_loss_rate"),
                 ("curriculum", "non_loss_confidence_floor"),
@@ -194,6 +196,10 @@ class PPOTrainer(RolloutMixin, EvaluationMixin, CheckpointMixin):
                 vector_tactical=bool(environment.get("vector_tactical", True)),
                 vector_effects=bool(environment.get("vector_effects", True)),
                 tactical_workers=int(environment.get("tactical_workers", 1)),
+                profile_backend=str(environment.get("profile_backend", "python")),
+                profile_workers=int(environment.get("profile_workers", 10)),
+                python_profile_workers=int(environment.get("python_profile_workers", 1)),
+                godot_path=environment.get("godot_path"),
             )
             self._resources.callback(self.batch_env.close)
             self.training_envs: list[SamStoneEnv] = []
@@ -488,6 +494,7 @@ class PPOTrainer(RolloutMixin, EvaluationMixin, CheckpointMixin):
                     last_evaluation = results
                     self.tracker.log("evaluation", global_step, results, context)
                     health_metrics = {
+                        "evaluation_stage": str(context["stage"]),
                         "evaluation_win_rate": float(results["win_rate"]),
                         "evaluation_wilson_lower": float(results["wilson_lower"]),
                     }
@@ -826,6 +833,7 @@ class PPOTrainer(RolloutMixin, EvaluationMixin, CheckpointMixin):
                 {
                     "evaluation_win_rate": float(results["win_rate"]),
                     "evaluation_wilson_lower": float(results["wilson_lower"]),
+                    "evaluation_stage": evaluated_stage,
                 },
                 0,
             )
@@ -972,9 +980,9 @@ class PPOTrainer(RolloutMixin, EvaluationMixin, CheckpointMixin):
         final_margin_rewards: list[float],
         control_delta_rewards: list[float],
         steps_per_second: float,
-    ) -> dict[str, float]:
+    ) -> dict[str, Any]:
         update_seconds = len(storage["rewards"]) / max(steps_per_second, 1e-9)
-        metrics = {
+        metrics: dict[str, Any] = {
             "rollout_reward_mean": float(storage["rewards"].mean()),
             "rollout_reward_std": float(
                 (storage["rewards"] - storage["rewards"].mean()).square().mean().sqrt()
@@ -994,6 +1002,23 @@ class PPOTrainer(RolloutMixin, EvaluationMixin, CheckpointMixin):
             "illegal_actions": 0.0,
         }
         if episodes:
+            for dimension, key in (
+                ("by_opponent_stage", "opponent_stage"),
+                ("by_god", "god"),
+                ("by_blocked_count", "blocked_count"),
+            ):
+                groups: dict[str, list[dict]] = {}
+                for episode in episodes:
+                    groups.setdefault(str(episode.get(key) or "unknown"), []).append(episode)
+                metrics[dimension] = {
+                    name: {
+                        "games": len(group),
+                        "win_rate": float(np.mean([item["won"] for item in group])),
+                        "draw_rate": float(np.mean([item["draw"] for item in group])),
+                        "return_mean": float(np.mean([item["return"] for item in group])),
+                    }
+                    for name, group in groups.items()
+                }
             metrics.update(
                 {
                     "episode_return_mean": float(np.mean([item["return"] for item in episodes])),
@@ -1077,8 +1102,12 @@ class PPOTrainer(RolloutMixin, EvaluationMixin, CheckpointMixin):
     def _observe_health(self, global_step: int, metrics: dict[str, Any], update: int) -> None:
         alerts = self.health.check(global_step, metrics)
         for alert in alerts:
-            self.tracker.log_alert(alert.to_dict())
-            print(json.dumps({"alert": alert.to_dict()}, ensure_ascii=False))
+            payload = {
+                **alert.to_dict(),
+                "stage": metrics.get("evaluation_stage", self.curriculum.current.name),
+            }
+            self.tracker.log_alert(payload)
+            print(json.dumps({"alert": payload}, ensure_ascii=False))
         critical = self.health.critical(alerts)
         if critical:
             self._save("diagnostic_non_finite.pt", global_step, {}, update)

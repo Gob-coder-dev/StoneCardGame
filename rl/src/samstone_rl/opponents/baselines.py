@@ -41,6 +41,7 @@ class GodotProfileOpponent:
     precision: float
     anticipation: bool = False
     anticipation_probability: float | None = None
+    stage_name: str = ""
 
     def __post_init__(self) -> None:
         if not 0.0 <= self.precision <= 1.0:

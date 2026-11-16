@@ -439,7 +439,9 @@ def test_short_ppo_run_writes_metrics_evaluation_and_atomic_checkpoint(tmp_path)
         for line in (output / "metrics.jsonl").read_text(encoding="utf-8").splitlines()
         if line
     ]
-    assert {event["stream"] for event in events} == {"training", "evaluation"}
+    assert {event["stream"] for event in events} == {"training", "evaluation", "bootstrap_progress"}
+    progress = [event for event in events if event["stream"] == "bootstrap_progress"]
+    assert [event["metrics"]["completed_games"] for event in progress] == list(range(5))
     training = next(event for event in events if event["stream"] == "training")
     assert "normalized_entropy" in training["metrics"]
     assert "steps_per_second" in training["metrics"]

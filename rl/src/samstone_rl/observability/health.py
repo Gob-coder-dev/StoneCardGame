@@ -53,6 +53,7 @@ class HealthMonitor:
         self.consecutive: dict[str, int] = {}
         self.last_training_return: float | None = None
         self.return_at_best_eval: float | None = None
+        self.evaluation_groups: dict[str, dict[str, Any]] = {}
         self._load()
 
     def check(self, step: int, metrics: dict[str, Any]) -> tuple[HealthAlert, ...]:
@@ -152,6 +153,12 @@ class HealthMonitor:
 
         eval_rate = numeric.get("evaluation_win_rate")
         if eval_rate is not None:
+            group = str(metrics.get("evaluation_stage", "legacy"))
+            if group != "legacy":
+                previous = self.evaluation_groups.get(group, {})
+                self.best_eval = float(previous.get("best_eval", -1.0))
+                self.no_improvement = int(previous.get("no_improvement", 0))
+                self.return_at_best_eval = None
             if eval_rate > self.best_eval + 1e-12:
                 self.best_eval = eval_rate
                 self.no_improvement = 0
@@ -184,8 +191,14 @@ class HealthMonitor:
                     )
                 )
                 self.no_improvement = 0
+            if group != "legacy":
+                self.evaluation_groups[group] = {
+                    "best_eval": self.best_eval,
+                    "no_improvement": self.no_improvement,
+                }
             if (
-                self.last_training_return is not None
+                group == "legacy"
+                and self.last_training_return is not None
                 and self.return_at_best_eval is not None
                 and self.last_training_return - self.return_at_best_eval
                 > float(self.settings["maximum_reward_divergence"])
@@ -252,6 +265,7 @@ class HealthMonitor:
             if payload.get("schema_version") != 1:
                 return
             self.best_eval = float(payload.get("best_eval", -1.0))
+            self.evaluation_groups = dict(payload.get("evaluation_groups", {}))
             self.no_improvement = int(payload.get("no_improvement", 0))
             self.sps_baseline = [float(value) for value in payload.get("sps_baseline", [])]
             self.consecutive = {
@@ -268,6 +282,7 @@ class HealthMonitor:
         payload = {
             "schema_version": 1,
             "best_eval": self.best_eval,
+            "evaluation_groups": self.evaluation_groups,
             "no_improvement": self.no_improvement,
             "sps_baseline": self.sps_baseline,
             "consecutive": self.consecutive,

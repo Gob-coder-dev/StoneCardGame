@@ -30,7 +30,7 @@ Le [bilan de validation](VALIDATION.md) détaille les corrections, contrôles et
 
 ## Contrats et compatibilité
 
-- Le catalogue provient de `game/data/stones/manifest.json` et de ses familles.
+- Le catalogue provient de `game/data/monsters/manifest.json` et de ses familles.
   Ses définitions Python sont accessibles en lecture seule.
 - L'observation v1 contient 929 valeurs ; les features tactiques v2 contiennent
   79 valeurs par action. Python et Godot partagent leur signification, leurs

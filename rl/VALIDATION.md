@@ -132,7 +132,72 @@ processus, avec dix évaluateurs et une limite de temps. Il vérifie la fin des 
 parties, la progression et la conservation de l'état aléatoire PyTorch. Ce test
 reproduisait le blocage avant la protection des transferts et passe après.
 
+## Collecte Python fidèle — 17 novembre 2026
+
+Le profil officiel utilise désormais `profile_backend: python` et quatre
+workers Python persistants. Aucun appel Godot ne choisit les coups pendant
+la collecte. Godot reste l'arbitre des évaluations périodiques et finales.
+
+Le port conserve les scores de MoveEvaluator, les distributions de lignées /
+formes de RiposteModel, les bonus d'aura et EndgameSearch. Le DJB2 et le PCG32
+des aperçus natifs sont reproduits séparément du contrat LCG des features RL.
+Les ripostes sont regroupées dans NumPy ; les workers ne reçoivent que le plateau,
+la main du bot et la taille de la main adverse. Le test compare tous les scores
+légaux Python/Godot à 1e-8 près, pour six dieux, deux camps et 0/1/2 cases bloquées,
+y compris les dernières cases et les cartes aléatoires. Il contrôle l'absence
+de modification des états et générateurs réels. Des tests indépendants vérifient
+les espérances de mains par énumération et l'identité série / multiprocessus.
+
+Essai court identique au palier anticipation 75 %, 256 environnements,
+2048 décisions par mise à jour et trois mises à jour PPO DirectML :
+
+| Implémentation du bot | Médiane secondes / mise à jour | Décisions / seconde |
+| --- | ---: | ---: |
+| Oracle Godot, 10 workers | 21,94 | 93,4 |
+| Python fidèle, 4 workers | 8,92 | 229,6 |
+
+Le gain local est d'environ 2,46×. Les mises à jour utilisent respectivement
+3/4/4 époques dans les deux essais. Ces mesures incluent collecte et optimisation,
+pas les évaluations. Elles ne garantissent ni le débit d'une longue campagne,
+ni un gain de convergence proportionnel. `scripts/benchmark_profile_teacher.py`
+permet de reproduire la comparaison sur un checkpoint figé.
+
+La reprise Godot → Python fidèle est explicite avec
+`--allow-python-source-change`. Elle conserve poids, Adam, RNG, compteurs et
+palier ; le changement est historisé et les autres champs de l'identité moteur
+doivent être strictement identiques. Elle ne permet pas de reprendre comme si
+de rien n'était un ancien run utilisant `python_approximate`.
+
 ## Travail expérimental restant
+
+### Alignement du bot enseignant et renommage — 16 novembre 2026
+
+Le run `ppo_phase4_aligned_v3` remplace l'adversaire approximatif par les scores
+du véritable `MoveEvaluator.gd`, obtenus via des workers Godot persistants. Les
+snapshots ne contiennent que la main propre du bot, le nombre de cartes adverses
+et l'état public. Les features tactiques du réseau restent indépendantes de cet
+évaluateur. Un cache borné réutilise les scores des positions publiques identiques.
+
+Le test de fidélité traverse des parties complètes avec les six dieux, les deux
+camps et les deux modes d'anticipation. Chaque choix du bot natif appartient aux
+meilleurs scores du nouveau service, y compris dans les deux dernières cases.
+Le test de schéma des features Python/Godot passe avec les noms `monster`.
+
+Deux contrôles PPO DirectML ont importé le `latest.pt` v2 sans modifier l'ancien
+run : 16 environnements (128 transitions), puis 256 (2048 transitions). Le second
+a terminé collecte, une époque PPO et sauvegarde en 32,3 s, démarrage compris,
+avant ajout du cache des positions. Ce chiffre n'est pas le débit stationnaire
+d'un run long ; le nouvel adversaire coûte plus cher que l'ancienne approximation.
+
+Les métriques séparent désormais les adversaires réellement affrontés, les dieux
+et les terrains. Un test vérifie que les meilleures évaluations et les compteurs
+de plateau sont propres à chaque palier et persistent après reprise.
+
+Les anciens noms Python internes / SQLite restent intentionnels : le pont
+traduit les clés vers le protocole `monster` et le catalogue utilise le manifeste
+`data/monsters`. Le contrat numérique des poids n'est pas renommé. La migration
+officielle importe les poids du `latest.pt` v2 dans v3 ; elle ne transfère aucune
+certification, ni les compteurs ou l'optimiseur de l'ancien adversaire.
 
 La correction du logiciel ne produit pas automatiquement six boss validés.
 Aucune campagne longue ni tournoi final de 19 200 parties n’a été lancé ici.

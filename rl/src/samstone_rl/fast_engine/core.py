@@ -104,13 +104,11 @@ class FastSimulator:
         if precision <= 0.0:
             return dict(moves[self.opponent_rng.randrange(len(moves))])
         plays_best = self.opponent_rng.random() < precision
-        reply_profile = (
-            self._reply_threat_profile(state, _other(state.current_player))
-            if anticipation
-            else None
-        )
+        values = self.profile_action_scores(anticipation)
+        hand = state.hands[state.current_player]
         scored = [
-            (move, self._move_value(state, move, anticipation, reply_profile)) for move in moves
+            (move, values[hand.index(move["stone_id"]) * 16 + move["row"] * 4 + move["col"]])
+            for move in moves
         ]
         best = max(value for _move, value in scored)
         temperature = (1.0 - precision) / precision
@@ -122,13 +120,19 @@ class FastSimulator:
             ]
         return dict(scored[_weighted_index(weights, self.opponent_rng)][0])
 
+    def profile_action_scores(self, anticipation: bool) -> dict[int, float]:
+        """Native teacher policy; never substitute the RL feature envelope."""
+        from .profile_teacher import ProfileEvaluator
+
+        return ProfileEvaluator(self, anticipation).scores()
+
     def tactical_action_scores(
         self, observer: int, action_filter: set[int] | None = None
     ) -> dict[int, tuple[float, ...]]:
         """Return deterministic public consequences for every legal action.
 
-        Values use the same one-reply evaluator as the strongest profile bot,
-        but they never select an action and never consume match/opponent RNG.
+        These are the independent RL features, not the native teacher scores.
+        They never select an action or consume match/opponent RNG.
         """
         state = self._require_state()
         if observer not in (PLAYER_HUMAN, PLAYER_AI):
@@ -427,13 +431,11 @@ class FastSimulator:
     def _public_reply_threat(
         self, state: FastState, player: int, profile: ReplyThreatProfile | None = None
     ) -> float:
-        """Fast public-information upper bound for the immediate reply.
+        """Public upper bound used exclusively by the RL feature contract.
 
-        Godot's authoritative bot integrates every possible hidden lineage.
-        Doing that for every candidate placement is too expensive in Python.
-        This training heuristic instead combines the strongest still-possible
-        public attack in each direction. It never reads the real hidden cards;
-        promotion remains decided by the exact Godot evaluator.
+        The native teacher integrates hidden lineages in profile_teacher.py.
+        This separate feature combines a directional attack envelope and never
+        reads the real hidden cards. Do not use it to select teacher moves.
         """
         profile = profile or self._reply_threat_profile(state, player)
         if profile.god_id != state.gods[player]:

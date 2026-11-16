@@ -3,11 +3,16 @@
 # l'arbitre autoritaire des regles.
 seed: 20261102
 device: directml
-output_dir: runs/ppo_phase4_vectorized_v2
+output_dir: runs/ppo_phase4_aligned_v3
 
 environment:
   backend: python_batch
   evaluation_backend: godot
+  # Exact ProfileAI scores in Python; Godot is only used for validation.
+  profile_backend: python
+  python_profile_workers: 4
+  # Used only by the optional Godot teacher diagnostic backend.
+  profile_workers: 10
   vector_tactical: true
   # Essaim et Pillage sont résolus par le noyau vectorisé exact. Mettre false
   # uniquement pour l'ablation de performance avec repli scalaire.
@@ -133,7 +138,7 @@ evaluation:
 phase5:
   activation: after_phase4_gate
   require_validated_phase4: true
-  league_directory: runs/ppo_phase4_vectorized_v2/league
+  league_directory: runs/ppo_phase4_aligned_v3/league
   snapshot_every_updates: 100
   weight_schedule:
     - until_update: 100

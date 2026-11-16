@@ -33,8 +33,40 @@ données utilisateur de chaque processus.
 
 ## Choisir création, migration ou reprise
 
+Depuis le 17 novembre 2026, la collecte officielle est autonome en Python :
+`profile_backend: python`, avec quatre processus CPU persistants réglables par
+`python_profile_workers`. Les scores reproduisent MoveEvaluator, RiposteModel
+et EndgameSearch, y compris les tirages PCG des aperçus natifs. Les ripostes
+sont calculées par lots NumPy. Les features tactiques du réseau conservent leur
+contrat LCG indépendant. Godot n'est appelé que pour les validations et tests.
+`profile_backend: godot` reste disponible pour les diagnostics de conformité.
+
+Pour le run v3 existant, arrêter le processus puis reprendre son `latest.pt`
+avec `--allow-python-source-change --quiet`, sans `--weights-only`. La migration
+Godot → Python fidèle conserve Adam, le palier, les compteurs et les poids.
+Le manifeste enregistre le changement ; tous les autres champs de l'identité
+moteur doivent correspondre. Une migration depuis `python_approximate` exige
+un nouveau run et l'import des poids.
+
+Le protocole Godot utilise `monster` / `monster_id` ; le pont traduit les noms
+historiques internes du RL pour conserver le format des modèles et historiques.
+Après un renommage de classes Godot, effectuer une importation dans l'éditeur
+avant le lancement headless afin de régénérer son cache de classes.
+
+Importer `runs/ppo_phase4_vectorized_v2/latest.pt` avec `--weights-only` dans le
+run v3 : les poids sont conservés, Adam et les compteurs sont réinitialisés.
+La pré-évaluation retrouve les paliers maîtrisés. L'ancien run reste intact.
+Ne pas utiliser `--allow-python-source-change` pour contourner le changement
+de moteur/catalogue associé au renommage.
+
+Le suivi `training/by_opponent_stage`, `training/by_god` et
+`training/by_blocked_count` sépare les parties terminées par adversaire réel,
+dieu et terrain. Les alertes d'évaluation sont calculées par palier et portent
+ce palier dans le journal ; les anciens scores globaux ne leur servent pas de
+référence. Les ancrages de 24 parties restent des signaux peu précis, à confirmer.
+
 La configuration officielle est `configs/ppo_phase4_vectorized.yaml` et le
-nouveau dossier est `runs/ppo_phase4_vectorized_v2/`. Les anciens runs restent
+nouveau dossier est `runs/ppo_phase4_aligned_v3/`. Les anciens runs restent
 conservés. Le programme refuse de créer implicitement un run dans un dossier
 contenant déjà des résultats et bloque les écritures concurrentes.
 
@@ -50,7 +82,7 @@ Importer des poids antérieurs au contrat v2, dans un dossier neuf :
 ```powershell
 .\.venv311\Scripts\python.exe -m samstone_rl.training.ppo_cleanrl `
   --config configs\ppo_phase4_vectorized.yaml `
-  --resume runs\ppo_phase4_vectorized\best.pt --weights-only
+  --resume runs\ppo_phase4_vectorized_v2\latest.pt --weights-only --quiet
 ```
 
 L'import conserve les poids compatibles. Il initialise un nouvel optimiseur,
@@ -62,12 +94,12 @@ La pré-évaluation officielle peut avancer dans les paliers déjà maîtrisés.
 Elle réalise deux confirmations par palier, sans apprentissage entre elles,
 puis démarre PPO au premier échec. Les compteurs sont sauvegardés.
 
-Reprendre un run v2 compatible après un arrêt :
+Reprendre le run aligné v3 après un arrêt :
 
 ```powershell
 .\.venv311\Scripts\python.exe -m samstone_rl.training.ppo_cleanrl `
   --config configs\ppo_phase4_vectorized.yaml `
-  --resume runs\ppo_phase4_vectorized_v2\latest.pt
+  --resume runs\ppo_phase4_aligned_v3\latest.pt --allow-python-source-change --quiet
 ```
 
 Une reprise conserve l'état d'apprentissage enregistré, mais redémarre les
@@ -90,9 +122,9 @@ récompenses, `gamma`, les scénarios et le curriculum, exigent un nouveau run.
 
 ```powershell
 .\.venv311\Scripts\python.exe -m tensorboard.main `
-  --logdir runs\ppo_phase4_vectorized_v2\tensorboard --port 6006
-.\.venv311\Scripts\python.exe scripts\monitor_training.py runs\ppo_phase4_vectorized_v2
-.\.venv311\Scripts\python.exe scripts\generate_training_report.py runs\ppo_phase4_vectorized_v2
+  --logdir runs\ppo_phase4_aligned_v3\tensorboard --port 6006
+.\.venv311\Scripts\python.exe scripts\monitor_training.py runs\ppo_phase4_aligned_v3 --follow --interval 5
+.\.venv311\Scripts\python.exe scripts\generate_training_report.py runs\ppo_phase4_aligned_v3
 ```
 
 TensorBoard est accessible à `http://localhost:6006` pendant son exécution.
@@ -134,7 +166,7 @@ Le dernier palier doit être maîtrisé et attendre sa validation finale.
 
 ```powershell
 .\.venv311\Scripts\python.exe scripts\validate_phase4.py `
-  runs\ppo_phase4_vectorized_v2\best.pt --config configs\ppo_phase4_vectorized.yaml
+  runs\ppo_phase4_aligned_v3\best.pt --config configs\ppo_phase4_vectorized.yaml
 ```
 
 Le tournoi complet représente 19 200 parties. Ses résultats sont conservés sous
@@ -154,7 +186,7 @@ de ce tournoi pour ajuster les hyperparamètres.
 ```powershell
 .\.venv311\Scripts\python.exe -m samstone_rl.training.ppo_self_play `
   --config configs\ppo_self_play_v2.yaml `
-  --phase4 runs\ppo_phase4_vectorized_v2\phase4_validated.pt
+  --phase4 runs\ppo_phase4_aligned_v3\phase4_validated.pt
 ```
 
 Reprise de phase 5 : remplacer `--phase4 ...` par

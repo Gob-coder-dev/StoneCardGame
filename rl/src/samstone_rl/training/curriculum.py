@@ -30,7 +30,7 @@ class CurriculumStage:
 
     def opponent(self) -> GodotProfileOpponent:
         return GodotProfileOpponent(
-            self.precision, self.anticipation, self.anticipation_probability
+            self.precision, self.anticipation, self.anticipation_probability, self.name
         )
 
     @classmethod

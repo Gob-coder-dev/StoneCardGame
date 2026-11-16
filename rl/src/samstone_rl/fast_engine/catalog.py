@@ -77,7 +77,7 @@ class StoneCatalog:
 
     def _load_families(self) -> list[dict[str, Any]]:
         manifest = json.loads(
-            (self.game_root / "data/stones/manifest.json").read_text(encoding="utf-8-sig")
+            (self.game_root / "data/monsters/manifest.json").read_text(encoding="utf-8-sig")
         )
         if manifest.get("catalogue_version") != 1:
             raise ValueError("version du manifeste de pierres incompatible")
@@ -85,11 +85,15 @@ class StoneCatalog:
         seen: set[str] = set()
         for family in manifest["families"]:
             family_id, resource = str(family["id"]), str(family["path"])
-            if not family_id or family_id in seen or not resource.startswith("res://data/stones/"):
+            if (
+                not family_id
+                or family_id in seen
+                or not resource.startswith("res://data/monsters/")
+            ):
                 raise ValueError(f"famille invalide: {family_id}")
             seen.add(family_id)
             path = (self.game_root / resource.removeprefix("res://")).resolve()
-            if not path.is_relative_to((self.game_root / "data/stones").resolve()):
+            if not path.is_relative_to((self.game_root / "data/monsters").resolve()):
                 raise ValueError("chemin de famille hors du catalogue")
             payload = json.loads(path.read_text(encoding="utf-8-sig"))
             if payload.get("family_id") != family_id:
@@ -126,7 +130,7 @@ class StoneCatalog:
     def checksum(self) -> str:
         # A line format avoids JSON float/order differences across runtimes.
         # Cosmetic fields deliberately do not invalidate a combat policy.
-        rows = ["samstone-content-v2", ",".join(sorted(self.gods))]
+        rows = ["beastpact-content-v2", ",".join(sorted(self.gods))]
         for stone_id, stone in sorted(self.definitions.items()):
             fields = [
                 stone_id,

@@ -167,6 +167,41 @@ class RunTracker:
         )
         self.write_manifest(current)
 
+    def migrate_profile_backend(self, manifest: Mapping[str, Any]) -> None:
+        """Audit a verified native teacher implementation change, not new rules.
+
+        All engine fields except the teacher implementation must be identical.
+        This does not weaken the generic checksum checks in update_manifest.
+        """
+        current = json.loads(self.manifest_path.read_text(encoding="utf-8"))
+        previous = current.get("extra", {}).get("engine_manifest")
+        if previous is None or previous == manifest:
+            return
+        old, new = dict(previous), dict(manifest)
+        pair = {old.pop("profile_backend", None), new.pop("profile_backend", None)}
+        if pair != {"godot", "python"} or old != new:
+            raise ValueError("migration du bot incompatible avec le moteur enregistre")
+        old_checksum = hashlib.sha256(
+            json.dumps(previous, sort_keys=True, separators=(",", ":")).encode()
+        ).hexdigest()
+        if current.get("checksums", {}).get("engine") != old_checksum:
+            raise ValueError("checksum moteur anterieur incoherent")
+        new_checksum = hashlib.sha256(
+            json.dumps(manifest, sort_keys=True, separators=(",", ":")).encode()
+        ).hexdigest()
+        current["checksums"]["engine"] = new_checksum
+        current["extra"].setdefault("profile_backend_migrations", []).append(
+            {
+                "changed_at": utc_now(),
+                "previous": previous["profile_backend"],
+                "current": manifest["profile_backend"],
+                "previous_engine_sha256": old_checksum,
+                "engine_sha256": new_checksum,
+            }
+        )
+        current["extra"]["engine_manifest"] = json_value(manifest)
+        self.write_manifest(current)
+
     def update_manifest(self, **updates: Any) -> None:
         current = (
             json.loads(self.manifest_path.read_text(encoding="utf-8"))

@@ -322,6 +322,7 @@ class SamStoneEnv(gym.Env[np.ndarray, int]):
                 ),
                 "opponent_id": str(getattr(self.opponent, "selected_name", "")),
                 "opponent_category": str(getattr(self.opponent, "selected_category", "")),
+                "opponent_stage": str(getattr(self.opponent, "stage_name", "")),
             }
             if self._trace_enabled:
                 episode["actions"] = deepcopy(self._trace)
