@@ -15,15 +15,19 @@
       "lines": [
         {
           "speaker": "pr_stone",
-          "text": "Bienvenue au Refuge, {player_name}. C'est ton point de repère."
+          "text": "Bienvenue sur Beastpact jeune cobaye. Je suis le Pr. Stone, et je t'accueille dans le laboratoire de l'arène des monstres."
         },
         {
           "speaker": "pr_stone",
-          "text": "D'ici, tu ouvres toutes les portes de ton pouvoir."
+          "text": "J'étudie les monstres de ce monde depuis des siècles pour essayer de les dompter. Tu me serviras de cobaye pour comprendre ces créatures. Comment les faire combattre et comment les dompter."
         },
         {
           "speaker": "pr_stone",
-          "text": "Commence par ton deck : c'est là que se prépare ta première bataille."
+          "text": "Alors écoute bien, et ne me déçois pas. Sinon j'osculterai ton corps pour en faire un monstre !"
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Commencons par voir les monstres que tu possèdes et ceux que tu peux utiliser va voir ton deck : c'est là que se prépare ta première bataille."
         }
       ]
     },
@@ -32,7 +36,7 @@
       "lines": [
         {
           "speaker": "pr_stone",
-          "text": "Voici ta zone de deck. Ici, tu composes ton deck de monstres."
+          "text": "Voici ta zone de deck. Ici, tu composes ton deck de monstres. je t'ai donné quelques monstres de ma collection. Mais tu vas devoir te débrouiller pour en avoir d'autres."
         },
         {
           "speaker": "pr_stone",
@@ -40,7 +44,7 @@
         },
         {
           "speaker": "pr_stone",
-          "text": "Quand tu voudras façonner ton deck, c'est ici que tout se joue. Retourne maintenant à l'accueil."
+          "text": "Tu pourras créer des combinaisons de monstres pour avoir l'armée la plus forte et répondre à mes attentes. Retourne maintenant à l'accueil."
         }
       ]
     },
@@ -49,7 +53,7 @@
       "lines": [
         {
           "speaker": "pr_stone",
-          "text": "Retour à l'accueil. La Campagne est la porte des combats sataniques."
+          "text": "Retour à l'accueil. Allons maintenant combattre : la Campagne est la porte des combats sataniques."
         }
       ]
     },
@@ -58,7 +62,7 @@
       "lines": [
         {
           "speaker": "pr_stone",
-          "text": "Je t'attends au Seuil. Viens m'affronter si tu l'oses."
+          "text": "Je t'attends au Seuil. Viens m'affronter."
         },
         {
           "speaker": "pr_stone",
@@ -71,7 +75,11 @@
       "lines": [
         {
           "speaker": "pr_stone",
-          "text": "Le terrain est vide. Chacun pose une carte à son tour, puis elle frappe dans ses directions."
+          "text": "Voici le terrain de jeu. Chacun pose un monstre à son tour, puis il attaque là où il a des picks."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Quand un monstre attaque, il peut capturer un monstre adverse. L'objectif est de posséder le plus de monstres à la fin du duel."
         },
         {
           "speaker": "pr_stone",
@@ -109,11 +117,11 @@
         },
         {
           "speaker": "pr_stone",
-          "text": "Il frappe vers le haut avec 1, et ta Gueule n'avait aucune défense en bas. Son flanc nu était une invitation."
+          "text": "Il frappe vers le haut avec 1, et ta Gueule n'avait aucune défense en bas. Son flanc nu était facile à capturer."
         },
         {
           "speaker": "pr_stone",
-          "text": "Retiens la leçon : surveille les faces à 0, les tiennes comme les siennes."
+          "text": "Retiens la leçon : surveille les faces faibles, les tiennes comme les siennes."
         },
         {
           "speaker": "pr_stone",
@@ -126,11 +134,11 @@
       "lines": [
         {
           "speaker": "pr_stone",
-          "text": "Le Mordeur est revenu dans ton camp. 1 contre 0."
+          "text": "Le Mordeur est revenu dans ton camp."
         },
         {
           "speaker": "pr_stone",
-          "text": "Mes Avortons des caves arrivent avec 1 sur ses quatre faces. Inutile de l'attaquer de front : tes petites cartes n'y arriveraient pas."
+          "text": "Mes Avortons des caves arrivent avec 1 sur ses quatre faces. Inutile de l'attaquer de front : tes petites cartes sont trop faibles."
         },
         {
           "speaker": "pr_stone",
@@ -144,10 +152,6 @@
         {
           "speaker": "pr_stone",
           "text": "Dernière carte, dernière case place ton Drap du seuil."
-        },
-        {
-          "speaker": "pr_stone",
-          "text": "Une fois le plateau plein, on compte les monstres. Celui qui en possède le plus gagne."
         }
       ]
     },
@@ -156,15 +160,15 @@
       "lines": [
         {
           "speaker": "pr_stone",
-          "text": "Victoire, {player_name} ! Tu as compris les règles des combats de monstres. Je n'aurai plus besoin te ménager maintenant."
+          "text": "Bravo jeune cobaye ! Tu as compris les règles des combats de monstres. Je n'aurai plus besoin te ménager maintenant."
         },
         {
           "speaker": "pr_stone",
-          "text": "Et tu ne repars pas les mains vides : regarde tes récompenses."
+          "text": "Et comme tu ne me seras finalement pas inutile, je t'offre des nouveaux monstres et des âmes de monstres : regarde tes récompenses."
         },
         {
           "speaker": "pr_stone",
-          "text": "Des âmes, et de nouvelles cartes. Trois rejoignent ton deck et la quatrième est stockée."
+          "text": "Des âmes, et de nouveaux monstres. Trois rejoignent ta composition et la quatrième est stockée."
         }
       ]
     },
@@ -173,11 +177,11 @@
       "lines": [
         {
           "speaker": "pr_stone",
-          "text": "Ton deck est complet, mais une nouvelle carte t'attend."
+          "text": "Ton deck est complet, mais un nouveau monstre t'attend."
         },
         {
           "speaker": "pr_stone",
-          "text": "Touche-la, puis choisis la carte du deck qu'elle doit remplacer."
+          "text": "Touche-le, puis choisis le monstre du deck qu'il doit remplacer."
         }
       ]
     },
@@ -190,7 +194,7 @@
         },
         {
           "speaker": "pr_stone",
-          "text": "Le reste du Refuge est à toi. Explore, combats, et invente tes propres combinaisons. Puis retourne souffrir face à moi !"
+          "text": "Le reste du labo est à toi. Explore, combats, et invente tes propres combinaisons. Et sois utile pour mes expériences."
         }
       ]
     },
@@ -199,11 +203,11 @@
       "lines": [
         {
           "speaker": "pr_stone",
-          "text": "Bienvenue sur un vrai terrain de campagne, {player_name}. Regarde : quatre cases de côté, au lieu de trois."
+          "text": "Bienvenue sur un vrai terrain de campagne cobaye. Le premier n'était que la phase de test. Maintenant on passe sur une vraie arène. Regarde : quatre cases de côté, au lieu de trois."
         },
         {
           "speaker": "pr_stone",
-          "text": "Comme je te l'ai dit, on arrête de rigoler.Plus d'espace, plus de lignes d'attaque ! Montre moi ce que tu as dans le ventre !"
+          "text": "Commençons et voyons si ton intelligence moyenne de cobaye est capable de s'adapter à ce nouveau terrain."
         }
       ]
     },
@@ -212,7 +216,7 @@
       "lines": [
         {
           "speaker": "pr_stone",
-          "text": "Ici, le terrain se brise. Ces cases rouges avec des croix sont bloquées."
+          "text": "Attention, avec certains combats violents de sanglants, certain terrains ne sont plus opérationnels à 100%."
         },
         {
           "speaker": "pr_stone",
@@ -227,6 +231,14 @@
     "mirror_veskar": {
       "title": "Le Reflet des Aléators",
       "lines": [
+        {
+          "speaker": "pr_stone",
+          "text": "Ah encore un point à rajouter jeune cobaye. Il y a certains monstres que je n'arrive pas à dompter. ils ne peuvent être contrôlés que si leur \"Dieu\" les dirigent."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Je vais donc te demander de les combattre. De dompter ces dieux et de les utiliser pour créer des armées de monstres de plus en plus enrichissantes pour mes expériences."
+        },
         {
           "speaker": "theme_god",
           "text": "Je suis Véskar, le Manipulateur. Ose jouer ta vie contre moi et montre que tu n'as pas peur du hasard !"
@@ -254,11 +266,11 @@
         },
         {
           "speaker": "pr_stone",
-          "text": "Un deck miroir de Nérava : le même venin dans les deux camps. Ici, l'air lui-même émousse tes lames."
+          "text": "Un deck miroir de Nérava : le même venin dans les deux camps. Elle émousse tes lames."
         },
         {
           "speaker": "pr_stone",
-          "text": "Ne colle pas tes monstres à ses Miasmes : chaque voisine perd 1 d'attaque, et une lame affaiblie ne capture plus."
+          "text": "Ne colle pas tes monstres à ses Miasmes : chaque voisine perd de la force et de la robustesse."
         },
         {
           "speaker": "pr_stone",
@@ -275,7 +287,7 @@
         },
         {
           "speaker": "pr_stone",
-          "text": "Un deck miroir des Remparts. Chaque bouclier ajoute un point de défense, jamais un point d'attaque."
+          "text": "Un deck miroir des Remparts. Ses monstres sont des montagnes de défenses avec leurs boucliers, mais ils sont faibles en attaque."
         },
         {
           "speaker": "pr_stone",
@@ -292,15 +304,15 @@
       "lines": [
         {
           "speaker": "theme_god",
-          "text": "Ilyr, le Guetteur Éternel. Tu ne peux pas te cacher de moi. J'aurai toutes tes cartes qu'importe où tu les poses."
+          "text": "Ilyr, le Guetteur Éternel. Tu ne peux pas te cacher de moi. J'aurai tous tes monstres qu'importe où tu les poses."
         },
         {
           "speaker": "pr_stone",
-          "text": "Un deck miroir des Veilleurs. Ses lames bleues traversent des lignes entières."
+          "text": "Un deck miroir des Veilleurs. Ses monstres attaquent des lignes entières de l'arène."
         },
         {
           "speaker": "pr_stone",
-          "text": "Mais une carte qui résiste à ses lames arrête son projectile. Place un mur dans la ligne, ou sors de ses quatre axes."
+          "text": "Mais une carte qui résiste à ses lames arrête son projectile. Place un mur dans la ligne, ou sors des axes d'attaque."
         }
       ]
     },
