@@ -50,12 +50,17 @@ func _test_shipped_content() -> void:
 	## Les six premiers reflets : chaque dieu se présente lui-même, puis
 	## Pr. Stone explique son fonctionnement et la manière de le battre.
 	var triggers: Array = dialogues.get("triggers", [])
-	_check(triggers.size() == 6,
-		"scénario : les six premiers reflets ont leur présentation de niveau")
+	var start_triggers := 0
 	var trigger_by_node := {}
 	for value in triggers:
-		if value is Dictionary:
-			trigger_by_node[str(value.get("node_id", ""))] = value
+		if not value is Dictionary:
+			continue
+		var entry: Dictionary = value
+		if str(entry.get("event", "")) == "level_start":
+			start_triggers += 1
+			trigger_by_node[str(entry.get("node_id", ""))] = entry
+	_check(start_triggers == 6,
+		"scénario : les six premiers reflets ont leur présentation de niveau")
 	for god_id in ["veskar", "nerava", "kharun", "ilyr", "sylkha", "enigma"]:
 		var trigger: Dictionary = trigger_by_node.get("init_%s" % god_id, {})
 		_check(str(trigger.get("event", "")) == "level_start"
@@ -73,6 +78,30 @@ func _test_shipped_content() -> void:
 			has_monster = has_monster or speaker == "pr_stone"
 		_check((mirror.get("lines", []) as Array).size() >= 3 and has_god and has_monster,
 			"scénario : %s parle, puis Pr. Stone explique comment le battre" % god_id)
+
+	## Trois victoires ferment un chapitre : la conclusion est propre au niveau,
+	## ne filtre que la victoire et ne se joue qu'une fois.
+	var victory_sequences := {
+		"tuto_02": "tuto_02_victory",
+		"tuto_05": "tuto_05_victory",
+		"init_enigma": "mirror_enigma_victory",
+	}
+	for victory_node in victory_sequences.keys():
+		var node_id := str(victory_node)
+		var sequence_id := str(victory_sequences[victory_node])
+		var victory_trigger := {}
+		for value in triggers:
+			if not value is Dictionary:
+				continue
+			var victory_entry: Dictionary = value
+			if str(victory_entry.get("node_id", "")) == node_id \
+					and str(victory_entry.get("event", "")) == "level_won":
+				victory_trigger = victory_entry
+		_check(str(victory_trigger.get("sequence", "")) == sequence_id
+			and str(victory_trigger.get("outcome", "")) == "win"
+			and bool(victory_trigger.get("once", false))
+			and sequences.has(sequence_id),
+			"scénario : la victoire de '%s' conclut le niveau une seule fois" % node_id)
 
 	var tutorials: Dictionary = content.get("tutorials", {})
 	var chapters: Dictionary = tutorials.get("chapters", {})

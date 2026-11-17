@@ -94,6 +94,15 @@ func _ready() -> void:
 	StoryService.register_anchor("result.home", menu_btn)
 	StoryService.register_anchor("result.replay", replay_btn)
 	StoryService.notify_screen(Routes.CAMPAIGN_RESULT)
+	_play_story_victory()
+
+
+## Une victoire confirmée peut clore un chapitre du scénario. La séquence est
+## lue par-dessus le résultat et ne se rejoue pas : le déclencheur est `once`.
+func _play_story_victory() -> void:
+	if not _campaign or not BattleContext.campaign_victory_confirmed():
+		return
+	StoryService.play_level_won(BattleContext.campaign_node_id, "win")
 
 
 ## Une série de campagne FT2/FT3 a sa propre vue ; les autres rencontres gardent

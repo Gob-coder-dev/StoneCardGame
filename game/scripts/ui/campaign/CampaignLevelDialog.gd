@@ -6,7 +6,7 @@ class_name CampaignLevelDialog
 extends Control
 
 signal launch_requested(node_id: String)
-signal replay_requested(sequence_id: String)
+signal replay_requested(sequence_ids: Array[String])
 signal closed
 
 @onready var backdrop: Button = $Backdrop
@@ -27,7 +27,7 @@ signal closed
 
 var _node_id: String = ""
 var _state: int = 0
-var _replay_sequence_id: String = ""
+var _replay_sequence_ids: Array[String] = []
 
 
 func _ready() -> void:
@@ -77,24 +77,31 @@ func close() -> void:
 	closed.emit()
 
 
-## Une séquence déjà vue reste accessible depuis la fiche, sans relancer le
-## niveau ni consommer l'état « vu » une seconde fois.
+## Toutes les séquences déjà vues du niveau restent accessibles : un niveau
+## peut avoir une présentation au lancement et une conclusion à la victoire.
+## Sans relancer le combat, la relecture ne consomme pas l'état « vu ».
 func _refresh_replay() -> void:
-	_replay_sequence_id = ""
+	_replay_sequence_ids.clear()
 	var replayable := StoryService.replayable_sequences_for_node(_node_id)
 	replay_button.visible = not replayable.is_empty()
 	if not replay_button.visible:
 		return
-	var entry: Dictionary = replayable[0]
-	_replay_sequence_id = str(entry.get("id", ""))
-	replay_button.text = "REVOIR : %s" % str(entry.get("title", "")).to_upper()
+	for value in replayable:
+		if value is Dictionary:
+			_replay_sequence_ids.append(str((value as Dictionary).get("id", "")))
+	if _replay_sequence_ids.size() == 1:
+		replay_button.text = "REVOIR : %s" % str(
+			(replayable[0] as Dictionary).get("title", "")).to_upper()
+	else:
+		replay_button.text = "REVOIR LE SCÉNARIO"
 
 
 func _on_replay() -> void:
-	if _replay_sequence_id != "":
-		launch_button.release_focus()
-		replay_button.release_focus()
-		replay_requested.emit(_replay_sequence_id)
+	if _replay_sequence_ids.is_empty():
+		return
+	launch_button.release_focus()
+	replay_button.release_focus()
+	replay_requested.emit(_replay_sequence_ids.duplicate())
 
 
 func show_error(message: String) -> void:

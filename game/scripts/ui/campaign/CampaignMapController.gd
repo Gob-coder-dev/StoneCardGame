@@ -203,7 +203,9 @@ func _on_launch_requested(node_id: String) -> void:
 		if bool(started.get("needs_preparation", false)) else Routes.PRE_BATTLE)
 
 
-func _on_replay_requested(sequence_id: String) -> void:
+## Toutes les séquences déjà vues du niveau sont relues dans l'ordre : une
+## conclusion de victoire suit la présentation de lancement.
+func _on_replay_requested(sequence_ids: Array[String]) -> void:
 	if _replay_in_progress or _launch_in_progress:
 		return
 	_replay_in_progress = true
@@ -216,9 +218,10 @@ func _on_replay_requested(sequence_id: String) -> void:
 	map_view.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	scroll.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	await get_tree().process_frame
-	var session := StoryService.play_sequence(sequence_id, {"replay": true})
-	if session != null:
-		await session.finished
+	for sequence_id in sequence_ids:
+		var session := StoryService.play_sequence(str(sequence_id), {"replay": true})
+		if session != null:
+			await session.finished
 	if is_inside_tree():
 		map_view.mouse_filter = map_filter
 		scroll.mouse_filter = scroll_filter

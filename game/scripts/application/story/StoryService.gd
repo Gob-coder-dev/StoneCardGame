@@ -101,6 +101,16 @@ func play_level_start(node_id: String) -> StorySession:
 	return play_sequence(str(trigger.get("sequence", "")), {"trigger": trigger})
 
 
+## Une victoire confirmée peut conclure un chapitre narratif. Le déclencheur
+## reste indépendant du tutoriel : il ne demande aucune action et, marqué
+## `once`, il ne se joue qu'une seule fois par niveau.
+func play_level_won(node_id: String, outcome: String = "win") -> StorySession:
+	var trigger := _first_trigger(node_id, "level_won", {"outcome": outcome})
+	if trigger.is_empty():
+		return null
+	return play_sequence(str(trigger.get("sequence", "")), {"trigger": trigger})
+
+
 func play_sequence(sequence_id: String, options: Dictionary = {}) -> StorySession:
 	if not is_ready():
 		return null
@@ -363,7 +373,8 @@ func _theme_god_character() -> Dictionary:
 	}
 
 
-func _first_trigger(node_id: String, event: String) -> Dictionary:
+func _first_trigger(node_id: String, event: String,
+		context: Dictionary = {}) -> Dictionary:
 	if not is_ready():
 		return {}
 	var triggers: Array = _dialogues.get("triggers", [])
@@ -371,7 +382,7 @@ func _first_trigger(node_id: String, event: String) -> Dictionary:
 		if not value is Dictionary:
 			continue
 		var trigger: Dictionary = value
-		if not TriggerRulesModel.matches(trigger, node_id, event):
+		if not TriggerRulesModel.matches(trigger, node_id, event, context):
 			continue
 		var trigger_id := str(trigger.get("id", ""))
 		if bool(trigger.get("once", true)) \

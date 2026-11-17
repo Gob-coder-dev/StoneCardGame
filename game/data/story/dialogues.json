@@ -211,6 +211,23 @@
         }
       ]
     },
+    "tuto_02_victory": {
+      "title": "Suffisant pour l'expérience",
+      "lines": [
+        {
+          "speaker": "pr_stone",
+          "text": "Finalement, tu n'es peut-être pas un cobaye d'intelligence moyenne, tu as rapidement su t'adapter."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Je pense qu'on peut le qualifier de \"suffisant pour l'expérience\" pour l'instant. Mais voyons si la suite nous en dira plus."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Bravo pour ta victoire."
+        }
+      ]
+    },
     "tuto_03_intro": {
       "title": "Le terrain se brise",
       "lines": [
@@ -225,6 +242,23 @@
         {
           "speaker": "pr_stone",
           "text": "Elles dessinent des couloirs. Un couloir protège un flanc… ou t'enferme."
+        }
+      ]
+    },
+    "tuto_05_victory": {
+      "title": "Les choses sérieuses",
+      "lines": [
+        {
+          "speaker": "pr_stone",
+          "text": "Bon, tu as parfaitement compris les bases du combat et plutôt rapidement."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Je pourrais qualifier ton cerveau, il serait brillant. Et c'est une bonne nouvelle pour avoir de bons résultats d'expérience."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "On va pouvoir passer aux choses sérieuses !"
         }
       ]
     },
@@ -353,6 +387,19 @@
           "text": "Ne lui donne pas de proie gratuite : n'attaque que lorsque la capture est certaine."
         }
       ]
+    },
+    "mirror_enigma_victory": {
+      "title": "Tous les dieux domptés",
+      "lines": [
+        {
+          "speaker": "pr_stone",
+          "text": "Parfaiiiiit. Parfaiiiiiiiiiit !"
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Maintenant que tu as dompté tous les dieux, tu es fin prêt pour ton aventure ! Explore ! Combats ! Gagne ! Et laisse-moi analyser tous tes exploits pour analyser ces monstres !"
+        }
+      ]
     }
   },
   "triggers": [
@@ -396,6 +443,30 @@
       "node_id": "init_enigma",
       "event": "level_start",
       "sequence": "mirror_enigma",
+      "once": true
+    },
+    {
+      "id": "tuto_02_victory",
+      "node_id": "tuto_02",
+      "event": "level_won",
+      "outcome": "win",
+      "sequence": "tuto_02_victory",
+      "once": true
+    },
+    {
+      "id": "tuto_05_victory",
+      "node_id": "tuto_05",
+      "event": "level_won",
+      "outcome": "win",
+      "sequence": "tuto_05_victory",
+      "once": true
+    },
+    {
+      "id": "mirror_enigma_victory",
+      "node_id": "init_enigma",
+      "event": "level_won",
+      "outcome": "win",
+      "sequence": "mirror_enigma_victory",
       "once": true
     }
   ]
