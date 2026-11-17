@@ -216,11 +216,11 @@
       "lines": [
         {
           "speaker": "pr_stone",
-          "text": "Attention, avec certains combats violents de sanglants, certain terrains ne sont plus opérationnels à 100%."
+          "text": "Voici un nouveau type d'arène. Avec certains combats violents de sanglants entre monstres, certaines zones de terrains ne sont plus vraiment utilisables."
         },
         {
           "speaker": "pr_stone",
-          "text": "Aucune carte ne peut s'y poser, et aucun coup ne les traverse : ni lame, ni projectile."
+          "text": "Regarde les cases rouges avec des croix : aucun monstre ne peut s'y poser, et aucun coup ne les traverse : ni lame, ni projectile."
         },
         {
           "speaker": "pr_stone",
@@ -233,11 +233,11 @@
       "lines": [
         {
           "speaker": "pr_stone",
-          "text": "Ah encore un point à rajouter jeune cobaye. Il y a certains monstres que je n'arrive pas à dompter. ils ne peuvent être contrôlés que si leur \"Dieu\" les dirigent."
+          "text": "Voici les points à étudier jeune cobaye intelligent. Il y a certains monstres que je n'arrive pas à dompter. ils ne peuvent être contrôlés que si leur \"Dieu\" les dirigent."
         },
         {
           "speaker": "pr_stone",
-          "text": "Je vais donc te demander de les combattre. De dompter ces dieux et de les utiliser pour créer des armées de monstres de plus en plus enrichissantes pour mes expériences."
+          "text": "Je vais donc te demander de combattre tous les dieux, de dompter ces dieux et de les utiliser pour créer des armées de monstres de plus en plus enrichissantes pour mes expériences. À commencer par Véskar"
         },
         {
           "speaker": "theme_god",
