@@ -2,6 +2,7 @@
   "currency_name": "âmes",
   "shop_rotation_seconds": 10800,
   "shop_offer_count": 4,
+  "shop_reset_candles": 1,
   "repeat_reward_multiplier": 0.25,
   "first_god_price": 100,
   "other_god_price": 800,

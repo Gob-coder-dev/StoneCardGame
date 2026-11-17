@@ -25,6 +25,8 @@ static func problems(config: Dictionary = {}) -> Array[String]:
 		result.append("La durée de rotation doit être positive.")
 	if int(value.get("shop_offer_count", 0)) != 4:
 		result.append("La boutique doit contenir exactement quatre offres.")
+	if int(value.get("shop_reset_candles", 0)) <= 0:
+		result.append("Le prix de réinitialisation de la boutique doit être positif.")
 	if float(value.get("repeat_reward_multiplier", -1.0)) < 0.0:
 		result.append("Le multiplicateur de répétition est invalide.")
 	var shop: Variant = value.get("shop", {})

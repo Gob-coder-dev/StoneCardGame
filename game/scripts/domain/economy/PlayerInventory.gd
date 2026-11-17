@@ -195,6 +195,7 @@ static func _clean_shop_state(raw: Variant) -> Dictionary:
 	var rotation := Integer.read(raw.get("rotation_id"), -1, -1)
 	if rotation < 0:
 		return {}
+	var refresh_revision := Integer.read(raw.get("refresh_revision"), 0, 0)
 	var offers: Array = []
 	for value in raw["offers"]:
 		if not value is Dictionary:
@@ -211,8 +212,9 @@ static func _clean_shop_state(raw: Variant) -> Dictionary:
 	for id in raw.get("purchased_offer_ids", {}):
 		if id is String and raw["purchased_offer_ids"][id] == true:
 			purchased[id] = true
-	return {"rotation_id": rotation, "offers": offers, "purchased_offer_ids": purchased,
-		"access_revision": Integer.read(raw.get("access_revision"), -1, -1)}
+	return {"rotation_id": rotation, "access_revision": Integer.read(raw.get("access_revision"), -1, -1),
+		"refresh_revision": refresh_revision, "offers": offers,
+		"purchased_offer_ids": purchased}
 
 
 static func _lineage_affinity(lineage_id: String) -> String:

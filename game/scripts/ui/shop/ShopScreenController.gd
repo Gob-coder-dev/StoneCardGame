@@ -11,16 +11,20 @@ const Routes := preload("res://scripts/ui/GameRoutes.gd")
 const CardLayout := preload("res://scripts/ui/collection/CardGridLayout.gd")
 const TouchButtonScript := preload("res://scripts/ui/input/TouchButton.gd")
 const SOUL_ICON := preload("res://assets/ui/soul-placeholder.svg")
+const CANDLE_ICON := preload("res://assets/ui/candle-placeholder.svg")
+const REFRESH_CONFIRMATION := "Voulez-vous vraiment réinitialiser la boutique ?"
 const GodIdentityModel := preload("res://scripts/data/GodIdentity.gd")
 
 @onready var soul_balance: SoulBalance = $Content/Header/CurrencyBalances/SoulBalance
 @onready var candle_balance: CandleBalance = $Content/Header/CurrencyBalances/CandleBalance
-@onready var rotation_label: Label = $Content/Scroll/Page/Rotation
+@onready var rotation_label: Label = $Content/Scroll/Page/RotationRow/Rotation
+@onready var refresh_button: ShopRefreshButton = $Content/Scroll/Page/RotationRow/RefreshButton
 @onready var offers_grid: GridContainer = $Content/Scroll/Page/Offers
 @onready var rituals_grid: GridContainer = $Content/Scroll/Page/Rituals
 @onready var gods_grid: GridContainer = $Content/Scroll/Page/Gods
 @onready var status_label: Label = $Content/Status
 @onready var purchase_modal: ShopPurchaseModal = $PurchaseModal
+@onready var refresh_popup: ConfirmPopup = $RefreshPopup
 
 var _shop := Shop.new()
 var _economy := Economy.new()
@@ -28,12 +32,16 @@ var _rituals := Rituals.new()
 var _ends_at := 0
 var _rotation_id := -1
 var _purchase_in_progress := false
+var _refresh_in_progress := false
+var _refresh_price := 0
 
 
 func _ready() -> void:
 	$Background.room = MenuBackground.Room.PROFILE
 	$Background.set_god(GodIdentityModel.player(PlayerData.player_god_id))
 	purchase_modal.confirmed.connect(_confirm_purchase)
+	refresh_button.pressed.connect(_open_refresh_confirmation)
+	refresh_popup.confirmed.connect(_confirm_refresh)
 	_refresh()
 	_apply_columns()
 	var timer := Timer.new()
@@ -58,6 +66,8 @@ func _refresh() -> void:
 	var state := _shop.state()
 	if not bool(state.get("ok", false)):
 		_show_status(str(state.get("reason", "Boutique indisponible.")), true)
+		refresh_button.setup(0, false, "Boutique indisponible.")
+		_update_countdown()
 		return
 	_rotation_id = int(state["rotation_id"])
 	_ends_at = int(state["ends_at"])
@@ -75,7 +85,18 @@ func _refresh() -> void:
 		rituals_grid.add_child(card)
 	for god in MonsterLoader.get_all_gods():
 		gods_grid.add_child(_god_panel(god))
+	_update_refresh_button(state)
 	_update_countdown()
+
+
+func _update_refresh_button(state: Dictionary) -> void:
+	_refresh_price = maxi(0, int(state.get("refresh_price", 0)))
+	var available := bool(state.get("can_refresh", false)) and _refresh_price > 0
+	var reason := ""
+	if not available:
+		reason = "Pas assez de bougies." if PlayerData.candles() < _refresh_price \
+			else "Aucune carte disponible."
+	refresh_button.setup(_refresh_price, available, reason)
 
 
 func _offer_panel(offer: Dictionary) -> PanelContainer:
@@ -205,9 +226,34 @@ func _open_ritual() -> Error:
 	return GameRoutes.go(get_tree(), Routes.RITUAL_OPENING)
 
 
+func _open_refresh_confirmation() -> void:
+	if refresh_button.disabled or _refresh_in_progress or _refresh_price <= 0:
+		return
+	refresh_popup.open(REFRESH_CONFIRMATION,
+		"×%s" % UIFormat.integer(_refresh_price), CANDLE_ICON, "ANNULER")
+
+
+func _confirm_refresh() -> void:
+	if _refresh_in_progress:
+		return
+	_refresh_in_progress = true
+	var result := _shop.refresh()
+	_refresh_in_progress = false
+	if bool(result.get("ok", false)):
+		_show_status("Boutique réinitialisée.", false)
+	else:
+		_show_status(str(result.get("reason", "Réinitialisation impossible.")), true)
+	_refresh()
+
+
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("ui_cancel") and purchase_modal.visible \
-			and not _purchase_in_progress:
+	if not event.is_action_pressed("ui_cancel"):
+		return
+	if refresh_popup.is_open():
+		refresh_popup.dismiss()
+		get_viewport().set_input_as_handled()
+		return
+	if purchase_modal.visible and not _purchase_in_progress:
 		purchase_modal.close()
 		get_viewport().set_input_as_handled()
 

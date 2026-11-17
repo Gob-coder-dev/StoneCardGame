@@ -28,10 +28,12 @@ func run() -> void:
 	await _test_rewards_and_upgrade()
 	_test_god_purchase()
 	_test_shop()
+	_test_shop_refresh()
 	_test_ritual_config_and_transactions()
 	_test_ritual_compositions()
 	_test_ritual_compensation_and_unique()
 	await _test_shop_screen()
+	await _test_shop_refresh_ui()
 	await _test_ritual_opening_screen()
 	await _test_result_reward_ui()
 	fixture.restore()
@@ -373,6 +375,81 @@ func _test_shop() -> void:
 		"boutique : une offre ne peut être achetée qu'une fois par rotation")
 
 
+func _test_shop_refresh() -> void:
+	var service := Shop.new()
+	var config := Config.get_config()
+	_check(int(config.get("shop_reset_candles", 0)) == 1
+		and service.reset_price() == 1,
+		"boutique : la réinitialisation payante coûte une bougie configurable")
+	var economy := Economy.new()
+	economy.grant_development_souls(2000)
+	economy.grant_development_candles(5)
+	var now := 10_800 * 43 + 10
+	var first := service.state(now)
+	var offers_before: Array = first.get("offers", [])
+	_check(offers_before.size() == 4 and int(first.get("refresh_price", 0)) == 1
+		and bool(first.get("can_refresh", false)),
+		"boutique : le refresh part de quatre offres et expose son prix")
+	if offers_before.is_empty():
+		return
+	var ends_at := int(first.get("ends_at", 0))
+	var candles_before := PlayerData.candles()
+	var offer: Dictionary = offers_before[0]
+	var bought := service.buy_offer(str(offer.get("id", "")), now + 1)
+	var refreshed := service.refresh(now + 2)
+	var offers_after: Array = refreshed.get("offers", [])
+	var first_after_id := ""
+	if not offers_after.is_empty():
+		first_after_id = str(offers_after[0].get("id", ""))
+	var purchases_cleared := true
+	for value in offers_after:
+		purchases_cleared = purchases_cleared \
+			and not bool(value.get("purchased", true))
+	_check(bool(bought.get("ok", false)) and bool(refreshed.get("ok", false))
+		and PlayerData.candles() == candles_before - 1
+		and int(refreshed.get("refresh_revision", 0)) == 1
+		and offers_after.size() == 4
+		and first_after_id != str(offer.get("id", ""))
+		and int(refreshed.get("ends_at", 0)) == ends_at
+		and purchases_cleared,
+		"boutique : une bougie renouvelle les offres sans toucher au minuteur et efface les achats")
+	var second := service.refresh(now + 3)
+	_check(bool(second.get("ok", false))
+		and PlayerData.candles() == candles_before - 2
+		and int(second.get("refresh_revision", 0)) == 2
+		and int(second.get("ends_at", 0)) == ends_at,
+		"boutique : les réinitialisations payantes restent illimitées dans la même fenêtre")
+	var serialized := Codec.decode(PlayerData.get_profile())
+	_check(int(serialized.get("inventory", {}).get("shop_state", {}).get(
+		"refresh_revision", 0)) == 2,
+		"boutique : la révision de réinitialisation survit à la sauvegarde")
+	var next_free := service.state(ends_at + 1)
+	_check(int(next_free.get("refresh_revision", -1)) == 0,
+		"boutique : la fenêtre gratuite suivante repart sans révision payante")
+	var inventory := InventoryModel.from_dict(PlayerData.inventory_dict())
+	inventory.candles = 0
+	PlayerData.commit_inventory(inventory)
+	var refused := service.refresh(now + 4)
+	_check(not bool(refused.get("ok", true)) and PlayerData.candles() == 0,
+		"boutique : une réinitialisation sans bougie ne modifie rien")
+	var exhausted := InventoryModel.from_dict(PlayerData.inventory_dict())
+	for monster in MonsterLoader.get_all_monsters():
+		var lineage := MonsterLoader.monster_lineage(str(monster.get("id", "")))
+		if lineage != "":
+			exhausted.cards[lineage] = {
+				"unlocked_level": MonsterLoader.lineage_max_level(lineage),
+				"copies": 0,
+			}
+	exhausted.candles = 5
+	exhausted.shop_state = {}
+	PlayerData.commit_inventory(exhausted)
+	var empty_state := service.state(now + 5)
+	var empty_refresh := service.refresh(now + 6)
+	_check((empty_state.get("offers", []) as Array).is_empty()
+		and not bool(empty_refresh.get("ok", true)) and PlayerData.candles() == 5,
+		"boutique : un tirage vide n'est jamais facturé")
+
+
 func _test_ritual_config_and_transactions() -> void:
 	PlayerData._apply_profile(Codec.starter_profile())
 	_check(RitualConfigModel.problems().is_empty()
@@ -559,6 +636,44 @@ func _test_shop_screen() -> void:
 	_check(page.purchase_modal.visible and page.purchase_modal._kind == "god"
 		and page.purchase_modal.confirm_button.text == UIFormat.integer(page._economy.god_price()),
 		"boutique : toucher un dieu ouvre son portrait et sa confirmation")
+	page.queue_free()
+	await get_tree().process_frame
+
+
+func _test_shop_refresh_ui() -> void:
+	Economy.new().grant_development_candles(2)
+	var page := (load("res://scenes/menus/ShopScreen.tscn") as PackedScene).instantiate()
+	add_child(page)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	page._refresh()
+	_check(page.refresh_button != null and not page.refresh_button.disabled
+		and page.refresh_button.price_label.text == "1",
+		"boutique : le bouton de réinitialisation affiche son prix en bougie")
+	var candles_before := PlayerData.candles()
+	page.refresh_button.pressed.emit()
+	var message: String = page.refresh_popup.message_label.text
+	_check(page.refresh_popup.is_open() and page.refresh_popup.visible
+		and message == "Voulez-vous vraiment réinitialiser la boutique ?"
+		and page.refresh_popup.no_btn.text == "ANNULER"
+		and page.refresh_popup.yes_btn.text == "×1"
+		and page.refresh_popup.yes_btn.icon != null,
+		"boutique : le bouton ouvre la confirmation avec ANNULER et une bougie")
+	page.refresh_popup.no_btn.pressed.emit()
+	_check(not page.refresh_popup.is_open() and PlayerData.candles() == candles_before,
+		"boutique : ANNULER ne dépense aucune bougie")
+	page.refresh_button.pressed.emit()
+	page.refresh_popup.yes_btn.pressed.emit()
+	_check(not page.refresh_popup.is_open()
+		and PlayerData.candles() == candles_before - 1
+		and page.offers_grid.get_child_count() == 4,
+		"boutique : confirmer dépense une bougie et reconstruit les quatre offres")
+	var inventory := InventoryModel.from_dict(PlayerData.inventory_dict())
+	inventory.candles = 0
+	PlayerData.commit_inventory(inventory)
+	page._refresh()
+	_check(page.refresh_button.disabled,
+		"boutique : le bouton se grise sans bougie")
 	page.queue_free()
 	await get_tree().process_frame
 

@@ -24,8 +24,18 @@ func _ready() -> void:
 		UITheme.panel_style(UITheme.COL_SURFACE, UITheme.COL_DANGER, 3, 22))
 
 
-func open(text: String) -> void:
+## Les libellés et l'icône restent optionnels afin de réutiliser la même
+## confirmation pour une suppression, un abandon ou une dépense localisée.
+func open(text: String, confirm_text: String = "OUI",
+		confirm_icon: Texture2D = null, cancel_text: String = "NON") -> void:
 	message_label.text = text
+	no_btn.text = cancel_text
+	yes_btn.text = confirm_text
+	yes_btn.icon = confirm_icon
+	if confirm_icon != null:
+		yes_btn.add_theme_constant_override("icon_max_width", 44)
+	else:
+		yes_btn.remove_theme_constant_override("icon_max_width")
 	_open = true
 	visible = true
 	no_btn.grab_focus()

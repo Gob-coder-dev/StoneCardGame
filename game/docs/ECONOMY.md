@@ -56,6 +56,13 @@ ne change donc ni le tirage ni son état d’achat.
 | Épique | 1 à 3 | 30 âmes par copie |
 | Légendaire | 1 | 1 000 âmes |
 
+Un bouton de réinitialisation, placé à droite du compte à rebours, renouvelle
+immédiatement les quatre offres pour `shop_reset_candles` bougie (1 par défaut).
+Le minuteur gratuit n'est pas décalé : la fenêtre de trois heures continue. Les
+achats de la rotation courante sont oubliés, mais les cartes déjà achetées
+restent acquises. L'opération est atomique et peut être répétée tant que le
+joueur paie ; le bouton est désactivé sans bougie ou sans offre éligible.
+
 Les cartes liées à un dieu verrouillé sont exclues du tirage. Les épiques
 n'entrent dans la rotation qu'après `r04_gate` et les légendaires après
 `r07_gate`. Débloquer un jalon renouvelle proprement les offres de la rotation
