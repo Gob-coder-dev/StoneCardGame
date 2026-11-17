@@ -34,6 +34,7 @@ static func build(node: CampaignNode, campaign_version: int, player_god_id: Stri
 			"series": node.series_format(),
 			"generator_god_id": node.generator_god_id(),
 			"generator_min_god_cards": node.generator_min_god_cards(),
+			"generator_min_power_cards": node.generator_min_power_cards(),
 			"mirror_fixed_deck": node.mirror_fixed_deck(),
 		},
 		"seed": generation_seed,

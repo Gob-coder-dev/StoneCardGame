@@ -6,7 +6,7 @@ Pour lancer le jeu et ses tests, consulter le [README du projet](../README.md).
 | --- | --- |
 | [Architecture](ARCHITECTURE.md) | Organisation du code, données, IA, interface et vérifications. |
 | [Qualité et livraison](QUALITY.md) | Frontières, conventions, performance, Git et checklist de validation. |
-| [Campagne unifiée](CAMPAIGN.md) | 162 niveaux, graphe, format JSON, modes, initiations miroir, mini-boss, progression, migration et ajout de contenu. |
+| [Campagne unifiée](CAMPAIGN.md) | 165 niveaux, graphe, format JSON, modes, initiations miroir, mini-boss, progression, migration et ajout de contenu. |
 | [Économie et boutique](ECONOMY.md) | Âmes, bougies, Rituels, copies, améliorations, rotations, achats, récompenses et persistance. |
 | [Direction artistique](DIRECTION_ARTISTIQUE_MONSTRES.md) | Univers horrifique, pixel art, couleurs, familles et règles de cohérence. |
 | [Guide de prompts Fooocus](PROMPTS_FOOOCUS.md) | Références validées, palettes et prompts pour refaire les dieux et les 222 cartes restantes. |

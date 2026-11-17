@@ -8523,6 +8523,151 @@
       },
       "stage_id": "early_game",
       "balance_profile": "challenge"
+    },
+    {
+      "id": "r08_power_1",
+      "name": "Le Serment des Dés",
+      "chapter": "Les Remparts Muets",
+      "region": "Le Bastion du Hasard",
+      "type": "normal",
+      "position": {
+        "x": 100,
+        "y": 12560
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
+      "encounter": {
+        "game_mode": "random",
+        "opponent_god_policy": "generated",
+        "opponent_deck_policy": "generated",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "generator_god_id": "veskar",
+        "generator_min_god_cards": 8,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.78,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "per_attempt",
+        "seed": 10994,
+        "legacy_opponent_id": "",
+        "generator_min_power_cards": {
+          "random_blades": 6
+        }
+      },
+      "rewards": {
+        "souls_min": 29,
+        "souls_max": 38,
+        "card_rewards": []
+      },
+      "visual": {
+        "scale": 1.0
+      },
+      "stage_id": "legendary_intro",
+      "balance_profile": "challenge"
+    },
+    {
+      "id": "r08_power_2",
+      "name": "La Pièce Debout",
+      "chapter": "Les Remparts Muets",
+      "region": "Le Bastion du Hasard",
+      "type": "normal",
+      "position": {
+        "x": 100,
+        "y": 12800
+      },
+      "dead_end": false,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
+      "encounter": {
+        "game_mode": "random",
+        "opponent_god_policy": "generated",
+        "opponent_deck_policy": "generated",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "generator_god_id": "veskar",
+        "generator_min_god_cards": 8,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.82,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "per_attempt",
+        "seed": 11031,
+        "legacy_opponent_id": "",
+        "generator_min_power_cards": {
+          "coin_flip": 5
+        }
+      },
+      "rewards": {
+        "souls_min": 30,
+        "souls_max": 39,
+        "card_rewards": []
+      },
+      "visual": {
+        "scale": 1.0
+      },
+      "stage_id": "legendary_intro",
+      "balance_profile": "challenge"
+    },
+    {
+      "id": "r08_power_3",
+      "name": "Le Tirage Parfait",
+      "chapter": "Les Remparts Muets",
+      "region": "Le Bastion du Hasard",
+      "type": "normal",
+      "position": {
+        "x": 100,
+        "y": 13040
+      },
+      "dead_end": true,
+      "mini_boss_kind": "",
+      "tutorial_id": "",
+      "theme_god_id": "veskar",
+      "accent": "#e75aa8",
+      "encounter": {
+        "game_mode": "random",
+        "opponent_god_policy": "generated",
+        "opponent_deck_policy": "generated",
+        "fixed_god_id": "",
+        "fixed_deck": [],
+        "generator_god_id": "veskar",
+        "generator_min_god_cards": 8,
+        "mirror_fixed_deck": [],
+        "max_power_tier": 4,
+        "ai_profile": {
+          "precision": 0.86,
+          "anticipation": false
+        },
+        "series_format": "ft1",
+        "seed_policy": "per_attempt",
+        "seed": 11068,
+        "legacy_opponent_id": "",
+        "generator_min_power_cards": {
+          "random_blades": 4,
+          "coin_flip": 4
+        }
+      },
+      "rewards": {
+        "souls_min": 30,
+        "souls_max": 39,
+        "card_rewards": []
+      },
+      "visual": {
+        "scale": 1.0
+      },
+      "stage_id": "legendary_intro",
+      "balance_profile": "challenge"
     }
   ],
   "edges": [
@@ -9485,6 +9630,21 @@
       "id": "e_mini_optional_01_path_2_mini_optional_01",
       "from": "mini_optional_01_path_2",
       "to": "mini_optional_01"
+    },
+    {
+      "id": "e_r08_a1_r08_power_1",
+      "from": "r08_a1",
+      "to": "r08_power_1"
+    },
+    {
+      "id": "e_r08_power_1_r08_power_2",
+      "from": "r08_power_1",
+      "to": "r08_power_2"
+    },
+    {
+      "id": "e_r08_power_2_r08_power_3",
+      "from": "r08_power_2",
+      "to": "r08_power_3"
     }
   ]
 }

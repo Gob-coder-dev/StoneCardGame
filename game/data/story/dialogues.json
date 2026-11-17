@@ -400,6 +400,414 @@
           "text": "Maintenant que tu as dompté tous les dieux, tu es fin prêt pour ton aventure ! Explore ! Combats ! Gagne ! Et laisse-moi analyser tous tes exploits pour analyser ces monstres !"
         }
       ]
+    },
+    "nerava_cloche_intro": {
+      "title": "Le Vestibule des Fièvres",
+      "lines": [
+        {
+          "speaker": "theme_god",
+          "text": "Approche, porteur de sèves. Tu sens cette chaleur ? C'est ma Cloche qui fait bouillir la fièvre dans tes veines."
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Personne ne traverse mon vestibule sans laisser un peu de sa chair. Les malades sont mes enfants, et toi, tu as l'air d'un bon repas."
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Je te lance un défi : avance jusqu'à la Cloche et fais-la sonner. Si tu survis à sa communion, je reconnaîtrai peut-être que tu n'es pas qu'un cadavre en retard."
+        }
+      ]
+    },
+    "nerava_cloche_final": {
+      "title": "La Cloche se fêle",
+      "lines": [
+        {
+          "speaker": "theme_god",
+          "text": "Tu as sonné ma Cloche... et tu es encore debout ? Ton sang devrait bouillir, tes yeux fondre, tes os chanter ma gloire !"
+        },
+        {
+          "speaker": "theme_god",
+          "text": "NON. La fièvre ne t'a pas goûté. Elle te croit déjà mort ! C'est une insulte à ma maladie !"
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Très bien. Une dernière communion : toutes mes fièvres dans la même Cloche. Voyons si tu es un malade ou un miracle."
+        }
+      ]
+    },
+    "ilyr_veilleur_intro": {
+      "title": "Le Veilleur Immobile",
+      "lines": [
+        {
+          "speaker": "theme_god",
+          "text": "Halte. Je suis Ilyr, et rien ne bouge dans mon champ de vision sans mon consentement."
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Tu as croisé mon Veilleur. Il ne cligne jamais. Il ne dort jamais. Et il t'a déjà vu perdre."
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Fais un pas, si tu veux prouver que ton avenir n'est pas déjà écrit dans mes yeux."
+        }
+      ]
+    },
+    "ilyr_veilleur_rage": {
+      "title": "L'Œil qui cligne",
+      "lines": [
+        {
+          "speaker": "theme_god",
+          "text": "Tu... as bougé. Mon Veilleur a bougé. C'est impossible."
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Je vois tous les futurs, et dans aucun tu ne poses ce coup ! Tu as triché avec le temps, ou tu es une erreur dans ma vision !"
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Je vais rouvrir tous mes yeux. Chaque ligne, chaque angle, chaque battement de ton cœur. On verra si tu échappes encore à mon regard."
+        }
+      ]
+    },
+    "veskar_jeu_intro": {
+      "title": "Le Pari des Six Faces",
+      "lines": [
+        {
+          "speaker": "theme_god",
+          "text": "Ah, te voilà ! Tu sens cette odeur ? C'est celle du hasard avant qu'il ne morde."
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Ici, pas de dieu choisi, pas de deck préparé : dieu aléatoire, deck aléatoire, aléatoire à gogo, et toi au milieu. Le Jeu des Six Faces ne triche pas... enfin, pas toujours."
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Je te propose le pari de ta vie : avance, laisse les dés choisir tes armes, et essaie de me battre à mon propre jeu. Si tu gagnes, tu auras une place à ma table. Si tu perds, tu seras la mise."
+        }
+      ]
+    },
+    "veskar_jeu_final": {
+      "title": "Le Sixième Miracle",
+      "lines": [
+        {
+          "speaker": "theme_god",
+          "text": "NON. C'EST. PAS. POSSIBLE. Tu as tiré six fois, et six fois les dés t'ont souri ?"
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Tu as trop de chance ! Ce n'est plus du hasard, c'est une insulte à ma table ! Même mes cartes commencent à te regarder comme un complice !"
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Très bien. Un dernier tirage. Le plus grand. Le plus absurde. Si tu gagnes encore, je retourne le destin lui-même. ON VA VOIR SI TU Y ARRIVES ENCORE !"
+        }
+      ]
+    },
+    "sylkha_essaim_intro": {
+      "title": "Le Premier Essaim",
+      "lines": [
+        {
+          "speaker": "theme_god",
+          "text": "Chut... écoute. Ce sont mes premières larves. Elles ont faim de toi depuis que tu as posé le pied dans mes Forges."
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Tu crois affronter une reine ? Non. Tu affrontes un nid. Chaque coup que tu porteras en réveillera dix autres."
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Avance donc. Montre-moi si tu sais écraser un essaim... ou si tu vas simplement lui servir de repas."
+        }
+      ]
+    },
+    "sylkha_essaim_final": {
+      "title": "L'Essaim se vide",
+      "lines": [
+        {
+          "speaker": "theme_god",
+          "text": "Mon Premier Essaim... tu l'as écrasé. Mes larves ! Mes bébés ! Tu as une idée du temps qu'il faut pour élever une génération ?"
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Tu n'es pas un adversaire. Tu es un insecticide. Une abomination qui marche !"
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Je vais pondre une nouvelle armée, plus vite, plus affamée. Et cette fois, je te regarderai te faire dévorer jusqu'au dernier doigt."
+        }
+      ]
+    },
+    "kharun_encre_intro": {
+      "title": "Les Rayons Interdits",
+      "lines": [
+        {
+          "speaker": "theme_god",
+          "text": "Tu entres dans mes Archives. Ici, chaque page est un mur, chaque mot une pierre."
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Mon Encre Dévorante a bu des siècles de savoir. Elle te lira, te corrigera, puis t'effacera."
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Choisis tes cartes, si tu veux. Mais sache que tout ce que tu écriras finira dans mon livre."
+        }
+      ]
+    },
+    "kharun_encre_final": {
+      "title": "La Page Déchirée",
+      "lines": [
+        {
+          "speaker": "theme_god",
+          "text": "Tu as déchiré la page. Tu as renversé l'Encre. Mes Archives saignent noir par ta faute."
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Tu crois avoir gagné ? Tu n'as fait qu'ajouter un chapitre à un livre que je n'ai pas fini d'écrire."
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Je vais te relier à mes murs. Tu seras une page de plus, et cette fois, personne ne pourra te découper."
+        }
+      ]
+    },
+    "sylkha_colporteur_intro": {
+      "title": "La Ruelle des Peaux",
+      "lines": [
+        {
+          "speaker": "theme_god",
+          "text": "Toi. Oui, toi. Tu as écrasé mon Premier Essaim dans les Forges. Je n'ai pas oublié, et mes filles non plus."
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Ici, on vend des peaux. Des peaux de héros, de lâches, de rois... et bientôt la tienne."
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Tu vas jouer à mon petit jeu de troc. Des decks tirés au hasard, des peaux toujours plus nombreuses. Voyons si tu sais marchander quand tout peut changer."
+        }
+      ]
+    },
+    "sylkha_colporteur_final": {
+      "title": "Le Prix de ta Peau",
+      "lines": [
+        {
+          "speaker": "theme_god",
+          "text": "Tu as volé mes peaux ! Tu as retourné mon étal ! Mon Colporteur est ruiné !"
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Deux fois. Deux fois tu as brisé mes enfants. Tu commences à devenir une mauvaise habitude."
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Je vais te proposer un dernier marché : ta peau contre ta vie. Et cette fois, c'est moi qui fixe le prix !"
+        }
+      ]
+    },
+    "ilyr_garde_intro": {
+      "title": "La Garde en Reflet",
+      "lines": [
+        {
+          "speaker": "theme_god",
+          "text": "Tu as trompé mon Veilleur Immobile. Tu as bougé quand il regardait ailleurs. Je t'ai vu faire."
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Ici, le Puits te renvoie ton propre regard. Mes gardes porteront ton deck, tes cartes, tes erreurs. Tu vas te battre contre toi-même."
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Regarde bien ton reflet. C'est la dernière fois qu'il te ressemble."
+        }
+      ]
+    },
+    "ilyr_garde_final": {
+      "title": "Le Reflet se brise",
+      "lines": [
+        {
+          "speaker": "theme_god",
+          "text": "Mon reflet t'a laissé passer ! Mon propre reflet ! Il te ressemble trop, et ça me rend fou."
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Je ne sais plus qui est l'original. Toi, moi, le Puits... Tout se répète, tout se copie, tout me regarde !"
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Encore un miroir. Un dernier. Et cette fois, je briserai le vrai toi pour être sûr que c'est bien toi que j'efface."
+        }
+      ]
+    },
+    "ilyr_choeur_intro": {
+      "title": "Le Chœur Noyé",
+      "lines": [
+        {
+          "speaker": "theme_god",
+          "text": "Mon Veilleur Immobile. Ma Garde en Reflet. Tu as éteint les deux yeux que je t'avais prêtés."
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Ici, le Chœur chante les noms de ceux qui vont se noyer. Ton nom est déjà dans l'eau, quelque part entre deux notes."
+        },
+        {
+          "speaker": "theme_god",
+          "text": "J'ai rassemblé mes plus belles voix pour te composer un deck. Écoute bien : c'est le dernier chant que tu entendras avant le silence."
+        }
+      ]
+    },
+    "ilyr_choeur_final": {
+      "title": "Le Silence du Puits",
+      "lines": [
+        {
+          "speaker": "theme_god",
+          "text": "Le Chœur s'est tu ! Tu as noyé mes voix dans leur propre puits !"
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Je t'ai vu, je t'ai reflété, je t'ai chanté... et tu es toujours là. Tu es un aveugle, un sourd, une erreur que même mes yeux ne peuvent pas fermer !"
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Alors je vais ouvrir tous les yeux du Puits. Tous. Et je te regarderai jusqu'à ce que tu n'existes plus."
+        }
+      ]
+    },
+    "nerava_mime_intro": {
+      "title": "La Galerie des Fièvres",
+      "lines": [
+        {
+          "speaker": "theme_god",
+          "text": "Tu sens encore ma Cloche ? Elle a sonné pour toi, et tu as survécu. Je n'aime pas les miracles."
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Ici, les masques ont la fièvre. Ils imitent ta douleur, tes gestes, tes larmes. Tu vas devoir choisir un deck sans savoir qui le portera."
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Tu as vaincu mes fièvres une fois. Voyons si tu reconnais la maladie quand elle porte ton visage."
+        }
+      ]
+    },
+    "nerava_mime_final": {
+      "title": "Le Masque de Nérava",
+      "lines": [
+        {
+          "speaker": "theme_god",
+          "text": "Tu as brisé ma Cloche, et maintenant tu brises mes masques ! Tu es une épidémie à toi tout seul !"
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Je t'ai donné la fièvre, la pourriture, les visages... et tu les recraches comme un remède !"
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Un dernier masque. Le mien. Mets-le, et je te montrerai ce que la fièvre fait quand elle devient folle."
+        }
+      ]
+    },
+    "kharun_rempart_intro": {
+      "title": "Le Rempart de Carapace",
+      "lines": [
+        {
+          "speaker": "theme_god",
+          "text": "Tu as bu mon Encre Dévorante. Tu as déchiré mes Archives. Je t'ai laissé entrer, et tu as sali mes pages."
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Voici mon Rempart. Chaque carapace est un mur, chaque mur est une loi. Tu ne passeras pas."
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Frappe tant que tu veux. Mes morts ont eu des siècles pour durcir leurs os."
+        }
+      ]
+    },
+    "kharun_rempart_final": {
+      "title": "Le Mur sans Loi",
+      "lines": [
+        {
+          "speaker": "theme_god",
+          "text": "Tu as fissuré ma carapace. Tu as fendu le Rempart. Mes murs... mes murs ne tombent jamais."
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Tu n'es pas assez fort pour me briser. Tu es juste assez chanceux pour m'énerver."
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Alors je vais retirer mes lois. Toutes. Et tu vas voir ce qu'un vieux mur fait quand il n'a plus rien à protéger."
+        }
+      ]
+    },
+    "enigma_collectionneur_intro": {
+      "title": "Les Faces du Collectionneur",
+      "lines": [
+        {
+          "speaker": "theme_god",
+          "text": "Tu as dompté mon reflet. Tu as cru me comprendre. C'est touchant, de la part d'un cobaye qui ne m'a jamais vue."
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Ici, je collectionne les faces. Celles des dieux, des monstres, des héros. La tienne est déjà dans mon catalogue."
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Traverse mon Seuil. Apporte-moi une nouvelle expression. Je suis curieuse de voir celle que tu feras quand je te démonterai."
+        }
+      ]
+    },
+    "enigma_collectionneur_final": {
+      "title": "La Vitrine Brisée",
+      "lines": [
+        {
+          "speaker": "theme_god",
+          "text": "Tu as cassé ma vitrine ! Tu as éparpillé mes faces ! Tu ne sais pas ce que tu as libéré !"
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Je t'ai collectionné, découpé, recollé... et tu es encore en un seul morceau. C'est fascinant. C'est intolérable."
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Une dernière pièce, alors. La tienne. Et cette fois, je te collectionnerai vivant."
+        }
+      ]
+    },
+    "veskar_tirage_intro": {
+      "title": "Le Nouveau Pari",
+      "lines": [
+        {
+          "speaker": "theme_god",
+          "text": "Ah... tu t'es bien joué de moi tout à l'heure, HEIN !? Six faces, six chances, et tu as trouvé la seule qui te faisait gagner."
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Tu crois que c'était le hasard ? Le vrai hasard, c'est moi. Et j'ai décidé de te proposer un nouveau défi."
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Ici, les dés ne choisiront plus seulement ton deck. Ils choisiront la forme de ta chance. Lames aléatoires, pièces, tout. ON VA VOIR SI TU Y ARRIVES ENCORE !"
+        }
+      ]
+    },
+    "veskar_tirage_final": {
+      "title": "Le Tirage Parfait",
+      "lines": [
+        {
+          "speaker": "theme_god",
+          "text": "NON ! NON ! TU AS TROP DE CHANCE ! Quatre lames, quatre pièces, quatre fois le même miracle !"
+        },
+        {
+          "speaker": "theme_god",
+          "text": "J'ai mélangé les decks, les dieux, les pouvoirs... et tu tombes toujours sur la bonne face ! Tu es une anomalie ! Un dé pipé dans la chair !"
+        },
+        {
+          "speaker": "theme_god",
+          "text": "Dernier tirage. Le Tirage Parfait. Si tu gagnes encore, je jette les dés dans le néant et je recommence l'univers sans toi !"
+        }
+      ]
     }
   },
   "triggers": [
@@ -467,6 +875,175 @@
       "event": "level_won",
       "outcome": "win",
       "sequence": "mirror_enigma_victory",
+      "once": true
+    },
+    {
+      "id": "nerava_cloche_start",
+      "node_id": "mini_optional_01_path_1",
+      "event": "level_start",
+      "sequence": "nerava_cloche_intro",
+      "once": true
+    },
+    {
+      "id": "nerava_cloche_final",
+      "node_id": "mini_optional_01",
+      "event": "level_start",
+      "sequence": "nerava_cloche_final",
+      "once": true
+    },
+    {
+      "id": "ilyr_veilleur_start",
+      "node_id": "veilleur_impasse",
+      "event": "level_start",
+      "sequence": "ilyr_veilleur_intro",
+      "once": true
+    },
+    {
+      "id": "ilyr_veilleur_rage",
+      "node_id": "veilleur_impasse",
+      "event": "level_won",
+      "outcome": "win",
+      "sequence": "ilyr_veilleur_rage",
+      "once": true
+    },
+    {
+      "id": "veskar_jeu_start",
+      "node_id": "r03_mini_path_1",
+      "event": "level_start",
+      "sequence": "veskar_jeu_intro",
+      "once": true
+    },
+    {
+      "id": "veskar_jeu_final",
+      "node_id": "r03_mini",
+      "event": "level_start",
+      "sequence": "veskar_jeu_final",
+      "once": true
+    },
+    {
+      "id": "sylkha_essaim_start",
+      "node_id": "r04_mini_path_1",
+      "event": "level_start",
+      "sequence": "sylkha_essaim_intro",
+      "once": true
+    },
+    {
+      "id": "sylkha_essaim_final",
+      "node_id": "r04_mini",
+      "event": "level_start",
+      "sequence": "sylkha_essaim_final",
+      "once": true
+    },
+    {
+      "id": "kharun_encre_start",
+      "node_id": "r05_mini_path_1",
+      "event": "level_start",
+      "sequence": "kharun_encre_intro",
+      "once": true
+    },
+    {
+      "id": "kharun_encre_final",
+      "node_id": "r05_mini",
+      "event": "level_start",
+      "sequence": "kharun_encre_final",
+      "once": true
+    },
+    {
+      "id": "sylkha_colporteur_start",
+      "node_id": "r06_mini_path_1",
+      "event": "level_start",
+      "sequence": "sylkha_colporteur_intro",
+      "once": true
+    },
+    {
+      "id": "sylkha_colporteur_final",
+      "node_id": "r06_mini",
+      "event": "level_start",
+      "sequence": "sylkha_colporteur_final",
+      "once": true
+    },
+    {
+      "id": "ilyr_garde_start",
+      "node_id": "r09_mini1_path_1",
+      "event": "level_start",
+      "sequence": "ilyr_garde_intro",
+      "once": true
+    },
+    {
+      "id": "ilyr_garde_final",
+      "node_id": "r09_mini1",
+      "event": "level_start",
+      "sequence": "ilyr_garde_final",
+      "once": true
+    },
+    {
+      "id": "ilyr_choeur_start",
+      "node_id": "r09_mini2_path_1",
+      "event": "level_start",
+      "sequence": "ilyr_choeur_intro",
+      "once": true
+    },
+    {
+      "id": "ilyr_choeur_final",
+      "node_id": "r09_mini2",
+      "event": "level_start",
+      "sequence": "ilyr_choeur_final",
+      "once": true
+    },
+    {
+      "id": "nerava_mime_start",
+      "node_id": "r10_mini_path_1",
+      "event": "level_start",
+      "sequence": "nerava_mime_intro",
+      "once": true
+    },
+    {
+      "id": "nerava_mime_final",
+      "node_id": "r10_mini",
+      "event": "level_start",
+      "sequence": "nerava_mime_final",
+      "once": true
+    },
+    {
+      "id": "kharun_rempart_start",
+      "node_id": "r11_mini_path_1",
+      "event": "level_start",
+      "sequence": "kharun_rempart_intro",
+      "once": true
+    },
+    {
+      "id": "kharun_rempart_final",
+      "node_id": "r11_mini",
+      "event": "level_start",
+      "sequence": "kharun_rempart_final",
+      "once": true
+    },
+    {
+      "id": "enigma_collectionneur_start",
+      "node_id": "mini_optional_02_path_1",
+      "event": "level_start",
+      "sequence": "enigma_collectionneur_intro",
+      "once": true
+    },
+    {
+      "id": "enigma_collectionneur_final",
+      "node_id": "mini_optional_02",
+      "event": "level_start",
+      "sequence": "enigma_collectionneur_final",
+      "once": true
+    },
+    {
+      "id": "veskar_tirage_start",
+      "node_id": "r08_power_1",
+      "event": "level_start",
+      "sequence": "veskar_tirage_intro",
+      "once": true
+    },
+    {
+      "id": "veskar_tirage_final",
+      "node_id": "r08_power_3",
+      "event": "level_start",
+      "sequence": "veskar_tirage_final",
       "once": true
     }
   ]

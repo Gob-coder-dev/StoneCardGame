@@ -128,12 +128,12 @@ func _test_sections() -> void:
 func _test_page(page: Control) -> void:
 	var view: CampaignMapView = page.map_view
 	var scroll: ScrollContainer = page.scroll
-	_check(_graph.node_count() == 162,
-		"carte virtuelle : les données conservent les 162 niveaux")
+	_check(_graph.node_count() == 165,
+		"carte virtuelle : les données conservent les 165 niveaux")
 	_check(view.section_count() == 13,
 		"carte virtuelle : les 13 sections visuelles sont construites avec le graphe")
 	_check(view.loaded_count() > 0 and view.loaded_count() < _graph.node_count(),
-		"carte virtuelle : l'ouverture n'instancie pas les 162 représentations")
+		"carte virtuelle : l'ouverture n'instancie pas les 165 représentations")
 	_check(view.pending_count() == 0,
 		"carte virtuelle : la première zone finit de se construire par lots")
 	_check(scroll.scroll_vertical == 0,
@@ -238,7 +238,7 @@ func _test_far_scroll(page: Control) -> void:
 	_check(view.node_control("tuto_01") == null,
 		"carte virtuelle : une zone éloignée est déchargée")
 	_check(view.loaded_count() < _graph.node_count(),
-		"carte virtuelle : le déchargement ne recrée jamais les 162 nœuds")
+		"carte virtuelle : le déchargement ne recrée jamais les 165 nœuds")
 	_check(_service.is_completed("tuto_01") and _service.is_completed("tuto_02"),
 		"carte virtuelle : le déchargement ne perd aucune progression")
 	_check(view.get_child_count() == view.loaded_count()

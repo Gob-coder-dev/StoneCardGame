@@ -13,6 +13,7 @@ const GameModeRulesModel := preload("res://scripts/domain/GameModeRules.gd")
 const SeriesRulesModel := preload("res://scripts/domain/SeriesRules.gd")
 const AIProfileModel := preload("res://scripts/ai/AIProfile.gd")
 const MapGeometryModel := preload("res://scripts/domain/campaign/CampaignMapGeometry.gd")
+const LoadoutGeneratorModel := preload("res://scripts/domain/LoadoutGenerator.gd")
 
 ## Ces champs décriraient une route choisie ou une hiérarchie de difficulté :
 ## la campagne est un graphe où toutes les branches restent équivalentes.
@@ -342,6 +343,25 @@ static func _generator_problems(node: CampaignNode, result: Array[String]) -> vo
 				generator_god_id, node.id])
 	if generator_min > 0 and generator_god_id == "":
 		result.append("minimum de cartes du dieu sans dieu imposé sur '%s'." % node.id)
+	var raw_powers: Variant = node.encounter.get("generator_min_power_cards", {})
+	if not raw_powers is Dictionary:
+		result.append("minimums de pouvoir invalides sur '%s'." % node.id)
+	else:
+		var power_minimums := node.generator_min_power_cards()
+		if not power_minimums.is_empty() \
+				and not [GameModeRulesModel.MODE_RANDOM, GameModeRulesModel.MODE_MIRROR].has(mode):
+			result.append("minimums de pouvoir hors Aléatoire/Miroir sur '%s'." % node.id)
+		for key in power_minimums:
+			var tag := str(key)
+			var minimum := int(power_minimums[key])
+			if not LoadoutGeneratorModel.POWER_TAGS.has(tag):
+				result.append("pouvoir inconnu '%s' sur '%s'." % [tag, node.id])
+			if minimum < 0 or minimum > DeckRulesModel.DECK_SIZE:
+				result.append("minimum de cartes '%s' hors bornes sur '%s'." % [tag, node.id])
+			if not mirror_deck.is_empty() \
+					and _deck_power_count(mirror_deck, tag) < minimum:
+				result.append("deck miroir fixe sans assez de cartes '%s' sur '%s'." % [
+					tag, node.id])
 	if not mirror_deck.is_empty():
 		if mode != GameModeRulesModel.MODE_MIRROR:
 			result.append("deck miroir fixe hors du mode Miroir sur '%s'." % node.id)
@@ -485,6 +505,15 @@ static func _deck_problems(node: CampaignNode, deck: Array, god_id: String,
 		if not bool(validation.get("valid", false)):
 			result.append("%s invalide sur '%s' : %s." % [
 				label, node.id, str(validation.get("reason", ""))])
+
+
+static func _deck_power_count(deck: Array, tag: String) -> int:
+	var count := 0
+	for raw_id in deck:
+		if LoadoutGeneratorModel.definition_has_power(
+				MonsterLoader.get_monster(str(raw_id)), tag):
+			count += 1
+	return count
 
 
 static func _is_number(value: Variant) -> bool:

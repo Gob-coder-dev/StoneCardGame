@@ -70,15 +70,19 @@ func _classic(profile_one: Dictionary, profile_two: Dictionary) -> Dictionary:
 func _random(generation_seed: int, max_tier: int, constraints: Dictionary = {}) -> Dictionary:
 	var god_id := str(constraints.get("generator_god_id", ""))
 	var min_god_cards := int(constraints.get("generator_min_god_cards", 0))
-	var constraint_problem := _generation_constraint_problem(god_id, min_god_cards)
+	var raw_powers: Variant = constraints.get("generator_min_power_cards", {})
+	var constraint_problem := _generation_constraint_problem(god_id, min_god_cards,
+		raw_powers)
 	if constraint_problem != "":
 		return {"ok": false, "reason": constraint_problem}
+	var min_powers: Dictionary = (raw_powers as Dictionary).duplicate() if raw_powers is Dictionary else {}
 	var generator := _generator
 	var god_ids := _god_ids
 	if god_id != "":
 		generator = _generator_for_god(god_id, min_god_cards)
 		god_ids = [god_id]
-	var generated := generator.generate_random(generation_seed, god_ids, max_tier, min_god_cards)
+	var generated := generator.generate_random(generation_seed, god_ids, max_tier,
+		min_god_cards, min_powers)
 	if not bool(generated.get("ok", false)):
 		return generated
 	return _success(
@@ -90,9 +94,12 @@ func _random(generation_seed: int, max_tier: int, constraints: Dictionary = {}) 
 func _mirror(generation_seed: int, max_tier: int, constraints: Dictionary = {}) -> Dictionary:
 	var god_id := str(constraints.get("generator_god_id", ""))
 	var min_god_cards := int(constraints.get("generator_min_god_cards", 0))
-	var constraint_problem := _generation_constraint_problem(god_id, min_god_cards)
+	var raw_powers: Variant = constraints.get("generator_min_power_cards", {})
+	var constraint_problem := _generation_constraint_problem(god_id, min_god_cards,
+		raw_powers)
 	if constraint_problem != "":
 		return {"ok": false, "reason": constraint_problem}
+	var min_powers: Dictionary = (raw_powers as Dictionary).duplicate() if raw_powers is Dictionary else {}
 	var raw_fixed: Variant = constraints.get("mirror_fixed_deck", [])
 	var fixed_deck: Array = (raw_fixed as Array).duplicate() if raw_fixed is Array else []
 	if not fixed_deck.is_empty():
@@ -103,13 +110,16 @@ func _mirror(generation_seed: int, max_tier: int, constraints: Dictionary = {}) 
 			return {"ok": false, "reason": "Le deck miroir imposé est invalide."}
 		if DeckRules.affinity_count(fixed_deck, god_id) < min_god_cards:
 			return {"ok": false, "reason": "Le deck miroir imposé ne respecte pas le minimum de cartes du dieu."}
+		if not _meets_power_minimums(fixed_deck, min_powers):
+			return {"ok": false, "reason": "Le deck miroir imposé ne respecte pas les minimums de pouvoir."}
 		return _success(fixed_loadout, fixed_loadout.copy())
 	var generator := _generator
 	var god_ids := _god_ids
 	if god_id != "":
 		generator = _generator_for_god(god_id, min_god_cards)
 		god_ids = [god_id]
-	var generated := generator.generate_mirror(generation_seed, god_ids, max_tier, min_god_cards)
+	var generated := generator.generate_mirror(generation_seed, god_ids, max_tier,
+		min_god_cards, min_powers)
 	if not bool(generated.get("ok", false)):
 		return generated
 	var one := GameLoadout.create(str(generated["god_id"]), generated["deck"], generation_seed)
@@ -131,15 +141,31 @@ func _generator_for_god(god_id: String, min_god_cards: int) -> LoadoutGenerator:
 	return LoadoutGenerator.new(pool)
 
 
-static func _generation_constraint_problem(god_id: String,
-		min_god_cards: int) -> String:
+static func _generation_constraint_problem(god_id: String, min_god_cards: int,
+		min_powers_value: Variant = {}) -> String:
 	if min_god_cards < 0 or min_god_cards > DeckRules.DECK_SIZE:
 		return "Le minimum de cartes du dieu doit être compris entre 0 et %d." % DeckRules.DECK_SIZE
 	if min_god_cards > 0 and god_id == "":
 		return "Un minimum de cartes du dieu exige un dieu imposé."
 	if god_id != "" and MonsterLoader.get_god(god_id).is_empty():
 		return "Le dieu imposé est inconnu : %s." % god_id
+	if not min_powers_value is Dictionary:
+		return "Les minimums de pouvoir doivent être un objet."
+	if not (min_powers_value as Dictionary).is_empty():
+		return LoadoutGenerator.power_constraint_problem(min_powers_value as Dictionary)
 	return ""
+
+
+static func _meets_power_minimums(deck: Array, min_powers: Dictionary) -> bool:
+	for tag in min_powers:
+		var count := 0
+		for raw_id in deck:
+			if LoadoutGenerator.definition_has_power(
+					MonsterLoader.get_monster(str(raw_id)), str(tag)):
+				count += 1
+		if count < int(min_powers[tag]):
+			return false
+	return true
 
 
 static func _success(one: GameLoadout, two: GameLoadout) -> Dictionary:

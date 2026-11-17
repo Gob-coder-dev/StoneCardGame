@@ -185,7 +185,7 @@ Les déclencheurs détaillés, les fichiers et les règles d'extension sont dans
 | `data/monsters/manifest.json` + familles | — | Définition complète de chaque carte, regroupée par famille et chargée au démarrage |
 | `data/gods.json` | — | Dieux, familles, couleurs et descriptions |
 | `data/npcs.json` | — | Six adversaires historiques, leurs decks et profils d'IA |
-| `data/campaign/campaign_v2.json` | `CampaignContentLoader` | Définition consolidée du graphe : 162 nœuds, rencontres, positions et arêtes |
+| `data/campaign/campaign_v2.json` | `CampaignContentLoader` | Définition consolidée du graphe : 165 nœuds, rencontres, positions et arêtes |
 | `data/campaign/authoring/*.json` | `CampaignBalanceConfig` + builder Python | Courbe par chapitre et profils de récompense ; jamais lus par le combat |
 | `data/progression/content_gates.json` | `ContentGateConfig` | Boss obligatoires qui ouvrent les raretés épique et légendaire |
 | `data/economy/economy_config.json` | `EconomyConfig` | Valeurs uniques des âmes, améliorations, rotations, lots et cadeaux de dieux |

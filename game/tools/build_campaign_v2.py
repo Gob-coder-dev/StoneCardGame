@@ -1,4 +1,4 @@
-"""Construit la campagne de 162 nœuds à partir d'un plan de graphe explicite.
+"""Construit la campagne de 165 nœuds à partir d'un plan de graphe explicite.
 
 Le script ne fabrique pas de decks : il choisit dans `campaign_deck_library.json`
 des decks déjà produits et validés par Godot. Les identifiants des 20 nœuds de
@@ -1215,6 +1215,59 @@ for node_id, node in nodes.items():
 for node_id, deck in BOSS_APPROACH_DECK_OVERRIDES.items():
     nodes[node_id]["encounter"]["fixed_deck"] = list(deck)
 
+
+# ── Impasse Véskar : decks aléatoires, répartitions de pouvoirs imposées ────
+# Ajoutée après l'équilibrage et l'assignation des decks existants pour ne
+# décaler aucun seed, thème ou deck déjà livré. Les trois niveaux forment une
+# chaîne optionnelle à gauche des « Meurtrières » (r08_a1), au palier 4. Près de
+# « La Barque Sans Rame » (r03_a1, palier 2), Véskar n'a que trois lignées pile
+# ou face : les répartitions 5/3 et 4/4 y seraient impossibles.
+VESKAR_POWER_IMPASSE = [
+    dict(id="r08_power_1", name="Le Serment des Dés",
+         power={"random_blades": 6}, precision=0.78),
+    dict(id="r08_power_2", name="La Pièce Debout",
+         power={"coin_flip": 5}, precision=0.82),
+    dict(id="r08_power_3", name="Le Tirage Parfait",
+         power={"random_blades": 4, "coin_flip": 4}, precision=0.86),
+]
+
+
+def add_veskar_power_impasse() -> None:
+    parent_id = "r08_a1"
+    parent = nodes[parent_id]
+    x = 100.0
+    y = float(parent["position"]["y"])
+    chain = []
+    for index, spec in enumerate(VESKAR_POWER_IMPASSE):
+        node_id = spec["id"]
+        add_node(node_id, dict(
+            name=spec["name"], chapter=parent["chapter"],
+            region="Le Bastion du Hasard", mode="R", type="normal",
+            dead_end=index == len(VESKAR_POWER_IMPASSE) - 1,
+            tier=4, precision=spec["precision"], anticipation=False, series="ft1",
+        ), x, y + 180.0 + 240.0 * float(index))
+        node = nodes[node_id]
+        node["theme_god_id"] = "veskar"
+        node["accent"] = str(GODS_DATA["veskar"].get("color", "#f0449c"))
+        node["stage_id"] = "legendary_intro"
+        node["balance_profile"] = "challenge"
+        enc = node["encounter"]
+        enc["generator_god_id"] = "veskar"
+        enc["generator_min_god_cards"] = 8
+        enc["generator_min_power_cards"] = dict(spec["power"])
+        enc["seed"] = 5000 + list(nodes).index(node_id) * 37
+        depth[node_id] = depth[parent_id] + index + 1
+        chain.append(node_id)
+    previous = parent_id
+    for node_id in chain:
+        add_edge(previous, node_id)
+        outgoing[previous].append(node_id)
+        incoming[node_id].append(previous)
+        previous = node_id
+
+
+add_veskar_power_impasse()
+
 # Recompenses declaratives par lignee et nombre de copies.
 assign_rewards(nodes, REWARD_CONFIG, MONSTER_CATALOG, LINEAGE_CATALOG)
 
@@ -1233,12 +1286,12 @@ for node in nodes.values():
     else:
         enc["seed_policy"] = "fixed_per_node"
 
-if len(nodes) != 162:
-    raise SystemExit(f"162 nœuds attendus, obtenu {len(nodes)}")
+if len(nodes) != 165:
+    raise SystemExit(f"165 nœuds attendus, obtenu {len(nodes)}")
 if len(set(depth)) != 1 and max(depth.values()) < 45:
     raise SystemExit("profondeur de graphe insuffisante")
-if len(edges) != 190:
-    raise SystemExit(f"190 arêtes attendues, obtenu {len(edges)}")
+if len(edges) != 193:
+    raise SystemExit(f"193 arêtes attendues, obtenu {len(edges)}")
 weak_decks = []
 fixed_deck_owners = {}
 for node_id, node in nodes.items():

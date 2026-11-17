@@ -119,6 +119,13 @@ func generator_min_god_cards() -> int:
 	return int(encounter.get("generator_min_god_cards", 0))
 
 
+## Minimums de cartes par pouvoir de famille (lames aléatoires, pile ou face).
+## Un dictionnaire vide laisse le générateur libre, comme avant ce champ.
+func generator_min_power_cards() -> Dictionary:
+	var value: Variant = encounter.get("generator_min_power_cards", {})
+	return (value as Dictionary).duplicate() if value is Dictionary else {}
+
+
 func mirror_fixed_deck() -> Array:
 	var value: Variant = encounter.get("mirror_fixed_deck", [])
 	return (value as Array).duplicate() if value is Array else []
@@ -128,6 +135,7 @@ func generation_constraints() -> Dictionary:
 	return {
 		"generator_god_id": generator_god_id(),
 		"generator_min_god_cards": generator_min_god_cards(),
+		"generator_min_power_cards": generator_min_power_cards(),
 		"mirror_fixed_deck": mirror_fixed_deck(),
 	}
 

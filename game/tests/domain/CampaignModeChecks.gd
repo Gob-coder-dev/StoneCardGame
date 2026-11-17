@@ -93,6 +93,29 @@ func _test_constrained_modes() -> void:
 	_check(random_one.total_quarters == random_two.total_quarters,
 		"campagne : les decks purs contraints gardent le même total")
 
+	var power_session := SessionModel.new()
+	var power_ready := power_session.configure(_config(GameModeRules.MODE_RANDOM,
+		SeriesRules.SERIES_FT1, 4, {
+			"generator_god_id": "veskar",
+			"generator_min_god_cards": DeckRules.DECK_SIZE,
+			"generator_min_power_cards": {"random_blades": 6},
+		}), _profile(), _profile(), 470)
+	var power_one := power_session.loadout_one()
+	var power_two := power_session.loadout_two()
+	_check(bool(power_ready.get("ok", false)) and power_one != null and power_two != null
+		and _power_count(power_one.deck, "random_blades") >= 6
+		and _power_count(power_two.deck, "random_blades") >= 6
+		and _affinity_count(power_one.deck, "veskar") == DeckRules.DECK_SIZE
+		and _affinity_count(power_two.deck, "veskar") == DeckRules.DECK_SIZE,
+		"campagne : un Aléatoire Véskar peut imposer six lames aléatoires par deck")
+
+	var unknown_power := SessionModel.new().configure(_config(GameModeRules.MODE_RANDOM,
+		SeriesRules.SERIES_FT1, 4, {
+			"generator_min_power_cards": {"pouvoir_inconnu": 1},
+		}), _profile(), _profile(), 471)
+	_check(not bool(unknown_power.get("ok", true)),
+		"campagne : un pouvoir inconnu est refusé, jamais ignoré")
+
 	var generated_mirror := SessionModel.new()
 	var generated_mirror_ready := generated_mirror.configure(_config(
 		GameModeRules.MODE_MIRROR, SeriesRules.SERIES_FT2, 4, {
@@ -140,6 +163,15 @@ func _affinity_count(deck: Array, god_id: String) -> int:
 	var count := 0
 	for raw_id in deck:
 		if MonsterLoader.monster_affinity(str(raw_id)) == god_id:
+			count += 1
+	return count
+
+
+func _power_count(deck: Array, tag: String) -> int:
+	var count := 0
+	for raw_id in deck:
+		if LoadoutGenerator.definition_has_power(
+				MonsterLoader.get_monster(str(raw_id)), tag):
 			count += 1
 	return count
 

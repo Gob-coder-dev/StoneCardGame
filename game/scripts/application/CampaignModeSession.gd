@@ -40,6 +40,7 @@ func configure(config: Dictionary, player_profile: Dictionary,
 		"series": SeriesRules.normalized(str(config.get("series", SeriesRules.SERIES_FT1))),
 		"generator_god_id": str(config.get("generator_god_id", "")),
 		"generator_min_god_cards": int(config.get("generator_min_god_cards", 0)),
+		"generator_min_power_cards": _power_minimums(config),
 		"mirror_fixed_deck": (config.get("mirror_fixed_deck", []) as Array).duplicate(),
 		"revision": 0,
 	}
@@ -47,6 +48,11 @@ func configure(config: Dictionary, player_profile: Dictionary,
 	_profile_two = _profile_snapshot(opponent_profile)
 	_series = SeriesEngine.begin("campaign-%d" % generation_seed, _rules, generation_seed)
 	return prepare_round()
+
+
+static func _power_minimums(config: Dictionary) -> Dictionary:
+	var value: Variant = config.get("generator_min_power_cards", {})
+	return (value as Dictionary).duplicate() if value is Dictionary else {}
 
 
 func set_ai_choice_policy(policy: Callable) -> void:

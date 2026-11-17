@@ -33,7 +33,7 @@ Les gestes tactiles sont prévus pour laisser défiler les écrans lorsqu'ils ne
 deviennent pas un appui volontaire.
 
 L'accueil propose deux modes de largeur égale : **CAMPAGNE**, qui ouvre la
-carte unifiée de 162 niveaux contre l'IA, et **PVP**, qui ouvre un salon local. Deux téléphones
+carte unifiée de 165 niveaux contre l'IA, et **PVP**, qui ouvre un salon local. Deux téléphones
 Android sur le même Wi-Fi peuvent créer et rejoindre une partie sans serveur
 Internet, sans compte et sans service externe. Les deux modes partagent le même
 plateau, le même moteur et les mêmes vues ; seul le driver du match change. Un
@@ -222,7 +222,7 @@ L'IA utilise le même moteur sur des copies de l'état : elle ne lit ni la main
 réelle du joueur ni le prochain tirage aléatoire.
 
 La campagne principale est un graphe orienté acyclique décrit par
-`data/campaign/campaign_v2.json` : 162 nœuds, 190 arêtes et 13 sections
+`data/campaign/campaign_v2.json` : 165 nœuds, 193 arêtes et 13 sections
 visuelles. Chaque nœud porte son adversaire, son mode, ses politiques de dieu et
 de deck, son palier maximal, son profil d'IA et son format de série. Les
 positions ne servent qu'au rendu ; elles ne débloquent aucune branche. Terminer
@@ -267,8 +267,8 @@ Les données de contenu sont validées au démarrage :
 - `data/gods.json` : dieux, familles, couleurs, descriptions et portraits ;
 - `data/npcs.json` : six adversaires historiques, conservés pour les tests et
   les anciennes références ;
-- `data/campaign/campaign_v2.json` : graphe de la campagne unifiée, 162 nœuds,
-  190 arêtes et 13 sections, chargé et validé par `CampaignContentLoader`,
+- `data/campaign/campaign_v2.json` : graphe de la campagne unifiée, 165 nœuds,
+  193 arêtes et 13 sections, chargé et validé par `CampaignContentLoader`,
   `CampaignValidator` et `CampaignAudit` ;
 - `OpponentCatalog` : génère les 105 rencontres historiques (six dieux et un bot
   neutre, trois paliers de cartes et cinq difficultés) ; la campagne unifiée

@@ -1,7 +1,7 @@
 # Campagne unifiée
 
 La campagne est un graphe orienté acyclique unique, chargé depuis
-`data/campaign/campaign_v2.json`. Elle contient **162 niveaux**, **190 arêtes**
+`data/campaign/campaign_v2.json`. Elle contient **165 niveaux**, **193 arêtes**
 et **13 sections visuelles** sur une seule carte de **1080 × 19800** unités.
 `CampaignContentLoader.DEFAULT_PATH` pointe vers ce fichier et
 `campaign_version` vaut `6`.
@@ -13,8 +13,8 @@ de comparaison historique. Il n'est plus chargé par le jeu.
 
 | Mesure | Valeur |
 | --- | --- |
-| Niveaux | 162 |
-| Arêtes | 190 |
+| Niveaux | 165 |
+| Arêtes | 193 |
 | Sections visuelles | 13 |
 | Profondeur minimale / maximale | 0 / 77 |
 | Plus longue série de mode | 21, parcours Classique d'apprentissage |
@@ -24,9 +24,9 @@ de comparaison historique. Il n'est plus chargé par le jeu.
 | Mini-boss facultatifs | 10 |
 | Mini-boss obligatoires | 4 |
 | Mini-boss en FT2 | 14 |
-| Séries FT1 / FT2 / FT3 | 144 / 17 / 1 |
+| Séries FT1 / FT2 / FT3 | 147 / 17 / 1 |
 | Decks fixes uniques | 94 |
-| Générateurs contraints | 12 nœuds, dont 3 mini-boss (Véskar, Sylkha, Ilyr) |
+| Générateurs contraints | 15 nœuds, dont 3 mini-boss (Véskar, Sylkha, Ilyr) |
 | Decks miroirs fixes | 7 (six initiations et Ilyr) |
 | Cartes du dieu par deck fixe | 3 minimum |
 
@@ -37,7 +37,7 @@ divin. Ils sont suivis de six initiations miroir, une par dieu.
 
 | Dieu | Nœuds thématiques | Nœuds à dieu réellement fixé |
 | --- | ---: | ---: |
-| Véskar | 26 | 18 |
+| Véskar | 29 | 18 |
 | Nérava | 26 | 21 |
 | Kharûn | 26 | 21 |
 | Énigma | 27 | 21 |
@@ -53,7 +53,7 @@ au libellé d'inspiration, pas à verrouiller le tirage.
 | Mode | Niveaux |
 | --- | ---: |
 | Classique | 95 |
-| Aléatoire | 21 |
+| Aléatoire | 24 |
 | Miroir | 21 |
 | Sélection | 25 |
 
@@ -75,7 +75,7 @@ règles du mode.
 | 1 | 13 |
 | 2 | 42 |
 | 3 | 36 |
-| 4 | 71 |
+| 4 | 74 |
 
 Le palier est calculé avec `CardPowerTierRules` : niveau de forme plus décalage
 de rareté, avec l'exception explicite éventuelle du catalogue. Une légendaire
@@ -83,7 +83,7 @@ niveau 1 n'est donc pas une carte de palier 1.
 
 ### Précision de l'IA
 
-Les 162 profils utilisent **83 valeurs distinctes** entre 0 et 1. 151 nœuds
+Les 165 profils utilisent **83 valeurs distinctes** entre 0 et 1. 154 nœuds
 utilisent une valeur qui n'est pas un multiple de 0,25. La précision suit la
 profondeur et la fonction de la rencontre, sans progression strictement
 linéaire.
@@ -92,7 +92,7 @@ linéaire.
 | --- | ---: | ---: | ---: | ---: |
 | 0–19 | 31 | 0,00 | 0,38 | 0,165 |
 | 20–39 | 45 | 0,27 | 0,75 | 0,489 |
-| 40–59 | 46 | 0,48 | 0,90 | 0,695 |
+| 40–59 | 49 | 0,48 | 0,90 | 0,702 |
 | 60–79 | 40 | 0,74 | 1,00 | 0,869 |
 
 Les mini-boss et les rencontres majeures servent de pics ; les nœuds qui suivent
@@ -114,17 +114,17 @@ deux de palier 2 à 0,24, avant La Porte des Assimilateurs à 0,30 en FT2.
 | Mesure | Valeur |
 | --- | ---: |
 | Nœuds avec plusieurs sorties | 29 |
-| Embranchements à exactement 2 sorties | 20 |
-| Embranchements à exactement 3 sorties | 7 |
+| Embranchements à exactement 2 sorties | 19 |
+| Embranchements à exactement 3 sorties | 8 |
 | Embranchements à exactement 4 sorties | 2 |
 | Nœuds de regroupement | 18 |
 | Regroupements à 2 entrées | 10 |
 | Regroupements à 3 entrées ou plus | 8 |
-| Impasses | 12 |
+| Impasses | 13 |
 
-Les 12 impasses comprennent les 10 mini-boss facultatifs, le cul-de-sac
-`veilleur_impasse` et le boss final. Les 11 impasses hors boss final sont donc
-toutes secondaires.
+Les 13 impasses comprennent les 10 mini-boss facultatifs, le cul-de-sac
+`veilleur_impasse`, l'impasse Véskar des pouvoirs et le boss final. Les 12
+impasses hors boss final sont donc toutes secondaires.
 
 Les quatre mini-boss obligatoires sont placés sur des passages incontournables.
 Les mini-boss facultatifs n'ont aucune sortie. Aucun nœud ne verrouille une
@@ -143,7 +143,7 @@ regroupement est débloqué par **n'importe lequel** de ses prédécesseurs.
 | La Bibliothèque des Os | 13 |
 | Le Marché Nocturne | 13 |
 | Les Serres de Verre | 10 |
-| Les Remparts Muets | 10 |
+| Les Remparts Muets | 13 |
 | Le Puits des Échos | 18 |
 | La Cour des Masques | 14 |
 | Les Jardins de Cendre | 14 |
@@ -259,6 +259,7 @@ Le fichier est la source de vérité du contenu livré. Il est produit par
 | `fixed_deck` | Huit identifiants de formes pour un deck fixe |
 | `generator_god_id` | Dieu imposé aux modes Aléatoire/Miroir, ou vide |
 | `generator_min_god_cards` | Minimum de cartes de ce dieu ; 8 impose un deck pur |
+| `generator_min_power_cards` | Minimums par pouvoir (`random_blades`, `coin_flip`) dans les decks générés |
 | `mirror_fixed_deck` | Deck exact copié aux deux camps en Miroir, ou vide |
 | `max_power_tier` | Palier maximal autorisé pour la rencontre |
 | `ai_profile` | Précision, anticipation et réglages réels du profil |
@@ -282,10 +283,23 @@ Les champs de génération sont optionnels et additifs. `generator_god_id` filtr
 le pool du mode Aléatoire ou Miroir. `generator_min_god_cards` est une vraie
 contrainte du solveur : 7 garantit au moins sept cartes du dieu et 8 exclut
 toutes les cartes neutres. Une valeur hors de 0–8 est refusée, jamais corrigée
-silencieusement. Un
+silencieusement. `generator_min_power_cards` ajoute des minimums par pouvoir :
+`{"random_blades": 6}` exige six cartes à lames aléatoires et
+`{"coin_flip": 5}` cinq cartes à pile ou face. Les clés inconnues et les bornes
+hors de 0–8 sont refusées. Le solveur compte ces pouvoirs sur chaque carte et
+n'accepte un deck que si les deux camps respectent les minimums. Un
 `mirror_fixed_deck` non vide est validé comme un deck de huit cartes, puis copié
 pour les deux camps. Le validateur vérifie les mêmes règles de palier, de
-lignées, de budget et de minimum de cartes du dieu que pour un deck fixe.
+lignées, de budget, de minimum de cartes du dieu et de pouvoir que pour un deck
+fixe.
+
+L'impasse `r08_power_1` → `r08_power_2` → `r08_power_3` se détache de
+`r08_a1` (« Les Meurtrières »), à gauche de la carte, au palier 4. Elle ne peut
+pas être placée près de « La Barque Sans Rame » (`r03_a1`) : le Marais est en
+`pre_epic`, palier 2, et Véskar n'y dispose que de trois lignées pile ou face.
+Ses trois niveaux sont des Aléatoires Véskar purs au palier 4 : `random_blades`
+6, `coin_flip` 5, puis un partage exact 4/4. Le dernier niveau est une impasse
+déclarée ; les deux premiers ne le sont pas.
 
 Le moteur de plateau lit `board_size` depuis `GameState`; règles de placement,
 effets, IA, vue et animations utilisent tous cette même valeur. Le 3 × 3 n’est
@@ -386,6 +400,23 @@ un mini-boss obligatoire. Le graphe reste acyclique, les mini-boss facultatifs
 restent les seuls nœuds qui ferment leur branche, et les anciennes sauvegardes
 qui les avaient déjà vaincus reçoivent leurs niveaux d'approche terminés.
 
+### Intrigues des impasses
+
+Les douze impasses hors boss final ont une intrigue en deux temps, portée par
+le dieu de la branche (`theme_god`) :
+
+- au lancement du premier niveau, un défi personnel présente l'enjeu de la
+  branche et provoque le joueur ;
+- au lancement du dernier niveau, le même dieu perd son calme et propose un
+  ultime défi. Pour `veilleur_impasse`, qui ne compte qu'un niveau, la rage est
+  jouée sur `level_won` après la victoire.
+
+Les impasses répétées d'un même dieu se répondent : Nérava rappelle la Cloche
+des Fièvres, Ilyr le Veilleur puis la Garde en Reflet, Véskar le Jeu des Six
+Faces, Sylkha le Premier Essaim et Kharûn l'Encre Dévorante. Énigma, qui n'a
+qu'une impasse, ouvre et ferme seule son cycle. Tous les déclencheurs sont
+`once` : les scènes restent consultables par la relecture du niveau.
+
 ## Progression et déblocage
 
 `CampaignUnlockRules` applique une seule règle :
@@ -426,7 +457,7 @@ victoires existantes.
   d'approche sont marqués terminés : la sauvegarde de référence passe ainsi à
   27 victoires, sans rejouer l'impasse. Les nouveaux nœuds du Carrefour et la
   suite de la Cime s'ouvrent derrière `boss_required_gate` déjà terminé.
-- Un profil neuf démarre sur `tuto_01` avec la campagne à 162 niveaux.
+- Un profil neuf démarre sur `tuto_01` avec la campagne à 165 niveaux.
 - Une migration interrompue ou rejouée ne duplique pas les victoires et ne
   réinitialise jamais la progression.
 
@@ -435,7 +466,7 @@ identifiants sont stables et n'entrent pas en collision avec les anciens.
 
 ## Carte et lisibilité
 
-La carte est **virtualisée** : les 162 nœuds et les 190 arêtes restent dans les
+La carte est **virtualisée** : les 165 nœuds et les 193 arêtes restent dans les
 données, mais seuls les nœuds des secteurs utiles possèdent un `Control`. Le
 fond, les nœuds, les courbes et les points de contrôle partagent toujours le
 même espace logique et le même facteur d'échelle.
@@ -470,7 +501,7 @@ même espace logique et le même facteur d'échelle.
 - Les nœuds ont un diamètre de 150 unités et une distance minimale mesurée de
   180 unités. Le placement local des approches conserve cette distance. Les
   courbes sont précalculées par l'index spatial et les nœuds disponibles seuls
-  animent leur pulsation ; les 162 anciens `_process()` ne sont plus exécutés.
+  animent leur pulsation ; les 165 anciens `_process()` ne sont plus exécutés.
 - Les labels de section sont limités aux chapitres proches du viewport.
 - `CampaignSectionTheme` transforme les treize chapitres en bandes contiguës :
   la frontière entre deux chapitres est placée au milieu de leurs médianes Y,
@@ -482,7 +513,7 @@ même espace logique et le même facteur d'échelle.
 - Le défilement, l'inertie, le toucher et le glissement sont testés sur les
   formats téléphone et tablette.
 
-La carte reste volontairement haute : 19 800 unités pour 162 nœuds. Le
+La carte reste volontairement haute : 19 800 unités pour 165 nœuds. Le
 défilement est donc une partie normale de la navigation, pas un défaut de mise
 en page.
 
@@ -535,7 +566,7 @@ de chargement.
 - Les vues hors zone sont réinitialisées puis placées dans un pool borné ; elles
   ne traitent plus aucune image tant qu'elles sont détachées.
 - Les arêtes et repères sont filtrés par un index spatial immuable : aucun scan
-  des 190 arêtes n'est effectué à chaque pixel ni à chaque lot de nœuds.
+  des 193 arêtes n'est effectué à chaque pixel ni à chaque lot de nœuds.
 - La progression n'est jamais recalculée ni modifiée par un chargement ou un
   déchargement.
 

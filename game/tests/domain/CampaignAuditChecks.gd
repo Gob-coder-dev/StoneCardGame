@@ -18,10 +18,10 @@ func run() -> void:
 	var graph: CampaignGraph = GraphModel.build(content["definition"])
 	var audit := AuditModel.build(graph)
 
-	_check(int(audit["total_nodes"]) == 162,
-		"audit : exactement 162 niveaux")
-	_check(int(audit["total_edges"]) == 190,
-		"audit : 190 arêtes relient les 162 niveaux")
+	_check(int(audit["total_nodes"]) == 165,
+		"audit : exactement 165 niveaux")
+	_check(int(audit["total_edges"]) == 193,
+		"audit : 193 arêtes relient les 165 niveaux")
 	_check(int(audit["chapter_count"]) == 13,
 		"audit : treize sections visuelles structurent la carte")
 	_check(int(audit["tutorial_count"]) == 5,
@@ -36,16 +36,16 @@ func run() -> void:
 			"audit : le tutoriel '%s' reste très facile et au palier 1" % node.id)
 
 	_check(int(audit["mode_counts"].get("classic", 0)) == 95
-		and int(audit["mode_counts"].get("random", 0)) == 21
+		and int(audit["mode_counts"].get("random", 0)) == 24
 		and int(audit["mode_counts"].get("mirror", 0)) == 21
 		and int(audit["mode_counts"].get("draft", 0)) == 25,
 		"audit : les modes sont variés après l'apprentissage Classique")
 	_check(int(audit["tier_counts"].get("1", 0)) == 13
 		and int(audit["tier_counts"].get("2", 0)) == 42
 		and int(audit["tier_counts"].get("3", 0)) == 36
-		and int(audit["tier_counts"].get("4", 0)) == 71,
+		and int(audit["tier_counts"].get("4", 0)) == 74,
 		"audit : les paliers suivent les quatre phases de progression")
-	_check(int(audit["series_counts"].get("ft1", 0)) == 144
+	_check(int(audit["series_counts"].get("ft1", 0)) == 147
 		and int(audit["series_counts"].get("ft2", 0)) == 17
 		and int(audit["series_counts"].get("ft3", 0)) == 1,
 		"audit : chaque mini-boss est en FT2 et le boss final en FT3")
@@ -101,7 +101,7 @@ func run() -> void:
 			"audit : l'entrée '%s' contient six cartes palier 1 et deux palier 2" % node_id)
 
 	var expected_themes := {
-		"veskar": 26, "nerava": 26, "kharun": 26,
+		"veskar": 29, "nerava": 26, "kharun": 26,
 		"ilyr": 26, "sylkha": 26, "enigma": 27,
 	}
 	var expected_fixed := {
@@ -113,7 +113,7 @@ func run() -> void:
 			"audit : le thème %s garde sa part après les approches" % god)
 		_check(int(audit["fixed_god_counts"].get(god, 0)) == int(expected_fixed[god]),
 			"audit : les dieux réellement fixés restent équilibrés pour %s" % god)
-	_check(int(audit["theme_min"]) == 26 and int(audit["theme_max"]) == 27,
+	_check(int(audit["theme_min"]) == 26 and int(audit["theme_max"]) == 29,
 		"audit : aucun dieu n'est massivement surreprésenté")
 
 	_check(int(audit["multi_exit_count"]) >= 25,
@@ -172,6 +172,35 @@ func run() -> void:
 	_check(float(audit["min_node_distance"]) >= 170.0,
 		"audit : les nœuds restent espacés sur la carte")
 	_test_optional_paths(graph)
+	_test_veskar_power_impasse(graph)
+
+
+func _test_veskar_power_impasse(graph: CampaignGraph) -> void:
+	var chain := ["r08_power_1", "r08_power_2", "r08_power_3"]
+	var expected_random := [6, 0, 4]
+	var expected_coin := [0, 5, 4]
+	var expected_keys := [1, 1, 2]
+	var previous := "r08_a1"
+	for index in range(chain.size()):
+		var node: CampaignNode = graph.node(chain[index])
+		if node == null:
+			_check(false, "audit : l'impasse Véskar '%s' existe" % chain[index])
+			continue
+		var powers := node.generator_min_power_cards()
+		_check(node.game_mode() == GameModeRules.MODE_RANDOM
+			and node.theme_god_id == "veskar"
+			and node.generator_god_id() == "veskar"
+			and node.generator_min_god_cards() == DeckRules.DECK_SIZE
+			and node.max_power_tier() == 4
+			and powers.size() == int(expected_keys[index])
+			and int(powers.get("random_blades", 0)) == int(expected_random[index])
+			and int(powers.get("coin_flip", 0)) == int(expected_coin[index])
+			and graph.predecessors(node.id) == [previous]
+			and node.dead_end == (index == chain.size() - 1),
+			"audit : l'impasse Véskar '%s' garde sa contrainte de pouvoir" % chain[index])
+		previous = node.id
+	_check(graph.is_dead_end(chain[chain.size() - 1]),
+		"audit : l'impasse Véskar se termine sans sortie")
 
 
 func _test_required_boss_progression(graph: CampaignGraph) -> void:

@@ -59,8 +59,10 @@ func _test_shipped_content() -> void:
 		if str(entry.get("event", "")) == "level_start":
 			start_triggers += 1
 			trigger_by_node[str(entry.get("node_id", ""))] = entry
-	_check(start_triggers == 6,
-		"scénario : les six premiers reflets ont leur présentation de niveau")
+	## 6 présentations de reflets + 12 défis d'impasse + 11 rages de dernier
+	## niveau. L'impasse Ilyr à un seul niveau utilise un `level_won`.
+	_check(start_triggers == 29,
+		"scénario : les reflets et les impasses ont leur présentation de niveau")
 	for god_id in ["veskar", "nerava", "kharun", "ilyr", "sylkha", "enigma"]:
 		var trigger: Dictionary = trigger_by_node.get("init_%s" % god_id, {})
 		_check(str(trigger.get("event", "")) == "level_start"
@@ -78,6 +80,61 @@ func _test_shipped_content() -> void:
 			has_monster = has_monster or speaker == "pr_stone"
 		_check((mirror.get("lines", []) as Array).size() >= 3 and has_god and has_monster,
 			"scénario : %s parle, puis Pr. Stone explique comment le battre" % god_id)
+
+	## Chaque impasse hors boss final a un défi au premier niveau et une rage au
+	## dernier. `veilleur_impasse` n'a qu'un niveau : sa rage est jouée à la
+	## victoire, par un déclencheur `level_won`.
+	var dead_end_intros := {
+		"mini_optional_01_path_1": "nerava_cloche_intro",
+		"veilleur_impasse": "ilyr_veilleur_intro",
+		"r03_mini_path_1": "veskar_jeu_intro",
+		"r04_mini_path_1": "sylkha_essaim_intro",
+		"r05_mini_path_1": "kharun_encre_intro",
+		"r06_mini_path_1": "sylkha_colporteur_intro",
+		"r09_mini1_path_1": "ilyr_garde_intro",
+		"r09_mini2_path_1": "ilyr_choeur_intro",
+		"r10_mini_path_1": "nerava_mime_intro",
+		"r11_mini_path_1": "kharun_rempart_intro",
+		"mini_optional_02_path_1": "enigma_collectionneur_intro",
+		"r08_power_1": "veskar_tirage_intro",
+	}
+	for dead_end_intro_node in dead_end_intros.keys():
+		var intro_trigger: Dictionary = trigger_by_node.get(str(dead_end_intro_node), {})
+		_check(str(intro_trigger.get("sequence", "")) == str(dead_end_intros[dead_end_intro_node])
+			and bool(intro_trigger.get("once", false)),
+			"scénario : l'impasse '%s' défie le joueur dès son premier niveau" % str(dead_end_intro_node))
+
+	var dead_end_finales := {
+		"mini_optional_01": "nerava_cloche_final",
+		"r03_mini": "veskar_jeu_final",
+		"r04_mini": "sylkha_essaim_final",
+		"r05_mini": "kharun_encre_final",
+		"r06_mini": "sylkha_colporteur_final",
+		"r09_mini1": "ilyr_garde_final",
+		"r09_mini2": "ilyr_choeur_final",
+		"r10_mini": "nerava_mime_final",
+		"r11_mini": "kharun_rempart_final",
+		"mini_optional_02": "enigma_collectionneur_final",
+		"r08_power_3": "veskar_tirage_final",
+	}
+	for dead_end_final_node in dead_end_finales.keys():
+		var final_trigger: Dictionary = trigger_by_node.get(str(dead_end_final_node), {})
+		_check(str(final_trigger.get("sequence", "")) == str(dead_end_finales[dead_end_final_node])
+			and bool(final_trigger.get("once", false)),
+			"scénario : le dieu de '%s' s'énerve au dernier niveau" % str(dead_end_final_node))
+
+	var veilleur_rage := {}
+	for value in triggers:
+		if not value is Dictionary:
+			continue
+		var rage_entry: Dictionary = value
+		if str(rage_entry.get("node_id", "")) == "veilleur_impasse" \
+				and str(rage_entry.get("event", "")) == "level_won":
+			veilleur_rage = rage_entry
+	_check(str(veilleur_rage.get("sequence", "")) == "ilyr_veilleur_rage"
+		and str(veilleur_rage.get("outcome", "")) == "win"
+		and bool(veilleur_rage.get("once", false)),
+		"scénario : l'impasse à un seul niveau garde sa rage pour la victoire")
 
 	## Trois victoires ferment un chapitre : la conclusion est propre au niveau,
 	## ne filtre que la victoire et ne se joue qu'une fois.

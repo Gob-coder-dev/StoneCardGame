@@ -50,6 +50,18 @@ static func _node_problems(node: CampaignNode, version: int,
 					result.append("génération de '%s' : minimum de %d cartes '%s' non respecté." % [
 						node.id, minimum, god_id])
 					return
+		var min_powers := node.generator_min_power_cards()
+		if not min_powers.is_empty():
+			for key in ["loadout_one", "loadout_two"]:
+				var loadout: GameLoadout = prepared.get(key) as GameLoadout
+				if loadout == null:
+					result.append("génération de '%s' : loadout absent." % node.id)
+					return
+				for tag in min_powers:
+					if _power_count(loadout.deck, str(tag)) < int(min_powers[tag]):
+						result.append("génération de '%s' : minimum de %d cartes '%s' non respecté." % [
+							node.id, int(min_powers[tag]), str(tag)])
+						return
 		return
 	if mode == GameModeRules.MODE_DRAFT:
 		var opponent_god := node.fixed_god_id()
@@ -84,3 +96,12 @@ static func _node_problems(node: CampaignNode, version: int,
 				result.append("deck généré impossible sur '%s' pour '%s'." % [
 					node.id, str(god.get("id", ""))])
 				return
+
+
+static func _power_count(deck: Array, tag: String) -> int:
+	var count := 0
+	for raw_id in deck:
+		if LoadoutGeneratorModel.definition_has_power(
+				MonsterLoader.get_monster(str(raw_id)), tag):
+			count += 1
+	return count

@@ -24,6 +24,10 @@ var _reachable_cache: Dictionary = {}
 ## des totaux réellement atteignables afin de conserver des parties consistantes.
 const TARGET_POOL_DIVISOR: int = 2
 
+## Pouvoirs qu'une rencontre de campagne peut exiger dans les decks générés.
+## Les clés correspondent aux champs des définitions de monstres.
+const POWER_TAGS: Array[String] = ["random_blades", "coin_flip"]
+
 
 ## `pool` permet aux tests et à la future campagne d'injecter un catalogue
 ## réduit. Vide, le générateur lit le catalogue réel sans dépendre d'une scène.
@@ -58,6 +62,7 @@ func _ingest(source: Array) -> void:
 			"level": int(definition.get("level", 1)),
 			"tier": tier,
 			"cost_q": _cost_quarters(definition),
+			"power_tags": _power_tags(definition),
 		}
 		if int(card_data["cost_q"]) < 0:
 			continue
@@ -71,6 +76,36 @@ func _cost_quarters(definition: Dictionary) -> int:
 	if definition.has("cost_points"):
 		return int(roundf(float(definition["cost_points"]) * float(MonsterCostRules.COST_SCALE)))
 	return MonsterCostRules.cost_quarters(definition)
+
+
+static func definition_has_power(definition: Dictionary, tag: String) -> bool:
+	match tag:
+		"random_blades":
+			return int(definition.get("random_blades", 0)) > 0
+		"coin_flip":
+			return str(definition.get("coin_flip", "")) != ""
+	return false
+
+
+static func _power_tags(definition: Dictionary) -> Array[String]:
+	var tags: Array[String] = []
+	for tag in POWER_TAGS:
+		if definition_has_power(definition, tag):
+			tags.append(tag)
+	return tags
+
+
+## Vérifie la forme des minimums avant de lancer le solveur. Une contrainte
+## inconnue ou hors bornes doit être refusée, jamais ignorée silencieusement.
+static func power_constraint_problem(min_powers: Dictionary) -> String:
+	for key in min_powers:
+		var tag := str(key)
+		if not POWER_TAGS.has(tag):
+			return "Pouvoir inconnu : '%s'." % tag
+		var minimum := int(min_powers[key])
+		if minimum < 0 or minimum > DeckRules.DECK_SIZE:
+			return "Minimum de cartes '%s' hors bornes." % tag
+	return ""
 
 
 static func _rng(value: int) -> RandomNumberGenerator:
@@ -182,9 +217,12 @@ static func _common_totals(first: Array, second: Array) -> Array:
 
 ## Choisit deux dieux puis deux decks légaux ayant exactement le même total.
 func generate_random(generation_seed: int, god_ids: Array, max_tier: int,
-		min_god_cards: int = 0) -> Dictionary:
+		min_god_cards: int = 0, min_powers: Dictionary = {}) -> Dictionary:
 	if min_god_cards < 0 or min_god_cards > deck_size:
 		return _fail("Le minimum de cartes du dieu est hors bornes.")
+	var power_problem := power_constraint_problem(min_powers)
+	if power_problem != "":
+		return _fail(power_problem)
 	var valid := _valid_gods(god_ids, max_tier)
 	if valid.is_empty():
 		return _fail("Aucun dieu ne permet un deck complet avec cette limite.")
@@ -206,14 +244,14 @@ func generate_random(generation_seed: int, god_ids: Array, max_tier: int,
 	for pair_value in pairs:
 		var pair: Dictionary = pair_value
 		for target_value in _targets_for_constraint(pair["totals"], rng,
-				min_god_cards > 0):
+				min_god_cards > 0 or not min_powers.is_empty()):
 			var target := int(target_value)
 			var deck_one := _build_exact(str(pair["god_one"]), target, max_tier, rng,
-				min_god_cards)
+				min_god_cards, min_powers)
 			if deck_one.is_empty():
 				continue
 			var deck_two := _build_exact(str(pair["god_two"]), target, max_tier, rng,
-				min_god_cards)
+				min_god_cards, min_powers)
 			if deck_two.is_empty():
 				continue
 			return {
@@ -232,14 +270,18 @@ func generate_random(generation_seed: int, god_ids: Array, max_tier: int,
 
 ## Deck déterministe pour un dieu imposé, sans changer de dieu. Utilisé par la
 ## campagne quand un niveau fixe le dieu adverse mais génère son deck.
-func generate_for_god(generation_seed: int, god_id: String, max_tier: int) -> Dictionary:
+func generate_for_god(generation_seed: int, god_id: String, max_tier: int,
+		min_powers: Dictionary = {}) -> Dictionary:
 	if not _valid_gods([god_id], max_tier).has(god_id):
 		return _fail("Ce dieu ne permet pas un deck complet avec cette limite.")
+	var power_problem := power_constraint_problem(min_powers)
+	if power_problem != "":
+		return _fail(power_problem)
 	var rng := _rng(generation_seed)
 	var totals := reachable_totals(god_id, max_tier)
-	for target_value in _randomized_rich_targets(totals, rng):
+	for target_value in _targets_for_constraint(totals, rng, not min_powers.is_empty()):
 		var target := int(target_value)
-		var deck := _build_exact(god_id, target, max_tier, rng)
+		var deck := _build_exact(god_id, target, max_tier, rng, 0, min_powers)
 		if deck.is_empty():
 			continue
 		return {
@@ -257,9 +299,12 @@ func generate_for_god(generation_seed: int, god_id: String, max_tier: int) -> Di
 ## Un seul loadout légal, dupliqué en profondeur par l'appelant. Le premier
 ## joueur n'est jamais déduit de ce loadout : il reste un tirage séparé.
 func generate_mirror(generation_seed: int, god_ids: Array, max_tier: int,
-		min_god_cards: int = 0) -> Dictionary:
+		min_god_cards: int = 0, min_powers: Dictionary = {}) -> Dictionary:
 	if min_god_cards < 0 or min_god_cards > deck_size:
 		return _fail("Le minimum de cartes du dieu est hors bornes.")
+	var power_problem := power_constraint_problem(min_powers)
+	if power_problem != "":
+		return _fail(power_problem)
 	var valid := _valid_gods(god_ids, max_tier)
 	if valid.is_empty():
 		return _fail("Aucun dieu ne permet un deck complet avec cette limite.")
@@ -268,9 +313,11 @@ func generate_mirror(generation_seed: int, god_ids: Array, max_tier: int,
 	var totals := reachable_totals(god_id, max_tier)
 	if totals.is_empty():
 		return _fail("Aucun total réalisable pour le dieu tiré.")
-	for target_value in _targets_for_constraint(totals, rng, min_god_cards > 0):
+	for target_value in _targets_for_constraint(totals, rng,
+			min_god_cards > 0 or not min_powers.is_empty()):
 		var target := int(target_value)
-		var deck := _build_exact(god_id, target, max_tier, rng, min_god_cards)
+		var deck := _build_exact(god_id, target, max_tier, rng, min_god_cards,
+			min_powers)
 		if deck.is_empty():
 			continue
 		return {
@@ -321,7 +368,8 @@ static func duplicate_loadout(loadout: Dictionary) -> Dictionary:
 ## ─── Solveur de deck exact ──────────────────────────────────────────────────
 
 func _build_exact(god_id: String, target: int, max_tier: int,
-		rng: RandomNumberGenerator, min_god_cards: int = 0) -> Array:
+		rng: RandomNumberGenerator, min_god_cards: int = 0,
+		min_powers: Dictionary = {}) -> Array:
 	var options := lineages_for_god(god_id, max_tier)
 	if options.size() < deck_size:
 		return []
@@ -333,23 +381,45 @@ func _build_exact(god_id: String, target: int, max_tier: int,
 		var values: Array = (options[lineage] as Array).duplicate()
 		Shuffle.apply(values, rng)
 		candidates[lineage] = values
+	var power_tags: Array = min_powers.keys()
+	power_tags.sort()
+	var normalized_powers := {}
+	var power_counts := {}
+	for tag in power_tags:
+		normalized_powers[str(tag)] = int(min_powers[tag])
+		power_counts[str(tag)] = 0
 	var found: Variant = _search_exact(order, candidates, 0, 0, target, 0,
-		god_id, min_god_cards, {})
+		god_id, min_god_cards, normalized_powers, power_counts, {})
 	return (found as Array).duplicate() if found is Array else []
+
+
+static func _power_minimums_met(min_powers: Dictionary,
+		power_counts: Dictionary) -> bool:
+	for tag in min_powers:
+		if int(power_counts.get(tag, 0)) < int(min_powers[tag]):
+			return false
+	return true
 
 
 func _search_exact(order: Array, candidates: Dictionary, index: int, count: int,
 		remaining: int, god_count: int, god_id: String, min_god_cards: int,
+		min_powers: Dictionary, power_counts: Dictionary,
 		memo: Dictionary) -> Variant:
 	if count == deck_size:
-		if remaining == 0 and god_count >= min_god_cards:
+		if remaining == 0 and god_count >= min_god_cards \
+				and _power_minimums_met(min_powers, power_counts):
 			return []
 		return null
 	if index >= order.size() or order.size() - index < deck_size - count:
 		return null
 	if god_count + deck_size - count < min_god_cards:
 		return null
+	for tag in min_powers:
+		if int(power_counts.get(tag, 0)) + (deck_size - count) < int(min_powers[tag]):
+			return null
 	var key := "%d|%d|%d|%d" % [index, count, remaining, god_count]
+	for tag in power_counts:
+		key += "|%s:%d" % [tag, int(power_counts[tag])]
 	if memo.has(key):
 		var cached: Variant = memo[key]
 		if cached is Array:
@@ -362,8 +432,13 @@ func _search_exact(order: Array, candidates: Dictionary, index: int, count: int,
 		if cost > remaining:
 			continue
 		var next_god_count := god_count + (1 if str(card_data["god_id"]) == god_id else 0)
+		var next_power_counts := power_counts.duplicate()
+		for tag in (card_data.get("power_tags", []) as Array):
+			if next_power_counts.has(tag):
+				next_power_counts[tag] = int(next_power_counts[tag]) + 1
 		var tail: Variant = _search_exact(order, candidates, index + 1, count + 1,
-			remaining - cost, next_god_count, god_id, min_god_cards, memo)
+			remaining - cost, next_god_count, god_id, min_god_cards,
+			min_powers, next_power_counts, memo)
 		if tail is Array:
 			var result: Array = (tail as Array).duplicate()
 			result.push_front(str(card_data["id"]))
@@ -374,7 +449,8 @@ func _search_exact(order: Array, candidates: Dictionary, index: int, count: int,
 	# lignées de l'ordre mélangé, rendant certains seeds pourtant valides
 	# impossibles à construire.
 	var skipped: Variant = _search_exact(order, candidates, index + 1, count,
-		remaining, god_count, god_id, min_god_cards, memo)
+		remaining, god_count, god_id, min_god_cards, min_powers, power_counts,
+		memo)
 	if skipped is Array:
 		memo[key] = (skipped as Array).duplicate()
 		return (skipped as Array).duplicate()
