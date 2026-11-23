@@ -641,6 +641,34 @@ règles est dans [CAMPAIGN.md](CAMPAIGN.md).
 diagnostique un changement impossible. Les contrôleurs conservent la décision
 de navigation propre à leur écran, mais ne recopient plus les chemins `res://`.
 
+## Scénario et tutorat
+
+`StoryService` charge les dialogues et les chapitres, met les séquences en file
+et conserve les états « déjà vus » dans la progression de campagne.
+`TutorialDirector` séquence un chapitre par identifiants d'ancres et
+d'événements : il ne crée aucun `Control` et ne compose aucune scène. Les ancres
+sont des références faibles vers de vrais contrôles ; `ui/story/` porte tout le
+rendu (`DialogueOverlay`, `SpotlightOverlay`, `TutorialInputShield`).
+
+Chaque prise de parole et chaque action guidée sont précédées d'une pause de
+lisibilité demandée par le directeur (`tutorial_beat_requested`). `StoryLayer`
+la traduit par `TutorialInputShield`, un bouclier plein écran qui consomme
+gestes et clavier ; le directeur refuse aussi la sélection et la pose pendant
+ce délai. Une étape peut surcharger la durée avec sa clé `beat`, et les tests la
+ramènent à zéro.
+
+Une étape n'expire jamais : elle attend le geste du joueur. Si l'ancre qu'elle
+met en surbrillance disparaît, le directeur remet la même étape en attente
+d'ancre, sans avancer ni rejouer son dialogue ou sa pause. La perte n'est
+constatée qu'après une très courte grâce de quelques frames : un changement de
+scène retire l'ancre de navigation de l'écran sortant avant que l'écran entrant
+ne publie `screen_opened`, et l'étape doit consommer cet événement au lieu de
+s'abandonner sur la disparition de son bouton. Un écran peut
+demander `is_guiding_anchor()` avant de refermer un panneau guidé ; c'est la
+raison pour laquelle le tiroir de la collection reste ouvert pendant l'étape
+« UTILISER ». Le voile des deux overlays vient d'un unique réglage,
+`UITheme.STORY_DIM`.
+
 ## Anciens parcours par dieu
 
 Les écrans et fabriques ci-dessous restent dans le dépôt pour les tests, la

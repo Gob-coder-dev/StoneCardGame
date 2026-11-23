@@ -105,6 +105,9 @@ func _test_screen_anchors() -> void:
 
 
 func _test_journey_crosses_screens() -> void:
+	# Une suite précédente peut laisser un dialogue ouvert : le parcours doit
+	# démarrer sur un overlay libre pour que sa première réplique soit la bonne.
+	await _close_dialogue_lines()
 	StoryService.auto_start_tutorials = true
 	var menu: Control = (load("res://scenes/menus/MainMenu.tscn") as PackedScene).instantiate()
 	add_child(menu)
@@ -255,9 +258,41 @@ func _test_collection_swap() -> void:
 		var action_ready := await _wait_until(func() -> bool:
 			return StoryService.get_anchor("collection.action.primary") != null, 60)
 		_check(action_ready, "échange : UTILISER est exposé dans le tiroir")
-		collection._request_use(SWAP_INCOMING)
+		var saved_dialogue_beat := StoryService._tutorial.dialogue_beat
+		var saved_action_beat := StoryService._tutorial.action_beat
+		StoryService._tutorial.dialogue_beat = 0.02
+		StoryService._tutorial.action_beat = 0.02
+		StoryService._tutorial.start(_guided_swap_chapter(),
+			"res://scenes/menus/CollectionScreen.tscn")
+		var guided := await _wait_until(func() -> bool:
+			return StoryLayer._spotlight.visible \
+				and StoryLayer._spotlight._target == StoryService.get_anchor("collection.action.primary"))
+		_check(guided and StoryService.is_guiding_anchor("collection.action.primary"),
+			"échange : l'étape guide réellement le bouton UTILISER")
+		var drawer := collection._action_drawer as CardActionDrawer
+		_tap_at(collection, drawer.get_global_rect().position + Vector2(-80.0, -80.0))
+		await get_tree().process_frame
+		_check(is_instance_valid(collection._action_drawer),
+			"échange : un appui à côté ne referme plus le tiroir guidé")
+		collection._on_scroll_started()
+		_check(is_instance_valid(collection._action_drawer),
+			"échange : un défilement ne referme plus le tiroir guidé")
+		collection._close_action_drawer()
+		var lost := await _wait_until(func() -> bool:
+			return not StoryLayer._spotlight.visible \
+				and StoryService._tutorial._wait_for == "")
+		_check(lost and StoryService._tutorial._current_step.get("id", "") == "swap_use",
+			"échange : la disparition de l'ancre ne valide pas l'étape")
+		collection._open_card_actions(SWAP_INCOMING, wrapper, CardActionDrawer.Source.COLLECTION)
+		var rearmed := await _wait_until(func() -> bool:
+			return StoryLayer._spotlight.visible \
+				and StoryLayer._spotlight._target == StoryService.get_anchor("collection.action.primary"))
+		_check(rearmed and StoryService._tutorial._current_step.get("id", "") == "swap_use",
+			"échange : rouvrir la carte remet la même consigne en place")
+		var guided_drawer := collection._action_drawer as CardActionDrawer
+		guided_drawer.primary_button.pressed.emit()
 		var target_ready := await _wait_until(func() -> bool:
-			return StoryService.get_anchor("collection.replace.first") != null and collection.replacement_panel.visible, 60)
+			return StoryService.get_anchor("collection.replace.first") != null and collection.replacement_panel.visible, 120)
 		_check(target_ready, "échange : une carte du deck à remplacer est mise en surbrillance")
 		if target_ready:
 			var target := StoryService.get_anchor("collection.replace.first")
@@ -269,11 +304,49 @@ func _test_collection_swap() -> void:
 				"échange : la nouvelle carte remplace l'ancienne dans le deck")
 			_check(not collection.replacement_panel.visible,
 				"échange : le panneau se referme après le remplacement")
+			var epilogue := await _wait_until(func() -> bool:
+				return StoryLayer._dialogue.visible, 180)
+			_check(epilogue and StoryService.is_chapter_done("guided_swap_probe"),
+				"échange : le parcours guidé se conclut après le remplacement")
+			await _close_dialogue_lines(6)
+		StoryService.stop_tutorial()
+		_check(not StoryService.is_tutorial_beat_active()
+			and not StoryLayer._shield.visible,
+			"échange : la fin du parcours rend les entrées")
+		StoryService._tutorial.dialogue_beat = saved_dialogue_beat
+		StoryService._tutorial.action_beat = saved_action_beat
 	collection.queue_free()
 	await get_tree().process_frame
 	PlayerData._apply_profile(previous_profile)
 	PlayerData._save_path = previous_path
 	_cleanup()
+
+
+## Les trois étapes réelles de l'échange, isolées dans un chapitre de test :
+## le parcours démarre directement sur le bouton UTILISER du tiroir ouvert.
+func _guided_swap_chapter() -> Dictionary:
+	var source := StoryService.chapter("first_journey")
+	var wanted := ["swap_use", "swap_target", "swap_done"]
+	var steps: Array = []
+	for value in source.get("steps", []):
+		if value is Dictionary and wanted.has(str(value.get("id", ""))):
+			steps.append((value as Dictionary).duplicate(true))
+	return {"id": "guided_swap_probe", "steps": steps}
+
+
+## Reproduit l'appui « à côté » du joueur : l'écran de collection écoute
+## `_input` avant le GUI, donc le spotlight ne peut pas l'intercepter lui-même.
+func _tap_at(collection: Control, position: Vector2) -> void:
+	var press := InputEventScreenTouch.new()
+	press.index = 0
+	press.position = position
+	press.pressed = true
+	collection._input(press)
+	var release := InputEventScreenTouch.new()
+	release.index = 0
+	release.position = position
+	release.pressed = false
+	collection._input(release)
 
 
 func _test_replay_is_gone() -> void:

@@ -37,6 +37,7 @@ const SUITES: Array[String] = [
 	"res://tests/story/StoryTriggerChecks.gd",
 	"res://tests/story/StoryProgressChecks.gd",
 	"res://tests/story/StoryOverlayChecks.gd",
+	"res://tests/story/StoryBeatChecks.gd",
 	"res://tests/story/StoryFlowChecks.gd",
 	"res://tests/story/StoryTutorialIntegrationChecks.gd",
 	"res://tests/domain/CampaignEncounterChecks.gd",

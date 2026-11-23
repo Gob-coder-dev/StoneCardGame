@@ -129,6 +129,10 @@ const COL_DANGER := Color("#713c49")
 const COL_TAB_IDLE := Color("#17151b")
 const COL_TAB_BORDER := Color("#493c4d")
 const COL_SELECTED := Color("#342438")
+## Voile commun aux deux overlays du scénario (dialogue et spotlight). Un seul
+## réglage : assez sombre pour détacher la consigne, assez transparent pour que
+## le décor et l'action restent lisibles autour de la cible.
+const STORY_DIM := Color(0.03, 0.025, 0.05, 0.55)
 
 ## Lecture des cartes : le minerai sombre indique la famille, le contour extérieur
 ## indique la rareté. Un contour unique évite la confusion entre les deux canaux.

@@ -12,7 +12,8 @@ extends Control
 
 signal advance_requested
 
-const DIM := Color(0.015, 0.01, 0.025, 0.82)
+## Même voile que le dialogue : le jeu reste lisible autour de la cible.
+const DIM := UITheme.STORY_DIM
 const ACCENT := UITheme.COL_ACCENT_LIGHT
 const BANNER_SIDE_MARGIN := 36.0
 const BANNER_TARGET_GAP := 28.0
@@ -54,7 +55,9 @@ func _ready() -> void:
 	add_child(_target_blocker)
 
 	_banner = PanelContainer.new()
-	_banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# La consigne est posée près de la cible : elle doit absorber les appuis
+	# plutôt que de les laisser activer un widget situé dessous.
+	_banner.mouse_filter = Control.MOUSE_FILTER_STOP
 	_banner.add_theme_stylebox_override("panel",
 		UITheme.panel_style(Color("#121016"), ACCENT, 3, 14))
 	add_child(_banner)

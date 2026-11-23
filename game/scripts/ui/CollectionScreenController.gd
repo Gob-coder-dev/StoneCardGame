@@ -19,6 +19,8 @@ const ActionPlacement := preload("res://scripts/ui/collection/CardActionPlacemen
 const EconomyServiceModel := preload("res://scripts/application/economy/EconomyService.gd")
 const ACTION_DRAWER_GAP := 10.0
 const ACTION_DRAWER_MARGIN := 24.0
+## Ancre du bouton que le tutoriel peut mettre en surbrillance dans le tiroir.
+const GUIDED_DRAWER_ANCHOR := "collection.action.primary"
 const BOTTOM_SPACER_DEFAULT := 30.0
 const CLEAR_DECK_CONFIRMATION: String = "Voulez-vous vraiment supprimer complètement ce deck ?"
 var _deck_panel: RefCounted
@@ -84,7 +86,7 @@ func _ready() -> void:
 	_current_deck = PlayerData.get_active_deck()
 	_prepare_card_art()
 	scroll.gui_input.connect(_on_scroll_gui_input)
-	scroll.scroll_started.connect(_close_action_drawer)
+	scroll.scroll_started.connect(_on_scroll_started)
 	scroll.get_v_scroll_bar().value_changed.connect(_on_scroll_value_changed)
 	action_drawer_layer.resized.connect(_position_action_drawer)
 	god_button.pressed.connect(_toggle_god_menu)
@@ -225,7 +227,8 @@ func _on_scroll_gui_input(event: InputEvent) -> void:
 	if info_sheet.visible or replacement_panel.visible:
 		return
 	if is_instance_valid(_action_drawer):
-		_close_action_drawer()
+		if not _drawer_must_stay_open():
+			_close_action_drawer()
 	elif god_menu.visible or sort_menu.visible or level_menu.visible:
 		_close_inline_menus()
 
@@ -259,7 +262,8 @@ func _input(event: InputEvent) -> void:
 		return
 	if is_instance_valid(_action_drawer) \
 			and not _event_hits_control(event, _action_drawer) \
-			and not _event_hits_control(event, _action_card):
+			and not _event_hits_control(event, _action_card) \
+			and not _drawer_must_stay_open():
 		_close_action_drawer()
 	if sort_menu.visible \
 			and not _event_hits_control(event, sort_menu) \
@@ -582,8 +586,24 @@ func _action_drawer_placement() -> Dictionary:
 func _on_scroll_value_changed(_value: float) -> void:
 	# Une superposition ne doit jamais poursuivre sa carte pendant le scroll.
 	# Le prochain appui la rouvrira à la bonne position.
-	if not _adjusting_drawer_scroll:
+	if not _adjusting_drawer_scroll and not _drawer_must_stay_open():
 		_close_action_drawer()
+
+
+func _on_scroll_started() -> void:
+	if not _drawer_must_stay_open():
+		_close_action_drawer()
+
+
+## Pendant une étape guidée, le tiroir qui porte le bouton en surbrillance ne
+## doit pas se refermer sous le doigt du joueur : la consigne disparaîtrait avec
+## lui et l'étape ne pourrait plus être accomplie. Les fermetures programmées
+## (UTILISER, changement de deck) n'utilisent pas ce garde.
+func _drawer_must_stay_open() -> bool:
+	if not is_instance_valid(_action_drawer):
+		return false
+	return StoryService.is_tutorial_beat_active() \
+		or StoryService.is_guiding_anchor(GUIDED_DRAWER_ANCHOR)
 
 
 func _close_action_drawer() -> void:

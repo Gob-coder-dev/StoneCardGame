@@ -15,6 +15,22 @@ extends Node
 ## Drapeau d'étape : le chapitre est acquis dès ce geste, même si un dialogue
 ## de conclusion reste à lire (l'échange de carte clôt le parcours guidé).
 const COMPLETE_KEY := "complete_chapter"
+## Pauses de lisibilité du parcours guidé : le joueur voit l'écran avant
+## qu'une prise de parole ou une cible ne s'impose. Une étape peut les
+## surcharger avec sa clé `beat`.
+const DEFAULT_DIALOGUE_BEAT := 0.65
+const DEFAULT_ACTION_BEAT := 0.5
+## Clé interne : la cible guidée a disparu avant le geste attendu.
+const TARGET_LOST_KEY := "__target_lost"
+## Un changement de scène retire l'ancre de navigation du menu sortant avant
+## que l'écran entrant ne publie `screen_opened` : la perte d'ancre n'est donc
+## conclue qu'après quelques frames. Sans cette grâce, l'étape qui vient
+## précisément de réussir la transition serait abandonnée avant son événement.
+const ANCHOR_LOST_GRACE_FRAMES := 4
+
+## Surchargeables par les tests pour ne pas dépendre d'un rythme réel.
+var dialogue_beat := DEFAULT_DIALOGUE_BEAT
+var action_beat := DEFAULT_ACTION_BEAT
 
 var _service: Node = null
 var _chapter: Dictionary = {}
@@ -26,6 +42,18 @@ var _canceled := false
 var _waiting := false
 var _wait_for := ""
 var _current_step: Dictionary = {}
+var _beat_active := false
+## Une pause interrompue ne doit pas éteindre le verrou d'une pause suivante
+## quand sa minuterie se réveille plus tard.
+var _beat_generation := 0
+## Identifiant de l'exécution courante. Une coroutine d'un chapitre annulé
+## peut se réveiller après le démarrage du suivant : elle doit alors se taire au
+## lieu d'avancer ou de terminer le nouveau chapitre.
+var _run_generation := 0
+## Un dialogue ou une pause déjà vus ne sont pas rejoués quand la même étape
+## repart après la disparition de son ancre.
+var _step_dialogue_done := false
+var _step_action_beat_done := false
 
 
 func setup(service: Node) -> void:
@@ -47,6 +75,11 @@ func start(chapter: Dictionary, scene_path: String = "") -> void:
 	_waiting = false
 	_wait_for = ""
 	_current_step = {}
+	_beat_active = false
+	_run_generation += 1
+	_beat_generation += 1
+	_step_dialogue_done = false
+	_step_action_beat_done = false
 	_run_current_step()
 
 
@@ -67,9 +100,15 @@ func cancel() -> void:
 	_current_step = {}
 	_steps = []
 	_chapter = {}
+	_run_generation += 1
+	_beat_generation += 1
+	_beat_active = false
+	_step_dialogue_done = false
+	_step_action_beat_done = false
 	if _service != null:
 		## Une attente devenue sans limite ne doit pas survivre au chapitre
 		## qu'elle servait, sinon elle consommerait les gestes du suivant.
+		_service.tutorial_beat_ended.emit()
 		_service.cancel_waits()
 		_service.spotlight_cleared.emit()
 		_service.tutorial_step_changed.emit()
@@ -91,6 +130,8 @@ func chapter_id() -> String:
 ## (résolution d'ancre, dialogue) ne verrouille jamais le plateau : le joueur
 ## ne doit pas se retrouver bloqué sans cible visible.
 func blocks_placement() -> bool:
+	if _beat_active:
+		return true
 	if not _running or not _waiting or _current_step.is_empty():
 		return false
 	if _wait_for == "":
@@ -102,6 +143,8 @@ func blocks_placement() -> bool:
 ## correspond à `expect`. Un simple blocage global ne suffirait pas : il
 ## laisserait le joueur sélectionner la mauvaise carte.
 func allows_selection(payload: Dictionary) -> bool:
+	if _beat_active:
+		return false
 	if not _running or not _waiting or _wait_for != "card_selected":
 		return false
 	return _expect_matches(payload)
@@ -110,6 +153,8 @@ func allows_selection(payload: Dictionary) -> bool:
 ## Même principe pour la pose : la case et le monstre doivent correspondre au
 ## plan du chapitre. Hors tutoriel, StoryService laisse toujours passer.
 func allows_placement(payload: Dictionary) -> bool:
+	if _beat_active:
+		return false
 	if not _running or not _waiting or _wait_for != "monster_placed":
 		return false
 	return _expect_matches(payload)
@@ -118,8 +163,9 @@ func allows_placement(payload: Dictionary) -> bool:
 func _run_current_step() -> void:
 	if not _running or _canceled or _waiting:
 		return
+	var generation := _run_generation
 	if _step_index >= _steps.size():
-		await _finish_chapter()
+		await _finish_chapter(generation)
 		return
 	var value: Variant = _steps[_step_index]
 	if not value is Dictionary:
@@ -135,51 +181,108 @@ func _run_current_step() -> void:
 	_waiting = true
 	_current_step = step
 	var dialogue := str(step.get("dialogue", ""))
-	if dialogue != "":
+	if dialogue != "" and not _step_dialogue_done:
+		_step_dialogue_done = true
+		await _beat(DEFAULT_DIALOGUE_BEAT)
+		if not _is_current(generation):
+			return
 		await _play(dialogue)
-		if not _running or _canceled:
+		if not _is_current(generation):
 			return
 	var anchor_id := str(step.get("anchor", ""))
 	var target: Control = null
 	if anchor_id != "":
-		target = await _wait_for_anchor(anchor_id, step_scene)
-		if not _running or _canceled:
+		target = await _wait_for_anchor(anchor_id, step_scene, generation)
+		if not _is_current(generation):
 			return
 		if target == null:
 			# La scène a changé pendant l'attente : l'étape reste à faire et
 			# sera relancée quand le joueur reviendra sur cet écran.
-			_release_step()
+			_release_step(generation)
 			return
 	var wait_for := str(step.get("wait_for", ""))
-	var spotlight := bool(step.get("spotlight", true)) and target != null
+	var spot := bool(step.get("spotlight", true)) and target != null
 	if wait_for == "":
-		_advance_step()
+		_advance_step(generation)
 		return
 	_wait_for = wait_for
 	_service.tutorial_step_changed.emit()
-	if spotlight:
+	if spot:
+		if not _step_action_beat_done:
+			_step_action_beat_done = true
+			await _beat(DEFAULT_ACTION_BEAT)
+			if not _is_current(generation):
+				return
 		_service.spotlight_requested.emit(target, str(step.get("prompt", "")),
 			wait_for == "tutorial_advance")
-	var event: Dictionary = await _wait_for_expected(wait_for)
-	if not _running or _canceled:
+	var event: Dictionary = await _wait_for_expected(wait_for, anchor_id, generation)
+	if not _is_current(generation):
+		return
+	if bool(event.get(TARGET_LOST_KEY, false)):
+		_rewait_step(spot, generation)
+		return
+	if spot:
+		_service.spotlight_cleared.emit()
+	_wait_for = ""
+	_service.tutorial_step_changed.emit()
+	if event.is_empty():
+		_release_step(generation)
+		return
+	_advance_step(generation)
+
+
+## Une coroutine d'une exécution révolue ne doit plus rien changer : c'est ce
+## qui empêche un ancien dialogue de faire avancer le chapitre suivant.
+func _is_current(generation: int) -> bool:
+	return generation == _run_generation and _running and not _canceled
+
+
+## Pause de lisibilité avant une prise de parole ou une action guidée. Le
+## bouclier d'entrées appartient à StoryLayer ; le directeur ne fait que
+## demander le temps et bloquer ses propres gestes pendant celui-ci.
+func _beat(default_seconds: float) -> void:
+	if _service == null:
+		return
+	var seconds := float(_current_step.get("beat", default_seconds))
+	if seconds <= 0.0:
+		return
+	_beat_generation += 1
+	var generation := _beat_generation
+	_beat_active = true
+	_service.tutorial_beat_requested.emit(seconds)
+	await get_tree().create_timer(seconds).timeout
+	if generation != _beat_generation:
+		return
+	_beat_active = false
+	if not _canceled:
+		_service.tutorial_beat_ended.emit()
+
+
+## Même étape, même consigne : la cible guidée a disparu, on remet l'attente en
+## place sans avancer ni rejouer le dialogue ou la pause déjà vus.
+func _rewait_step(spotlight: bool, generation: int) -> void:
+	if generation != _run_generation:
 		return
 	if spotlight:
 		_service.spotlight_cleared.emit()
 	_wait_for = ""
 	_service.tutorial_step_changed.emit()
-	if event.is_empty():
-		_release_step()
-		return
-	_advance_step()
+	_waiting = false
+	_current_step = {}
+	_run_current_step()
 
 
 ## Consomme l'étape courante. Un chapitre ne revient jamais en arrière : l'index
 ## n'avance que lorsque le geste attendu est reçu.
-func _advance_step() -> void:
+func _advance_step(generation: int) -> void:
+	if generation != _run_generation:
+		return
 	if bool(_current_step.get(COMPLETE_KEY, false)):
 		_service.mark_chapter_done(chapter_id())
 	_waiting = false
 	_current_step = {}
+	_step_dialogue_done = false
+	_step_action_beat_done = false
 	_step_index += 1
 	_run_current_step()
 
@@ -187,31 +290,58 @@ func _advance_step() -> void:
 ## Rend l'étape au prochain `notify_screen()` sans toucher à l'index : le
 ## joueur retrouve la même consigne en revenant sur l'écran, jamais un chapitre
 ## reparti de zéro.
-func _release_step() -> void:
-	if not _running:
+func _release_step(generation: int) -> void:
+	if generation != _run_generation or not _running:
 		return
 	_wait_for = ""
 	_waiting = false
 	_current_step = {}
+	_step_dialogue_done = false
+	_step_action_beat_done = false
 	_service.tutorial_step_changed.emit()
 
 
 ## Attend le bon événement, sans limite de temps : le joueur peut lire,
 ## réfléchir ou laisser l'application en arrière-plan, l'étape reste en place.
 ## Un geste qui ne correspond pas à `expect` ne consomme pas l'étape.
-func _wait_for_expected(event_name: String) -> Dictionary:
-	while _running and not _canceled:
-		var event: Dictionary = await _service.wait_for_event([event_name])
+func _wait_for_expected(event_name: String, anchor_id: String,
+		generation: int) -> Dictionary:
+	var missing_frames := 0
+	while _is_current(generation):
+		# Le geste est lu avant de conclure à la perte de l'ancre : un appui qui
+		# ferme lui-même sa cible reste un geste valide. La surveillance se fait
+		# à la frame, jamais sur une horloge réelle.
+		var event: Dictionary = _service.take_event([event_name])
+		if not event.is_empty():
+			var payload: Dictionary = {}
+			if event.get("payload") is Dictionary:
+				payload = (event.get("payload") as Dictionary).duplicate(true)
+			if _expect_matches(payload):
+				return event
 		if not _running or _canceled:
 			return {}
-		if event.is_empty():
-			return {}
-		var payload: Dictionary = {}
-		if event.get("payload") is Dictionary:
-			payload = (event.get("payload") as Dictionary).duplicate(true)
-		if _expect_matches(payload):
-			return event
+		if anchor_id != "" and _service.get_anchor(anchor_id) == null:
+			missing_frames += 1
+			if missing_frames >= ANCHOR_LOST_GRACE_FRAMES:
+				return {TARGET_LOST_KEY: true}
+		else:
+			missing_frames = 0
+		await get_tree().process_frame
 	return {}
+
+
+## Vrai pendant une pause de lisibilité : les écrans qui écoutent `_input`
+## avant le GUI peuvent ainsi refuser les gestes, comme le bouclier visuel.
+func is_beat_active() -> bool:
+	return _beat_active
+
+
+## Ancre de l'étape réellement en attente d'un geste. Vide hors guidage : un
+## écran ne protège un panneau que lorsqu'une consigne le met en surbrillance.
+func guided_anchor_id() -> String:
+	if not _running or not _waiting or _current_step.is_empty() or _wait_for == "":
+		return ""
+	return str(_current_step.get("anchor", ""))
 
 
 func _expect_matches(payload: Dictionary) -> bool:
@@ -241,8 +371,9 @@ func _play(sequence_id: String) -> void:
 ## L'ancre est le vrai Control de la scène, jamais une copie. L'attente n'a pas
 ## de limite tant que la scène de l'étape est ouverte ; si le joueur va
 ## ailleurs, l'étape est rendue à `notify_screen()` au lieu d'être abandonnée.
-func _wait_for_anchor(anchor_id: String, step_scene: String) -> Control:
-	while _running and not _canceled:
+func _wait_for_anchor(anchor_id: String, step_scene: String,
+		generation: int) -> Control:
+	while _is_current(generation):
 		if step_scene != "" and step_scene != _scene:
 			return null
 		var target: Control = _service.get_anchor(anchor_id)
@@ -255,19 +386,19 @@ func _wait_for_anchor(anchor_id: String, step_scene: String) -> Control:
 	return null
 
 
-func _finish_chapter() -> void:
+func _finish_chapter(generation: int) -> void:
 	var outro := str(_chapter.get("outro", ""))
 	if outro != "":
 		await _play(outro)
-		if _canceled:
+		if not _is_current(generation):
 			return
-	_finish()
+	_finish(generation)
 
 
 ## Seule une exécution menée jusqu'au bout marque le chapitre comme acquis ;
 ## une interruption laisse la progression intacte pour la prochaine session.
-func _finish() -> void:
-	if _canceled:
+func _finish(generation: int) -> void:
+	if generation != _run_generation or _canceled:
 		return
 	var finished_chapter := chapter_id()
 	_running = false
@@ -275,7 +406,13 @@ func _finish() -> void:
 	_wait_for = ""
 	_current_step = {}
 	_steps = []
+	_run_generation += 1
+	_beat_generation += 1
+	_beat_active = false
+	_step_dialogue_done = false
+	_step_action_beat_done = false
 	if _service != null:
+		_service.tutorial_beat_ended.emit()
 		_service.cancel_waits()
 		_service.spotlight_cleared.emit()
 		_service.tutorial_step_changed.emit()

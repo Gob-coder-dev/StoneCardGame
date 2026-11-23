@@ -46,7 +46,7 @@ func _ready() -> void:
 
 func _build() -> void:
 	_backdrop = ColorRect.new()
-	_backdrop.color = Color(0.02, 0.015, 0.03, 0.76)
+	_backdrop.color = UITheme.STORY_DIM
 	_backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_backdrop)

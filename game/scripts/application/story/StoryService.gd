@@ -15,6 +15,12 @@ signal spotlight_requested(target: Control, prompt: String, show_advance: bool)
 signal spotlight_cleared
 @warning_ignore("unused_signal")
 signal tutorial_step_changed
+## Pause de lisibilité demandée par le directeur. StoryLayer la traduit par un
+## bouclier d'entrées ; le service ne crée aucun contrôle.
+@warning_ignore("unused_signal")
+signal tutorial_beat_requested(seconds: float)
+@warning_ignore("unused_signal")
+signal tutorial_beat_ended
 
 const LoaderModel := preload("res://scripts/data/story/StoryContentLoader.gd")
 const TriggerRulesModel := preload("res://scripts/domain/story/StoryTriggerRules.gd")
@@ -146,6 +152,13 @@ func notify_event(event_name: String, payload: Dictionary = {}) -> void:
 	event_received.emit(event_name, payload)
 
 
+## Retire le plus ancien événement frais portant un des noms demandés. Un
+## appelant qui surveille aussi une ancre lit ainsi les gestes frame par frame,
+## sans dépendre d'une horloge réelle qui n'a pas le rythme des tests.
+func take_event(names: Array) -> Dictionary:
+	return _take_event(names)
+
+
 ## Attend un des événements nommés. `timeout` vaut 0 par défaut : le scénario
 ## attend le joueur, pas une horloge. Un délai positif reste possible pour un
 ## appel qui ne doit pas bloquer indéfiniment.
@@ -264,6 +277,22 @@ func stop_tutorial() -> void:
 
 func blocks_placement() -> bool:
 	return _tutorial != null and _tutorial.blocks_placement()
+
+
+## Vrai pendant la courte pause qui précède un dialogue ou une action guidée.
+## Les écrans qui lisent `_input` avant le GUI s'en servent pour ne pas agir
+## sous le bouclier visuel de StoryLayer.
+func is_tutorial_beat_active() -> bool:
+	return _tutorial != null and _tutorial.is_beat_active()
+
+
+## Lecture seule : l'ancre est celle de l'étape guidée en attente d'un geste.
+## Un écran peut ainsi refuser de refermer le panneau qu'une consigne désigne,
+## sans connaître l'identifiant de l'étape ni son contenu.
+func is_guiding_anchor(anchor_id: String) -> bool:
+	if anchor_id == "" or _tutorial == null or not _tutorial.is_running():
+		return false
+	return _tutorial.guided_anchor_id() == anchor_id
 
 
 func selection_allowed(payload: Dictionary) -> bool:

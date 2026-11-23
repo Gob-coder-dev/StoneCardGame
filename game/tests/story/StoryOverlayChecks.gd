@@ -51,6 +51,9 @@ func _test_dialogue_overlay() -> void:
 	overlay.show_session(session)
 	_check(overlay.visible and overlay._index == 0,
 		"dialogue : la séquence s'ouvre sur la première ligne")
+	_check(overlay._backdrop.color == UITheme.STORY_DIM
+		and UITheme.STORY_DIM.a <= 0.6,
+		"dialogue : le voile commun laisse le décor lisible")
 	_check(overlay._left_portrait.visible and not overlay._right_portrait.visible,
 		"dialogue : le portrait du locuteur est affiché à gauche")
 	var fit := overlay._left_portrait.get_child(0) as AspectRatioContainer
@@ -101,6 +104,10 @@ func _test_spotlight_overlay() -> void:
 	spotlight.show_target(target, "Touche la carte entourée.")
 	_check(spotlight.visible and spotlight._blockers.size() == 4,
 		"spotlight : le voile et ses quatre zones de blocage sont actifs")
+	_check(SpotlightModel.DIM == UITheme.STORY_DIM and SpotlightModel.DIM.a <= 0.6,
+		"spotlight : le même voile que le dialogue reste lisible autour de la cible")
+	_check(spotlight._banner.mouse_filter == Control.MOUSE_FILTER_STOP,
+		"spotlight : la consigne absorbe les appuis au lieu de les laisser passer")
 	_check(spotlight._hole.has_point(target.get_global_rect().get_center()),
 		"spotlight : le trou laisse la cible visible")
 	_check(spotlight._hole.size.x > target.size.x and spotlight._hole.size.y > target.size.y,
