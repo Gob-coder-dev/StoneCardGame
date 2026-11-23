@@ -130,7 +130,7 @@ func _test_series_result_view() -> void:
 	_check(str(mid["title"]) == "MANCHE 1 GAGNÉE"
 		and str(mid["round_score"]) == "Toi 9  —  4 Veskàr"
 		and str(mid["score"]) == "Toi 1  —  0 Veskàr"
-		and str(mid["caption"]) == "Mode de jeu : Aléatoire • FT2 : premier à 2"
+		and str(mid["caption"]) == "Mode de jeu : Decks aléatoires • FT2 : premier à 2"
 		and not bool(mid["finished"]),
 		"série : une manche affiche son verdict, son score et l'objectif FT2")
 	SeriesEngineModel.record_round(series, GameState.PLAYER_NONE, 5, 5)

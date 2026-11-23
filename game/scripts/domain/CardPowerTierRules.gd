@@ -13,6 +13,15 @@ extends RefCounted
 const MIN_TIER: int = 1
 const MAX_TIER: int = 4
 
+## Traduction joueur du palier : la fiche et le salon parlent de « puissance »,
+## le domaine continue de raisonner en paliers numérotés.
+const TIER_DESCRIPTIONS := {
+	1: "Cartes de base.",
+	2: "Premières évolutions et cartes rares.",
+	3: "Cartes épiques et évolutions avancées.",
+	4: "Toutes les cartes, légendaires comprises.",
+}
+
 ## common : 0, rare : 1, epic : 2, legendary : 3.
 const RARITY_OFFSET := {
 	"common": 0,
@@ -22,6 +31,20 @@ const RARITY_OFFSET := {
 }
 
 const RARITIES: Array[String] = ["common", "rare", "epic", "legendary"]
+
+
+## Nom complet pour une liste déroulante ou un sous-titre.
+static func label(tier: int) -> String:
+	return "Puissance %d / %d" % [tier, MAX_TIER]
+
+
+## Couple compact « 2 / 4 » quand la catégorie est déjà écrite au-dessus.
+static func short_label(tier: int) -> String:
+	return "%d / %d" % [tier, MAX_TIER]
+
+
+static func description(tier: int) -> String:
+	return str(TIER_DESCRIPTIONS.get(clampi(tier, MIN_TIER, MAX_TIER), ""))
 
 
 static func rarity_offset(rarity: String) -> int:

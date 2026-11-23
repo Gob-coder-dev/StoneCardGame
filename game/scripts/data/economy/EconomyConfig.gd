@@ -18,6 +18,15 @@ static func clear_cache_for_tests() -> void:
 	_cache.clear()
 
 
+## Bougies accordées par une victoire finale dans ce chapitre. La fiche de
+## niveau annonce la même valeur que le service de récompense.
+static func campaign_candles(chapter: String) -> int:
+	var values: Variant = get_config().get("campaign_candles_by_chapter", {})
+	if not values is Dictionary:
+		return 1
+	return maxi(1, int((values as Dictionary).get(chapter, 1)))
+
+
 static func problems(config: Dictionary = {}) -> Array[String]:
 	var value := get_config() if config.is_empty() else config
 	var result: Array[String] = []

@@ -1166,9 +1166,12 @@ func _test_pvp_lobby_screens() -> void:
 	page._fill_lobby()
 	_check(page.mode_option.item_count == 4 and page.series_option.item_count == 3
 		and page.tier_option.item_count == 4,
-		"le salon expose les quatre modes, les trois formats de série et les quatre paliers")
-	_check(not page.tier_row.visible,
-		"le mode classique masque le palier de puissance qui ne s'applique pas")
+		"le salon expose les quatre modes, les trois formats de série et les quatre puissances")
+	_check(not page.tier_row.visible and not page.tier_hint.visible,
+		"le mode classique masque la puissance des cartes qui ne s'applique pas")
+	_check(page.mode_hint.text == "Chacun joue son propre deck."
+		and page.series_hint.text != "",
+		"le salon explique le mode et le format de série sous leurs listes")
 	var popup: PopupMenu = page.mode_option.get_popup()
 	var popup_panel := popup.get_theme_stylebox("panel") as StyleBoxFlat
 	var popup_hover := popup.get_theme_stylebox("hover") as StyleBoxFlat
@@ -1177,21 +1180,22 @@ func _test_pvp_lobby_screens() -> void:
 		and popup_hover.bg_color == UITheme.COL_SELECTED,
 		"les listes de règles et leur fenêtre utilisent le thème néon du jeu")
 	_check(not page.mode_option.disabled and not page.rules_hint.visible,
-		"l'hôte peut modifier les règles sans texte redondant sous les options")
+		"l'hôte peut modifier les règles sans message d'état redondant")
 	page.mode_option.select(1)
 	page.mode_option.item_selected.emit(1)
 	_check(str(waiting_lobby.rules()["mode"]) == "random"
 		and int(waiting_lobby.state()["rules"]["revision"]) == 1,
 		"changer de mode applique la règle autoritaire et incrémente la révision")
-	_check(page.tier_row.visible and not page.tier_option.disabled,
-		"les modes générés affichent le palier de puissance")
+	_check(page.tier_row.visible and not page.tier_option.disabled
+		and page.tier_hint.visible and page.tier_hint.text != "",
+		"les modes générés affichent et expliquent la puissance des cartes")
 	page.mode_option.select(3)
 	page.mode_option.item_selected.emit(3)
 	_check(str(waiting_lobby.rules()["mode"]) == "draft"
 		and int(waiting_lobby.rules()["power_tier"]) >= 2
 		and page.tier_option.is_item_disabled(0)
-		and page.rules_hint.visible and page.rules_hint.text.contains("palier 2"),
-		"Sélection désactive le palier 1 impossible et en explique la raison")
+		and page.rules_hint.visible and page.rules_hint.text.contains("puissance 2"),
+		"Choix de cartes désactive la puissance 1 impossible et en explique la raison")
 	waiting_lobby._is_host = false
 	page._fill_lobby()
 	_check(page.mode_option.disabled and page.series_option.disabled
@@ -1298,7 +1302,7 @@ func _test_pvp_result() -> void:
 		and str(series_view["score"]).contains("Hôte 9")
 		and str(series_view["score"]).contains("4 Client")
 		and str(card_view["score"]) == "Hôte 1  —  0 Client"
-		and str(card_view["caption"]) == "Mode de jeu : Classique • FT2 : premier à 2",
+		and str(card_view["caption"]) == "Mode de jeu : Duel classique • FT2 : premier à 2",
 		"PVP : une manche de série affiche le verdict, le score du round et le cadre commun")
 	SeriesEngineModel.record_round(series, GameState.PLAYER_ONE, 9, 2)
 	var final_view := PvpResultPresenterModel.series(SeriesEngineModel.public_state(series),
@@ -1372,7 +1376,7 @@ func _test_pvp_result() -> void:
 		and series_page.series_card.visible
 		and series_page.series_card._score_label.text == "Hôte 1  —  0 Client"
 		and series_page.series_card._caption_label.text
-			== "Mode de jeu : Classique • FT2 : premier à 2"
+			== "Mode de jeu : Duel classique • FT2 : premier à 2"
 		and series_page.return_button.visible and series_page.quit_button.visible
 		and series_page.find_child("PvpPreparationPanel", true, false) == null,
 		"FT2 non terminé montre le verdict et les deux scores, PARTIE SUIVANTE et aucune préparation")

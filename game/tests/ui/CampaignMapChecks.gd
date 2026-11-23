@@ -183,16 +183,67 @@ func _test_dialog(page: Control) -> void:
 	await get_tree().process_frame
 	_check(page.dialog.visible and not page.dialog.launch_button.disabled,
 		"carte : un nœud accessible ouvre sa fiche et autorise le lancement")
-	_check(page.dialog.opponent_label.text.contains("Pr.Stone")
-		and page.dialog.mode_label.text.contains("Classique")
-		and page.dialog.type_label.text == "Tutoriel",
-		"fiche : le nom, le dieu, le mode et le type du niveau sont lisibles")
+	_check(page.dialog.opponent_name_label.text == "PR.STONE"
+		and page.dialog.mode_label.text == "Duel classique"
+		and page.dialog.type_label.text == "TUTORIEL",
+		"fiche : le dieu adverse, le mode et le type du niveau sont lisibles")
+	_check(page.dialog.opponent_portrait.has_portrait()
+		and not page.dialog.opponent_unknown.visible
+		and page.dialog.stars_label.text == "★☆☆☆☆"
+		and page.dialog.stars_word.text == "débutant"
+		and page.dialog.stars_hint.text == "L'adversaire fait des erreurs.",
+		"fiche : le portrait adverse et la difficulté de l'IA sont lisibles")
+	_check(page.dialog.mode_hint.text == "Chacun joue son propre deck."
+		and page.dialog.power_label.text == "1 / 4"
+		and page.dialog.power_hint.text == "Cartes de base.",
+		"fiche : le mode de jeu et la puissance des cartes sont expliqués")
+	_check(page.dialog.rewards_panel.visible
+		and page.dialog.soul_amount.text == "11 – 17"
+		and page.dialog.souls_row.get_node("Icon").texture != null
+		and page.dialog.candle_row.visible
+		and page.dialog.candle_amount.text == "×1"
+		and page.dialog.candle_row.get_node("Icon").texture != null
+		and not page.dialog.cards_title.visible
+		and page.dialog.reward_cards.get_child_count() == 0
+		and not page.dialog.technical_panel.visible,
+		"fiche : les récompenses utilisent les icônes d'âmes et de bougies")
 	page.dialog.close()
 	page._on_node_activated("tuto_01")
 	await get_tree().process_frame
 	_check(page.dialog.visible and page.dialog.launch_button.text == "REJOUER",
 		"carte : un niveau terminé reste rejouable depuis sa fiche")
 	page.dialog.close()
+	page.dialog.open(_reward_probe(), 1)
+	await get_tree().process_frame
+	_check(page.dialog.cards_title.visible
+		and page.dialog.reward_cards.get_child_count() == 1
+		and page.dialog.candle_amount.text == "×2",
+		"fiche : les cartes de première victoire montrent leur miniature")
+	page.dialog.open(_reward_probe(), 2)
+	await get_tree().process_frame
+	_check(not page.dialog.cards_title.visible
+		and page.dialog.reward_cards.get_child_count() == 0,
+		"fiche : un niveau terminé ne promet plus les cartes de première victoire")
+	page.dialog.close()
+
+
+func _reward_probe() -> Dictionary:
+	return {
+		"id": "campaign_reward_probe",
+		"name": "Sonde",
+		"mode_label": "Duel classique",
+		"mode_description": "Chacun joue son propre deck.",
+		"tier": 2,
+		"power_label": "2 / 4",
+		"power_description": "Premières évolutions et cartes rares.",
+		"stars": 3,
+		"stars_word": "Moyen",
+		"stars_hint": "L'adversaire joue correctement.",
+		"rewards": {"souls_min": 10, "souls_max": 10, "candles": 2,
+			"cards": [{"monster_id": "gueule_de_travers_n1",
+				"name": "Gueule de travers", "copies": 2}]},
+		"technical_lines": [],
+	}
 
 
 func _test_progress_refresh(page: Control) -> void:

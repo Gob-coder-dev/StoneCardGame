@@ -89,8 +89,9 @@ func show_loadout(loadout: Dictionary, power_tier: int,
 	var deck: Array = loadout.get("deck", [])
 	var total := float(int(loadout.get("total_quarters", 0))) \
 		/ float(MonsterCostRules.COST_SCALE)
-	loadout_info.text = "%d cartes • %.2f points • palier %d • %s" % [
-		deck.size(), total, power_tier, series_format.to_upper()
+	loadout_info.text = "%d cartes • %.2f points • puissance %s • %s" % [
+		deck.size(), total, CardPowerTierRules.short_label(power_tier),
+		series_format.to_upper()
 	]
 	deck_grid.show_cards(deck, _final_card_size, 2, false, "", _final_card_size)
 	_schedule_layout_fit()

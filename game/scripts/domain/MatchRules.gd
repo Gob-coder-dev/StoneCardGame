@@ -9,6 +9,7 @@ extends RefCounted
 const ModeRules := preload("res://scripts/domain/GameModeRules.gd")
 const FormatRules := preload("res://scripts/domain/SeriesRules.gd")
 const LobbyRules := preload("res://scripts/domain/PvpLobbyRules.gd")
+const PowerRules := preload("res://scripts/domain/CardPowerTierRules.gd")
 
 const MODE_CLASSIC := ModeRules.MODE_CLASSIC
 const MODE_RANDOM := ModeRules.MODE_RANDOM
@@ -122,7 +123,7 @@ static func summary_lines(config: Dictionary) -> Array[String]:
 		"Série : %s" % series_label(str(current["series"])),
 	]
 	if str(current["mode"]) != MODE_CLASSIC:
-		lines.append("Palier maximal : %d" % int(current["power_tier"]))
+		lines.append("Puissance max : %s" % PowerRules.short_label(int(current["power_tier"])))
 	lines.append("Révision : %d" % int(current["revision"]))
 	return lines
 

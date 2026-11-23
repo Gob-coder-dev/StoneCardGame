@@ -269,53 +269,86 @@ theme_override_font_sizes/font_size = 30
 text = "RÈGLES DE LA SÉRIE"
 horizontal_alignment = 1
 
-[node name="ModeRow" type="HBoxContainer" parent="Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox"]
+[node name="ModeGroup" type="VBoxContainer" parent="Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="ModeRow" type="HBoxContainer" parent="Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox/ModeGroup"]
 layout_mode = 2
 theme_override_constants/separation = 16
 
-[node name="ModeLabel" type="Label" parent="Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox/ModeRow"]
+[node name="ModeLabel" type="Label" parent="Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox/ModeGroup/ModeRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 28
-text = "Mode"
+text = "Mode de jeu"
 vertical_alignment = 1
 
-[node name="ModeOption" type="OptionButton" parent="Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox/ModeRow"]
+[node name="ModeOption" type="OptionButton" parent="Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox/ModeGroup/ModeRow"]
 custom_minimum_size = Vector2(340, 80)
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
 
-[node name="SeriesRow" type="HBoxContainer" parent="Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox"]
+[node name="ModeHint" type="Label" parent="Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox/ModeGroup"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.737, 0.698, 0.741, 1)
+theme_override_font_sizes/font_size = 24
+text = "Chacun joue son propre deck."
+autowrap_mode = 2
+
+[node name="SeriesGroup" type="VBoxContainer" parent="Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="SeriesRow" type="HBoxContainer" parent="Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox/SeriesGroup"]
 layout_mode = 2
 theme_override_constants/separation = 16
 
-[node name="SeriesLabel" type="Label" parent="Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox/SeriesRow"]
+[node name="SeriesLabel" type="Label" parent="Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox/SeriesGroup/SeriesRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 28
 text = "Série"
 vertical_alignment = 1
 
-[node name="SeriesOption" type="OptionButton" parent="Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox/SeriesRow"]
+[node name="SeriesOption" type="OptionButton" parent="Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox/SeriesGroup/SeriesRow"]
 custom_minimum_size = Vector2(340, 80)
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
 
-[node name="TierRow" type="HBoxContainer" parent="Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox"]
+[node name="SeriesHint" type="Label" parent="Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox/SeriesGroup"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.737, 0.698, 0.741, 1)
+theme_override_font_sizes/font_size = 24
+text = "Une seule manche décide de la rencontre."
+autowrap_mode = 2
+
+[node name="TierGroup" type="VBoxContainer" parent="Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="TierRow" type="HBoxContainer" parent="Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox/TierGroup"]
 layout_mode = 2
 theme_override_constants/separation = 16
 
-[node name="TierLabel" type="Label" parent="Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox/TierRow"]
+[node name="TierLabel" type="Label" parent="Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox/TierGroup/TierRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 28
-text = "Palier de puissance"
+text = "Puissance des cartes"
 vertical_alignment = 1
 
-[node name="TierOption" type="OptionButton" parent="Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox/TierRow"]
+[node name="TierOption" type="OptionButton" parent="Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox/TierGroup/TierRow"]
 custom_minimum_size = Vector2(340, 80)
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
+
+[node name="TierHint" type="Label" parent="Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox/TierGroup"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.737, 0.698, 0.741, 1)
+theme_override_font_sizes/font_size = 24
+text = "Toutes les cartes, légendaires comprises."
+autowrap_mode = 2
 
 [node name="RulesHint" type="Label" parent="Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox"]
 layout_mode = 2

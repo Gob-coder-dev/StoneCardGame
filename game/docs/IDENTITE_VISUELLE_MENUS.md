@@ -117,8 +117,14 @@ Les six portraits sont fournis dans `assets/gods/`. Le champ `asset` de
   verrouillé, tutoriel, mini-boss et boss se distinguent par la couleur et par
   la forme (coche, anneau, cadenas, livre, losange, couronne). Un nœud accessible
   ou terminé ouvre une fiche ; un nœud verrouillé reste inactif ; un glissement
-  défile sans activer. La fiche présente adversaire, mode, palier, IA, deck,
-  format et action de lancement. Le compteur `X / N niveaux terminés` et le
+  défile sans activer. La fiche présente un face-à-face des deux dieux (ou « ? »
+  quand le mode généré ne fixe pas l'adversaire), le mode de jeu et la puissance
+  des cartes — chacun avec une phrase concrète —, la difficulté de l'IA en
+  étoiles, puis les récompenses en icônes (âmes, bougies et mini-cartes de
+  première victoire) et l'action de lancement.
+  Les détails techniques (deck, format, plateau) restent masqués tant qu'ils
+  correspondent aux valeurs par défaut, sauf pour un boss ou un mini-boss. Le
+  compteur `X / N niveaux terminés` et le
   message sur les branches restent visibles autour du défilement.
 - Règles : texte ivoire et titres ambrés, logos des pouvoirs aux couleurs
   de leur famille ; valeurs toujours lues dans les règles du jeu. Une marge
@@ -129,7 +135,9 @@ Les six portraits sont fournis dans `assets/gods/`. Le champ `asset` de
 - Salon PVP : les trois étapes partagent la même arche de pierre et les deux
   épées croisées en néon ; les deux courbes de l'arche reprennent chacune la
   couleur d'un dieu, et les montants rejoignent le bord bas même si le format
-  d'écran est plus haut que le canevas de référence. Choix du mode (créer ou
+  d'écran est plus haut que le canevas de référence. Le panneau des règles
+  explique sous chaque liste le mode de jeu, le format de série et, quand elle
+  s'applique, la puissance des cartes. Choix du mode (créer ou
   rejoindre), recherche (liste vivante et saisie d'adresse), puis salle
   d'attente (adresse copiable, deux cartes joueur et bouton PRÊT). L'état réseau
   est toujours écrit en toutes lettres, jamais indiqué par une couleur seule.

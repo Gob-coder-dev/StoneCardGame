@@ -29,7 +29,7 @@ static func combatant_name(value: String, max_characters: int = 20) -> String:
 	if parts.size() > 1:
 		var first := str(parts[0]).strip_edges()
 		# Ancien format de campagne : "Mode — Dieu — Titre du niveau".
-		compact = str(parts[1]).strip_edges() if GameModeRules.MODE_LABELS.values().has(first) \
+		compact = str(parts[1]).strip_edges() if GameModeRules.is_mode_label(first) \
 			else first
 	if compact == "":
 		compact = "Adversaire"

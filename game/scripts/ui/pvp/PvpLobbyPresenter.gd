@@ -33,7 +33,7 @@ static func rules(lobby: Dictionary) -> Dictionary:
 	elif locked:
 		hint = "Règles verrouillées pour la série."
 	elif host and mode == GameModeRules.MODE_DRAFT:
-		hint = "Sélection commence au palier 2 : huit choix doubles exigent seize lignées distinctes."
+		hint = "Choix de cartes commence à la puissance 2 : huit choix doubles exigent seize lignées distinctes."
 	elif not host:
 		hint = "Seul l'hôte peut modifier ces options."
 	return {

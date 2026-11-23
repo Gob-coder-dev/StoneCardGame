@@ -9,6 +9,7 @@ extends RefCounted
 const GeneratorModel := preload("res://scripts/domain/LoadoutGenerator.gd")
 const OpponentCatalogModel := preload("res://scripts/data/OpponentCatalog.gd")
 const GameModeRulesModel := preload("res://scripts/domain/GameModeRules.gd")
+const CardPowerTierRulesModel := preload("res://scripts/domain/CardPowerTierRules.gd")
 
 static func build(node: CampaignNode, campaign_version: int, player_god_id: String,
 		player_deck: Array, attempt: int) -> Dictionary:
@@ -141,7 +142,7 @@ static func _opponent(node: CampaignNode, mode: String, tier: int,
 		"difficulty_label": node.type_label(),
 		"difficulty_stars_text": "",
 		"bracket_id": "tier%d" % tier,
-		"bracket_label": "Palier %d" % tier,
+		"bracket_label": CardPowerTierRulesModel.label(tier),
 		"ai": node.ai_profile(),
 		"deck": (resolved.get("deck", []) as Array).duplicate(),
 		"portrait": str(resolved.get("portrait", "")),

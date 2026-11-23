@@ -81,9 +81,9 @@ func _test_tutorial() -> void:
 	_check((npc.get("deck", []) as Array) == _graph.node("tuto_01").fixed_deck()
 		and (npc.get("deck", []) as Array).size() == DeckRules.DECK_SIZE,
 		"rencontres : le tutoriel utilise son deck fixe de huit cartes")
-	_check(int(npc.get("bracket_label", "").right(1)) == 1
+	_check(str(npc.get("bracket_label", "")) == "Puissance 1 / 4"
 		and float(npc.get("ai", {}).get("precision", 1.0)) == 0.0,
-		"rencontres : le tutoriel est palier 1 et précision 0")
+		"rencontres : le tutoriel est puissance 1 et précision 0")
 	var setup: Dictionary = npc.get("match_setup", {})
 	_check(int(setup.get("board_size", 0)) == 3
 		and int(setup.get("player_hand_size", 0)) == 5

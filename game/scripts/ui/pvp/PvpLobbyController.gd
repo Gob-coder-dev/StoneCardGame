@@ -53,13 +53,19 @@ const MODE_JOIN := FlowModel.MODE_JOIN
 @onready var rules_panel: PanelContainer = \
 	$Root/Scroll/Content/LobbyScreen/RulesPanel
 @onready var mode_option: OptionButton = \
-	$Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox/ModeRow/ModeOption
+	$Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox/ModeGroup/ModeRow/ModeOption
+@onready var mode_hint: Label = \
+	$Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox/ModeGroup/ModeHint
 @onready var series_option: OptionButton = \
-	$Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox/SeriesRow/SeriesOption
+	$Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox/SeriesGroup/SeriesRow/SeriesOption
+@onready var series_hint: Label = \
+	$Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox/SeriesGroup/SeriesHint
 @onready var tier_option: OptionButton = \
-	$Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox/TierRow/TierOption
+	$Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox/TierGroup/TierRow/TierOption
 @onready var tier_row: HBoxContainer = \
-	$Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox/TierRow
+	$Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox/TierGroup/TierRow
+@onready var tier_hint: Label = \
+	$Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox/TierGroup/TierHint
 @onready var rules_hint: Label = \
 	$Root/Scroll/Content/LobbyScreen/RulesPanel/RulesBox/RulesHint
 @onready var address_panel: PanelContainer = \
@@ -525,7 +531,7 @@ func _build_rule_options() -> void:
 		series_option.add_item(RulesModel.series_label(series))
 		series_option.set_item_metadata(series_option.item_count - 1, series)
 	for tier in range(RulesModel.MIN_POWER_TIER, RulesModel.MAX_POWER_TIER + 1):
-		tier_option.add_item("Palier %d" % tier)
+		tier_option.add_item(CardPowerTierRules.label(tier))
 		tier_option.set_item_metadata(tier_option.item_count - 1, tier)
 	mode_option.item_selected.connect(_on_mode_selected)
 	series_option.item_selected.connect(_on_series_selected)
@@ -543,10 +549,19 @@ func _sync_rules(lobby: Dictionary) -> void:
 	_select_rule(tier_option, int(rules.get("power_tier", RulesModel.DEFAULT_POWER_TIER)))
 	var uses_power_tier := bool(view["uses_power_tier"])
 	var minimum_tier := int(view["minimum_tier"])
+	var mode := str(rules.get("mode", RulesModel.MODE_CLASSIC))
 	for index in range(tier_option.item_count):
 		tier_option.set_item_disabled(index,
 			int(tier_option.get_item_metadata(index)) < minimum_tier)
 	tier_row.visible = uses_power_tier
+	mode_hint.text = GameModeRules.mode_description(mode)
+	mode_hint.visible = mode_hint.text != ""
+	series_hint.text = SeriesRules.description(
+		str(rules.get("series", SeriesRules.SERIES_FT1)))
+	series_hint.visible = series_hint.text != ""
+	tier_hint.text = CardPowerTierRules.description(
+		int(rules.get("power_tier", RulesModel.DEFAULT_POWER_TIER)))
+	tier_hint.visible = uses_power_tier and tier_hint.text != ""
 	mode_option.disabled = not editable
 	series_option.disabled = not editable
 	tier_option.disabled = not editable or not uses_power_tier

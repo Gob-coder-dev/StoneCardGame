@@ -401,8 +401,8 @@ func _test_series() -> void:
 
 func _test_lobby_rules() -> void:
 	var config := RulesModel.default_config()
-	_check(not RulesModel.summary(config).contains("Palier maximal"),
-		"salon : le résumé classique ne mentionne pas un palier inactif")
+	_check(not RulesModel.summary(config).contains("Puissance max"),
+		"salon : le résumé classique ne mentionne pas une puissance inactive")
 	var refused := RulesModel.apply_change(config, "mode", RulesModel.MODE_RANDOM, false)
 	_check(not bool(refused.get("ok", false))
 		and str(refused["reason"]).contains("hôte"),
@@ -411,8 +411,8 @@ func _test_lobby_rules() -> void:
 	_check(bool(changed.get("ok", false)) and bool(changed["changed"])
 		and int(changed["config"]["revision"]) == 1,
 		"salon : une modification incrémente la révision")
-	_check(RulesModel.summary(changed["config"]).contains("Palier maximal"),
-		"salon : le résumé des modes générés indique leur palier")
+	_check(RulesModel.summary(changed["config"]).contains("Puissance max"),
+		"salon : le résumé des modes générés indique leur puissance")
 	var tier_one_random := RulesModel.apply_change(changed["config"], "power_tier", 1, true)
 	_check(bool(tier_one_random.get("ok", false))
 		and int(tier_one_random["config"]["power_tier"]) == 1,

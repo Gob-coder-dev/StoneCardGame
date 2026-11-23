@@ -19,6 +19,12 @@ const OBJECTIVES := {
 	SERIES_FT2: "premier à 2",
 	SERIES_FT3: "premier à 3",
 }
+## Explication affichée dans le salon PVP, sous la liste des formats.
+const DESCRIPTIONS := {
+	SERIES_FT1: "Une seule manche décide de la rencontre.",
+	SERIES_FT2: "Le premier à gagner 2 manches remporte la rencontre.",
+	SERIES_FT3: "Le premier à gagner 3 manches remporte la rencontre.",
+}
 
 
 static func normalized(value: String) -> String:
@@ -27,6 +33,10 @@ static func normalized(value: String) -> String:
 
 static func label(value: String) -> String:
 	return str(LABELS.get(value, value))
+
+
+static func description(value: String) -> String:
+	return str(DESCRIPTIONS.get(normalized(value), ""))
 
 
 ## Formulation courte des cartes de résultat : « FT2 : premier à 2 ».

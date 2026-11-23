@@ -64,10 +64,7 @@ static func _normalize_card_reward(raw_reward: Variant) -> Dictionary:
 
 
 static func _candles_for_chapter(chapter: String) -> int:
-	var values: Variant = Config.get_config().get("campaign_candles_by_chapter", {})
-	if not values is Dictionary:
-		return 1
-	return maxi(1, int(values.get(chapter, 1)))
+	return Config.campaign_candles(chapter)
 
 
 static func _deterministic_amount(key: String, minimum: int, maximum: int) -> int:

@@ -8,12 +8,25 @@ const MODE_RANDOM := "random"
 const MODE_MIRROR := "mirror"
 const MODE_DRAFT := "draft"
 const MODES: Array[String] = [MODE_CLASSIC, MODE_RANDOM, MODE_MIRROR, MODE_DRAFT]
+## Les noms décrivent la règle plutôt que de la nommer : « Classique » ou
+## « Sélection » ne disent pas au joueur ce qu'il doit préparer.
 const MODE_LABELS := {
-	MODE_CLASSIC: "Classique",
-	MODE_RANDOM: "Aléatoire",
-	MODE_MIRROR: "Miroir",
-	MODE_DRAFT: "Sélection",
+	MODE_CLASSIC: "Duel classique",
+	MODE_RANDOM: "Decks aléatoires",
+	MODE_MIRROR: "Même deck",
+	MODE_DRAFT: "Choix de cartes",
 }
+## Une phrase concrète accompagne chaque mode dans la fiche de campagne et le
+## salon PVP. Le libellé seul reste affiché, mais ne porte jamais l'explication.
+const MODE_DESCRIPTIONS := {
+	MODE_CLASSIC: "Chacun joue son propre deck.",
+	MODE_RANDOM: "Les deux decks sont générés au hasard.",
+	MODE_MIRROR: "Les deux camps reçoivent un deck identique.",
+	MODE_DRAFT: "Chacun compose son deck parmi une sélection de cartes.",
+}
+## Libellés des anciennes rencontres enregistrées. Ils ne sont plus affichés,
+## mais la lecture d'une sauvegarde doit encore les reconnaître comme un mode.
+const LEGACY_MODE_LABELS: Array[String] = ["Classique", "Aléatoire", "Miroir", "Sélection"]
 
 const MIN_POWER_TIER := CardPowerTierRules.MIN_TIER
 const MAX_POWER_TIER := CardPowerTierRules.MAX_TIER
@@ -22,6 +35,14 @@ const DEFAULT_POWER_TIER: int = MAX_POWER_TIER
 
 static func mode_label(mode: String) -> String:
 	return str(MODE_LABELS.get(mode, mode))
+
+
+static func mode_description(mode: String) -> String:
+	return str(MODE_DESCRIPTIONS.get(mode, ""))
+
+
+static func is_mode_label(value: String) -> bool:
+	return MODE_LABELS.values().has(value) or LEGACY_MODE_LABELS.has(value)
 
 
 static func minimum_power_tier(mode: String) -> int:
