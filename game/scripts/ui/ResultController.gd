@@ -26,6 +26,9 @@ const NEXT_LEVEL_BORDER_WIDTH := 5
 ## Le ton « danger » du thème est trop sombre pour être lu sur le fond des
 ## boutons : l'abandon prend un corail franc, réservé à cette action.
 const ABANDON_TEXT_COLOR := Color("#ff6f61")
+## Pause de lisibilité avant le dialogue de conclusion : le joueur voit
+## d'abord le verdict et ses récompenses. Même rythme que les dialogues guidés.
+const VICTORY_DIALOGUE_BEAT := 0.65
 
 @onready var result_label: Label = $VBoxCenter/ResultCard/Content/ResultLabel
 @onready var score_label: Label = $VBoxCenter/ResultCard/Content/ScoreLabel
@@ -56,6 +59,8 @@ const ABANDON_TEXT_COLOR := Color("#ff6f61")
 ## Navigation injectable : les tests vérifient la destination réelle sans
 ## changer de scène. Vide en jeu, la scène est alors ouverte normalement.
 var scene_changer: Callable = Callable()
+## Surchargeable par les tests pour ne pas dépendre d'un rythme réel.
+var victory_dialogue_beat := VICTORY_DIALOGUE_BEAT
 
 var _campaign := false
 var _player_name := ""
@@ -99,8 +104,14 @@ func _ready() -> void:
 
 ## Une victoire confirmée peut clore un chapitre du scénario. La séquence est
 ## lue par-dessus le résultat et ne se rejoue pas : le déclencheur est `once`.
+## Elle attend la fin de la pause pour laisser le verdict s'afficher seul.
 func _play_story_victory() -> void:
 	if not _campaign or not BattleContext.campaign_victory_confirmed():
+		return
+	await get_tree().create_timer(victory_dialogue_beat).timeout
+	## Le joueur a pu quitter le résultat pendant la pause : le dialogue ne doit
+	## alors pas s'ouvrir par-dessus l'écran suivant.
+	if not is_inside_tree() or is_queued_for_deletion():
 		return
 	StoryService.play_level_won(BattleContext.campaign_node_id, "win")
 

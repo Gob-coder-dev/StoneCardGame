@@ -46,6 +46,7 @@ func run() -> void:
 	_test_series_result_view()
 	await _test_mid_series_abandon()
 	await _test_result_screens()
+	await _test_victory_dialogue_beat()
 	await _test_next_level_grid_layout()
 	await _test_preparation_scene()
 	BattleContext.clear_campaign_node()
@@ -287,6 +288,38 @@ func _test_result_screens() -> void:
 	CampaignContext.take_requested_node()
 	victory.queue_free()
 	await get_tree().process_frame
+
+
+## Le verdict reste seul un instant avant que le scénario ne prenne la parole.
+## Sans cette pause, le dialogue de conclusion masquait la victoire dès l'arrivée.
+func _test_victory_dialogue_beat() -> void:
+	while StoryLayer._dialogue.visible:
+		StoryLayer._dialogue._typing = false
+		StoryLayer._dialogue._advance()
+		await get_tree().process_frame
+	_enter("tuto_02")
+	BattleContext.prepare_result(GameState.PLAYER_HUMAN, 9, 4, 0)
+	BattleContext.persist_result()
+	var page: Control = (load("res://scenes/menus/Result.tscn") as PackedScene).instantiate()
+	page.victory_dialogue_beat = 0.05
+	add_child(page)
+	await get_tree().process_frame
+	_check(page.result_label.text == "VICTOIRE !" and not StoryLayer._dialogue.visible,
+		"résultat campagne : la victoire s'affiche seule avant son dialogue")
+	var opened := false
+	for _frame in range(30):
+		if StoryLayer._dialogue.visible:
+			opened = true
+			break
+		await get_tree().process_frame
+	_check(opened, "résultat campagne : le dialogue de victoire arrive après la pause")
+	while StoryLayer._dialogue.visible:
+		StoryLayer._dialogue._typing = false
+		StoryLayer._dialogue._advance()
+		await get_tree().process_frame
+	page.queue_free()
+	await get_tree().process_frame
+	BattleContext.clear_campaign_node()
 
 
 ## Trois successeurs : deux cartes sur la première ligne, la troisième seule et

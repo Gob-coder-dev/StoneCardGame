@@ -655,7 +655,9 @@ lisibilité demandée par le directeur (`tutorial_beat_requested`). `StoryLayer`
 la traduit par `TutorialInputShield`, un bouclier plein écran qui consomme
 gestes et clavier ; le directeur refuse aussi la sélection et la pose pendant
 ce délai. Une étape peut surcharger la durée avec sa clé `beat`, et les tests la
-ramènent à zéro.
+ramènent à zéro. Le dialogue de conclusion de l'écran de résultat observe la
+même pause : le verdict et les récompenses s'affichent seuls avant que le
+scénario ne prenne la parole.
 
 Une étape n'expire jamais : elle attend le geste du joueur. Si l'ancre qu'elle
 met en surbrillance disparaît, le directeur remet la même étape en attente
