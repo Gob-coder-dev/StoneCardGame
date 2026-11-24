@@ -46,51 +46,34 @@ vertical_alignment = 1
 
 [node name="CurrencyBalances" parent="Content/Header" instance=ExtResource("5_currency")]
 
+[node name="Tabs" type="HBoxContainer" parent="Content"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="GodTabs" type="GridContainer" parent="Content"]
+visible = false
+layout_mode = 2
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 12
+columns = 3
+
 [node name="Scroll" type="ScrollContainer" parent="Content"]
 layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 script = ExtResource("4_touch_scroll")
 
-[node name="RulesPanel" type="PanelContainer" parent="Content/Scroll"]
+[node name="ReadingMargin" type="MarginContainer" parent="Content/Scroll"]
 layout_mode = 2
 size_flags_horizontal = 3
-mouse_filter = 1
+mouse_filter = 2
+theme_override_constants/margin_bottom = 280
 
-[node name="Page" type="VBoxContainer" parent="Content/Scroll/RulesPanel"]
+[node name="Page" type="VBoxContainer" parent="Content/Scroll/ReadingMargin"]
 layout_mode = 2
 size_flags_horizontal = 3
-mouse_filter = 1
-theme_override_constants/separation = 32
-
-[node name="RulesText" type="RichTextLabel" parent="Content/Scroll/RulesPanel/Page"]
-layout_mode = 2
 mouse_filter = 2
-custom_minimum_size = Vector2(0, 1830)
-theme_override_font_sizes/normal_font_size = 34
-theme_override_font_sizes/bold_font_size = 34
-bbcode_enabled = true
-fit_content = true
-scroll_active = false
-
-[node name="GodRules" type="VBoxContainer" parent="Content/Scroll/RulesPanel/Page"]
-layout_mode = 2
-mouse_filter = 1
-theme_override_constants/separation = 28
-
-[node name="EndText" type="RichTextLabel" parent="Content/Scroll/RulesPanel/Page"]
-layout_mode = 2
-mouse_filter = 2
-theme_override_font_sizes/normal_font_size = 34
-theme_override_font_sizes/bold_font_size = 34
-bbcode_enabled = true
-fit_content = true
-scroll_active = false
-
-[node name="EndSpace" type="Control" parent="Content/Scroll/RulesPanel/Page"]
-custom_minimum_size = Vector2(0, 120)
-layout_mode = 2
-mouse_filter = 2
+theme_override_constants/separation = 18
 
 [node name="BottomNav" parent="." instance=ExtResource("3_nav")]
 current_tab = 4

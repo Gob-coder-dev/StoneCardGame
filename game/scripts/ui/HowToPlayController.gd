@@ -1,65 +1,191 @@
-## Règles et légendes visuelles partageant les pictogrammes des cartes.
+## Livret de règles paginé. Les libellés de modes et de pouvoirs sont partagés avec le jeu.
 extends Control
+
+enum Tab { BASICS, MODES, POWERS, DECKS }
 
 const Routes := preload("res://scripts/ui/GameRoutes.gd")
 const GodIdentityModel := preload("res://scripts/data/GodIdentity.gd")
+const PowerHelp := preload("res://scripts/ui/PowerHelp.gd")
+const TouchButton := preload("res://scripts/ui/input/TouchButton.gd")
+const TAB_NAMES := ["Bases", "Modes de jeu", "Pouvoirs", "Decks"]
+const DemoPlayback := preload("res://scripts/ui/RulesDemoPlayback.gd")
 
-const Badge := preload("res://scripts/ui/PowerBadge.gd")
-const Effects := preload("res://scripts/domain/MonsterEffects.gd")
-
-const GOD_RULES := {
-	"veskar": [
-		{"kind": "fortune", "count": 2, "title": "Lames aléatoires ×2",
-			"text": "Le nombre indique combien de lames roses seront ajoutées. À la pose, elles tournent puis rejoignent leurs faces tirées au sort. Chaque lame coûte {random_cost} point. Une face pleine ne peut plus en recevoir."},
-		{"kind": "coin_horizontal", "title": "Pile ou face horizontal ↔",
-			"text": "Une pièce est lancée au-dessus de la carte : ✓ échange gauche et droite, ✕ conserve les valeurs. Chaque issue a une chance sur deux. Exemple : gauche 0 / droite 2 devient gauche 2 / droite 0 si ✓ apparaît."},
-		{"kind": "coin_vertical", "title": "Pile ou face vertical ↕",
-			"text": "Même lancer, mais ✓ échange le haut et le bas. L'échange est révélé avant les captures. Une carte Fortune possède un seul de ces trois pouvoirs."}
-	],
-	"nerava": [
-		{"kind": "weaken_miss", "title": "Échec corrosif −{corrosion}",
-			"text": "Quand cette carte attaque un monstre adverse sans réussir à le capturer, de près ou avec une lame bleue, un poison atteint ce monstre et lui retire {corrosion} de force sur chaque face. Les monstres capturés, non attaqués ou hors de portée ne sont pas touchées. Le malus reste actif pendant le tour adverse puis pendant votre coup suivant, et expire après ce coup. Les lames neutralisées apparaissent fissurées ; les boucliers restent fonctionnels."},
-		{"kind": "weaken_adjacent", "title": "Miasme autour du monstre",
-			"text": "Le point central et ses quatre voisins représentent les cases adjacentes. Tant que la carte reste dans le camp de Nérava, une aura violette retire 1 force sur chaque face à chaque monstre adverse voisine, y compris à une carte posée plus tard à côté : celle-ci attaque d'abord normalement, puis subit le malus. Deux monstres Miasme voisines retirent 2 de force. Si la carte Miasme est capturée par un autre dieu, ou si la voisine passe dans ton camp, le malus disparaît. Chaque niveau de faiblesse brise visuellement une lame par face, sans affecter les boucliers. Une carte Déclin ne possède qu'un seul pouvoir."}
-	],
-	"kharun": [
-		{"kind": "shield", "title": "Rempart : le demi-cercle",
-			"text": "Un demi-cercle est un bouclier : il occupe un emplacement comme une lame, mais défend uniquement. Exemple : 2 lames + 1 bouclier = 2 d'attaque et 3 de défense. Il coûte {shield_cost} point. Lames et boucliers ne dépassent jamais {max_markers} symboles au total sur une face."}
-	],
-	"ilyr": [
-		{"kind": "long", "title": "Horizon : la grande lame bleue",
-			"text": "Une lame bleue attaque au contact et sur toute sa ligne. Exemple : 2 lames normales + 2 lames longues = 4 d'attaque voisine et 2 à distance. Après chaque capture, les bleues transpercent le monstre et continuent avec leur force distante inchangée. Elles traversent les alliés et les cases vides ; un ennemi qui résiste ou une case bloquée les arrête. Aucun tir ne part sans ennemi atteignable sur la ligne. À distance, seules les lames bleues s'activent. Une lame longue coûte {long_cost} point."}
-	],
-	"sylkha": [
-		{"kind": "swarm", "title": "Essaim : les trois points reliés",
-			"text": "Les monstres Essaim reliés par leurs côtés forment un groupe. Plusieurs lianes vertes croisées restent visibles entre toute la largeur de leurs bords, puis une impulsion y fait pousser leurs lames d'aura. Chaque membre reçoit {swarm_per_ally} lames par autre membre du groupe, jusqu'à +{swarm_cap}, dans ses emplacements libres. Exemple : deux monstres reliés gagnent chacun 2 lames, trois monstres ou plus 4 lames chacun. Seul un joueur dont le dieu est Sylkha relie ses monstres Essaim : un monstre capturé par un autre dieu perd son aura et ne renforce pas l'adversaire. Capturer un maillon coupe les lianes concernées et rétracte les bonus perdus."}
-	],
-	"enigma": [
-		{"kind": "theft", "title": "Pillage : le cercle avec un +",
-			"text": "Après une capture, les symboles vaincus sont aspirés puis un répartiteur orange révèle les boucliers gagnés. Exemple : vaincre une face avec 2 lames et 1 bouclier donne jusqu'à 3 boucliers, distribués au hasard dans les emplacements libres des trois autres faces : la face qui a capturé n'en reçoit pas, et un symbole sans place est perdu. Le monstre capturé conserve ses symboles. Chaque face reste limitée à {max_markers} symboles au total."}
-	]
-}
-
-@onready var rules_text: RichTextLabel = $Content/Scroll/RulesPanel/Page/RulesText
-@onready var god_rules: VBoxContainer = $Content/Scroll/RulesPanel/Page/GodRules
-@onready var end_text: RichTextLabel = $Content/Scroll/RulesPanel/Page/EndText
+@onready var tabs: HBoxContainer = $Content/Tabs
+@onready var god_tabs: GridContainer = $Content/GodTabs
+@onready var scroll: ScrollContainer = $Content/Scroll
+@onready var page: VBoxContainer = $Content/Scroll/ReadingMargin/Page
 @onready var background: MenuBackground = $Background
+
+var _active_tab := Tab.BASICS
+var _god_id := ""
+@onready var _demos := DemoPlayback.new()
 
 
 func _ready() -> void:
+	add_child(_demos)
+	_demos.setup(scroll, page)
 	background.set_god(GodIdentityModel.player(PlayerData.player_god_id))
-	$Content/Scroll/RulesPanel/Page/EndSpace.custom_minimum_size.y = UITheme.RULES_END_SPACE
-	var values := _rule_values()
-	rules_text.text = _rules_bbcode().format(values)
+	var tab_group := ButtonGroup.new()
+	for index in range(TAB_NAMES.size()):
+		var button := _tab_button(TAB_NAMES[index], tab_group)
+		tabs.add_child(button)
+		button.pressed.connect(_select_tab.bind(index))
+	var god_group := ButtonGroup.new()
+	if not MonsterLoader.get_god(PlayerData.player_god_id).is_empty():
+		_god_id = PlayerData.player_god_id
+	else:
+		_god_id = MonsterLoader.default_god_id()
 	for god in MonsterLoader.get_all_gods():
-		_add_god_rules(god, values)
-	end_text.text = """[color=#{heading}][font_size=44]Fin de partie[/font_size][/color]
+		var id := str(god["id"])
+		var button := _tab_button(str(god["name"]), god_group)
+		god_tabs.add_child(button)
+		button.pressed.connect(_select_god.bind(id))
+		if id == _god_id:
+			button.set_pressed_no_signal(true)
+	_select_tab(Tab.BASICS)
 
-Quand toutes les cases jouables sont remplies, on compte les monstres de chaque camp. Celui qui en contrôle le plus gagne.
 
-[color=#{heading}][font_size=44]Conseil[/font_size][/color]
+func _select_tab(tab: Tab) -> void:
+	_active_tab = tab
+	for index in range(tabs.get_child_count()):
+		tabs.get_child(index).set_pressed_no_signal(index == tab)
+	god_tabs.visible = tab == Tab.POWERS
+	_show_page()
 
-Regarde les côtés faibles déjà exposés et garde un monstre capable de les attaquer au bon moment.""".format(values)
+
+func _select_god(god_id: String) -> void:
+	_god_id = god_id
+	_show_page()
+
+
+func _show_page() -> void:
+	_demos.clear()
+	for child in page.get_children():
+		page.remove_child(child)
+		child.queue_free()
+	scroll.scroll_vertical = 0
+	match _active_tab:
+		Tab.BASICS: _show_basics()
+		Tab.MODES: _show_modes()
+		Tab.POWERS: _show_powers()
+		Tab.DECKS: _show_decks()
+
+
+func _show_basics() -> void:
+	_add_rule("Pose un monstre",
+		"À ton tour, choisis une carte de ta main et pose-la sur une case libre. Le premier joueur est tiré au sort.")
+	_demos.add_clip("basics_place")
+	_add_rule("Compare les faces",
+		"Seule la carte posée attaque. Au contact, compare son attaque à la défense de l’ennemi sur les faces "
+		+ "qui se touchent. Une attaque supérieure capture la cible, "
+		+ "qui rejoint ton camp. À égalité, le défenseur tient.\n\n"
+		+ "[b]3 contre 2 → capture     •     2 contre 2 → défense[/b]")
+	_demos.add_clip("basics_compare")
+	_add_rule("Lis le plateau",
+		"Le plateau fait généralement %d × %d. Une croix marque une case bloquée. "
+		% [GameState.BOARD_SIZE, GameState.BOARD_SIZE]
+		+ "Les cases bleues sont à toi, les rouges sont à l’adversaire. "
+		+ "Les lames servent à attaquer et à défendre. Les boucliers servent à défendre.")
+	_demos.add_clip("basics_board")
+	_add_rule("Fin de manche",
+		"Quand toutes les cases jouables sont pleines, le camp qui contrôle le plus de monstres gagne. "
+		+ "Si les deux camps en contrôlent autant, la manche est nulle.")
+
+
+func _show_modes() -> void:
+	for mode in GameModeRules.MODES:
+		_add_rule(GameModeRules.mode_label(mode), GameModeRules.mode_description(mode))
+	_add_rule("Campagne et duel local",
+		"En campagne, tu affrontes l’IA. En duel local, deux appareils jouent sur le même réseau Wi-Fi.")
+	_add_rule("Format et puissance",
+		"FT1 se joue en une manche. En FT2 ou FT3, le premier à gagner 2 ou 3 manches remporte la série. "
+		+ "Une manche nulle rapporte 0 victoire.\n\n"
+		+ "Le palier de puissance limite les cartes disponibles en Decks aléatoires, Même deck et Choix de cartes.")
+
+
+func _show_powers() -> void:
+	var god := MonsterLoader.get_god(_god_id)
+	if god.is_empty():
+		return
+	var tint := Color(str(god["color"]))
+	var heading := Label.new()
+	heading.text = str(god["family_name"])
+	heading.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	heading.add_theme_font_size_override("font_size", UITheme.FONT_SUBTITLE)
+	heading.add_theme_color_override("font_color", tint.lightened(0.2))
+	page.add_child(heading)
+	for kind in PowerHelp.BY_GOD.get(_god_id, []):
+		var badge := PowerHelp.make_badge(kind, tint, 0, 76.0)
+		_add_rule(PowerHelp.title(kind), PowerHelp.description(kind), badge)
+		_demos.add_clip("horizon" if kind == "long" else kind)
+
+
+func _show_decks() -> void:
+	_add_rule("Compose ton deck",
+		"Choisis %d cartes neutres ou de la famille de ton dieu, pour %d points maximum. "
+		% [DeckRules.DECK_SIZE, DeckRules.DECK_BUDGET]
+		+ "Chaque lignée occupe une seule place, même si tu possèdes plusieurs formes. "
+		+ "Chaque dieu a trois decks sauvegardés automatiquement.")
+	_add_rule("Lis une carte",
+		"Le cadre indique la famille. Le liseré indique la rareté. Chaque face accueille jusqu’à %d symboles. "
+		% BattleMonster.MAX_MARKERS_PER_SIDE
+		+ "Les pictogrammes en haut de la carte signalent ses pouvoirs.\n\n"
+		+ "Commune ivoire • Rare cyan • Épique violette • Légendaire dorée")
+	_add_rule("Débloque les formes",
+		"La première copie débloque le niveau 1. Améliore la carte avec des copies supplémentaires et des âmes. "
+		+ "Une commune peut atteindre le niveau 4, une rare le niveau 3 et une épique le niveau 2. "
+		+ "Une légendaire a une seule forme.")
+	_add_rule("Choisis la forme jouée",
+		"Le filtre de niveau change l’aperçu de la collection. Dans la fiche, consulte les formes avec les boutons "
+		+ "numérotés. « Utiliser » équipe la forme affichée si tu l’as débloquée et que ton deck respecte le budget.")
+
+
+func _add_rule(title: String, description: String, badge: Control = null) -> void:
+	var panel := PanelContainer.new()
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var row := HBoxContainer.new()
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_theme_constant_override("separation", UITheme.GAP_SMALL)
+	panel.add_child(row)
+	if badge != null:
+		row.add_child(badge)
+	var content := VBoxContainer.new()
+	content.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	content.add_theme_constant_override("separation", 8)
+	row.add_child(content)
+	var heading := Label.new()
+	heading.text = title
+	heading.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	heading.add_theme_color_override("font_color", UITheme.COL_ACCENT_LIGHT)
+	heading.add_theme_font_size_override("font_size", UITheme.FONT_SUBTITLE)
+	content.add_child(heading)
+	var body := RichTextLabel.new()
+	body.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	body.fit_content = true
+	body.scroll_active = false
+	body.bbcode_enabled = true
+	body.add_theme_font_size_override("normal_font_size", UITheme.FONT_BODY)
+	body.add_theme_font_size_override("bold_font_size", UITheme.FONT_BODY)
+	body.text = description
+	content.add_child(body)
+	page.add_child(panel)
+
+
+func _tab_button(caption: String, group: ButtonGroup) -> Button:
+	var button := TouchButton.new()
+	button.text = caption
+	button.toggle_mode = true
+	button.button_group = group
+	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	button.custom_minimum_size.y = 96.0
+	button.add_theme_font_size_override("font_size", UITheme.FONT_SMALL)
+	button.add_theme_stylebox_override("normal", UITheme.nav_tab_style(false))
+	button.add_theme_stylebox_override("hover", UITheme.nav_tab_style(false, true))
+	button.add_theme_stylebox_override("pressed", UITheme.nav_tab_style(true))
+	button.add_theme_stylebox_override("hover_pressed", UITheme.nav_tab_style(true, true))
+	button.add_theme_color_override("font_pressed_color", UITheme.COL_ACCENT_LIGHT)
+	return button
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -75,102 +201,3 @@ func _notification(what: int) -> void:
 
 func _go_back() -> void:
 	Routes.go(get_tree(), Routes.MAIN_MENU)
-
-
-## Valeurs lues dans les règles du code, pour que les textes ne s'en écartent pas.
-static func _rule_values() -> Dictionary:
-	return {
-		"heading": UITheme.COL_ACCENT_LIGHT.to_html(false),
-		"success": UITheme.COL_SUCCESS.to_html(false),
-		"human": UITheme.COL_BOARD_HUMAN_EDGE.to_html(false),
-		"opponent": UITheme.COL_BOARD_AI_EDGE.to_html(false),
-		"common": UITheme.COL_RARITY_COMMON.to_html(false),
-		"rare": UITheme.COL_RARITY_RARE.to_html(false),
-		"epic": UITheme.COL_RARITY_EPIC.to_html(false),
-		"legendary": UITheme.COL_RARITY_LEGENDARY.to_html(false),
-		"board_size": GameState.BOARD_SIZE,
-		"deck_size": DeckRules.DECK_SIZE,
-		"deck_budget": DeckRules.DECK_BUDGET,
-		"normal_cost": UIFormat.cost(MonsterCostRules.NORMAL_BLADE_COST),
-		"random_cost": UIFormat.cost(MonsterCostRules.RANDOM_BLADE_COST),
-		"shield_cost": UIFormat.cost(MonsterCostRules.SHIELD_COST),
-		"long_cost": UIFormat.cost(MonsterCostRules.LONG_BLADE_COST),
-		"swarm_cap": Effects.SWARM_CAP,
-		"swarm_per_ally": Effects.BLADES_PER_ALLY,
-		"corrosion": Effects.CORROSION_AMOUNT,
-		"max_markers": BattleMonster.MAX_MARKERS_PER_SIDE,
-	}
-
-
-func _add_god_rules(god: Dictionary, values: Dictionary) -> void:
-	var color := Color(str(god["color"]))
-	var heading := _make_text("[font_size=40][color=#%s]%s • %s[/color][/font_size]" % [color.to_html(false), god["name"], god["family_name"]])
-	god_rules.add_child(heading)
-	for rule in GOD_RULES.get(str(god["id"]), []):
-		var row := HBoxContainer.new()
-		row.mouse_filter = Control.MOUSE_FILTER_PASS
-		row.add_theme_constant_override("separation", 18)
-		var badge := Badge.new()
-		badge.kind = str(rule["kind"])
-		badge.color = color
-		badge.count = int(rule.get("count", 0))
-		badge.custom_minimum_size = Vector2(132 if badge.count > 0 else 76, 76)
-		badge.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-		row.add_child(badge)
-		row.add_child(_make_text("[b]%s[/b]\n%s" % [str(rule["title"]).format(values), str(rule["text"]).format(values)]))
-		god_rules.add_child(row)
-
-
-func _make_text(value: String) -> RichTextLabel:
-	var label := RichTextLabel.new()
-	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	label.add_theme_font_size_override("normal_font_size", 34)
-	label.add_theme_font_size_override("bold_font_size", 34)
-	label.bbcode_enabled = true
-	label.fit_content = true
-	label.scroll_active = false
-	label.text = value
-	return label
-
-
-func _rules_bbcode() -> String:
-	return """[color=#{heading}][font_size=44]But du jeu[/font_size][/color]
-
-Contrôler le plus de monstres possible sur le plateau quand toutes les cases sont remplies.
-
-[color=#{heading}][font_size=44]Le plateau[/font_size][/color]
-
-Une grille de {board_size}×{board_size}. Certaines parties comportent une ou deux cases bloquées (marquées ✕) où personne ne peut jouer.
-
-En combat, la case indique le propriétaire : [color=#{human}]bleu pour ton camp[/color], [color=#{opponent}]rouge pour l'adversaire[/color]. Quand un monstre est capturé, sa case change de couleur au moment de l'impact.
-
-[color=#{heading}][font_size=44]Les monstres[/font_size][/color]
-
-Chaque monstre possède des symboles sur ses 4 côtés (haut, bas, gauche, droite). Une face contient au maximum [color=#{heading}]{max_markers} symboles au total[/color] : lames normales, lames spéciales et boucliers partagent les mêmes emplacements.
-
-Tu choisis {deck_size} monstres pour ton deck, dans la limite de [color=#{heading}]{deck_budget} points[/color]. Une lame normale coûte {normal_cost} point. Les lames aléatoires, boucliers, lames longues et pouvoirs sont comptés selon leur coût propre.
-
-[color=#{heading}][font_size=44]Déroulement d'un tour[/font_size][/color]
-
-Un tirage au sort décide qui commence. À tour de rôle, chaque joueur pose un monstre de sa main sur une case libre. Les animations révèlent ses pouvoirs avant de donner la main au joueur suivant.
-
-[color=#{heading}][font_size=44]Capturer un monstre[/font_size][/color]
-
-Quand tu poses un monstre à côté d'un monstre adverse, on compare les côtés qui se touchent.
-
-Si [color=#{success}]ton attaque est strictement supérieure à sa défense[/color] sur le côté face-à-face, tu captures ce monstre : il passe dans ton camp.
-
-En cas d'[color=#{heading}]égalité[/color], personne ne capture. Un monstre peut capturer plusieurs cibles d'un coup. Il n'y a pas de capture en chaîne.
-
-[color=#{heading}][font_size=44]Dieux et logos des pouvoirs[/font_size][/color]
-
-Tu équipes un dieu dans le menu Decks. Ton deck peut contenir les cartes neutres et les cartes propres à sa famille. Chaque dieu possède trois decks indépendants, accessibles par les boutons 1, 2 et 3. Chaque modification est sauvegardée automatiquement. Changer de dieu retrouve son dernier deck sélectionné, sans modifier les decks des autres dieux. Le deck sélectionné est celui utilisé en combat ; il doit être complet et respecter le budget.
-
-[color=#{heading}][b]Formes et niveaux[/b][/color]
-Les lignées ont plusieurs formes : quatre niveaux pour une commune, trois pour une rare, deux pour une épique et un pour une légendaire.
-Le bouton « Afficher : niveau » change uniquement l'aperçu de la collection. Une carte qui n'a pas ce niveau reste affichée à son maximum. Dans Infos, les boutons numérotés permettent de consulter chaque forme. « Utiliser » équipe précisément la forme consultée, si le budget le permet. Un même monstre ne peut apparaître qu'une fois dans un deck, tous niveaux confondus. Les formes sont actuellement disponibles sans système de déblocage.
-
-Le large cadre minéral sombre reprend la couleur de la famille. Son liseré intérieur indique la rareté, par sa teinte et par sa forme : [color=#{common}]Commune ivoire et simple[/color], [color=#{rare}]Rare cyan avec reflet[/color], [color=#{epic}]Épique violette et double[/color], [color=#{legendary}]Légendaire dorée et ornée[/color]. La couleur de la case reste donc toujours réservée au camp.
-
-Les logos en haut à droite annoncent les pouvoirs. Voici les mêmes pictogrammes et leur fonctionnement :"""

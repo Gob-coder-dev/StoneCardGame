@@ -1,0 +1,22 @@
+[
+  {
+    "gods": ["veskar",""],
+    "seed": 1,
+    "focus": 1.5,
+    "zoom": 0.8,
+    "initial": [[2,1,"avortons_des_caves_n1",2]],
+    "moves": [
+      [1,1,"sou_ricanant_n1",{"events":["coin_swapped"],"hits":[[2,1,2,1,true]]}]
+    ]
+  },
+  {
+    "gods": ["veskar",""],
+    "seed": 2,
+    "focus": 1.5,
+    "zoom": 0.8,
+    "initial": [[2,1,"avortons_des_caves_n1",2]],
+    "moves": [
+      [1,1,"sou_ricanant_n1",{"events":["coin_same"],"hits":[]}]
+    ]
+  }
+]

@@ -1,12 +1,14 @@
 ## BattleHUD.gd
-## Barre d'information du combat : deux plaques fixes (toi / adversaire) avec
-## nom + score, un "VS" central, et un surlignage doré sur le joueur actif.
+## Barre du combat : identité, aide divine, score et indication du tour.
 ##
-## Principe anti-débordement : chaque plaque a une TAILLE FIXE et son texte est
-## centré + clippé. Changer un texte (score, tour) ne décale donc jamais rien.
+## Les noms restent centrés et clippés pour garder des plaques de même largeur.
 class_name BattleHUD
 extends PanelContainer
 
+signal god_help_requested(god_id: String, anchor: Button)
+
+const PowerHelp := preload("res://scripts/ui/PowerHelp.gd")
+const PowerHelpPopover := preload("res://scripts/ui/PowerHelpPopover.gd")
 const COL_PLATE_BG := Color("#1a120a")
 const COL_HUMAN := Color("#3a7ad0")
 const COL_AI := Color("#d04040")
@@ -22,6 +24,10 @@ var _human_god: Label
 var _ai_god: Label
 var _human_portrait: GodPortrait
 var _ai_portrait: GodPortrait
+var _human_help: Button
+var _ai_help: Button
+var _human_god_id := ""
+var _ai_god_id := ""
 var _human_score: Label
 var _ai_score: Label
 var _center: Label        ## symbole central : flèche directionnelle ou "VS"
@@ -65,12 +71,16 @@ func _assign_plate(parts: Dictionary, human: bool) -> void:
 		_human_god = parts["god"]
 		_human_portrait = parts["portrait"]
 		_human_score = parts["score"]
+		_human_help = parts["help"]
+		_human_help.pressed.connect(func(): god_help_requested.emit(_human_god_id, _human_help))
 	else:
 		_ai_plate = parts["plate"]
 		_ai_name = parts["name"]
 		_ai_god = parts["god"]
 		_ai_portrait = parts["portrait"]
 		_ai_score = parts["score"]
+		_ai_help = parts["help"]
+		_ai_help.pressed.connect(func(): god_help_requested.emit(_ai_god_id, _ai_help))
 
 
 func _build_center_label() -> Label:
@@ -125,16 +135,24 @@ func _make_plate(accent_color: Color, portrait_on_right: bool) -> Dictionary:
 
 	var portrait := GodPortrait.new()
 	portrait.custom_minimum_size = UITheme.GOD_HUD_PORTRAIT_SIZE
-	portrait.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	var help := PowerHelpPopover.make_button()
+	help.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	help.hide()
+	var god_column := VBoxContainer.new()
+	god_column.alignment = BoxContainer.ALIGNMENT_CENTER
+	god_column.add_theme_constant_override("separation", 4)
+	god_column.add_child(portrait)
+	god_column.add_child(help)
 
 	var vbox := VBoxContainer.new()
 	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	vbox.add_theme_constant_override("separation", 0)
 	if portrait_on_right:
 		row.add_child(vbox)
-		row.add_child(portrait)
+		row.add_child(god_column)
 	else:
-		row.add_child(portrait)
+		row.add_child(god_column)
 		row.add_child(vbox)
 
 	var name_lbl := Label.new()
@@ -158,7 +176,7 @@ func _make_plate(accent_color: Color, portrait_on_right: bool) -> Dictionary:
 	vbox.add_child(score_lbl)
 
 	return {"plate": plate, "name": name_lbl, "god": god_lbl,
-		"portrait": portrait, "score": score_lbl}
+		"portrait": portrait, "score": score_lbl, "help": help}
 
 
 func _plate_style(accent_color: Color, active: bool) -> StyleBoxFlat:
@@ -186,6 +204,10 @@ func set_names(human_name: String, ai_name: String) -> void:
 ## Les portraits et noms de dieux sont séparés des noms des combattants : les
 ## plaques restent lisibles même lorsque l'adversaire possède un long nom.
 func set_gods(human_god: Dictionary, ai_god: Dictionary) -> void:
+	_human_god_id = str(human_god.get("id", ""))
+	_ai_god_id = str(ai_god.get("id", ""))
+	_human_help.visible = PowerHelp.BY_GOD.has(_human_god_id)
+	_ai_help.visible = PowerHelp.BY_GOD.has(_ai_god_id)
 	_human_portrait.setup(human_god)
 	_ai_portrait.setup(ai_god)
 	_human_god.text = str(human_god.get("name", "Dieu"))

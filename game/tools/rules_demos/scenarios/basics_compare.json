@@ -1,0 +1,14 @@
+[
+  {
+    "initial": [[1,2,"avortons_des_caves_n2",2]],
+    "moves": [
+      [1,1,"avortons_des_caves_n3",{"hits":[[1,2,3,2,true]]}]
+    ]
+  },
+  {
+    "initial": [[1,2,"avortons_des_caves_n3",2]],
+    "moves": [
+      [1,1,"avortons_des_caves_n3",{"hits":[[1,2,3,3,false]]}]
+    ]
+  }
+]

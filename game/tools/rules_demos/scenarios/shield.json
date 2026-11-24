@@ -1,0 +1,16 @@
+[
+  {
+    "gods": ["","kharun"],
+    "initial": [[1,2,"golem_de_faience_n1",2]],
+    "moves": [
+      [1,1,"avortons_des_caves_n2",{"hits":[[1,2,2,2,false]]}]
+    ]
+  },
+  {
+    "gods": ["kharun",""],
+    "initial": [[1,2,"avortons_des_caves_n1",2]],
+    "moves": [
+      [1,1,"golem_de_faience_n1",{"hits":[[1,2,1,1,false]]}]
+    ]
+  }
+]

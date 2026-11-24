@@ -29,7 +29,7 @@ const FONT_SCORE: int = 60         ## gros chiffres (scores)
 const FONT_BANNER: int = 38        ## bandeau de tour
 
 ## ─── HUD de combat ───────────────────────────────────────────────────────────
-const HUD_PLATE_HEIGHT: int = 150  ## hauteur fixe des plaques joueur / adversaire
+const HUD_PLATE_HEIGHT: int = 150  ## hauteur minimale des plaques joueur / adversaire
 const HUD_CENTER_WIDTH: int = 90   ## zone fixe du symbole central
 const HUD_BANNER_WIDTH: int = 520  ## empêche le texte de tour de se replier à 0 px
 const FONT_HUD_CENTER: int = 56    ## flèche du joueur actif ou « VS »
@@ -60,7 +60,6 @@ const CARD_DECK_EDGE_MARGIN: float = 0.04
 const DECK_CARD_GAP: int = 40
 const CARD_NAME_MAX_FONT_SIZE: int = 64
 const CARD_COST_MAX_FONT_SIZE: int = 96
-const RULES_END_SPACE: int = 120
 
 ## ─── Boutons ─────────────────────────────────────────────────────────────────
 const BUTTON_HEIGHT: int = 120     ## hauteur standard d'un bouton

@@ -169,18 +169,6 @@ func _test_preview_layout() -> void:
 		"la fiche agrandit le logo sur la carte et le répète lisiblement devant son explication")
 	page.queue_free()
 	await get_tree().process_frame
-	var rules: Control = load("res://scenes/menus/HowToPlay.tscn").instantiate()
-	add_child(rules)
-	for frame in range(3):
-		await get_tree().process_frame
-	var scroll: ScrollContainer = rules.get_node("Content/Scroll")
-	scroll.scroll_vertical = 100000
-	await get_tree().process_frame
-	var end: Control = rules.get_node("Content/Scroll/RulesPanel/Page/EndText")
-	_check(scroll.get_global_rect().end.y - end.get_global_rect().end.y >= UITheme.RULES_END_SPACE,
-		"les règles peuvent défiler au-delà de la dernière ligne pour laisser une marge de lecture")
-	rules.queue_free()
-	await get_tree().process_frame
 
 
 func _test_home_portraits() -> void:
@@ -358,34 +346,62 @@ func _test_god_selector_ui() -> void:
 
 func _test_rules_legends() -> void:
 	var scene: PackedScene = load("res://scenes/menus/HowToPlay.tscn")
-	var page: Control = scene.instantiate()
-	add_child(page)
+	var rules: Control = scene.instantiate()
+	add_child(rules)
 	await get_tree().process_frame
-	var legends: VBoxContainer = page.get_node("Content/Scroll/RulesPanel/Page/GodRules")
+	var basics := _rules_text(rules.page)
+	_check(rules.tabs.get_child_count() == 4 and not rules.god_tabs.visible
+		and basics.contains("manche est nulle") and basics.contains("3 contre 2"),
+		"les règles ouvrent sur les bases de capture et de score")
+	rules.tabs.get_child(1).pressed.emit()
+	var modes_text := _rules_text(rules.page)
+	var modes_documented := true
+	for mode in GameModeRules.MODES:
+		modes_documented = modes_documented and modes_text.contains(GameModeRules.mode_description(mode))
+	_check(modes_documented, "l’onglet Modes reprend les règles de préparation utilisées par le jeu")
+	rules.tabs.get_child(2).pressed.emit()
 	var kinds := {}
-	for row in legends.get_children():
-		if row is HBoxContainer:
-			var badge: Control = row.get_child(0)
+	var texts: Array[String] = []
+	var all_clips := true
+	for button in rules.god_tabs.get_children():
+		button.pressed.emit()
+		var entries: Array[Node] = rules.page.get_children()
+		entries.pop_front()
+		for panel in entries:
+			if not panel is PanelContainer:
+				continue
+			var badge: Control = panel.get_child(0).get_child(0)
 			kinds[badge.kind] = true
+			var clip: String = "horizon" if badge.kind == "long" else str(badge.kind)
+			var clip_exists := ResourceLoader.exists("res://assets/rules_demos/%s.ogv" % clip)
+			all_clips = all_clips and rules.page.has_node(NodePath(clip)) and clip_exists
+		texts.append(_rules_text(rules.page))
 	var all_documented := true
 	for monster in MonsterLoader.get_all_monsters():
 		for badge in Symbols.badges_for(monster):
 			all_documented = all_documented and kinds.has(badge["kind"])
 	_check(all_documented and kinds.size() == 9, "les règles montrent et expliquent tous les pictogrammes utilisés sur les cartes")
-	var texts: Array[String] = [page.get_node("Content/Scroll/RulesPanel/Page/RulesText").text]
-	for row in legends.get_children():
-		if row is HBoxContainer:
-			texts.append(row.get_child(1).text)
+	_check(all_clips, "chaque pouvoir possède son clip dans les règles")
 	var all_text := "\n".join(texts)
 	_check(not all_text.contains("{") and all_text.contains("coûte %s point" % UIFormat.cost(MonsterCostRules.LONG_BLADE_COST))
-		and all_text.contains("jusqu'à +%d" % MonsterEffects.SWARM_CAP),
+		and all_text.contains("jusqu’à +%d" % MonsterEffects.SWARM_CAP),
 		"les règles affichent les valeurs lues dans le code")
-	_check(all_text.contains("Commune ivoire") and all_text.contains("Rare cyan")
-		and all_text.contains("Épique violette") and all_text.contains("Légendaire dorée")
-		and all_text.contains("bleu pour ton camp") and all_text.contains("rouge pour l'adversaire"),
+	rules.tabs.get_child(3).pressed.emit()
+	var decks := _rules_text(rules.page)
+	_check(decks.contains("Commune ivoire") and decks.contains("Rare cyan")
+		and decks.contains("Épique violette") and decks.contains("Légendaire dorée")
+		and decks.contains("première copie débloque")
+		and basics.contains("cases bleues sont à toi") and basics.contains("rouges sont à l’adversaire"),
 		"les règles expliquent les quatre raretés et les couleurs de propriété du plateau")
-	page.queue_free()
+	rules.queue_free()
 	await get_tree().process_frame
+
+
+func _rules_text(page: VBoxContainer) -> String:
+	var texts: Array[String] = []
+	for label in page.find_children("*", "RichTextLabel", true, false):
+		texts.append(label.text)
+	return "\n".join(texts)
 
 
 func _test_deck_slots() -> void:

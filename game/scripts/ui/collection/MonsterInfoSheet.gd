@@ -4,7 +4,8 @@ extends Control
 signal use_requested(monster_id: String)
 signal upgrade_requested(lineage_id: String)
 const NumberedSelector := preload("res://scripts/ui/collection/NumberedSelector.gd")
-const PowerBadge := preload("res://scripts/ui/PowerBadge.gd")
+const PowerHelp := preload("res://scripts/ui/PowerHelp.gd")
+const PowerHelpPopover := preload("res://scripts/ui/PowerHelpPopover.gd")
 const Symbols := preload("res://scripts/ui/MonsterSymbols.gd")
 
 @onready var title_label: Label = $InfoPanel/InfoContent/Header/Title
@@ -18,6 +19,7 @@ const Symbols := preload("res://scripts/ui/MonsterSymbols.gd")
 @onready var close_button: Button = $InfoPanel/InfoContent/Header/CloseButton
 @onready var use_button: UpgradePriceButton = $InfoPanel/InfoContent/UseButton
 @onready var error_label: Label = $InfoPanel/InfoContent/Error
+@onready var _power_help := PowerHelpPopover.new()
 
 const Gesture := preload("res://scripts/ui/input/TapGesture.gd")
 var _backdrop_tap := Gesture.new()
@@ -26,6 +28,9 @@ var _card: MonsterCard
 var _lineage := ""
 var _shown_variant := ""
 var _deck: Array = []
+var _god_help: VBoxContainer
+var _god_label: Label
+var _power_button: Button
 
 
 func _ready() -> void:
@@ -42,7 +47,25 @@ func _ready() -> void:
 	card_container.add_child(_card)
 	card_container.resized.connect(_fit_card)
 	_fit_card.call_deferred()
+	_build_god_help()
+	add_child(_power_help)
+	_power_help.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	visible = false
+
+
+func _build_god_help() -> void:
+	_god_help = VBoxContainer.new()
+	_god_help.alignment = BoxContainer.ALIGNMENT_CENTER
+	_god_help.add_theme_constant_override("separation", 4)
+	power_row.add_child(_god_help)
+	_god_label = Label.new()
+	_god_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_god_label.add_theme_font_size_override("font_size", UITheme.FONT_SMALL)
+	_god_help.add_child(_god_label)
+	_power_button = PowerHelpPopover.make_button()
+	_power_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_power_button.pressed.connect(_open_power_help)
+	_god_help.add_child(_power_button)
 
 
 ## La hauteur participe réellement au VBox et au défilement de la fiche.
@@ -76,6 +99,7 @@ func _select_level(level: int) -> void:
 
 
 func _refresh_form(monster_id: String) -> void:
+	_power_help.close(false)
 	_shown_variant = monster_id
 	var monster := MonsterLoader.get_monster(monster_id)
 	var level := MonsterLoader.monster_level(monster_id)
@@ -101,11 +125,7 @@ func _refresh_form(monster_id: String) -> void:
 		UIFormat.cost(MonsterLoader.monster_cost(monster_id))
 	]
 	description_label.text = monster.get("description", "")
-	power_label.text = str(monster.get("power_text", "Aucun pouvoir de famille : ce monstre est neutre."))
-	power_label.add_theme_color_override(
-		"font_color", Color(str(god.get("color", UITheme.COL_TEXT_DIM.to_html())))
-	)
-	_refresh_power_badges(monster, Color(str(god.get("color", UITheme.COL_TEXT_DIM.to_html()))))
+	_refresh_power_row(monster, god)
 	var blades: Dictionary = monster.get("blades", {})
 	stats_label.text = "H %d   •   B %d   •   G %d   •   D %d%s" % [
 		blades.get("top", 0), blades.get("bottom", 0),
@@ -149,21 +169,31 @@ func refresh_inventory_state() -> void:
 	_refresh_form(_shown_variant)
 
 
-## Réutilise exactement les pictogrammes des cartes et des règles. Les cartes
-## neutres gardent toute la largeur pour leur texte puisqu'elles n'ont pas de logo.
-func _refresh_power_badges(monster: Dictionary, family_color: Color) -> void:
+func _refresh_power_row(monster: Dictionary, god: Dictionary) -> void:
+	var family_color := Color(str(god.get("color", UITheme.COL_TEXT_DIM.to_html())))
 	for child in power_badges.get_children():
 		power_badges.remove_child(child)
 		child.queue_free()
+	var titles: Array[String] = []
 	for definition in Symbols.badges_for(monster):
-		var badge := PowerBadge.new()
-		badge.kind = str(definition["kind"])
-		badge.count = int(definition.get("count", 0))
-		badge.color = family_color
-		badge.custom_minimum_size = Vector2(154 if badge.count > 0 else 96, 96)
-		badge.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-		power_badges.add_child(badge)
-	power_badges.visible = power_badges.get_child_count() > 0
+		var kind := str(definition["kind"])
+		var count := int(definition.get("count", 0))
+		titles.append(PowerHelp.title(kind))
+		power_badges.add_child(PowerHelp.make_badge(kind, family_color, count, 96.0))
+	power_label.text = "Sans pouvoir de famille." if titles.is_empty() else " • ".join(titles)
+	power_label.add_theme_color_override("font_color", family_color.lightened(0.2))
+	power_badges.visible = not titles.is_empty()
+	_god_label.text = str(god.get("name", ""))
+	_god_label.add_theme_color_override("font_color", family_color.lightened(0.2))
+	_god_help.visible = PowerHelp.BY_GOD.has(str(god.get("id", "")))
+
+
+func _open_power_help() -> void:
+	_power_help.open_for_god(MonsterLoader.monster_affinity(_shown_variant), _power_button)
+
+
+func close_power_help() -> bool:
+	return _power_help.close()
 
 
 func show_error(message: String) -> void:
@@ -172,6 +202,7 @@ func show_error(message: String) -> void:
 
 
 func close_sheet() -> void:
+	_power_help.close(false)
 	visible = false
 	_backdrop_tap.reset()
 	_shown_variant = ""

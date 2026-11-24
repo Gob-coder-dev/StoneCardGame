@@ -343,7 +343,8 @@ func _go_back() -> void:
 		pending_rewards_vault.close()
 		return
 	if info_sheet.visible:
-		info_sheet.close_sheet()
+		if not info_sheet.close_power_help():
+			info_sheet.close_sheet()
 		return
 	if replacement_panel.visible:
 		replacement_panel.close_panel()

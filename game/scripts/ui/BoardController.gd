@@ -17,6 +17,7 @@ const LanDriver := preload("res://scripts/ui/match/LanMatchDriver.gd")
 const Routes := preload("res://scripts/ui/GameRoutes.gd")
 const BattleLayoutModel := preload("res://scripts/ui/BattleLayout.gd")
 const QuestModel := preload("res://scripts/application/quests/QuestService.gd")
+const PowerHelpPopover := preload("res://scripts/ui/PowerHelpPopover.gd")
 
 @onready var root: VBoxContainer = $Root
 @onready var turn_manager: TurnManager = $TurnManager
@@ -26,6 +27,7 @@ const QuestModel := preload("res://scripts/application/quests/QuestService.gd")
 @onready var hand_view: HandView = $Root/HandView
 @onready var hud: BattleHUD = $Root/HUD
 @onready var background: MenuBackground = $Background
+@onready var _power_help := PowerHelpPopover.new()
 
 var _driver: MatchDriver = null
 var _selected_monster_id: String = ""
@@ -169,6 +171,20 @@ func _connect_signals() -> void:
 	hand_view.card_press_started.connect(_on_card_press_started)
 	_card_drag.drag_started.connect(_on_card_drag_started)
 	_card_drag.drop_requested.connect(_on_card_dropped)
+	_power_help.name = "PowerHelp"
+	add_child(_power_help)
+	_power_help.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	hud.god_help_requested.connect(_open_god_help)
+
+
+func _open_god_help(god_id: String, anchor: Button) -> void:
+	_card_drag.cancel()
+	_power_help.open_for_god(god_id, anchor)
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST and is_node_ready():
+		_power_help.close()
 
 
 ## ─── Gestes du joueur ─────────────────────────────────────────────────────────

@@ -1,0 +1,12 @@
+[
+  {
+    "gods": ["sylkha",""],
+    "initial": [[1,0,"nud_vivant_n1",1],[1,2,"larve_dancrage_n1",1]],
+    "moves": [
+      [1,1,"tisse_griffe_n1",{"events":["swarm_change"],"hits":[]}],
+      [2,1,"avortons_des_caves_n4",{"events":["swarm_change"],"owners":[[1,1,2]]}]
+    ],
+    "focus": 1.5,
+    "zoom": 0.8
+  }
+]

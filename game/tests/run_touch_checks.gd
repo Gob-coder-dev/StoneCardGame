@@ -67,6 +67,7 @@ func _run() -> void:
 	await _check_deck_slots()
 	await _check_deck_clear()
 	await _check_collection()
+	await _check_card_sheet_power_help()
 	await _check_evolution_inputs()
 	await _check_button_inputs()
 	await _check_main_menu()
@@ -78,23 +79,84 @@ func _run() -> void:
 	await _check_result_actions()
 	await _check_buffered_input()
 	await _check_battle_touch()
+	await _check_battle_power_help()
 	await _check_battle_drag()
 	_finish()
 
 
 func _check_rules_scroll() -> void:
-	var page := await _open_scene("res://scenes/menus/HowToPlay.tscn")
-	var scroll: ScrollContainer = page.get_node("Content/Scroll")
-	var text: RichTextLabel = scroll.get_node("RulesPanel/Page/RulesText")
-	_check(scroll.get_v_scroll_bar().max_value > scroll.size.y, "règles : le contenu dépasse l'écran")
-	await _swipe(_point(text, Vector2(200, 350)), Vector2(0, -240))
-	_check(scroll.scroll_vertical > 100, "règles : glisser depuis le texte fait défiler")
-	var badge: Control = scroll.get_node("RulesPanel/Page/GodRules").get_child(1).get_child(0)
-	scroll.ensure_control_visible(badge)
+	var rules := await _open_scene("res://scenes/menus/HowToPlay.tscn")
+	var scroll: ScrollContainer = rules.scroll
+	var place: TextureRect = rules.page.get_node("basics_place")
+	var compare: TextureRect = rules.page.get_node("basics_compare")
+	_check(rules._demos._slots.size() == 3 and not rules.page.has_node("basics_finish"),
+		"règles : trois démos dans les bases, sans vidéo de fin de manche")
+	_check(rules._demos._players.has(place) and rules._demos._players.has(compare),
+		"règles : les deux clips visibles se lancent ensemble")
+	var last_rule: Control = rules.page.get_child(-1)
+	scroll.scroll_vertical = int(scroll.get_v_scroll_bar().max_value)
 	await _settle()
-	var before := scroll.scroll_vertical
-	await _swipe(_center(badge), Vector2(0, -220))
-	_check(scroll.scroll_vertical > before + 60, "règles : glisser depuis un logo fait aussi défiler")
+	_check(scroll.get_global_rect().end.y - last_rule.get_global_rect().end.y >= 275.0,
+		"règles : la dernière section peut remonter au-dessus du bas de l’écran")
+	rules.get_node("Content").offset_bottom = -1020.0
+	await _settle()
+	var board_demo: TextureRect = rules.page.get_node("basics_board")
+	scroll.ensure_control_visible(board_demo)
+	await _settle()
+	_check(rules._demos._players.has(board_demo) and not rules._demos._players.has(place),
+		"règles : le défilement lance le clip entrant et libère le clip hors écran")
+	var modes: Button = rules.tabs.get_child(1)
+	await _tap(_center(modes))
+	_check(modes.button_pressed and not rules.god_tabs.visible, "règles : toucher Modes affiche la bonne page")
+	await _swipe(_point(scroll, Vector2(200, 350)), Vector2(0, -240))
+	_check(scroll.scroll_vertical > 100, "règles : glisser depuis le texte fait défiler sur un écran court")
+	rules.get_node("Content").offset_bottom = -186.0
+	var powers: Button = rules.tabs.get_child(2)
+	await _tap(_center(powers))
+	_check(powers.button_pressed and not modes.button_pressed and rules.god_tabs.visible and scroll.scroll_vertical == 0,
+		"règles : changer d’onglet remonte la page")
+	var ilyr: Button
+	for button in rules.god_tabs.get_children():
+		if button.text == MonsterLoader.get_god("ilyr")["name"]:
+			ilyr = button
+	await _tap(_center(ilyr))
+	var badge: Control = rules.page.get_child(1).get_child(0).get_child(0)
+	_check(ilyr.button_pressed and badge.kind == "long",
+		"règles : le sélecteur tactile affiche uniquement les pouvoirs du dieu choisi")
+	var demo: VideoStreamPlayer = rules._demos._players.get(rules.page.get_node("horizon"))
+	_check(demo != null and demo.loop and demo.is_playing() and demo.size.y > 0,
+		"règles : Horizon lance automatiquement un clip en boucle")
+	rules._demos.notification(NOTIFICATION_APPLICATION_PAUSED)
+	_check(demo.paused, "règles : l’arrière-plan suspend la lecture")
+	rules._demos.notification(NOTIFICATION_APPLICATION_RESUMED)
+	_check(not demo.paused, "règles : le retour au premier plan reprend la lecture")
+	await _tap(_center(modes))
+	_check(not is_instance_valid(demo) and rules._demos._players.is_empty(),
+		"règles : quitter Horizon libère le flux vidéo")
+	await _tap(_center(powers))
+	var clips := {"sylkha": "swarm", "enigma": "theft"}
+	for god in clips:
+		rules._select_god(god)
+		await _settle()
+		var player: VideoStreamPlayer = rules._demos._players.get(rules.page.get_node(clips[god]))
+		_check(player != null and player.is_playing() and player.loop,
+			"règles : la démo de %s se lance sur une page avec un seul pouvoir" % god)
+	await _remove(rules)
+
+
+func _check_card_sheet_power_help() -> void:
+	var page := await _open_scene("res://scenes/menus/CollectionScreen.tscn")
+	page._on_info_requested("devoracle_n1")
+	await _settle()
+	var info: MonsterInfoSheet = page.info_sheet
+	await _tap(_center(info._power_button))
+	_check(info._power_help.is_visible_in_tree() and info._power_help._title.text == info._god_label.text
+		and info._power_help._rows.get_child_count() == 3,
+		"fiche : le bouton sous le nom du dieu ouvre tous ses pouvoirs")
+	page._go_back()
+	_check(info.visible and not info._power_help.visible, "fiche : le retour ferme d’abord l’aide")
+	info.open_for("avortons_des_caves_n1")
+	_check(not info._power_button.is_visible_in_tree(), "fiche : une carte neutre masque le bouton d’aide")
 	await _remove(page)
 
 
@@ -674,7 +736,9 @@ func _check_buffered_input() -> void:
 	# Vérifie aussi le regroupement d'événements utilisé par défaut en jeu.
 	Input.use_accumulated_input = true
 	var page := await _open_scene("res://scenes/menus/HowToPlay.tscn")
-	var scroll: ScrollContainer = page.get_node("Content/Scroll")
+	page.get_node("Content").offset_bottom = -1020.0
+	await _tap(_center(page.tabs.get_child(1)))
+	var scroll: ScrollContainer = page.scroll
 	await _swipe(_point(scroll, Vector2(200, 400)), Vector2(0, -240))
 	_check(scroll.scroll_vertical > 100, "entrée regroupée : le défilement fonctionne avec les réglages du jeu")
 	await _remove(page)
@@ -701,6 +765,64 @@ func _check_battle_touch() -> void:
 			break
 	await _tap(_center(slot))
 	_check(state.human_hand.size() == DeckRules.DECK_SIZE - 1, "combat : une seule carte est posée au toucher")
+	await _remove(board)
+	BattleContext.selected_npc_id = saved_npc
+	BattleContext.forced_first_player = saved_first
+
+
+func _check_battle_power_help() -> void:
+	var saved_npc: String = BattleContext.selected_npc_id
+	var saved_first: int = BattleContext.forced_first_player
+	BattleContext.selected_npc_id = "disciple_muraille"
+	var board := await _open_battle(GameState.PLAYER_HUMAN)
+	var view: BoardView = board.board_view
+	var state: GameState = board.turn_manager.get_state()
+	var card: MonsterCard = board.hand_view.card_for_monster("devoracle_n2")
+	var hud: BattleHUD = board.hud
+	var button: Button = hud._human_help
+	_check(not card.has_node("PowerHelpButton")
+		and button.get_global_rect().position.y >= hud._human_portrait.get_global_rect().end.y
+		and hud._ai_help.get_global_rect().position.y >= hud._ai_portrait.get_global_rect().end.y,
+		"combat : l’aide est sous les deux portraits et libère les cartes")
+	await _swipe(_center(button), Vector2(0, -160))
+	_check(not board._power_help.visible and board._selected_monster_id == ""
+		and not board._card_drag.is_dragging(), "combat : glisser sur le ? ne déclenche aucune action")
+	await _tap(_center(button))
+	_check(board._power_help.visible and board._selected_monster_id == ""
+		and state.human_hand.size() == DeckRules.DECK_SIZE
+		and board._power_help._title.text == hud._human_god.text
+		and board._power_help._rows.get_child_count() == 3,
+		"combat : toucher le ? ouvre tous les pouvoirs du dieu local")
+	var panel: PanelContainer = board._power_help._panel
+	_check(Rect2(Vector2.ZERO, board.size).encloses(panel.get_rect())
+		and is_equal_approx(panel.size.y, panel.get_combined_minimum_size().y),
+		"combat : la bulle tient à l’écran et prend la hauteur de son contenu")
+	await _tap(_center(board._power_help._close_button))
+	await _tap(_center(hud._ai_help))
+	_check(board._power_help.visible and board._power_help._title.text == hud._ai_god.text
+		and board._power_help._rows.get_child_count() == 1,
+		"combat : l’autre bouton affiche les pouvoirs du dieu adverse")
+	await _tap(_center(board._power_help._close_button))
+	await _tap(_center(card))
+	await _tap(_center(button))
+	# Prend une case libre en dehors de la bulle.
+	var cell := _free_cell(state, func(row: int, col: int) -> bool:
+		return not panel.get_global_rect().has_point(_center(view.slot_at(row, col))))
+	if cell.x < 0:
+		_check(false, "combat : une case libre reste visible à côté de l’aide")
+		await _remove(board)
+		BattleContext.selected_npc_id = saved_npc
+		BattleContext.forced_first_player = saved_first
+		return
+	var destination := _center(view.slot_at(cell.x, cell.y))
+	await _tap(destination)
+	_check(not board._power_help.visible and board._selected_monster_id == card.get_monster_id()
+		and state.human_hand.size() == DeckRules.DECK_SIZE,
+		"combat : fermer l’aide en touchant une case libre ne pose pas la carte sélectionnée")
+	await _tap(destination)
+	_check(state.human_hand.size() == DeckRules.DECK_SIZE - 1
+		and not view.card_at(cell.x, cell.y).has_node("PowerHelpButton"),
+		"combat : la carte peut être jouée et sa case ne porte pas de bouton d’aide")
 	await _remove(board)
 	BattleContext.selected_npc_id = saved_npc
 	BattleContext.forced_first_player = saved_first
@@ -805,11 +927,13 @@ func _open_battle(first_player: int) -> Control:
 
 
 ## Première case jouable : le plateau peut comporter une case bloquée.
-func _free_cell(state: GameState) -> Vector2i:
-	for index in range(state.board.size()):
-		var cell: Dictionary = state.board[index]
-		if cell["cell_type"] != GameState.CELL_BLOCKED and cell["owner"] == GameState.PLAYER_NONE:
-			return Vector2i(index / GameState.BOARD_SIZE, index % GameState.BOARD_SIZE)
+func _free_cell(state: GameState, accepts: Callable = Callable()) -> Vector2i:
+	for row in range(state.board_size):
+		for col in range(state.board_size):
+			var cell := state.get_cell(row, col)
+			if cell["cell_type"] != GameState.CELL_BLOCKED and cell["owner"] == GameState.PLAYER_NONE \
+					and (not accepts.is_valid() or accepts.call(row, col)):
+				return Vector2i(row, col)
 	return Vector2i(-1, -1)
 
 

@@ -1,0 +1,8 @@
+[
+  {
+    "gods": ["veskar",""],
+    "moves": [
+      [1,1,"devoracle_n1",{"events":["random_blade"],"hits":[]}]
+    ]
+  }
+]
