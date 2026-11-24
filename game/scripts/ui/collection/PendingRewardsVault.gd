@@ -45,6 +45,7 @@ func _make_god_section(group: Dictionary) -> PanelContainer:
 	var god: Dictionary = group.get("god", {})
 	var color := Color(str(god.get("color", UITheme.COL_BORDER.to_html())))
 	var panel := PanelContainer.new()
+	panel.mouse_filter = Control.MOUSE_FILTER_PASS
 	panel.set_meta("god_id", str(god.get("id", "")))
 	panel.add_theme_stylebox_override("panel", UITheme.panel_style(
 		UITheme.COL_PANEL_BG, color, 3, 16))

@@ -67,6 +67,7 @@ func _run() -> void:
 	await _check_deck_slots()
 	await _check_deck_clear()
 	await _check_collection()
+	await _check_pending_vault_scroll()
 	await _check_card_sheet_power_help()
 	await _check_evolution_inputs()
 	await _check_button_inputs()
@@ -142,6 +143,33 @@ func _check_rules_scroll() -> void:
 		_check(player != null and player.is_playing() and player.loop,
 			"règles : la démo de %s se lance sur une page avec un seul pouvoir" % god)
 	await _remove(rules)
+
+
+func _check_pending_vault_scroll() -> void:
+	var saved := PlayerData._inventory.pending_card_rewards.duplicate()
+	var saved_gods := PlayerData._inventory.unlocked_gods.duplicate()
+	for god in ["nerava", "ilyr", "kharun"]:
+		PlayerData._inventory.unlocked_gods.erase(god)
+		for monster in MonsterLoader.get_lineages_for_god(god):
+			PlayerData._inventory.defer_copies(MonsterLoader.monster_lineage(str(monster["id"])), 1)
+	var page := await _open_scene("res://scenes/menus/CollectionScreen.tscn")
+	var vault: PendingRewardsVault = page.pending_rewards_vault
+	vault.open()
+	await _settle()
+	var scroll: ScrollContainer = vault.get_node("Margin/Panel/Content/Scroll")
+	var section: PanelContainer = vault.groups_container.get_child(1)
+	var card: Control = section.get_child(0).get_child(1).get_child(0).get_child(0)
+	var behind: ScrollContainer = page.get_node("Content/Scroll")
+	var behind_before := behind.scroll_vertical
+	_check(scroll.get_v_scroll_bar().max_value > scroll.size.y, "coffre : les récompenses dépassent la fenêtre")
+	await _swipe(_center(card), Vector2(0, -240))
+	_check(scroll.scroll_vertical > 60 and behind.scroll_vertical == behind_before,
+		"coffre : glisser sur une carte fait défiler le coffre sans déplacer la collection")
+	await _tap(_center(vault.close_button))
+	_check(not vault.visible, "coffre : le bouton Fermer reste accessible après le défilement")
+	await _remove(page)
+	PlayerData._inventory.pending_card_rewards = saved
+	PlayerData._inventory.unlocked_gods = saved_gods
 
 
 func _check_card_sheet_power_help() -> void:
