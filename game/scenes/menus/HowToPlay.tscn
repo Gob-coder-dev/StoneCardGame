@@ -48,7 +48,7 @@ vertical_alignment = 1
 
 [node name="Tabs" type="HBoxContainer" parent="Content"]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 2
 
 [node name="GodTabs" type="GridContainer" parent="Content"]
 visible = false

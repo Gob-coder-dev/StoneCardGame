@@ -7,7 +7,7 @@ const Routes := preload("res://scripts/ui/GameRoutes.gd")
 const GodIdentityModel := preload("res://scripts/data/GodIdentity.gd")
 const PowerHelp := preload("res://scripts/ui/PowerHelp.gd")
 const TouchButton := preload("res://scripts/ui/input/TouchButton.gd")
-const TAB_NAMES := ["Bases", "Modes de jeu", "Pouvoirs", "Decks"]
+const TAB_NAMES := ["Bases", "Modes", "Pouvoirs", "Decks"]
 const DemoPlayback := preload("res://scripts/ui/RulesDemoPlayback.gd")
 const CardGrid := preload("res://scripts/ui/collection/CardGridLayout.gd")
 
@@ -29,6 +29,7 @@ func _ready() -> void:
 	var tab_group := ButtonGroup.new()
 	for index in range(TAB_NAMES.size()):
 		var button := _tab_button(TAB_NAMES[index], tab_group)
+		_style_main_tab(button)
 		tabs.add_child(button)
 		button.pressed.connect(_select_tab.bind(index))
 	var god_group := ButtonGroup.new()
@@ -220,6 +221,27 @@ func _tab_button(caption: String, group: ButtonGroup) -> Button:
 	button.add_theme_stylebox_override("hover_pressed", UITheme.nav_tab_style(true, true))
 	button.add_theme_color_override("font_pressed_color", UITheme.COL_ACCENT_LIGHT)
 	return button
+
+
+func _style_main_tab(button: Button) -> void:
+	button.custom_minimum_size.y = 112.0
+	button.add_theme_font_size_override("font_size", UITheme.FONT_BODY)
+	button.add_theme_color_override("font_color", UITheme.COL_TEXT_DIM)
+	button.add_theme_color_override("font_pressed_color", UITheme.COL_TEXT)
+	button.add_theme_color_override("font_hover_pressed_color", UITheme.COL_TEXT)
+	var idle := StyleBoxFlat.new()
+	idle.bg_color = UITheme.COL_TAB_IDLE
+	idle.set_content_margin_all(4.0)
+	var selected := idle.duplicate() as StyleBoxFlat
+	selected.bg_color = UITheme.COL_SELECTED.lightened(0.13)
+	selected.border_color = UITheme.COL_ACCENT_LIGHT
+	selected.border_width_bottom = 6
+	var hover := idle.duplicate() as StyleBoxFlat
+	hover.bg_color = UITheme.COL_SURFACE
+	button.add_theme_stylebox_override("normal", idle)
+	button.add_theme_stylebox_override("hover", hover)
+	button.add_theme_stylebox_override("pressed", selected)
+	button.add_theme_stylebox_override("hover_pressed", selected)
 
 
 func _unhandled_input(event: InputEvent) -> void:
