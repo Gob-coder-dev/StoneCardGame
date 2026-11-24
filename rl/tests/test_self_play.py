@@ -106,6 +106,66 @@ def test_initial_champion_is_frozen_and_is_not_replaced_on_a_timer(run_config):
         assert not trainer._phase4_auto_enabled
 
 
+def test_adaptive_ratio_rearms_legacy_plateau_and_reuses_interrupted_followup(
+    run_config, monkeypatch
+):
+    config, path, source = run_config
+    settings = config["phase5"].pop("adaptive_opponents")
+    path.write_text(yaml.safe_dump(config), encoding="utf-8")
+    with PhaseFiveTrainer(path, phase4_checkpoint=source) as trainer:
+        trainer._stop_phase5("plateau", 24000, 1500)
+        latest = trainer.output / "latest.pt"
+        baseline = state_checksum(trainer.model.state_dict())
+
+    settings["every_updates"] = 1
+    config["phase5"]["adaptive_opponents"] = settings
+    path.write_text(yaml.safe_dump(config), encoding="utf-8")
+    seeds = []
+
+    def interrupt(_actor, _baseline, _games, seed, _label):
+        seeds.append(seed)
+        raise InterruptedError
+
+    with PhaseFiveTrainer(path, resume=latest) as trainer:
+        assert trainer._before_training() is False
+        assert trainer.league.weights["godot"] == 0.40
+        assert trainer.league.weights["current"] == 0.60
+        assert state_checksum(trainer.model.state_dict()) == baseline
+        monkeypatch.setattr(trainer.arena, "retention", interrupt)
+        with pytest.raises(InterruptedError):
+            trainer._evaluate_opponent_sampling(24016, 1501, {})
+
+    with PhaseFiveTrainer(path, resume=latest) as trainer:
+        state = trainer.phase5_state["opponent_sampling"]
+        stages = [stage.name for stage in trainer.league.godot_stages]
+        deltas = {f"stage:{stage}": 0.0 for stage in stages}
+        deltas[f"stage:{stages[-1]}"] = -0.30
+        passed = False
+
+        def followup(_actor, _baseline, _games, seed, label):
+            seeds.append(seed)
+            assert label == "bot_followup"
+            return dict(passed=passed, win_rate_deltas=deltas)
+
+        monkeypatch.setattr(trainer.arena, "retention", followup)
+        assert trainer._before_training() is False
+        assert seeds[0] == seeds[1]
+        assert state["streak"] == 1
+        assert trainer.league.weights["godot"] == 0.40
+        trainer._evaluate_opponent_sampling(24032, 1502, {})
+        assert trainer.league.weights["godot"] == pytest.approx(0.45)
+        assert trainer.league.bot_stage_weights[-1] > trainer.league.bot_stage_weights[0] > 0
+        assert trainer.phase5_state["promotions"] == 0
+        passed = True
+        deltas = dict.fromkeys(deltas, 0.0)
+        trainer._evaluate_opponent_sampling(24048, 1503, {})
+        trainer._evaluate_opponent_sampling(24064, 1504, {})
+        assert trainer.league.weights["godot"] == pytest.approx(0.40)
+        assert (
+            load_checkpoint(latest)["phase5"]["champion_curriculum"]["opponent_sampling"] == state
+        )
+
+
 def test_candidate_trains_with_mixed_gods_and_resume_preserves_adam(run_config):
     config, path, source = run_config
     with PhaseFiveTrainer(path, phase4_checkpoint=source) as trainer:

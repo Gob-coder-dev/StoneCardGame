@@ -58,12 +58,17 @@ func _load_progress(legacy_stats: Dictionary) -> void:
 		_progress.campaign_version = _graph.campaign_version
 	var stats := legacy_stats
 	if stats.is_empty():
-		stats = PlayerData.stats
+		stats = PlayerData.legacy_campaign_stats
 	var migrated := MigrationModel.migrate(_graph, stats, _progress)
 	if bool(migrated.get("changed", false)):
 		_load_error = _store.save(_progress)
 		if _load_error != OK:
 			_problems.append("Progression de campagne non enregistrée (%s)." % error_string(_load_error))
+	# Le profil n'abandonne les données d'origine qu'après sauvegarde de la carte.
+	if _load_error == OK and legacy_stats.is_empty():
+		_load_error = PlayerData.finish_campaign_migration()
+		if _load_error != OK:
+			_problems.append("Conversion du profil non enregistrée (%s)." % error_string(_load_error))
 
 
 func is_ready() -> bool:

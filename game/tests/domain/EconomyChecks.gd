@@ -730,7 +730,7 @@ func _test_result_reward_ui() -> void:
 		"ai": BattleContext.last_score_ai,
 		"reward": BattleContext.last_reward.duplicate(true),
 	}
-	var opponent := OpponentCatalog.build("veskar", "n1", "tres_facile")
+	var opponent := preload("res://tests/support/OpponentFixture.gd").build("veskar", "n1", "tres_facile")
 	BattleContext.campaign_node_id = "reward_ui_test"
 	BattleContext.campaign_service = null
 	BattleContext.select_opponent(opponent)

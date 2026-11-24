@@ -38,8 +38,7 @@ func persist() -> Error:
 	if _node_id != "" and (_service == null or not _service.has_node(_node_id)):
 		return ERR_UNCONFIGURED
 	if not _stats_saved:
-		var error := PlayerData.record_game(str(_result["npc_id"]), int(_result["winner"]),
-			int(_result["score_local"]), int(_result["score_opponent"]), int(_result["captures"]))
+		var error := PlayerData.record_match(_result, _quest_key() if _node_id != "" else "")
 		if error != OK:
 			return error
 		_stats_saved = true

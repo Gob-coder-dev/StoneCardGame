@@ -3,7 +3,6 @@
 extends RefCounted
 
 const Effects := preload("res://scripts/domain/MonsterEffects.gd")
-const AIProfileModel := preload("res://scripts/ai/AIProfile.gd")
 const PowerTierRules := preload("res://scripts/domain/CardPowerTierRules.gd")
 
 ## Validation du format des nouvelles lignées avant leur indexation.
@@ -66,16 +65,12 @@ static func _integer_count(value: Variant, maximum: int) -> bool:
 	return (value is int or value is float) and value >= 0 and value <= maximum and value == floor(float(value))
 
 
-static func find_problems(monsters: Array, gods: Dictionary, npcs: Array, default_god_id: String) -> Array[String]:
+static func find_problems(monsters: Array, gods: Dictionary, default_god_id: String) -> Array[String]:
 	var problems: Array[String] = []
-	var monsters_by_id := {}
 	if not gods.has(default_god_id):
 		problems.append("dieu par défaut inconnu '%s'." % default_god_id)
 	for monster in monsters:
 		_check_monster(monster, gods, problems)
-		monsters_by_id[str(monster.get("id", ""))] = monster
-	for npc in npcs:
-		_check_npc(npc, gods, monsters_by_id, problems)
 	return problems
 
 
@@ -109,25 +104,3 @@ static func _check_monster(monster: Dictionary, gods: Dictionary, problems: Arra
 		capacity += maxi(0, max_markers - base - long_count - shield_count)
 	if random_count < 0 or random_count > capacity:
 		problems.append("lames aléatoires impossibles sur '%s'." % monster_id)
-
-
-static func _check_npc(npc: Dictionary, gods: Dictionary, monsters_by_id: Dictionary,
-		problems: Array[String]) -> void:
-	var npc_id := str(npc.get("id", ""))
-	var god_id := str(npc.get("god_id", ""))
-	if not gods.has(god_id):
-		problems.append("dieu inconnu pour le NPC '%s'." % npc_id)
-	for ai_problem in AIProfileModel.problems(npc.get("ai")):
-		problems.append("%s pour le NPC '%s'." % [ai_problem, npc_id])
-	# Les adversaires ne sont pas soumis au budget du joueur, seulement à la taille du deck.
-	if npc.get("deck", []).size() != DeckRules.DECK_SIZE:
-		problems.append("le deck du NPC '%s' doit contenir %d monstres." % [npc_id, DeckRules.DECK_SIZE])
-	var seen: Array = []
-	for monster_id in npc.get("deck", []):
-		var definition: Dictionary = monsters_by_id.get(str(monster_id), {})
-		var lineage := str(definition.get("lineage_id", ""))
-		var affinity := str(definition.get("god_id", ""))
-		if definition.is_empty() or lineage == "" or seen.has(lineage) \
-				or (affinity != "neutral" and affinity != god_id):
-			problems.append("deck incompatible pour le NPC '%s'." % npc_id)
-		seen.append(lineage)

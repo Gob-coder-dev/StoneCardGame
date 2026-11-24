@@ -6,13 +6,12 @@
 ## rencontre affrontent donc les mêmes cartes : seule la façon de jouer change.
 ## La génération est déterministe, afin qu'une rencontre reste identique d'une
 ## session à l'autre sans stocker cent cinq adversaires dans un fichier.
-class_name OpponentCatalog
 extends RefCounted
 
 const Shuffle := preload("res://scripts/domain/SeededShuffle.gd")
 
 const AIProfileModel := preload("res://scripts/ai/AIProfile.gd")
-const BotCardTierRulesModel := preload("res://scripts/domain/BotCardTierRules.gd")
+const BotCardTierRulesModel := preload("res://tests/support/BotCardTierFixture.gd")
 
 const NEUTRAL_BOT_ID := "pr_stone"
 const NEUTRAL_BOT_NAME := "Pr.Stone"
@@ -152,47 +151,6 @@ static func source_for(source_id: String) -> Dictionary:
 ## Les quinze niveaux d'un chemin, du palier le plus faible au plus fort puis
 ## dans l'ordre d'affichage des difficultés. Cet ordre est un contrat : il
 ## décide des déblocages et ne doit pas être recopié ailleurs.
-static func levels_for(source_id: String) -> Array:
-	var neutral := source_id == NEUTRAL_BOT_ID
-	if not neutral and MonsterLoader.get_god(source_id).is_empty():
-		return []
-	var levels: Array = []
-	for chapter_index in range(BRACKETS.size()):
-		var tier: Dictionary = BRACKETS[chapter_index]
-		var bracket_id := str(tier["id"])
-		for difficulty_index in range(DIFFICULTIES.size()):
-			var level: Dictionary = DIFFICULTIES[difficulty_index]
-			var difficulty_id := str(level["id"])
-			var opponent_id_value := opponent_id(source_id, bracket_id, difficulty_id)
-			if neutral:
-				opponent_id_value = neutral_opponent_id(bracket_id, difficulty_id)
-			levels.append({
-				"index": levels.size(),
-				"source_id": source_id,
-				"opponent_id": opponent_id_value,
-				"bracket_id": bracket_id,
-				"bracket_label": str(tier["name"]),
-				"chapter_index": chapter_index,
-				"chapter_start": difficulty_index == 0,
-				"difficulty_id": difficulty_id,
-				"difficulty_label": str(level["name"]),
-				"stars": int(level["stars"]),
-			})
-	return levels
-
-
-## Retrouve la source d'un adversaire généré. Un PNJ historique de npcs.json
-## ne porte pas de palier : il n'appartient à aucun chemin et renvoie "".
-static func source_id_of(opponent: Dictionary) -> String:
-	if str(opponent.get("bracket_id", "")) == "" or str(opponent.get("difficulty", "")) == "":
-		return ""
-	var god_id := str(opponent.get("god_id", ""))
-	if god_id == "":
-		return NEUTRAL_BOT_ID
-	return god_id if not MonsterLoader.get_god(god_id).is_empty() else ""
-
-
-## Construit l'adversaire d'un niveau de chemin, avec ou sans dieu.
 static func build_for_source(source_id: String, bracket_id: String,
 		difficulty_id: String) -> Dictionary:
 	if source_id == NEUTRAL_BOT_ID:
@@ -300,66 +258,6 @@ static func _eligible_variants(lineage_id: String, minimum: int, maximum: int) -
 
 ## Les sept sources de rencontre, dans l'ordre d'affichage : les six dieux
 ## puis Pr.Stone. La grille et le profil lisent la même liste complète.
-static func sources() -> Array:
-	var result: Array = MonsterLoader.get_all_gods().duplicate(true)
-	result.append(neutral_source())
-	return result
-
-
-## Validation appelée par MonsterLoader après le chargement des catalogues.
-static func problems() -> Array[String]:
-	var result: Array[String] = []
-	var god_ids: Array = []
-	for god in MonsterLoader.get_all_gods():
-		god_ids.append(str(god.get("id", "")))
-	if god_ids.is_empty():
-		result.append("aucun dieu chargé pour générer les adversaires.")
-		return result
-	for god_id in god_ids:
-		for tier in BRACKETS:
-			var bracket_id := str(tier["id"])
-			_check_deck(str(god_id), bracket_id, tier, result)
-	for tier in BRACKETS:
-		_check_deck("", str(tier["id"]), tier, result, true)
-	for tier in DIFFICULTIES:
-		var profile := {
-			"precision": float(tier["precision"]),
-			"anticipation": bool(tier["anticipation"]),
-		}
-		for ai_problem in AIProfileModel.problems(profile):
-			result.append("difficulté '%s' : %s." % [tier["id"], ai_problem])
-	return result
-
-
-static func _check_deck(god_id: String, bracket_id: String, tier: Dictionary,
-		result: Array[String], neutral_only: bool = false) -> void:
-	var deck := neutral_deck_for(bracket_id) if neutral_only else deck_for(god_id, bracket_id)
-	var deck_label := NEUTRAL_BOT_ID if neutral_only else god_id
-	if deck.size() != DeckRules.DECK_SIZE:
-		result.append("deck %s/%s incomplet (%d/%d)." % [
-			deck_label, bracket_id, deck.size(), DeckRules.DECK_SIZE])
-		return
-	var seen: Array = []
-	for raw_id in deck:
-		var monster_id := str(raw_id)
-		var lineage := MonsterLoader.monster_lineage(monster_id)
-		if not MonsterLoader.has_monster(monster_id) or seen.has(lineage):
-			result.append("deck %s/%s invalide." % [deck_label, bracket_id])
-			return
-		if neutral_only and MonsterLoader.monster_affinity(monster_id) != "neutral":
-			result.append("carte '%s' non neutre dans le deck %s." % [monster_id, deck_label])
-			return
-		if not neutral_only and not MonsterLoader.is_monster_available_to_god(monster_id, god_id):
-			result.append("carte '%s' inaccessible à '%s'." % [monster_id, god_id])
-			return
-		var effective_level := BotCardTierRulesModel.effective_level(
-			MonsterLoader.monster_rarity(monster_id), MonsterLoader.monster_level(monster_id))
-		if effective_level < int(tier["min_level"]) or effective_level > int(tier["max_level"]):
-			result.append("carte '%s' hors du palier '%s'." % [monster_id, bracket_id])
-			return
-		seen.append(lineage)
-
-
 static func _take(target: Array, source: Array, limit: int) -> void:
 	for lineage_id in source:
 		if target.size() >= limit:
@@ -378,3 +276,14 @@ static func _shuffled(values: Array, rng: RandomNumberGenerator) -> Array:
 ## deck sans dépendre de l'ordre de chargement des dictionnaires.
 static func _deck_seed(source_id: String, bracket_id: String) -> int:
 	return ("%s:%s" % [source_id, bracket_id]).hash()
+
+static func get_npcs_ordered() -> Array:
+	var data: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://tests/support/opponents.json"))
+	return data.get("npcs", [])
+
+
+static func get_npc(id: String) -> Dictionary:
+	for npc in get_npcs_ordered():
+		if str(npc.get("id", "")) == id:
+			return npc.duplicate(true)
+	return {}

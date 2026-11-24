@@ -8,10 +8,8 @@
 extends Node
 
 const ContentChecks := preload("res://scripts/data/ContentValidator.gd")
-const OpponentCatalogModel := preload("res://scripts/data/OpponentCatalog.gd")
 
 const MONSTERS_MANIFEST_PATH: String = "res://data/monsters/manifest.json"
-const NPCS_PATH: String = "res://data/npcs.json"
 const GODS_PATH: String = "res://data/gods.json"
 
 ## Dictionnaire indexé par monster_id -> dict complet du monstre
@@ -22,8 +20,6 @@ var _monsters_list: Array = []
 ## Une lignée contient ses identifiants de formes dans l'ordre des niveaux.
 var _lineages: Dictionary = {}
 
-## Dictionnaire indexé par npc_id -> dict complet du NPC
-var _npcs: Dictionary = {}
 
 ## Dieux jouables et ordre d'affichage.
 var _gods: Dictionary = {}
@@ -34,10 +30,7 @@ var _default_god_id: String = ""
 func _ready() -> void:
 	_load_monsters()
 	_load_gods()
-	_load_npcs()
-	for problem in ContentChecks.find_problems(_monsters_list, _gods, _npcs.values(), _default_god_id):
-		push_error("MonsterLoader: " + problem)
-	for problem in OpponentCatalogModel.problems():
+	for problem in ContentChecks.find_problems(_monsters_list, _gods, _default_god_id):
 		push_error("MonsterLoader: " + problem)
 
 
@@ -122,25 +115,6 @@ func _index_lineage(lineage: Dictionary) -> void:
 		var definition := common.duplicate(true)
 		definition.merge(forms[index], true)
 		_index_monster(definition, str(lineage["id"]), index + 1, forms.size())
-
-
-func _load_npcs() -> void:
-	var file := FileAccess.open(NPCS_PATH, FileAccess.READ)
-	if file == null:
-		push_error("MonsterLoader: impossible d'ouvrir %s" % NPCS_PATH)
-		return
-	var content := file.get_as_text()
-	file.close()
-
-	var parsed = JSON.parse_string(content)
-	if parsed == null or not parsed.has("npcs"):
-		push_error("MonsterLoader: format JSON invalide dans %s" % NPCS_PATH)
-		return
-
-	for npc in parsed["npcs"]:
-		_npcs[npc["id"]] = npc
-
-	print("MonsterLoader: %d NPCs chargés." % _npcs.size())
 
 
 func _load_gods() -> void:
@@ -258,23 +232,7 @@ func build_hand(monster_ids: Array) -> Array:
 			push_error("MonsterLoader: monstre '%s' introuvable." % sid)
 	return hand
 
-## ─── Accès aux NPCs ───────────────────────────────────────────────────────────
-
-func get_npc(npc_id: String) -> Dictionary:
-	return _npcs.get(npc_id, {}).duplicate(true)
-
-
-## Retourne la liste des NPCs triée par difficulté (easy → hard)
-func get_npcs_ordered() -> Array:
-	var order := { "easy": 0, "medium": 1, "hard": 2 }
-	var list := _npcs.values().duplicate(true)
-	list.sort_custom(func(a, b):
-		return order.get(a["difficulty"], 99) < order.get(b["difficulty"], 99)
-	)
-	return list
-
-
-## ─── Accès aux dieux et aux familles ────────────────────────────────────────
+## ─── Accès aux dieux et aux familles ─────────────────────────────────────────
 
 func get_god(god_id: String) -> Dictionary:
 	return _gods.get(god_id, {}).duplicate(true)

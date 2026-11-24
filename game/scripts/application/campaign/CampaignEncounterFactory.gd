@@ -7,7 +7,7 @@ class_name CampaignEncounterFactory
 extends RefCounted
 
 const GeneratorModel := preload("res://scripts/domain/LoadoutGenerator.gd")
-const OpponentCatalogModel := preload("res://scripts/data/OpponentCatalog.gd")
+const BotIdentityModel := preload("res://scripts/data/BotIdentity.gd")
 const GameModeRulesModel := preload("res://scripts/domain/GameModeRules.gd")
 const CardPowerTierRulesModel := preload("res://scripts/domain/CardPowerTierRules.gd")
 
@@ -118,10 +118,10 @@ static func _resolve_identity(resolved: Dictionary) -> Dictionary:
 		resolved.description = str(god.get("description", ""))
 		resolved.portrait = str(god.get("asset", ""))
 	if str(resolved.get("name", "")) == "":
-		resolved.name = OpponentCatalogModel.NEUTRAL_BOT_NAME
+		resolved.name = BotIdentityModel.NEUTRAL_BOT_NAME
 	# Tout adversaire IA sans portrait utilise Pr.Stone, y compris Reflet et Aléatoire.
 	if str(resolved.get("portrait", "")) == "":
-		resolved.portrait = str(OpponentCatalogModel.neutral_source().get("asset", ""))
+		resolved.portrait = str(BotIdentityModel.neutral_source().get("asset", ""))
 	return resolved
 
 
@@ -157,54 +157,10 @@ static func _mode_failure(reason: String) -> Dictionary:
 	return {"ok": false, "reason": reason}
 
 
-## Identifiant historique d'une rencontre générée. Une victoire ancienne ne
-## peut être convertie que si ce niveau est le seul à revendiquer cet
-## identifiant : le profil ne mémorisait ni deck ni nœud.
-static func legacy_opponent_id(node: CampaignNode) -> String:
-	if node == null or node.game_mode() != GameModeRulesModel.MODE_CLASSIC:
-		return ""
-	var declared := node.declared_legacy_opponent_id()
-	if declared != "":
-		return declared
-	if node.opponent_god_policy() != CampaignNode.GOD_FIXED:
-		return ""
-	var difficulty := _legacy_difficulty(node.ai_profile())
-	if difficulty == "":
-		return ""
-	var bracket := _legacy_bracket(node.max_power_tier())
-	if node.fixed_god_id() == "":
-		return OpponentCatalogModel.neutral_opponent_id(bracket, difficulty)
-	return OpponentCatalogModel.opponent_id(node.fixed_god_id(), bracket, difficulty)
-
-
 static func _god_name(god_id: String) -> String:
 	if god_id == "":
 		return ""
 	return str(MonsterLoader.get_god(god_id).get("name", god_id))
-
-
-static func _legacy_bracket(tier: int) -> String:
-	if tier <= 1:
-		return "n1"
-	if tier == 2:
-		return "n2"
-	return "n34"
-
-
-static func _legacy_difficulty(ai: Dictionary) -> String:
-	var precision := float(ai.get("precision", -1.0))
-	var anticipation := bool(ai.get("anticipation", false))
-	if is_equal_approx(precision, 0.0) and not anticipation:
-		return "tres_facile"
-	if is_equal_approx(precision, 0.25) and not anticipation:
-		return "facile"
-	if is_equal_approx(precision, 0.5) and not anticipation:
-		return "moyen"
-	if is_equal_approx(precision, 0.75) and not anticipation:
-		return "difficile"
-	if is_equal_approx(precision, 1.0) and anticipation:
-		return "tres_difficile"
-	return ""
 
 
 static func _failure(reason: String) -> Dictionary:

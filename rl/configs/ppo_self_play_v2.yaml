@@ -105,6 +105,14 @@ phase5:
   seed_base: 6000000000000
   mirror_probability: 0.10
   training_weights: {current: 0.60, historical: 0.20, godot: 0.20}
+  adaptive_opponents:
+    initial_bot_fraction: 0.40
+    minimum_bot_fraction: 0.25
+    maximum_bot_fraction: 0.50
+    adjustment: 0.05
+    consecutive_results: 2
+    every_updates: 100
+    games_per_slice: 1
   screen_games_per_slice: 1
   screen_minimum_score: 0.52
   promotion:

@@ -155,7 +155,7 @@ func _test_failed_save() -> void:
 		and player.get_profile() == previous,
 		"un échec d'enregistrement restaure le pseudo précédent")
 	_expect_log("PlayerData: profil non enregistré")
-	_check(player.record_game("bot_test", GameState.PLAYER_HUMAN, 9, 5, 3) != OK
+	_check(player.record_match({"winner": 1, "score_local": 9, "score_opponent": 5, "captures": 3}) != OK
 		and player.get_profile() == previous and Storage.read(TEST_PATH) == disk,
 		"un échec d'enregistrement restaure toutes les statistiques de la partie")
 	player.free()

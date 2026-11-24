@@ -3,7 +3,7 @@
 ## progression : aucune règle de déblocage, aucun accès au profil. La forme du
 ## symbole distingue tutoriel, mini-boss et boss en plus de la couleur.
 class_name CampaignNodeView
-extends "res://scripts/ui/encounters/PathNodeButton.gd"
+extends "res://scripts/ui/campaign/PathNodeButton.gd"
 
 const NodeModel := preload("res://scripts/domain/campaign/CampaignNode.gd")
 const UnlockRulesModel := preload("res://scripts/domain/campaign/CampaignUnlockRules.gd")

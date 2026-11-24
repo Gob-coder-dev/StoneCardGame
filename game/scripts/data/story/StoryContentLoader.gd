@@ -160,6 +160,9 @@ static func _validate_tutorials(data: Dictionary, dialogues: Dictionary,
 			_validate_match(chapter_id, match_setup, problems)
 		var entry_node := str(entry.get("entry_node_id", ""))
 		var entry_scene := str(entry.get("entry_scene", ""))
+		for condition in ["required_completed_node_id", "required_story_state"]:
+			if entry.has(condition) and (not entry[condition] is String or str(entry[condition]).strip_edges() == ""):
+				problems.append("Tutoriels : condition '%s' invalide dans '%s'." % [condition, chapter_id])
 		if entry_node == "" and entry_scene == "":
 			problems.append("Tutoriels : le chapitre '%s' n'a pas de point d'entrée." % chapter_id)
 		if entry_scene != "" and not ResourceLoader.exists(entry_scene, "PackedScene"):

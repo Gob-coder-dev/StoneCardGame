@@ -154,9 +154,10 @@ prédécesseurs est terminé, et les mini-boss facultatifs occupent des impasses
 Toucher un nœud ouvre sa fiche (adversaire, mode, palier, IA, deck, format) ;
 le lancement mène à la préparation si le mode l'exige, puis au pile ou face et
 au combat. Le résultat revient sur la carte, centrée sur le dernier nœud, et ne
-valide le nœud qu'après la sauvegarde. Le profil conserve ses compteurs
-historiques par dieu pour la compatibilité ; la progression de la campagne est
-comptée par la carte. Voir [la documentation de campagne](docs/CAMPAIGN.md).
+valide le nœud qu'après la sauvegarde. Le profil affiche la progression réelle
+de la carte, la collection, les résultats par dieu joué et par mode, ainsi que
+les records de captures. Un filtre sépare campagne et PVP local. Voir
+[la documentation de campagne](docs/CAMPAIGN.md).
 
 L'interface adopte un thème d'arène machiavélique : fonds charbon, accents de
 métal incandescent et halos néon violets ou carmin. Les formes restent discrètes
@@ -203,7 +204,6 @@ scripts/
     shop/                Présentation responsive de la boutique
     ritual/              Sceaux, embrasement initial et révélations des Rituels
     combat/              Présentations, géométrie et animations de combat
-    encounters/          Anciens parcours par dieu, conservés pour compatibilité
 scenes/                  Scènes Godot des menus, du combat et des composants
   campaign/              Carte, nœud, fiche et préparation de campagne
 assets/                  Illustrations, portraits, icônes et thème
@@ -233,10 +233,9 @@ mini-boss obligatoire ne peut pas être contourné. `CampaignValidator` et
 l'ouverture de la carte.
 
 Les six dieux et Pr.Stone, un adversaire sans dieu qui utilise exclusivement des
-cartes neutres, restent la source de contenu. Les anciens parcours par dieu et
-leurs quinze niveaux restent dans le projet pour les tests, les statistiques
-historiques et la compatibilité, mais le bouton **CAMPAGNE** ouvre désormais la
-carte unifiée. Les paliers tiennent compte de la rareté sans modifier le niveau
+cartes neutres, restent la source de contenu. Les anciens parcours par dieu,
+leurs écrans et leurs fabriques ont été retirés du jeu. Seule la conversion
+des sauvegardes historiques est conservée. Les paliers tiennent compte de la rareté sans modifier le niveau
 réel des formes : les épiques commencent au palier 3 et les légendaires au
 palier 4. Le deck ne dépend que du nœud et du palier ; l'IA règle séparément sa
 précision continue de 0 à 100 % (57 valeurs distinctes dans la campagne, dont
@@ -265,14 +264,9 @@ Les données de contenu sont validées au démarrage :
 - `data/monsters/manifest.json` et ses sept familles : lignées, formes, coûts,
   symboles et pouvoirs ;
 - `data/gods.json` : dieux, familles, couleurs, descriptions et portraits ;
-- `data/npcs.json` : six adversaires historiques, conservés pour les tests et
-  les anciennes références ;
 - `data/campaign/campaign_v2.json` : graphe de la campagne unifiée, 165 nœuds,
   193 arêtes et 13 sections, chargé et validé par `CampaignContentLoader`,
   `CampaignValidator` et `CampaignAudit` ;
-- `OpponentCatalog` : génère les 105 rencontres historiques (six dieux et un bot
-  neutre, trois paliers de cartes et cinq difficultés) ; la campagne unifiée
-  n'en réutilise que les noms neutres et les identifiants de migration.
 - `data/economy/economy_config.json` : source unique des prix, seuils, lots,
   cadeaux de dieux, bougies de campagne et de la rotation de trois heures ;
 - `data/economy/rituals.json` : prix, compositions, probabilités et identité
@@ -283,7 +277,7 @@ construction hors exécution : elle fournit les 87 decks fixes uniques validés
 dans la campagne.
 
 Le profil local est enregistré dans `user://savegame.json`. Le format actuel est
-la version 11 : il conserve le pseudo, les statistiques, les trois decks de chaque
+la version 12 : il conserve le pseudo, les statistiques, les trois decks de chaque
 dieu et de la banque neutre, le deck sélectionné, les âmes, les bougies, les
 dieux débloqués, les copies et niveaux de cartes, les achats de la rotation et
 les récompenses divines conservées au coffre, les quêtes et les curseurs des
@@ -298,7 +292,12 @@ dernier nœud consulté, états de tutoriel et archive de migration. Elle ne
 contient jamais les arêtes, les decks générés ni une route choisie. Les deux
 fichiers utilisent le même remplacement atomique. Les anciennes victoires par
 dieu ne sont converties que lorsqu'elles désignent un seul nœud sans ambiguïté ;
-les autres sont archivées et les statistiques du profil restent intactes. Voir
+les autres sont archivées. Les totaux historiques sont conservés et attribués
+à la campagne ; les anciens compteurs par adversaire sont retirés du profil
+après sauvegarde réussie de leur conversion. Les ventilations par dieu joué et
+par mode, les records et les résultats PVP commencent à la mise à jour. Chaque
+manche FT2/FT3 est comptée séparément ; abandonner la série casse la série de
+victoires sans ajouter une manche fictive. Voir
 [CAMPAIGN.md](docs/CAMPAIGN.md).
 
 Les IDs de contenu sont descriptifs et stables : une carte utilise par exemple

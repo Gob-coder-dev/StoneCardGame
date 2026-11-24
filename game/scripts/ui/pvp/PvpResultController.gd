@@ -48,10 +48,31 @@ func _ready() -> void:
 	quit_button.pressed.connect(_quit)
 	LanSession.state_changed.connect(_on_session_state)
 	_show_result()
+	_save_profile_result()
 	if not _start_series_result():
 		_start_classic_rematch()
 	_setup_presence()
 	_action_timeout = _make_timer("SeriesActionTimeout", 30.0, _on_action_timeout)
+	var retry := Button.new()
+	retry.name = "RetryStatsSave"
+	retry.text = "Réessayer l'enregistrement des statistiques"
+	$VBoxCenter.add_child(retry)
+	retry.pressed.connect(_save_profile_result)
+	retry.visible = not bool(PvpMatchContext.last_result.get("profile_saved", true))
+
+
+func _save_profile_result() -> void:
+	var result: Dictionary = PvpMatchContext.last_result
+	if not result.has("profile_result") or bool(result.get("profile_saved", false)):
+		return
+	var error := PvpMatchContext.persist_profile_result()
+	var retry := get_node_or_null("VBoxCenter/RetryStatsSave")
+	if retry != null:
+		retry.visible = error != OK
+	if error != OK:
+		status_label.text = "Statistiques non enregistrées. Réessaie avant de quitter."
+	elif status_label.text == "Statistiques non enregistrées. Réessaie avant de quitter.":
+		status_label.text = "Statistiques enregistrées."
 
 
 func _make_timer(timer_name: String, seconds: float, callback: Callable) -> Timer:

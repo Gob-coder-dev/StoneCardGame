@@ -5,6 +5,7 @@ extends Node
 const TestLog := preload("res://tests/support/TestLog.gd")
 const SUITES: Array[String] = [
 	"res://tests/combat/PlayerDataChecks.gd",
+	"res://tests/domain/ProfileStatsChecks.gd",
 	"res://tests/ui/MenuChecks.gd",
 	"res://tests/domain/EconomyChecks.gd",
 	"res://tests/domain/CampaignValidatorChecks.gd",

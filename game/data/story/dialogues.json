@@ -401,6 +401,19 @@
         }
       ]
     },
+    "rules_research_intro": {
+      "title": "Les recherches du professeur",
+      "lines": [
+        {
+          "speaker": "pr_stone",
+          "text": "Avant de repartir, jeune cobaye, viens consulter mes recherches dans le menu RÈGLES. J'y ai rassemblé tout ce que je sais sur l'arène, les monstres et les pouvoirs des dieux."
+        },
+        {
+          "speaker": "pr_stone",
+          "text": "Si une règle t'échappe pendant ton aventure, tu pourras toujours y revenir. Allons y jeter un œil : retourne à l'accueil, puis ouvre RÈGLES."
+        }
+      ]
+    },
     "nerava_cloche_intro": {
       "title": "Le Vestibule des Fièvres",
       "lines": [

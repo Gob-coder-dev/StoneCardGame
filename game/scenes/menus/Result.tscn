@@ -209,12 +209,6 @@ script = ExtResource("2_touch_button")
 custom_minimum_size = Vector2(0, 104)
 text = "Choisir un autre niveau"
 
-[node name="GodsButton" type="Button" parent="VBoxCenter"]
-layout_mode = 2
-script = ExtResource("2_touch_button")
-custom_minimum_size = Vector2(0, 104)
-text = "Choisir un autre dieu"
-
 [node name="MainMenuButton" type="Button" parent="VBoxCenter"]
 layout_mode = 2
 script = ExtResource("2_touch_button")

@@ -53,8 +53,8 @@ func _test_malformed_profile() -> void:
 	var profile := Codec.decode(raw)
 	var stats: Dictionary = profile["stats"]
 	_check(stats["games_played"] == 0 and stats["wins"] == 0 and stats["losses"] == 0
-		and stats["total_captures"] == 0 and stats["per_npc"]["ok"]["games"] == 3
-		and not stats["per_npc"].has("bad") and profile["inventory"]["souls"] == 0,
+		and stats["total_captures"] == 0 and not stats.has("per_npc")
+		and profile["inventory"]["souls"] == 0,
 		"sauvegarde : les types et nombres non finis sont nettoyés avant les calculs")
 
 

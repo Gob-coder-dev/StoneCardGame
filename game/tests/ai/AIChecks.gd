@@ -1,4 +1,5 @@
 extends "res://tests/support/CombatTestSuite.gd"
+const OpponentFixture := preload("res://tests/support/OpponentFixture.gd")
 
 const AIProfileModel := preload("res://scripts/ai/AIProfile.gd")
 const ProfileAIModel := preload("res://scripts/ai/ProfileAI.gd")
@@ -77,7 +78,7 @@ func _test_profiles() -> void:
 		and is_equal_approx(ai.think_delay, 0.8), "create_ai règle l'IA unique avec le profil donné")
 	var expected := {"easy": RANDOM, "medium": HALF, "hard": CAREFUL}
 	var levels_match := true
-	for npc in MonsterLoader.get_npcs_ordered():
+	for npc in OpponentFixture.get_npcs_ordered():
 		levels_match = levels_match and npc.get("ai") == expected.get(npc.get("difficulty"))
 	_check(levels_match, "les adversaires faciles jouent au hasard, les moyens à mi-précision et les difficiles anticipent")
 
@@ -327,7 +328,7 @@ func _test_turn_runner() -> void:
 	manager.turn_started.connect(func(player: int):
 		if player == GameState.PLAYER_AI:
 			runner.run_turn())
-	var deck: Array = MonsterLoader.get_npc("maitre_carcasses")["deck"]
+	var deck: Array = OpponentFixture.get_npc("maitre_carcasses")["deck"]
 	manager.start_game(deck, deck, [], "maitre_carcasses", GameState.PLAYER_AI, "enigma", "enigma")
 	var frames := 0
 	while manager.get_state().ai_hand.size() == DeckRules.DECK_SIZE and frames < 300:
@@ -364,7 +365,7 @@ func _test_turn_runner() -> void:
 
 
 func _test_complete_matches() -> void:
-	for npc in MonsterLoader.get_npcs_ordered():
+	for npc in OpponentFixture.get_npcs_ordered():
 		var god_id := str(npc.get("god_id", ""))
 		var deck: Array = npc.get("deck", [])
 		var legal_family := true

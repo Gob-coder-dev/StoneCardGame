@@ -23,7 +23,7 @@ var _game: GameState = null
 var _elapsed := 0.0
 
 
-## Crée l'IA décrite par le champ "ai" d'un adversaire de npcs.json.
+## Crée l'IA décrite par le champ "ai" de la rencontre de campagne.
 static func create_ai(profile_data: Variant) -> AIPlayer:
 	return ProfileAIModel.new(Profile.new(profile_data))
 

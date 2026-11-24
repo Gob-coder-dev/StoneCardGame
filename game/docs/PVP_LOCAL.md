@@ -344,8 +344,10 @@ implicite n'intervient, et deux états identiques donnent la même empreinte.
 - Aucune migration d'hôte : si l'hôte quitte le salon, le client revient à la
   recherche avec un message et ne peut plus se déclarer prêt ; pendant un match,
   la partie s'arrête et le client revient au salon avec un message.
-- Aucun résultat PVP n'est écrit dans les statistiques de campagne ni dans
-  `per_npc` (`LanMatchDriver.records_campaign_stats == false`).
+- Les résultats PVP sont enregistrés dans leur propre contexte statistique,
+  du point de vue du camp local. Ils alimentent aussi les totaux du profil,
+  les résultats par dieu joué et mode, et les records. Ils ne modifient pas
+  les compteurs de campagne. Chaque manche FT2/FT3 est comptée une seule fois.
 - Pendant le draft, les deux offres adverses de **l'étape locale** sont
   visibles mais non interactives ; leur choix, leur deck en construction et
   leur loadout restent privés. Seuls l'étape réelle, la complétion et le

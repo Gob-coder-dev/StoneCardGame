@@ -42,6 +42,7 @@ class SelfPlayLeague:
         self.weights = weights
         self.device = device
         self.godot_stages = tuple(godot_stages or DEFAULT_STAGES)
+        self.bot_stage_weights: list[float] | None = None
         self.entries = self._load_manifest()
         self._cache: OrderedDict[str, CheckpointOpponent] = OrderedDict()
         self.maximum_cached_models = 8
@@ -120,7 +121,12 @@ class SelfPlayLeague:
         category, members, _weight = available[int(rng.choice(len(available), p=probabilities))]
         self.selection_counts[category] += 1
         if category == "godot":
-            stage = self.godot_stages[int(rng.integers(len(self.godot_stages)))]
+            stage_index = (
+                rng.integers(len(self.godot_stages))
+                if self.bot_stage_weights is None
+                else rng.choice(len(self.godot_stages), p=self.bot_stage_weights)
+            )
+            stage = self.godot_stages[int(stage_index)]
             return stage.opponent(), f"godot_{stage.name}", category
         entry = members[int(rng.integers(len(members)))]
         assert entry is not None

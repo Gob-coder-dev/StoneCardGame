@@ -37,13 +37,10 @@ var player_god_id: String = ""
 var player_name: String = "Joueur"
 
 ## ─── Statistiques persistantes ────────────────────────────────────────────────
-## Structure :
-## {
-##   "games_played", "wins", "losses", "draws",
-##   "current_streak", "best_streak", "total_captures",
-##   "per_npc": { "<npc_id>": { "wins": int, "games": int, "best_diff": int } }
-## }
+## Totaux, records et ventilations par contexte, dieu joué et mode.
 var stats: Dictionary = _default_stats()
+## Uniquement conservé jusqu'à la conversion réussie du fichier de campagne.
+var legacy_campaign_stats: Dictionary = {}
 
 
 func _default_stats() -> Dictionary:
@@ -52,25 +49,29 @@ func _default_stats() -> Dictionary:
 
 
 func win_rate() -> int:
-	var g: int = stats.get("games_played", 0)
-	if g == 0:
-		return 0
-	return int(round(float(stats.get("wins", 0)) / float(g) * 100.0))
+	return StatsRules.win_rate(stats)
 
 
-## Enregistre le résultat d'une partie.
-## winner : 1 = humain, 2 = IA, 0 = égalité
-## captures_by_human : nombre de captures réalisées par le joueur dans la partie
-func record_game(npc_id: String, winner: int, score_human: int, score_ai: int,
-		captures_by_human: int) -> Error:
-	return _commit_stats(StatsRules.record_game(stats, npc_id, winner,
-		score_human, score_ai, captures_by_human))
+## Enregistre une manche terminée : winner 1 = local, 2 = adverse, 0 = égalité.
+func record_match(result: Dictionary, result_key: String = "") -> Error:
+	return _commit_stats(StatsRules.record_match(stats, result, result_key))
 
 
-## Un abandon concède une série : le profil compte une défaite, sans capture ni
-## score. Le meilleur écart contre cet adversaire reste intact.
-func record_forfeit(npc_id: String) -> Error:
-	return _commit_stats(StatsRules.record_forfeit(stats, npc_id))
+## Un abandon casse la série de victoires sans inventer une manche jouée.
+func record_forfeit(result: Dictionary = {}) -> Error:
+	# Un abandon de série n'est pas une manche supplémentaire.
+	var next := stats.duplicate(true)
+	next["current_streak"] = 0
+	var scope := str(result.get("scope", "campaign"))
+	var god := str(result.get("player_god_id", ""))
+	if god == "":
+		god = "godless"
+	var mode := str(result.get("mode", "classic"))
+	for pair in [["by_scope", scope], ["by_god", god], ["by_mode", mode],
+			["by_god", "%s:%s" % [scope, god]], ["by_mode", "%s:%s" % [scope, mode]]]:
+		if next.get(pair[0], {}).has(pair[1]):
+			next[pair[0]][pair[1]]["current_streak"] = 0
+	return _commit_stats(next)
 
 
 func _commit_stats(next: Dictionary) -> Error:
@@ -82,15 +83,16 @@ func _commit_stats(next: Dictionary) -> Error:
 	return error
 
 
-## Un NPC est "battu" si le joueur l'a emporté au moins une fois
-func is_npc_beaten(npc_id: String) -> bool:
-	var per_npc: Dictionary = stats.get("per_npc", {})
-	return per_npc.has(npc_id) and per_npc[npc_id].get("wins", 0) > 0
-
-
-func npc_record(npc_id: String) -> Dictionary:
-	var per_npc: Dictionary = stats.get("per_npc", {})
-	return per_npc.get(npc_id, { "wins": 0, "games": 0, "best_diff": -99 })
+## Retire les anciens compteurs après écriture réussie de leur conversion.
+func finish_campaign_migration() -> Error:
+	if legacy_campaign_stats.is_empty():
+		return OK
+	var previous := legacy_campaign_stats
+	legacy_campaign_stats = {}
+	var error := save()
+	if error != OK:
+		legacy_campaign_stats = previous
+	return error
 
 
 ## ─── Persistance ─────────────────────────────────────────────────────────────
@@ -108,7 +110,7 @@ func _init(save_path: String = SAVE_PATH) -> void:
 
 func get_profile() -> Dictionary:
 	return SaveCodec.encode(_decks_by_god, _selected_deck_by_god, player_god_id,
-		player_name, stats, inventory_dict(), quests_dict())
+		player_name, stats, inventory_dict(), quests_dict(), legacy_campaign_stats)
 
 
 func save() -> Error:
@@ -134,6 +136,7 @@ func _apply_profile(profile: Dictionary) -> void:
 	player_god_id = profile["player_god_id"]
 	player_name = profile["player_name"]
 	stats = profile["stats"]
+	legacy_campaign_stats = profile.get("legacy_campaign_stats", {}).duplicate(true)
 	_inventory = InventoryModel.from_dict(profile.get("inventory", {}))
 	_quests = profile.get("quests", {}).duplicate(true) \
 		if profile.get("quests", {}) is Dictionary else {}

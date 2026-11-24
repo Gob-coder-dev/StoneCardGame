@@ -45,6 +45,8 @@ func _ready() -> void:
 		if id == _god_id:
 			button.set_pressed_no_signal(true)
 	_select_tab(Tab.BASICS)
+	if not has_meta("menu_preview"):
+		StoryService.notify_screen(Routes.HOW_TO_PLAY)
 
 
 func menu_page_deactivated() -> void:
@@ -53,6 +55,7 @@ func menu_page_deactivated() -> void:
 
 func menu_page_activated() -> void:
 	_demos.resume()
+	StoryService.notify_screen(Routes.HOW_TO_PLAY)
 
 
 func _select_tab(tab: Tab) -> void:

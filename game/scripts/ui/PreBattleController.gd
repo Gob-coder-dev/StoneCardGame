@@ -124,8 +124,7 @@ func _setup_god_identity(portrait: GodPortrait, name_label: Label, family_label:
 	)
 
 
-## Les adversaires générés précisent leur palier et leur difficulté ; les
-## adversaires historiques de npcs.json n'ont pas ces champs.
+## Résume le palier et la difficulté fournis par la rencontre.
 func _opponent_subtitle(npc: Dictionary) -> String:
 	var bracket_label := str(npc.get("bracket_label", ""))
 	var difficulty_text := str(npc.get("difficulty_label", ""))
@@ -245,8 +244,7 @@ func _notification(what: int) -> void:
 		_go_back()
 
 
-## Le retour retrouve le chemin du dieu affronté, pour choisir un autre niveau
-## sans repasser par la grille. En PVP, il rend la main au salon en fermant la
+## Le retour retrouve la carte de campagne. En PVP, il rend la main au salon en fermant la
 ## session réseau, sinon deux téléphones resteraient attachés à un match mort.
 func _go_back() -> void:
 	if _is_pvp():
@@ -260,8 +258,7 @@ func _go_back() -> void:
 		BattleContext.clear_campaign_node()
 		Routes.go(get_tree(), Routes.CAMPAIGN_MAP)
 		return
-	BattleContext.select_source(BattleContext.navigation_source_id())
-	Routes.go(get_tree(), Routes.ENCOUNTER_PATH)
+	Routes.go(get_tree(), Routes.CAMPAIGN_MAP)
 
 
 func _on_start() -> void:

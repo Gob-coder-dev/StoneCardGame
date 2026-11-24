@@ -77,15 +77,17 @@ class PhaseFiveTrainer(ChampionCurriculum, PPOTrainer):
                 if before is not None and before != requested["environment"][key]:
                     raise ValueError(f"phase 5 et phase 4 n'utilisent pas les memes {key}")
         self.phase5_state = {}
+        self._last_screening = source.get("evaluation") or {}
         self._allow_pending_source_restart = allow_python_source_change
         self.phase5_completed = False
+        mutable_phase5 = (("phase5", "maximum_updates_without_promotion"),)
+        if "adaptive_opponents" not in source.get("config", {}).get("phase5", {}):
+            mutable_phase5 += (("phase5", "adaptive_opponents"),)
         super().__init__(
             config_path,
             output_override=output_override,
             mode="resume" if resume else "create",
-            resume_config_paths=(("phase5",), ("evaluation",))
-            if legacy
-            else (("phase5", "maximum_updates_without_promotion"),),
+            resume_config_paths=(("phase5",), ("evaluation",)) if legacy else mutable_phase5,
         )
         self.phase4_baseline = self.output / "phase4_baseline.pt"
         self.league_directory = self.output / "league"
@@ -203,6 +205,9 @@ class PhaseFiveTrainer(ChampionCurriculum, PPOTrainer):
     def _after_training_update(self, global_step, update, episodes, evaluation):
         self._current_global_step, self._current_update = global_step, update
         log_self_play(self, global_step, update, episodes)
+        if evaluation is not None:
+            self._last_screening = evaluation
+        self._evaluate_opponent_sampling(global_step, update, self._last_screening)
         state = self.phase5_state
         if (
             evaluation

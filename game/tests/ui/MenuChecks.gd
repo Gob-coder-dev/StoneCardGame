@@ -1,8 +1,7 @@
 extends "res://tests/support/CombatTestSuite.gd"
 const ProfileFixture := preload("res://tests/support/PlayerProfileFixture.gd")
-const OpponentCatalogModel := preload("res://scripts/data/OpponentCatalog.gd")
+const OpponentFixtureModel := preload("res://tests/support/OpponentFixture.gd")
 const GodIdentityModel := preload("res://scripts/data/GodIdentity.gd")
-const EncounterPathModel := preload("res://scripts/domain/EncounterPath.gd")
 const TouchButtonScript := preload("res://scripts/ui/input/TouchButton.gd")
 const LobbyCoordinator := preload("res://scripts/network/LanLobbyCoordinator.gd")
 const BattleLayoutModel := preload("res://scripts/ui/BattleLayout.gd")
@@ -32,13 +31,9 @@ func run() -> void:
 	await _test_pvp_board_opens_ready()
 	await _test_pvp_result()
 	await _test_pvp_lobby_screens()
-	await _test_encounter_selection()
-	await _test_encounter_path()
-	await _test_stats_progress()
 	await _test_generated_opponent_battle()
 	await _test_neutral_bot_battle()
 	await _test_result_uses_generated_opponent()
-	await _test_result_actions()
 	fixture.restore()
 
 
@@ -47,8 +42,6 @@ func _test_screen_backgrounds() -> void:
 		"res://scenes/menus/MainMenu.tscn": MenuBackground.Room.REFUGE,
 		"res://scenes/menus/CollectionScreen.tscn": MenuBackground.Room.BESTIARY,
 		"res://scenes/menus/HowToPlay.tscn": MenuBackground.Room.JOURNAL,
-		"res://scenes/menus/EncounterSelect.tscn": MenuBackground.Room.ENCOUNTERS,
-		"res://scenes/menus/EncounterPath.tscn": MenuBackground.Room.ENCOUNTER_PATH,
 		"res://scenes/menus/PreBattle.tscn": MenuBackground.Room.COIN_RITUAL,
 		"res://scenes/game/Board.tscn": MenuBackground.Room.BOARD,
 		"res://scenes/menus/Result.tscn": MenuBackground.Room.AFTERMATH,
@@ -67,7 +60,7 @@ func _test_screen_backgrounds() -> void:
 		page.free()
 	# La préparation reprend volontairement l'arène du salon et le résultat PVP
 	# partage l'ambiance de la campagne : ce sont les mêmes familles visuelles.
-	_check(assigned_rooms.size() == 10,
+	_check(assigned_rooms.size() == 8,
 		"les écrans PVP conservent leurs ambiances dédiées sans multiplier les variantes")
 	var background := MenuBackground.new()
 	var formats := [Vector2(1080.0, 1920.0), Vector2(1200.0, 1920.0),
@@ -351,7 +344,7 @@ func _test_rules_legends() -> void:
 	await get_tree().process_frame
 	var basics := _rules_text(rules.page)
 	_check(rules.tabs.get_child_count() == 4 and not rules.god_tabs.visible
-		and basics.contains("manche est nulle") and basics.contains("3 contre 2"),
+		and basics.contains("manche est nulle") and basics.contains("attaque supérieure capture"),
 		"les règles ouvrent sur les bases de capture et de score")
 	rules.tabs.get_child(1).pressed.emit()
 	var modes_text := _rules_text(rules.page)
@@ -612,7 +605,7 @@ func _test_battle_uses_selected_deck() -> void:
 	var reordered := ProfileFixture.DECK.duplicate()
 	reordered.reverse()
 	PlayerData.set_player_deck(reordered)
-	BattleContext.selected_npc_id = "disciple_muraille"
+	BattleContext.select_opponent(preload("res://tests/support/OpponentFixture.gd").get_npc("disciple_muraille"))
 	BattleContext.forced_first_player = GameState.PLAYER_HUMAN
 	var board: Control = (load("res://scenes/game/Board.tscn") as PackedScene).instantiate()
 	add_child(board)
@@ -629,42 +622,11 @@ func _test_battle_uses_selected_deck() -> void:
 	PlayerData.set_selected_deck(0)
 
 
-## Le profil ne compte plus des victoires agrégées par palier : il affiche
-## sept chemins et le nombre de niveaux gagnés dans l'ordre du serpentin.
-func _test_stats_progress() -> void:
-	var saved_stats: Dictionary = PlayerData.stats.duplicate(true)
-	PlayerData.stats["per_npc"]["bot_veskar_n1_tres_facile"] = {
-		"wins": 1, "games": 1, "best_diff": 2}
-	PlayerData.stats["per_npc"]["bot_veskar_n1_facile"] = {
-		"wins": 1, "games": 1, "best_diff": 1}
-	# Une victoire isolée d'une ancienne partie ne doit pas gonfler le compteur.
-	PlayerData.stats["per_npc"]["bot_veskar_n34_tres_difficile"] = {
-		"wins": 1, "games": 1, "best_diff": 0}
-	var page: Control = (load("res://scenes/menus/Stats.tscn") as PackedScene).instantiate()
-	add_child(page)
-	await get_tree().process_frame
-	var list: VBoxContainer = page.get_node("Root/Scroll/Content/NPCPanel/NPCList")
-	var names: Array = []
-	var all_fifteen := true
-	for row in list.get_children():
-		names.append(row.get_child(1).text)
-		all_fifteen = all_fifteen and row.get_child(2).text.ends_with("/15")
-	_check(list.get_child_count() == 7
-		and names == ["Véskar", "Nérava", "Kharûn", "Ilyr", "Sylkha", "Énigma", "Pr.Stone"],
-		"le profil affiche un chemin par dieu et Pr.Stone, dans l'ordre du catalogue")
-	_check(all_fifteen and list.get_child(0).get_child(2).text == "2/15"
-		and list.get_child(6).get_child(2).text == "0/15",
-		"le profil compte les niveaux gagnés dans l'ordre et ignore une victoire isolée")
-	page.queue_free()
-	await get_tree().process_frame
-	PlayerData.stats = saved_stats
-
-
 func _test_generated_opponent_battle() -> void:
 	var saved_npc := BattleContext.selected_npc_id
 	var saved_opponent := BattleContext.selected_opponent
 	var saved_first := BattleContext.forced_first_player
-	var opponent := OpponentCatalogModel.build("enigma", "n1", "moyen")
+	var opponent := OpponentFixtureModel.build("enigma", "n1", "moyen")
 	BattleContext.select_opponent(opponent)
 	BattleContext.forced_first_player = GameState.PLAYER_HUMAN
 	PlayerData.set_selected_deck(0)
@@ -687,106 +649,11 @@ func _test_generated_opponent_battle() -> void:
 	PlayerData.set_selected_deck(0)
 
 
-func _test_encounter_selection() -> void:
-	var page: Control = (load("res://scenes/menus/EncounterSelect.tscn") as PackedScene).instantiate()
-	add_child(page)
-	await get_tree().process_frame
-	var grid: GridContainer = page.get_node("Root/Scroll/Content/Gods")
-	var godless: VBoxContainer = page.get_node("Root/Scroll/Content/Godless")
-	var first_tile: Variant = grid.get_child(0)
-	var neutral_tile: Variant = godless.get_child(0)
-	_check(grid.columns == UITheme.ENCOUNTER_COLUMNS and grid.get_child_count() == 6
-		and godless.get_child_count() == 1,
-		"les Rencontres présentent les six dieux en grille et Pr.Stone sur une ligne dédiée")
-	var portraits_loaded := true
-	var ids: Array = []
-	for tile in grid.get_children():
-		portraits_loaded = portraits_loaded and tile.has_portrait() and tile.god_id != ""
-		ids.append(tile.god_id)
-	_check(portraits_loaded and ids == ["veskar", "nerava", "kharun", "ilyr", "sylkha", "enigma"],
-		"chaque case de dieu charge son portrait et suit l'ordre du catalogue")
-	_check(neutral_tile.god_id == OpponentCatalogModel.NEUTRAL_BOT_ID
-		and neutral_tile.has_portrait()
-		and neutral_tile.god_name_text() == OpponentCatalogModel.NEUTRAL_BOT_NAME.to_upper(),
-		"Pr.Stone reste accessible sans dieu avec son propre portrait")
-	_check(first_tile.god_name_text() == "VÉSKAR"
-		and first_tile.family_text_value() == "LES ALÉATORS",
-		"une case affiche le nom du dieu et sa famille")
-	page.queue_free()
-	await get_tree().process_frame
-
-
-func _test_encounter_path() -> void:
-	var saved_source := BattleContext.selected_source_id
-	var saved_stats: Dictionary = PlayerData.stats.duplicate(true)
-	# Une victoire isolée du dernier niveau simule une ancienne sauvegarde :
-	# elle ne doit ni valider ce rond ni ouvrir le suivant.
-	PlayerData.stats["per_npc"]["bot_nerava_n34_tres_difficile"] = {
-		"wins": 1, "games": 2, "best_diff": -1}
-	BattleContext.select_source("nerava")
-	var page: Control = (load("res://scenes/menus/EncounterPath.tscn") as PackedScene).instantiate()
-	add_child(page)
-	await get_tree().process_frame
-	await get_tree().process_frame
-	var track: Variant = page.get_node("Root/Scroll/Track")
-	_check(track.node_count() == 15 and page._path.size() == 15,
-		"le chemin d'un dieu propose trois paliers de cinq difficultés")
-	var first: Variant = track.node_for(0)
-	var second: Variant = track.node_for(1)
-	var last: Variant = track.node_for(14)
-	_check(first.state == EncounterPathModel.State.AVAILABLE and not first.disabled
-		and second.state == EncounterPathModel.State.LOCKED and second.disabled,
-		"seul le premier niveau est ouvert tant qu'aucune victoire n'est enregistrée")
-	_check(last.state == EncounterPathModel.State.LOCKED and bool(page._path[14]["beaten"]),
-		"une victoire hors séquence ne valide pas un rond au milieu du chemin")
-	_check(page.level_label.text.contains("Niveau 1")
-		and page.level_label.text.contains("Très facile")
-		and page.progress_label.text.contains("0 / 15"),
-		"le pied de page décrit le niveau sélectionné et la progression")
-	page._select_level(1)
-	_check(page._selected_index == 0, "un niveau verrouillé ne peut pas être sélectionné")
-	PlayerData.stats["per_npc"]["bot_nerava_n1_tres_facile"] = {
-		"wins": 1, "games": 1, "best_diff": 3}
-	page._reload_path()
-	page._select_level(1)
-	_check(track.node_for(0).state == EncounterPathModel.State.COMPLETED
-		and track.node_for(1).state == EncounterPathModel.State.AVAILABLE
-		and page._selected_index == 1,
-		"une victoire termine le premier rond et débloque le suivant")
-	track.node_for(0).pressed.emit()
-	_check(page._selected_index == 0 and page.level_label.text.contains("Très facile")
-		and page.progress_label.text.contains("1 / 15"),
-		"un rond terminé peut être sélectionné pour rejouer le niveau")
-	track.node_for(1).pressed.emit()
-	_check(page._selected_index == 1 and page.level_label.text.contains("Facile"),
-		"un rond ouvert se sélectionne depuis le chemin")
-	var opponent: Dictionary = page._build_opponent()
-	_check(opponent.get("id", "") == "bot_nerava_n1_facile"
-		and opponent.get("god_id", "") == "nerava"
-		and opponent.get("bracket_id", "") == "n1"
-		and opponent.get("difficulty", "") == "facile",
-		"le niveau sélectionné génère exactement l'adversaire du catalogue")
-	page.queue_free()
-	await get_tree().process_frame
-	BattleContext.select_source(OpponentCatalogModel.NEUTRAL_BOT_ID)
-	var neutral_page: Control = (load("res://scenes/menus/EncounterPath.tscn") as PackedScene).instantiate()
-	add_child(neutral_page)
-	await get_tree().process_frame
-	_check(neutral_page._path.size() == 15
-		and neutral_page.god_name.text == OpponentCatalogModel.NEUTRAL_BOT_NAME.to_upper()
-		and not neutral_page.portrait.visible,
-		"Pr.Stone possède son propre chemin de quinze niveaux, sans portrait divin")
-	neutral_page.queue_free()
-	await get_tree().process_frame
-	PlayerData.stats = saved_stats
-	BattleContext.selected_source_id = saved_source
-
-
 func _test_neutral_bot_battle() -> void:
 	var saved_npc := BattleContext.selected_npc_id
 	var saved_opponent := BattleContext.selected_opponent
 	var saved_first := BattleContext.forced_first_player
-	var opponent := OpponentCatalogModel.build_neutral("n1", "moyen")
+	var opponent := OpponentFixtureModel.build_neutral("n1", "moyen")
 	BattleContext.select_opponent(opponent)
 	BattleContext.forced_first_player = GameState.PLAYER_HUMAN
 	PlayerData.set_selected_deck(0)
@@ -824,12 +691,11 @@ func _test_neutral_bot_battle() -> void:
 
 func _test_result_uses_generated_opponent() -> void:
 	var saved_id := BattleContext.selected_npc_id
-	var saved_source := BattleContext.selected_source_id
 	var saved_opponent := BattleContext.selected_opponent
 	var saved_winner := BattleContext.last_winner
 	var saved_human := BattleContext.last_score_human
 	var saved_ai := BattleContext.last_score_ai
-	var opponent := OpponentCatalogModel.build("nerava", "n2", "tres_difficile")
+	var opponent := OpponentFixtureModel.build("nerava", "n2", "tres_difficile")
 	BattleContext.select_opponent(opponent)
 	BattleContext.record_result(GameState.PLAYER_HUMAN, 42, 17)
 	var page: Control = (load("res://scenes/menus/Result.tscn") as PackedScene).instantiate()
@@ -844,95 +710,6 @@ func _test_result_uses_generated_opponent() -> void:
 	page.queue_free()
 	await get_tree().process_frame
 	BattleContext.selected_npc_id = saved_id
-	BattleContext.selected_source_id = saved_source
-	BattleContext.selected_opponent = saved_opponent
-	BattleContext.record_result(saved_winner, saved_human, saved_ai)
-
-
-## Le résultat propose cinq sorties et ne prépare le niveau suivant qu'après
-## une victoire, dans le même chemin et hors du dernier rond.
-func _test_result_actions() -> void:
-	var saved_id := BattleContext.selected_npc_id
-	var saved_source := BattleContext.selected_source_id
-	var saved_opponent := BattleContext.selected_opponent
-	var saved_winner := BattleContext.last_winner
-	var saved_human := BattleContext.last_score_human
-	var saved_ai := BattleContext.last_score_ai
-	var levels := OpponentCatalogModel.levels_for("veskar")
-	BattleContext.select_opponent(OpponentCatalogModel.build("veskar", "n1", "tres_facile"))
-	BattleContext.record_result(GameState.PLAYER_HUMAN, 30, 12)
-	var page: Control = (load("res://scenes/menus/Result.tscn") as PackedScene).instantiate()
-	add_child(page)
-	await get_tree().process_frame
-	_check(page.next_btn.visible and page.next_btn.text == "Niveau suivant"
-		and page.replay_btn.text == "Rejouer"
-		and page.level_btn.text == "Choisir un autre niveau"
-		and page.gods_btn.text == "Choisir un autre dieu"
-		and page.menu_btn.text == "Accueil",
-		"le résultat propose les cinq sorties de la boucle de rencontres")
-	var buttons: Array[Button] = [page.next_btn, page.replay_btn, page.level_btn,
-		page.gods_btn, page.menu_btn]
-	var wired := true
-	for button in buttons:
-		wired = wired and not button.pressed.get_connections().is_empty()
-	_check(wired, "les cinq boutons du résultat sont reliés à une action")
-	var handlers: Array[String] = ["_on_next_level", "_on_replay", "_on_level_select",
-		"_on_god_select", "_on_menu"]
-	var correctly_wired := true
-	for index in range(buttons.size()):
-		var methods: Array = []
-		for connection in buttons[index].pressed.get_connections():
-			methods.append(str(connection["callable"].get_method()))
-		correctly_wired = correctly_wired and methods.has(handlers[index])
-	_check(correctly_wired, "chaque bouton du résultat appelle l'action attendue")
-	_check(page.next_btn.visible
-		and str(page._next_level().get("opponent_id", "")) == str(levels[1]["opponent_id"]),
-		"après une victoire, le résultat prépare le niveau suivant du même chemin")
-	BattleContext.last_result_saved = false
-	BattleContext.last_save_error = ERR_FILE_CANT_WRITE
-	page._refresh_actions()
-	page._refresh_save_status()
-	_check(not page.next_btn.visible and page.save_status.visible
-		and page.retry_save_btn.visible and page.save_status.text.contains("enregistrée"),
-		"une sauvegarde échouée bloque le niveau suivant et propose un nouvel essai")
-	BattleContext.last_result_saved = true
-	BattleContext.last_save_error = OK
-	page._refresh_actions()
-	page._refresh_save_status()
-	var winner_color := Color(str(MonsterLoader.get_god(PlayerData.player_god_id)["color"]))
-	_check(page.background.room == MenuBackground.Room.AFTERMATH
-		and page.background.neon_primary_color == winner_color
-		and page.background._winner_firework_color(0) != page.background._winner_firework_color(1)
-		and page.background._winner_firework_color(1) != page.background._winner_firework_color(2)
-		and page.background._winner_firework_color(2) != page.background._winner_firework_color(3)
-		and page.background._winner_firework_color(3) != page.background._winner_firework_color(4),
-		"la victoire de campagne dessine des feux d'artifice aux nuances du dieu gagnant")
-	BattleContext.select_opponent(OpponentCatalogModel.build("veskar", "n34", "tres_difficile"))
-	page._refresh_actions()
-	_check(not page.next_btn.visible and page._next_level().is_empty(),
-		"le dernier niveau du chemin ne propose pas de suivant")
-	BattleContext.select_opponent(OpponentCatalogModel.build("veskar", "n1", "tres_facile"))
-	BattleContext.record_result(GameState.PLAYER_AI, 12, 30)
-	page._refresh_actions()
-	_check(not page.next_btn.visible and page.replay_btn.visible
-		and page.level_btn.visible and page.gods_btn.visible and page.menu_btn.visible,
-		"une défaite retire le niveau suivant et laisse les quatre autres sorties")
-	BattleContext.select_opponent(OpponentCatalogModel.build("kharun", "n1", "tres_facile"))
-	var defeat_page: Control = (load("res://scenes/menus/Result.tscn") as PackedScene).instantiate()
-	add_child(defeat_page)
-	await get_tree().process_frame
-	var campaign_winner_color := Color(str(MonsterLoader.get_god("kharun")["color"]))
-	_check(defeat_page.background.room == MenuBackground.Room.AFTERMATH_DEFEAT
-		and defeat_page.background.neon_primary_color == campaign_winner_color
-		and defeat_page.background.neon_secondary_color == campaign_winner_color
-		and defeat_page.background.neon_tertiary_color == campaign_winner_color,
-		"la défaite de campagne affiche un crâne dans la couleur du dieu gagnant")
-	defeat_page.queue_free()
-	await get_tree().process_frame
-	page.queue_free()
-	await get_tree().process_frame
-	BattleContext.selected_npc_id = saved_id
-	BattleContext.selected_source_id = saved_source
 	BattleContext.selected_opponent = saved_opponent
 	BattleContext.record_result(saved_winner, saved_human, saved_ai)
 
@@ -1001,7 +778,7 @@ func _test_first_player_draw() -> void:
 func _test_prebattle_reveals_draw() -> void:
 	var saved_npc := BattleContext.selected_npc_id
 	var saved_first := BattleContext.forced_first_player
-	BattleContext.selected_npc_id = "disciple_muraille"
+	BattleContext.select_opponent(preload("res://tests/support/OpponentFixture.gd").get_npc("disciple_muraille"))
 	BattleContext.forced_first_player = 0
 	var page: Control = (load("res://scenes/menus/PreBattle.tscn") as PackedScene).instantiate()
 	add_child(page)

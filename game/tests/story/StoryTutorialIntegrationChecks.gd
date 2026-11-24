@@ -42,6 +42,7 @@ func run() -> void:
 	StoryService.auto_start_tutorials = false
 	await _test_collection_swap()
 	await _test_replay_is_gone()
+	await _test_rules_research(service)
 	StoryService.stop_tutorial()
 	StoryService.auto_start_tutorials = false
 	StoryService._memory_states.clear()
@@ -119,8 +120,8 @@ func _test_journey_crosses_screens() -> void:
 		menu.queue_free()
 		StoryService.auto_start_tutorials = false
 		return
-	_check(str(StoryLayer._dialogue._lines[0].get("text", "")).contains("Refuge"),
-		"parcours : la première phrase présente le Refuge")
+	_check(str(StoryLayer._dialogue._lines[0].get("text", "")).contains("Beastpact"),
+		"parcours : la première phrase accueille le joueur dans Beastpact")
 	await _close_dialogue_lines(6)
 	var deck_ready := await _wait_until(func() -> bool:
 		return StoryLayer._spotlight.visible and StoryService._tutorial._wait_for == "screen_opened", 180)
@@ -160,8 +161,7 @@ func _test_board_guidance(service: CampaignService) -> void:
 	var saved_first := BattleContext.forced_first_player
 	var saved_service := BattleContext.campaign_service
 	BattleContext.campaign_node_id = "tuto_01"
-	BattleContext.selected_npc_id = "disciple_muraille"
-	BattleContext.selected_opponent = {}
+	BattleContext.select_opponent(preload("res://tests/support/OpponentFixture.gd").get_npc("disciple_muraille"))
 	BattleContext.forced_first_player = GameState.PLAYER_AI
 	BattleContext.campaign_service = service
 	var chapter := StoryService.chapter("first_journey")
@@ -357,3 +357,79 @@ func _test_replay_is_gone() -> void:
 		"replay : l'ancienne intro supprimée ne propose plus REVOIR")
 	dialog.queue_free()
 	await get_tree().process_frame
+
+
+func _test_rules_research(service: CampaignService) -> void:
+	var fixture := ProfileFixture.new()
+	var saved_node := BattleContext.campaign_node_id
+	var saved_service := BattleContext.campaign_service
+	var saved_opponent := BattleContext.selected_opponent
+	var saved_npc := BattleContext.selected_npc_id
+	var saved_beats := [StoryService._tutorial.dialogue_beat, StoryService._tutorial.action_beat]
+	StoryService.stop_tutorial()
+	StoryService._memory_states.clear()
+	StoryService._events.clear()
+	_check(StoryService._chapter_for_scene(GameRoutes.CAMPAIGN_RESULT).is_empty(),
+		"recherches : le carnet n'est pas présenté avant la victoire contre Énigma")
+	service.complete_node("init_enigma")
+	service.mark_story_state("chapter:first_journey:done", true)
+	_check(StoryService._chapter_for_scene(GameRoutes.CAMPAIGN_RESULT).is_empty(),
+		"recherches : les félicitations sont lues avant la visite guidée")
+	StoryService.auto_start_tutorials = true
+	StoryService._tutorial.dialogue_beat = 0.0
+	StoryService._tutorial.action_beat = 0.0
+	BattleContext.enter_campaign_node("init_enigma", service)
+	BattleContext.select_opponent({"id": "campaign_init_enigma", "name": "Énigma", "god_id": "enigma"})
+	BattleContext.record_result(GameState.PLAYER_HUMAN, 10, 4)
+	var result: Control = load(GameRoutes.CAMPAIGN_RESULT).instantiate()
+	result.victory_dialogue_beat = 0.0
+	add_child(result)
+	var congratulations := await _wait_until(func() -> bool:
+		return StoryLayer._dialogue.visible and StoryService._active_session != null \
+			and StoryService._active_session.sequence_id == "mirror_enigma_victory")
+	_check(congratulations, "recherches : la victoire conserve les félicitations du professeur")
+	await _close_dialogue_lines(2)
+	var intro := await _wait_until(func() -> bool:
+		return StoryLayer._dialogue.visible and StoryService._active_session != null \
+			and StoryService._active_session.sequence_id == "rules_research_intro")
+	_check(intro, "recherches : le professeur présente ensuite son carnet de règles")
+	await _close_dialogue_lines(2)
+	var home_ready := await _wait_until(func() -> bool:
+		return StoryLayer._spotlight.visible and StoryLayer._spotlight._target == result.menu_btn)
+	_check(home_ready, "recherches : le résultat guide le joueur vers l'accueil")
+	result.queue_free()
+	var home: Control = load(GameRoutes.MAIN_MENU).instantiate()
+	add_child(home)
+	var rules_ready := await _wait_until(func() -> bool:
+		return StoryLayer._spotlight.visible \
+			and StoryService._tutorial.guided_anchor_id() == "nav.rules")
+	_check(rules_ready and not StoryService.is_chapter_done("rules_research"),
+		"recherches : RÈGLES est désigné et la visite n'est pas encore acquise")
+	# Un menu préchargé par le swipe ne constitue pas une visite.
+	var rules: Control = load(GameRoutes.HOW_TO_PLAY).instantiate()
+	rules.set_meta("menu_preview", true)
+	add_child(rules)
+	await get_tree().process_frame
+	_check(not StoryService.is_chapter_done("rules_research"),
+		"recherches : le préchargement des règles ne termine pas le tutoriel")
+	rules.remove_meta("menu_preview")
+	rules.menu_page_activated()
+	var done := await _wait_until(func() -> bool:
+		return StoryService.is_chapter_done("rules_research") and not StoryService.is_tutorial_running())
+	_check(done and not StoryLayer._spotlight.visible,
+		"recherches : ouvrir les règles suffit, puis la consultation est libre")
+	_check(StoreModel.new(PATH).load_progress().story_state("chapter:rules_research:done")
+		and StoryService._chapter_for_scene(GameRoutes.CAMPAIGN_RESULT).is_empty(),
+		"recherches : la visite est sauvegardée et ne sera plus redemandée")
+	rules.queue_free()
+	home.queue_free()
+	await get_tree().process_frame
+	StoryService.auto_start_tutorials = false
+	StoryService._tutorial.dialogue_beat = saved_beats[0]
+	StoryService._tutorial.action_beat = saved_beats[1]
+	BattleContext.clear_campaign_node()
+	BattleContext.campaign_node_id = saved_node
+	BattleContext.campaign_service = saved_service
+	BattleContext.selected_opponent = saved_opponent
+	BattleContext.selected_npc_id = saved_npc
+	fixture.restore()

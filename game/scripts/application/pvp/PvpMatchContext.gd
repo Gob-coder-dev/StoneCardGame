@@ -357,3 +357,31 @@ func lobby_remote_profile() -> Dictionary:
 
 func record_result(winner: int, score_one: int, score_two: int) -> void:
 	last_result = {"winner": winner, "score_one": score_one, "score_two": score_two}
+
+
+## Résultat local immuable : le client peut être le camp deux. Une nouvelle
+## présentation ou un réessai disque ne doit jamais recompter la manche.
+func prepare_profile_result(captures: int, best_move: int, board_size: int) -> void:
+	var winner := int(last_result.get("winner", GameState.PLAYER_NONE))
+	var local_one := local_side == GameState.PLAYER_ONE
+	last_result["profile_result"] = {
+		"scope": "pvp",
+		"winner": 0 if winner == GameState.PLAYER_NONE else (1 if winner == local_side else 2),
+		"score_local": last_result.get("score_one", 0) if local_one else last_result.get("score_two", 0),
+		"score_opponent": last_result.get("score_two", 0) if local_one else last_result.get("score_one", 0),
+		"captures": captures,
+		"best_move_captures": best_move,
+		"player_god_id": local_god_id,
+		"mode": match_rules.get("mode", GameModeRules.MODE_CLASSIC),
+		"board_size": board_size,
+	}
+	last_result["profile_key"] = "pvp:%s" % match_id
+	last_result["profile_saved"] = false
+
+
+func persist_profile_result() -> Error:
+	if not last_result.has("profile_result") or bool(last_result.get("profile_saved", false)):
+		return OK
+	var error := PlayerData.record_match(last_result["profile_result"], str(last_result["profile_key"]))
+	last_result["profile_saved"] = error == OK
+	return error

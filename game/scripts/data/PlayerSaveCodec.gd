@@ -1,6 +1,6 @@
 ## Format de sauvegarde et évolution des profils, sans lecture/écriture disque.
 extends RefCounted
-const VERSION := 11
+const VERSION := 12
 const Integer := preload("res://scripts/domain/IntegerValue.gd")
 const StatsRules := preload("res://scripts/domain/ProfileStatsRules.gd")
 const EconomyConfigModel := preload("res://scripts/data/economy/EconomyConfig.gd")
@@ -17,13 +17,16 @@ static func supports(raw: Dictionary) -> bool:
 
 static func encode(decks: Dictionary, selections: Dictionary, god: String,
 		player_name: String, stats: Dictionary, inventory: Dictionary = {},
-		quests: Dictionary = {}) -> Dictionary:
+		quests: Dictionary = {}, legacy_campaign_stats: Dictionary = {}) -> Dictionary:
 	var actual_inventory := inventory.duplicate(true) if not inventory.is_empty() \
 		else _legacy_inventory().to_dict()
-	return {"save_version": VERSION, "decks_by_god": decks.duplicate(true),
+	var result := {"save_version": VERSION, "decks_by_god": decks.duplicate(true),
 		"selected_deck_by_god": selections.duplicate(),
 		"player_god_id": god, "player_name": player_name, "stats": stats.duplicate(true),
 		"inventory": actual_inventory, "quests": quests.duplicate(true)}
+	if not legacy_campaign_stats.is_empty():
+		result["legacy_campaign_stats"] = legacy_campaign_stats.duplicate(true)
+	return result
 
 static func decode(raw: Dictionary) -> Dictionary:
 	if raw.is_empty():
@@ -39,6 +42,19 @@ static func decode(raw: Dictionary) -> Dictionary:
 	if player_name.length() < 2 or player_name.length() > 16:
 		player_name = "Joueur"
 	var stats := StatsRules.normalize(raw.get("stats", {}))
+	# La conversion de campagne se fait dans son propre fichier, avant retrait
+	# de ces données. Même un achat précédant l'ouverture de la carte les conserve.
+	var legacy: Dictionary = raw.get("legacy_campaign_stats", {}).duplicate(true) \
+		if raw.get("legacy_campaign_stats") is Dictionary else {}
+	var old_stats: Variant = raw.get("stats", {})
+	if old_stats is Dictionary and old_stats.get("per_npc") is Dictionary:
+		legacy["per_npc"] = old_stats["per_npc"].duplicate(true)
+	# Les anciens totaux proviennent uniquement de la campagne.
+	if not old_stats is Dictionary or not old_stats.has("by_scope"):
+		var campaign := {}
+		for counter in StatsRules.COUNTERS + StatsRules.RECORDS:
+			campaign[counter] = stats[counter]
+		stats["by_scope"]["campaign"] = campaign
 	var decks := _decode_decks(raw, god, legacy_deck)
 	var selections := {}
 	var saved_selections: Dictionary = raw.get("selected_deck_by_god", {}) if raw.get("selected_deck_by_god") is Dictionary else {}
@@ -49,7 +65,7 @@ static func decode(raw: Dictionary) -> Dictionary:
 	if god != "" and not inventory.has_god(god):
 		god = ""
 	var quests: Dictionary = raw.get("quests", {}) if raw.get("quests") is Dictionary else {}
-	return encode(decks, selections, god, player_name, stats, inventory.to_dict(), quests)
+	return encode(decks, selections, god, player_name, stats, inventory.to_dict(), quests, legacy)
 
 
 static func starter_profile() -> Dictionary:

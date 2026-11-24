@@ -7,7 +7,7 @@
 class_name GodIdentity
 extends RefCounted
 
-const OpponentCatalogModel := preload("res://scripts/data/OpponentCatalog.gd")
+const BotIdentityModel := preload("res://scripts/data/BotIdentity.gd")
 const PLAYER_GODLESS_ASSET := "res://assets/gods/sans_dieu.png"
 ## Palette de la stèle : le violet sombre de la pierre et le marron de la terre.
 ## Elle remplace les accents violets par défaut sur les écrans de cette identité.
@@ -43,7 +43,7 @@ static func player_godless() -> Dictionary:
 
 
 static func bot_godless() -> Dictionary:
-	var source := OpponentCatalogModel.neutral_source()
+	var source := BotIdentityModel.neutral_source()
 	return {
 		"id": str(source.get("id", "")),
 		"name": "Sans dieu",

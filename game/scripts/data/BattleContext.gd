@@ -2,16 +2,10 @@
 extends Node
 
 const ResultPersistence := preload("res://scripts/application/campaign/CampaignResultPersistence.gd")
-const OpponentCatalogModel := preload("res://scripts/data/OpponentCatalog.gd")
 const SeriesEngineModel := preload("res://scripts/domain/SeriesEngine.gd")
 
 var selected_npc_id: String = ""
-## Source du chemin de rencontres ouvert (id de dieu ou Pr.Stone). Elle permet
-## de revenir au bon serpentin depuis l'avant-combat et le résultat.
-var selected_source_id: String = ""
 ## Adversaire complet de la rencontre en cours (deck, dieu et profil d'IA).
-## Les adversaires définis dans npcs.json restent accessibles : la lecture
-## choisit la source qui correspond à selected_npc_id.
 var selected_opponent: Dictionary = {}
 var forced_first_player: int = 0
 var last_winner: int = 0
@@ -21,6 +15,7 @@ var last_captures_human: int = 0
 ## Taille du plateau de la dernière manche : la manche parfaite n'existe que
 ## sur le plateau complet, jamais sur les 3 × 3 du tutoriel.
 var last_board_size: int = GameState.DEFAULT_BOARD_SIZE
+var last_best_move_captures: int = 0
 var last_result_npc_id: String = ""
 ## Une victoire ne débloque la suite que lorsque le profil a réellement été
 ## écrit. L'erreur reste disponible sur l'écran de résultat pour une nouvelle
@@ -41,13 +36,7 @@ var _result_persistence: ResultPersistence = null
 var last_reward: Dictionary = {}
 
 
-## Mémorise le chemin choisi avant même qu'un adversaire ne soit généré.
-func select_source(source_id: String) -> void:
-	selected_source_id = source_id
-
-
-## Installe le nœud de campagne avant la préparation d'une rencontre. Le
-## service est conservé pour appliquer la victoire depuis l'écran de résultat.
+## Installe le niveau courant et le service qui enregistrera sa progression.
 func enter_campaign_node(node_id: String, service: CampaignService) -> void:
 	clear_mode_session()
 	campaign_node_id = node_id
@@ -92,8 +81,8 @@ func campaign_series_state() -> Dictionary:
 	return SeriesEngineModel.public_state(state) if state != null else {}
 
 
-## Abandon : la série est concédée à l'adversaire et le profil compte une
-## défaite. Le niveau reste non terminé et la manche déjà jouée garde son
+## Abandon : la série est concédée à l'adversaire. Le niveau reste non terminé
+## et la manche déjà jouée garde son
 ## résultat ; une nouvelle entrée repart sur une série neuve.
 func abandon_campaign_series() -> Dictionary:
 	if campaign_mode_session == null:
@@ -103,7 +92,7 @@ func abandon_campaign_series() -> Dictionary:
 		return {"ok": false, "reason": "La série est déjà terminée."}
 	if not last_result_saved:
 		return {"ok": false, "reason": "Le résultat de la manche n'est pas encore enregistré."}
-	var error := PlayerData.record_forfeit(last_result_npc_id)
+	var error := PlayerData.record_forfeit(_result_snapshot())
 	if error != OK:
 		return {"ok": false, "reason": "L'abandon n'a pas pu être enregistré."}
 	return SeriesEngineModel.concede(state, GameState.PLAYER_TWO)
@@ -114,35 +103,13 @@ func select_opponent(opponent: Dictionary) -> void:
 	clear_mode_session()
 	selected_opponent = opponent.duplicate(true)
 	selected_npc_id = str(selected_opponent.get("id", ""))
-	var source := OpponentCatalogModel.source_id_of(selected_opponent)
-	if source != "":
-		selected_source_id = source
 
 
-## Source du chemin à rouvrir : la dernière choisie, sinon celle déduite de
-## l'adversaire courant. Vide pour un PNJ historique.
-func current_source_id() -> String:
-	if selected_source_id != "":
-		return selected_source_id
-	return OpponentCatalogModel.source_id_of(selected_opponent)
-
-
-## Source à rouvrir pour la navigation : le chemin courant, sinon le dieu actif
-## du joueur. Ce repli est partagé par l'avant-combat, le chemin et le résultat.
-func navigation_source_id() -> String:
-	var source := current_source_id()
-	if source != "":
-		return source
-	return PlayerData.player_god_id
-
-
-## Adversaire à utiliser par les écrans de combat. Un adversaire généré n'est
-## retenu que si son identifiant est bien celui de la rencontre sélectionnée ;
-## sinon on retombe sur le catalogue historique (tests, anciennes sauvegardes).
+## Une rencontre n'existe que si elle a été explicitement préparée.
 func current_opponent() -> Dictionary:
 	if not selected_opponent.is_empty() and str(selected_opponent.get("id", "")) == selected_npc_id:
 		return selected_opponent.duplicate(true)
-	return MonsterLoader.get_npc(selected_npc_id)
+	return {}
 
 
 ## Publie une session déjà préparée. CampaignContext utilise cette opération
@@ -290,6 +257,9 @@ func _result_snapshot() -> Dictionary:
 		"score_local": last_score_human,
 		"score_opponent": last_score_ai,
 		"captures": last_captures_human,
+		"best_move_captures": last_best_move_captures,
+		"player_god_id": effective_player_god_id(),
+		"scope": "campaign",
 		"board_size": last_board_size,
 		"mode": str(rules.get("mode", GameModeRules.MODE_CLASSIC)),
 		"series": str(rules.get("series", SeriesRules.SERIES_FT1)),

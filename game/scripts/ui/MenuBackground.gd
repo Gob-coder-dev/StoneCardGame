@@ -5,8 +5,8 @@ class_name MenuBackground
 extends Control
 
 enum Room {
-	REFUGE, BESTIARY, JOURNAL, ENCOUNTERS, COIN_RITUAL, BOARD, AFTERMATH,
-	PROFILE, ENCOUNTER_PATH, PVP, AFTERMATH_DEFEAT, AFTERMATH_DRAW
+	REFUGE = 0, BESTIARY = 1, JOURNAL = 2, COIN_RITUAL = 4, BOARD = 5, AFTERMATH = 6,
+	PROFILE = 7, PVP = 9, AFTERMATH_DEFEAT = 10, AFTERMATH_DRAW = 11
 }
 @export var room: Room = Room.JOURNAL
 
@@ -139,8 +139,6 @@ func _draw() -> void:
 	match room:
 		Room.REFUGE:
 			_draw_main_menu()
-		Room.ENCOUNTERS:
-			_draw_encounters()
 		Room.COIN_RITUAL:
 			_draw_coin_ritual()
 		Room.BOARD:
@@ -197,7 +195,7 @@ func _full_bleed_offset_for_size(viewport_size: Vector2, art_scale: float) -> Ve
 ## toute la hauteur sur les téléphones 20:9 et restent dans la marge extérieure
 ## des panneaux opaques sur tablette.
 func _uses_side_rails() -> bool:
-	return room in [Room.BESTIARY, Room.ENCOUNTER_PATH, Room.PROFILE, Room.JOURNAL]
+	return room in [Room.BESTIARY, Room.PROFILE, Room.JOURNAL]
 
 
 func _draw_side_rails_for_room() -> void:
@@ -219,14 +217,6 @@ func _draw_main_menu() -> void:
 	_draw_neon_line(Vector2(294.0, 520.0), Vector2(222.0, 414.0), neon_secondary_color)
 	_draw_neon_line(Vector2(786.0, 520.0), Vector2(858.0, 414.0), neon_secondary_color)
 	_draw_corner_marks(neon_primary_color, 56.0, 110.0)
-
-
-func _draw_encounters() -> void:
-	var center := Vector2(540.0, 985.0)
-	_draw_glow(center, 430.0, neon_primary_color, 0.014)
-	_draw_neon_arc(center, 430.0, PI * 1.08, PI * 1.92, neon_secondary_color, 3.0)
-	_draw_neon_arc(center, 397.0, PI * 1.10, PI * 1.90, neon_primary_color, 2.0)
-	_draw_corner_marks(neon_secondary_color, 48.0, 88.0)
 
 
 func _draw_coin_ritual() -> void:

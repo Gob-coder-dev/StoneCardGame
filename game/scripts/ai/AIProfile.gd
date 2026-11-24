@@ -1,5 +1,4 @@
-## Réglage d'une IA, construit par OpponentCatalog ou lu dans le champ "ai" d'un
-## adversaire historique de npcs.json :
+## Réglage d'une IA, lu dans la rencontre de campagne :
 ##   "ai": { "precision": 0.5, "anticipation": false }
 ##
 ## precision    : probabilité de jouer le meilleur coup évalué. Sinon l'IA fait

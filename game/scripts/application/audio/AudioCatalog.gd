@@ -104,8 +104,6 @@ const SCENE_MUSIC := {
 	"PvpPreparation.tscn": MUSIC_MAIN_THEME,
 	"Result.tscn": MUSIC_MAIN_THEME,
 	"PvpResult.tscn": MUSIC_MAIN_THEME,
-	"EncounterSelect.tscn": MUSIC_MAP,
-	"EncounterPath.tscn": MUSIC_MAP,
 	"CampaignMap.tscn": MUSIC_MAP,
 	"CampaignPreparation.tscn": MUSIC_MAP,
 	"PreBattle.tscn": MUSIC_MAP,

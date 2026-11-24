@@ -1,4 +1,5 @@
 extends "res://tests/support/CombatTestSuite.gd"
+const OpponentFixture := preload("res://tests/support/OpponentFixture.gd")
 const Effects := preload("res://scripts/domain/MonsterEffects.gd")
 const ContentChecks := preload("res://scripts/data/ContentValidator.gd")
 const PlayerSaveCodec := preload("res://scripts/data/PlayerSaveCodec.gd")
@@ -77,16 +78,16 @@ func _test_content_validation() -> void:
 	for god in MonsterLoader.get_all_gods():
 		gods[god["id"]] = god
 	var real := ContentChecks.find_problems(MonsterLoader.get_all_monsters(), gods,
-		MonsterLoader.get_npcs_ordered(), MonsterLoader.default_god_id())
+		MonsterLoader.default_god_id())
 	_check(real.is_empty(), "le catalogue réel ne contient aucune incohérence")
 	var typo := {"id": "typo", "god_id": "neutral", "blades": {"top": 1, "bottom": 1, "left": 1, "right": 1},
 		"effects": ["swarn"], "coin_flip": "horizonal"}
-	var problems := ContentChecks.find_problems([typo], gods, [], MonsterLoader.default_god_id())
+	var problems := ContentChecks.find_problems([typo], gods, MonsterLoader.default_god_id())
 	_check(problems.size() == 2 and problems[0].contains("horizonal") and problems[1].contains("swarn"),
 		"un pouvoir ou un axe de pile ou face mal orthographié est signalé au chargement")
-	var npc := MonsterLoader.get_npc("disciple_muraille")
+	var npc := OpponentFixture.get_npc("disciple_muraille")
 	npc["ai"] = {"precison": 0.5, "anticipation": false}
-	problems = ContentChecks.find_problems(MonsterLoader.get_all_monsters(), gods, [npc], MonsterLoader.default_god_id())
+	problems = preload("res://scripts/ai/AIProfile.gd").problems(npc["ai"])
 	_check(problems.size() == 2 and problems[0].contains("precison") and problems[1].contains("précision"),
 		"un réglage d'IA mal orthographié dans npcs.json est signalé au chargement")
 
@@ -145,7 +146,7 @@ func _test_catalog_and_decks() -> void:
 	_check(not DeckRules.is_deck_valid(veskar_deck, "kharun"), "le même deck est refusé par un autre dieu")
 	_check(DeckRules.sanitize_deck(veskar_deck, "kharun") == ["ogre_a_deux_bouches_n1", "le_nud_hurlant_n2"], "le nettoyage d'un deck incompatible conserve les cartes neutres")
 	var npc_decks_valid := true
-	for npc in MonsterLoader.get_npcs_ordered():
+	for npc in OpponentFixture.get_npcs_ordered():
 		npc_decks_valid = npc_decks_valid and DeckRules.is_deck_valid(npc["deck"], npc["god_id"])
 	_check(npc_decks_valid, "chaque adversaire a huit lignées compatibles, dans le budget de 80 points")
 	_check(PlayerSaveCodec.best_god_for_deck(

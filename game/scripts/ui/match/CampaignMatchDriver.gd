@@ -16,8 +16,6 @@ func start() -> bool:
 	if BattleContext.selected_npc_id == "":
 		return false
 	_npc_data = BattleContext.current_opponent()
-	if str(_npc_data.get("id", "")) != BattleContext.selected_npc_id:
-		_npc_data = MonsterLoader.get_npc(BattleContext.selected_npc_id)
 	if _npc_data.is_empty():
 		push_error("CampaignMatchDriver: adversaire '%s' introuvable." % BattleContext.selected_npc_id)
 		return false

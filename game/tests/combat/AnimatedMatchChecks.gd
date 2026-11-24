@@ -1,7 +1,8 @@
 extends "res://tests/support/CombatTestSuite.gd"
+const OpponentFixture := preload("res://tests/support/OpponentFixture.gd")
 
 func run() -> void:
-	for npc in MonsterLoader.get_npcs_ordered():
+	for npc in OpponentFixture.get_npcs_ordered():
 		await _compare_animated_and_instant(npc)
 
 

@@ -230,15 +230,21 @@ func notify_screen(scene_path: String) -> void:
 	if _tutorial.is_running():
 		_tutorial.notify_screen(scene_path)
 		return
+	_try_start_scene_tutorial()
+
+
+func _try_start_scene_tutorial() -> void:
+	if _tutorial == null or _tutorial.is_running() or is_playing() or not _queue.is_empty():
+		return
 	if not auto_start_tutorials or not is_ready():
 		return
-	var found := _chapter_for_scene(scene_path)
+	var found := _chapter_for_scene(_screen_path)
 	if found.is_empty():
 		return
 	var chapter_id := str(found.get("id", ""))
 	if chapter_id == "" or is_chapter_done(chapter_id):
 		return
-	_tutorial.start(found, scene_path)
+	_tutorial.start(found, _screen_path)
 
 
 func start_tutorial_for_scene(scene_path: String) -> void:
@@ -439,6 +445,9 @@ func _on_session_finished(session: StorySession) -> void:
 	_active_session = null
 	session_finished.emit(session)
 	_pump.call_deferred()
+	# Un chapitre de visite peut devenir disponible à la fin d'un dialogue de
+	# victoire. Attendre la fin de la file évite de superposer les présentations.
+	_try_start_scene_tutorial.call_deferred()
 
 
 func _on_event_received(event_name: String, payload: Dictionary) -> void:
@@ -487,6 +496,16 @@ func _chapter_for_scene(scene_path: String) -> Dictionary:
 			continue
 		var entry: Dictionary = value
 		if str(entry.get("entry_scene", "")) == scene_path:
+			if is_chapter_done(str(key)):
+				continue
+			var required_node := str(entry.get("required_completed_node_id", ""))
+			if required_node != "":
+				var service := CampaignContext.get_service()
+				if service == null or not service.is_ready() or not service.is_completed(required_node):
+					continue
+			var required_state := str(entry.get("required_story_state", ""))
+			if required_state != "" and not _story_state(required_state):
+				continue
 			return entry
 	return {}
 

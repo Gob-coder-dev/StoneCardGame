@@ -6,8 +6,8 @@ et **13 sections visuelles** sur une seule carte de **1080 × 19800** unités.
 `CampaignContentLoader.DEFAULT_PATH` pointe vers ce fichier et
 `campaign_version` vaut `6`.
 
-L'ancien fichier `campaign_v1.json` reste dans le dépôt comme archive et source
-de comparaison historique. Il n'est plus chargé par le jeu.
+Les anciens parcours et l'ancienne définition de campagne ont été retirés.
+La conversion des sauvegardes reste assurée par `CampaignSaveMigration`.
 
 ## Contenu livré
 
@@ -444,6 +444,15 @@ Ces jalons sont dérivés des nœuds terminés : aucune seconde copie de l'état
 n'est ajoutée au profil. La boutique, les Rituels et les quêtes lisent tous la
 même projection `ContentAccessState`.
 
+## Présentation du menu Règles
+
+Après la victoire contre `init_enigma`, une fois les félicitations lues, le
+chapitre guidé `rules_research` présente les recherches de Pr. Stone. Il désigne
+l'accueil depuis le résultat, puis le bouton Règles. La simple ouverture du
+menu termine la visite et enregistre `chapter:rules_research:done` dans les
+états de scénario. Aucun onglet ni vidéo n'est imposé. Le préchargement d'une
+page pendant un glissement ne valide pas la visite.
+
 ## Migration des sauvegardes
 
 `campaign_version` vaut `6`. La migration est idempotente et conserve les
@@ -451,7 +460,10 @@ victoires existantes.
 
 - Un profil de l'ancienne campagne par dieu est converti seulement quand la
   victoire désigne un nœud sans ambiguïté ; les autres victoires sont archivées
-  et les statistiques du profil restent intactes.
+  dans le fichier de campagne. Les totaux historiques restent acquis ; les
+  anciens compteurs par adversaire quittent le profil après sauvegarde réussie
+  de la conversion. Les résultats par dieu joué, mode et contexte, ainsi que
+  les records de combat, sont suivis à partir de la version 12 du profil.
 - Un profil de la campagne unifiée à 20 niveaux conserve ses vingt victoires.
   Si un ancien mini-boss facultatif est terminé, ses 2 à 5 nouveaux niveaux
   d'approche sont marqués terminés : la sauvegarde de référence passe ainsi à
@@ -718,5 +730,5 @@ avec le code `0`.
   pas remis dans un pool. Le profilage ne montrait pas l'instanciation répétée
   comme coût dominant ; un pool pourra être ajouté si une mesure sur appareil
   réel le justifie.
-- Le fichier `campaign_v1.json` reste une archive : toute modification de
-  contenu doit être faite dans `campaign_v2.json` via le builder.
+- Toute modification de contenu doit être faite dans `campaign_v2.json`
+  via le builder.

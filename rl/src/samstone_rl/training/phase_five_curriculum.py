@@ -6,6 +6,7 @@ from copy import deepcopy
 
 from samstone_rl.training.league import LeagueEntry
 from samstone_rl.training.phase_five_gate import evaluate_candidate
+from samstone_rl.training.phase_five_sampling import AdaptiveOpponents
 from samstone_rl.utils.certification import require_certified
 from samstone_rl.utils.checkpoints import (
     atomic_text,
@@ -17,7 +18,7 @@ from samstone_rl.utils.checkpoints import (
 )
 
 
-class ChampionCurriculum:
+class ChampionCurriculum(AdaptiveOpponents):
     """Mixin: only a successful frozen tournament can replace the champion."""
 
     def _initialize_champions(self, source, *, legacy=False):
@@ -55,6 +56,7 @@ class ChampionCurriculum:
                 reports=[],
                 legacy_migration=legacy,
             )
+        self._initialize_opponent_sampling()
         self._activate_champions()
 
     def _champion_file(self, payload, generation, step, score):
@@ -95,7 +97,7 @@ class ChampionCurriculum:
                 )
             )
         self.league.entries = entries
-        self.league.set_weights(self.config["phase5"]["training_weights"])
+        self._apply_opponent_sampling()
         self.league._save_manifest()
 
     def _phase5_history(self):
@@ -116,6 +118,7 @@ class ChampionCurriculum:
     def _phase5_contract(self):
         settings = deepcopy(self.config["phase5"])
         settings.pop("maximum_updates_without_promotion", None)
+        settings.pop("adaptive_opponents", None)
         return dict(
             settings=settings,
             scenarios=self.scenarios,
@@ -142,6 +145,10 @@ class ChampionCurriculum:
             champion=state["champions"][-1]["path"],
             **details,
         )
+        sampling = state.get("opponent_sampling")
+        if sampling is not None:
+            payload["bot_fraction"] = sampling["bot_fraction"]
+            payload["next_bot_followup_update"] = sampling["next_update"]
         atomic_text(
             self.output / "phase5_status.json", json.dumps(payload, indent=2, allow_nan=False)
         )
@@ -215,13 +222,19 @@ class ChampionCurriculum:
             self._stop_phase5("plateau", self._resume_global_step, self._resume_update)
             return True
         state["status"] = "training"
+        self._evaluate_opponent_sampling(
+            self._resume_global_step, self._resume_update, self._last_screening
+        )
         self._publish_phase5()
         return False
 
     def _plateau_reached(self, update):
-        return update - self.phase5_state["generation_start_update"] >= int(
-            self.config["phase5"]["maximum_updates_without_promotion"]
+        state = self.phase5_state
+        start = max(
+            state["generation_start_update"],
+            state.get("opponent_sampling", {}).get("activation_update", 0),
         )
+        return update - start >= int(self.config["phase5"]["maximum_updates_without_promotion"])
 
     def _stop_phase5(self, reason, step, update, evaluation=None):
         self.phase5_state["status"] = reason

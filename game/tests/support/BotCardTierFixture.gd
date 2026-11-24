@@ -4,7 +4,6 @@
 ## conserve le placement des decks de campagne existants (épiques au palier 3,
 ## légendaires au palier 4). La formule de puissance vit uniquement dans
 ## CardPowerTierRules, que le PVP et la future campagne utilisent.
-class_name BotCardTierRules
 extends RefCounted
 
 ## Plancher de niveau effectif utilisé uniquement pour les rencontres.

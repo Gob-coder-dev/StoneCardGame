@@ -376,6 +376,24 @@ Il estime la confiance dans le score ; il ne prouve pas que le niveau maximal
 du jeu a été atteint. Les confirmations et la fin de campagne ont des seeds
 distincts de la présélection et de la collecte.
 
+Le bloc `phase5.adaptive_opponents` fixe la part initiale de bots à 40 %.
+Toutes les 100 mises à jour, un suivi Godot compare le candidat à la référence
+de phase 4 sur de nouvelles parties appariées. Le suivi utilise ses propres
+graines et registres. Deux suivis concordants ajustent le ratio de 5 points,
+dans l’intervalle de 25 % à 50 %. Les profils dont l’écart dépasse le seuil
+de conservation reçoivent davantage de parties. La moitié des tirages de bots
+reste uniforme sur les huit profils. Le ratio et la série de résultats sont
+stockés dans le checkpoint. Si le suivi est interrompu, le programme reprend
+les parties manquantes avant la prochaine collecte.
+
+L’activation sur un ancien checkpoint ouvre une nouvelle fenêtre de patience
+à partir de la mise à jour sauvegardée. Les poids, Adam, les champions et les
+rapports existants sont repris. Après une mise à jour du code, utiliser
+`--allow-python-source-change` à la première reprise. Avec une copie compatible
+du jeu, `PYTHONPATH` doit désigner les sources RL mises à jour de cette copie.
+`phase5_status.json` affiche la part cible de bots et la prochaine mise à jour
+de suivi. Les écarts et poids par profil apparaissent dans `phase5_bot_followup`.
+
 Le programme s'arrête également après 1 500 mises à jour sans promotion ou
 après épuisement du budget PPO. Ces arrêts ont le code de sortie 2 et ne
 produisent pas de certificat. `maximum_updates_without_promotion` ou

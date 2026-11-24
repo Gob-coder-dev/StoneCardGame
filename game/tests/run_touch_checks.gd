@@ -5,7 +5,6 @@ extends Node
 
 const TestLog := preload("res://tests/support/TestLog.gd")
 const ProfileFixture := preload("res://tests/support/PlayerProfileFixture.gd")
-const OpponentCatalogModel := preload("res://scripts/data/OpponentCatalog.gd")
 const FakeTransport := preload("res://tests/support/FakeLanTransport.gd")
 const SeriesCoordinatorModel := preload("res://scripts/network/LanSeriesCoordinator.gd")
 const MatchRulesModel := preload("res://scripts/domain/MatchRules.gd")
@@ -77,7 +76,6 @@ func _run() -> void:
 	await _check_pvp_draft_touch()
 	await _check_other_menus()
 	await _check_campaign_map()
-	await _check_result_actions()
 	await _check_buffered_input()
 	await _check_battle_touch()
 	await _check_battle_power_help()
@@ -674,91 +672,12 @@ func _check_other_menus() -> void:
 	await _tap(_center(edit))
 	_check(stats.edit_row.visible, "profil : un seul appui ouvre l'édition du pseudo")
 	stats._cancel_edit()
-	# Le profil affiche sept chemins ; forcer la hauteur vérifie le défilement
-	# sans dépendre des statistiques sauvegardées.
-	scroll.get_node("Content/NPCPanel/NPCList").custom_minimum_size.y = 1400
+	# Les sections campagne, collection, dieux et records dépassent le viewport.
 	await _settle()
 	var value_before := scroll.scroll_vertical
 	await _swipe(_point(scroll, Vector2(100, 400)), Vector2(0, -200))
 	_check(scroll.scroll_vertical > value_before, "profil : défilement tactile des statistiques")
 	await _remove(stats)
-	var select := await _open_scene("res://scenes/menus/EncounterSelect.tscn")
-	var grid: GridContainer = select.get_node("Root/Scroll/Content/Gods")
-	var first_tile: Control = grid.get_child(0)
-	_check(grid.columns == UITheme.ENCOUNTER_COLUMNS and grid.get_child_count() == 6,
-		"rencontres : les six dieux forment une grille de cases")
-	# Les changements de scène fermeraient la suite : on compte seulement.
-	for connection in first_tile.pressed.get_connections():
-		first_tile.pressed.disconnect(connection["callable"])
-	var selections := [0]
-	first_tile.pressed.connect(func(): selections[0] += 1)
-	await _swipe(_point(first_tile, Vector2(80, 120)), Vector2(0, -260))
-	_check(selections[0] == 0, "rencontres : glisser sur une case ne choisit pas le dieu")
-	await _tap(_center(first_tile))
-	_check(selections[0] == 1, "rencontres : un toucher choisit une seule fois le dieu")
-	await _remove(select)
-	var saved_source: String = BattleContext.selected_source_id
-	var saved_stats: Dictionary = PlayerData.stats.duplicate(true)
-	PlayerData.stats["per_npc"]["bot_kharun_n1_tres_facile"] = {
-		"wins": 1, "games": 1, "best_diff": 2}
-	BattleContext.select_source("kharun")
-	var path := await _open_scene("res://scenes/menus/EncounterPath.tscn")
-	var path_scroll: ScrollContainer = path.get_node("Root/Scroll")
-	var track: Control = path_scroll.get_node("Track")
-	var first_node: Button = track.node_for(0)
-	var second_node: Button = track.node_for(1)
-	var third_node: Button = track.node_for(2)
-	await _tap(_center(first_node))
-	_check(path._selected_index == 0 and path.level_label.text.contains("Très facile"),
-		"chemin : un rond terminé peut être rejoué")
-	await _tap(_center(second_node))
-	_check(path._selected_index == 1 and path.level_label.text.contains("Facile"),
-		"chemin : un rond ouvert se sélectionne")
-	await _tap(_center(third_node))
-	_check(path._selected_index == 1, "chemin : un rond verrouillé ignore le toucher")
-	await _swipe(_point(path_scroll, Vector2(540, 700)), Vector2(0, -300))
-	_check(path_scroll.scroll_vertical > 60,
-		"chemin : glisser sur le serpentin le fait défiler")
-	await _remove(path)
-	BattleContext.selected_source_id = saved_source
-	PlayerData.stats = saved_stats
-
-
-## Le résultat est un vrai menu tactile : les cinq actions répondent au doigt
-## et le bouton suivant disparaît après une défaite.
-func _check_result_actions() -> void:
-	var saved_id := BattleContext.selected_npc_id
-	var saved_source := BattleContext.selected_source_id
-	var saved_opponent := BattleContext.selected_opponent
-	var saved_winner := BattleContext.last_winner
-	var saved_human := BattleContext.last_score_human
-	var saved_ai := BattleContext.last_score_ai
-	BattleContext.select_opponent(OpponentCatalogModel.build("veskar", "n1", "tres_facile"))
-	BattleContext.record_result(GameState.PLAYER_HUMAN, 10, 3)
-	var page: Control = await _open_scene("res://scenes/menus/Result.tscn")
-	var buttons: Array[Button] = [page.next_btn, page.replay_btn, page.level_btn,
-		page.gods_btn, page.menu_btn]
-	var activations := [0]
-	for button in buttons:
-		for connection in button.pressed.get_connections():
-			button.pressed.disconnect(connection["callable"])
-		button.pressed.connect(func(): activations[0] += 1)
-	_check(page.next_btn.visible, "résultat : une victoire avec un suivant affiche Niveau suivant")
-	for button in buttons:
-		await _tap(_center(button))
-	_check(activations[0] == buttons.size(), "résultat : les cinq boutons répondent une fois au toucher")
-	await _remove(page)
-	BattleContext.record_result(GameState.PLAYER_AI, 3, 10)
-	var defeat: Control = await _open_scene("res://scenes/menus/Result.tscn")
-	_check(not defeat.next_btn.visible and defeat.replay_btn.visible
-		and defeat.level_btn.visible and defeat.gods_btn.visible and defeat.menu_btn.visible,
-		"résultat : une défaite masque le suivant et laisse les quatre autres boutons")
-	await _remove(defeat)
-	BattleContext.selected_npc_id = saved_id
-	BattleContext.selected_source_id = saved_source
-	BattleContext.selected_opponent = saved_opponent
-	BattleContext.record_result(saved_winner, saved_human, saved_ai)
-
 
 func _check_buffered_input() -> void:
 	# Vérifie aussi le regroupement d'événements utilisé par défaut en jeu.
@@ -776,7 +695,7 @@ func _check_buffered_input() -> void:
 func _check_battle_touch() -> void:
 	var saved_npc: String = BattleContext.selected_npc_id
 	var saved_first: int = BattleContext.forced_first_player
-	BattleContext.selected_npc_id = "disciple_muraille"
+	BattleContext.select_opponent(preload("res://tests/support/OpponentFixture.gd").get_npc("disciple_muraille"))
 	BattleContext.forced_first_player = GameState.PLAYER_HUMAN
 	var board := await _open_scene("res://scenes/game/Board.tscn")
 	var hand: HandView = board.get_node("Root/HandView")
@@ -801,7 +720,7 @@ func _check_battle_touch() -> void:
 func _check_battle_power_help() -> void:
 	var saved_npc: String = BattleContext.selected_npc_id
 	var saved_first: int = BattleContext.forced_first_player
-	BattleContext.selected_npc_id = "disciple_muraille"
+	BattleContext.select_opponent(preload("res://tests/support/OpponentFixture.gd").get_npc("disciple_muraille"))
 	var board := await _open_battle(GameState.PLAYER_HUMAN)
 	var view: BoardView = board.board_view
 	var state: GameState = board.turn_manager.get_state()
@@ -860,7 +779,7 @@ func _check_battle_power_help() -> void:
 func _check_battle_drag() -> void:
 	var saved_npc: String = BattleContext.selected_npc_id
 	var saved_first: int = BattleContext.forced_first_player
-	BattleContext.selected_npc_id = "disciple_muraille"
+	BattleContext.select_opponent(preload("res://tests/support/OpponentFixture.gd").get_npc("disciple_muraille"))
 
 	var board := await _open_battle(GameState.PLAYER_HUMAN)
 	var hand: HandView = board.get_node("Root/HandView")

@@ -32,6 +32,8 @@ const PowerHelpPopover := preload("res://scripts/ui/PowerHelpPopover.gd")
 var _driver: MatchDriver = null
 var _selected_monster_id: String = ""
 var _local_captures: int = 0
+var _move_captures: int = 0
+var _best_move_captures: int = 0
 var _card_drag: CardDragController = null  ## couche du glisser-déposer
 var _leaving := false
 ## Un match PVP terminé passe la main à l'écran de résultat, qui garde la
@@ -264,6 +266,7 @@ func _update_interaction() -> void:
 ## ─── Réactions aux signaux du TurnManager ────────────────────────────────────
 
 func _on_turn_started(player: int) -> void:
+	_move_captures = 0
 	var state := turn_manager.get_state()
 	board_view.refresh(state)
 	## Le plateau n'est construit qu'à la première frame : il n'y a encore
@@ -299,6 +302,8 @@ func _on_monster_placed(row: int, col: int, _monster_id: String, _owner: int) ->
 func _on_monster_captured(row: int, col: int, new_owner: int) -> void:
 	if new_owner == _driver.local_side:
 		_local_captures += 1
+		_move_captures += 1
+		_best_move_captures = maxi(_best_move_captures, _move_captures)
 	board_view.animations.animate_capture(row, col, new_owner)
 	StoryService.notify_event("monster_captured", {
 		"row": row, "col": col, "owner": new_owner,
@@ -321,6 +326,7 @@ func _on_game_over(winner: int, score_human: int, score_ai: int) -> void:
 		})
 	if _driver.records_campaign_stats:
 		BattleContext.last_board_size = turn_manager.get_state().board_size
+		BattleContext.last_best_move_captures = _best_move_captures
 		BattleContext.prepare_result(winner, score_human, score_ai, _local_captures)
 		# La série doit connaître la manche avant l'enregistrement : un FT2 n'est
 		# gagné qu'après la dernière manche, pas après le premier match.
@@ -352,6 +358,8 @@ func _on_match_finished(winner: int, score_one: int, score_two: int) -> void:
 		return
 	_leaving = true
 	PvpMatchContext.record_result(winner, score_one, score_two)
+	PvpMatchContext.prepare_profile_result(_local_captures, _best_move_captures, turn_manager.get_state().board_size)
+	PvpMatchContext.persist_profile_result()
 	_record_pvp_quest(score_one, score_two)
 	await get_tree().create_timer(1.5).timeout
 	## Le verdict, le score et la revanche appartiennent à l'écran de résultat :
@@ -369,8 +377,7 @@ func _on_match_aborted(message: String) -> void:
 	Routes.go(get_tree(), Routes.PVP_LOBBY)
 
 
-## Le PVP n'écrit jamais dans le profil : la quête quotidienne et la manche
-## parfaite sont donc comptées ici, une seule fois par appareil, quand la partie
+## Les quêtes PVP sont comptées ici, une seule fois par appareil, quand la partie
 ## se termine normalement (un abandon passe par `_on_match_aborted`).
 func _record_pvp_quest(score_one: int, score_two: int) -> void:
 	var local_one := PvpMatchContext.local_side == GameState.PLAYER_ONE

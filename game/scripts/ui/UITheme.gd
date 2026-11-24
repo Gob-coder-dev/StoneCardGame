@@ -76,7 +76,6 @@ const GOD_PREBATTLE_PORTRAIT_SIZE := Vector2(280, 270)
 const GOD_HUD_PORTRAIT_SIZE := Vector2(104, 104)
 
 ## ─── Rencontres : grille des dieux et chemin des niveaux ────────────────────
-const ENCOUNTER_COLUMNS: int = 2
 const GOD_TILE_HEIGHT: int = 430          ## case d'un dieu, portrait compris
 const GOD_TILE_PORTRAIT_HEIGHT: int = 286
 const GOD_TILE_NEUTRAL_HEIGHT: int = 430  ## ligne dédiée à Pr.Stone, portrait compris

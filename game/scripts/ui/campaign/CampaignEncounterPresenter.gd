@@ -4,7 +4,7 @@
 class_name CampaignEncounterPresenter
 extends RefCounted
 
-const OpponentCatalogModel := preload("res://scripts/data/OpponentCatalog.gd")
+const BotIdentityModel := preload("res://scripts/data/BotIdentity.gd")
 const GameModeRulesModel := preload("res://scripts/domain/GameModeRules.gd")
 const SeriesRulesModel := preload("res://scripts/domain/SeriesRules.gd")
 const CardPowerTierRulesModel := preload("res://scripts/domain/CardPowerTierRules.gd")
@@ -88,7 +88,7 @@ static func opponent_god_label(node: CampaignNode, player_god_id: String = "") -
 		CampaignNode.GOD_FIXED:
 			if node.fixed_god_id() != "":
 				return _god_name(node.fixed_god_id())
-			return OpponentCatalogModel.NEUTRAL_BOT_NAME
+			return BotIdentityModel.NEUTRAL_BOT_NAME
 	if generated != "":
 		return generated
 	if node.game_mode() == GameModeRulesModel.MODE_MIRROR:
@@ -234,7 +234,7 @@ static func _opponent_label(node: CampaignNode, player_god_id: String,
 		return "Ton dieu — %s" % str(
 			MonsterLoader.get_god(player_god_id).get("name", "profil"))
 	if node.fixed_god_id() == "":
-		return OpponentCatalogModel.NEUTRAL_BOT_NAME
+		return BotIdentityModel.NEUTRAL_BOT_NAME
 	return str(MonsterLoader.get_god(node.fixed_god_id()).get(
 		"name", node.fixed_god_id()))
 

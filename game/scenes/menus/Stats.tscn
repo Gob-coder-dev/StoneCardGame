@@ -145,23 +145,3 @@ mouse_filter = 1
 [node name="GlobalStats" type="VBoxContainer" parent="Root/Scroll/Content/GlobalPanel"]
 layout_mode = 2
 theme_override_constants/separation = 18
-
-[node name="NPCTitle" type="Label" parent="Root/Scroll/Content"]
-theme_type_variation = &"SectionTitle"
-layout_mode = 2
-theme_override_font_sizes/font_size = 42
-text = "PROGRESSION DES CHEMINS"
-horizontal_alignment = 1
-
-[node name="NPCPanel" type="PanelContainer" parent="Root/Scroll/Content"]
-layout_mode = 2
-mouse_filter = 1
-
-[node name="NPCList" type="VBoxContainer" parent="Root/Scroll/Content/NPCPanel"]
-layout_mode = 2
-theme_override_constants/separation = 18
-
-[node name="BottomSpacer" type="Control" parent="Root/Scroll/Content"]
-layout_mode = 2
-mouse_filter = 2
-custom_minimum_size = Vector2(0, 30)

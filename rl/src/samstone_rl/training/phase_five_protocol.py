@@ -4,6 +4,8 @@ from collections import defaultdict
 
 import numpy as np
 
+from samstone_rl.training.phase_five_sampling import validate_adaptive_opponents
+
 
 def duel_cases(gods: int, repetitions: int, seed: int) -> list[dict]:
     """Swap model roles on the same physical setup, including mirror matches."""
@@ -138,8 +140,11 @@ def validate_settings(settings: dict) -> None:
         "retention",
         "final",
     }
-    if not required <= set(settings) or set(settings) - required - {"mirror_probability"}:
+    optional = {"mirror_probability", "adaptive_opponents"}
+    if not required <= set(settings) or set(settings) - required - optional:
         raise ValueError("configuration phase5 incomplete ou parametres de l'ancien plan")
+    if "adaptive_opponents" in settings:
+        validate_adaptive_opponents(settings["adaptive_opponents"])
     if settings.get("protocol") != "champion_v1":
         raise ValueError("phase5.protocol doit valoir champion_v1")
     for key in (

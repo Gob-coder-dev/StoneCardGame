@@ -1,5 +1,4 @@
-## L'IA des adversaires, réglée par un AIProfile généré par OpponentCatalog ou
-## lu dans le champ "ai" des adversaires historiques de npcs.json.
+## L'IA des adversaires, réglée par le profil de la rencontre de campagne.
 ## Avec la probabilité « precision », elle joue le meilleur coup évalué (au
 ## hasard entre les ex aequo). Sinon elle commet une erreur crédible : un coup
 ## tiré au sort, pondéré par sa valeur. Plus la précision baisse, plus ce

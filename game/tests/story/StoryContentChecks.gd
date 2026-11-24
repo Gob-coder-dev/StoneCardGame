@@ -33,8 +33,8 @@ func _test_shipped_content() -> void:
 	var welcome: Dictionary = sequences.get("journey_welcome", {})
 	var welcome_lines: Array = welcome.get("lines", [])
 	_check(welcome_lines.size() >= 3, "scénario : l'accueil installe le Refuge et le cabinet")
-	_check(str(welcome_lines[0].get("text", "")).contains("{player_name}"),
-		"scénario : le nom du joueur reste un modèle remplacé à la lecture")
+	_check(str(welcome_lines[0].get("text", "")).contains("Pr. Stone"),
+		"scénario : le professeur se présente dès l'accueil")
 	var all_monster := true
 	for value in welcome_lines:
 		all_monster = all_monster and str(value.get("speaker", "")) == "pr_stone"

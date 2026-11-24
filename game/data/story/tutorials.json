@@ -368,6 +368,36 @@
         }
       ]
     },
+    "rules_research": {
+      "title": "Les recherches du professeur",
+      "entry_scene": "res://scenes/menus/Result.tscn",
+      "required_completed_node_id": "init_enigma",
+      "required_story_state": "seq:mirror_enigma_victory:seen",
+      "steps": [
+        {
+          "id": "research_intro",
+          "scene": "res://scenes/menus/Result.tscn",
+          "dialogue": "rules_research_intro"
+        },
+        {
+          "id": "return_home",
+          "scene": "res://scenes/menus/Result.tscn",
+          "anchor": "result.home",
+          "prompt": "Retourne à l'accueil pour consulter les recherches du professeur.",
+          "wait_for": "screen_opened",
+          "expect": {"scene": "res://scenes/menus/MainMenu.tscn"}
+        },
+        {
+          "id": "open_rules",
+          "scene": "res://scenes/menus/MainMenu.tscn",
+          "anchor": "nav.rules",
+          "prompt": "Ouvre RÈGLES : tu pourras y retrouver les recherches du professeur à tout moment.",
+          "wait_for": "screen_opened",
+          "expect": {"scene": "res://scenes/menus/HowToPlay.tscn"},
+          "complete_chapter": true
+        }
+      ]
+    },
     "tuto_02": {
       "title": "Le plateau s'agrandit",
       "entry_node_id": "tuto_02",

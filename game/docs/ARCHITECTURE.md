@@ -53,8 +53,6 @@ Sélection. Le mode Classique l'ignore et valide directement le deck enregistré
 `power_tier = form_level + rarity_offset` (commune 0, rare 1, épique 2,
 légendaire 3), avec un champ explicite `power_tier` prioritaire. Une limite N
 n'autorise que les cartes de palier effectif inférieur ou égal à N.
-`BotCardTierRules` reste un adaptateur des rencontres : ses planchers littéraux
-ne changent pas les decks de campagne.
 
 `LoadoutGenerator` construit les decks Aléatoire et Miroir avec des coûts en
 quarts de point et un solveur exact. En Aléatoire, il énumère d'abord les
@@ -124,7 +122,7 @@ et affiche `EN PARTIE` jusqu'à son propre retour.
 | `scripts/network/LanPvpPresence.gd` | présence persistante `LOBBY`/`PREPARATION`/`PRE_BATTLE`/`IN_MATCH`/`RESULT`, sans navigation distante |
 | `scripts/network/LanMatchCoordinator.gd` | commandes, séquences, accusés, empreintes et désynchronisation |
 | `scripts/network/LanAddressResolver.gd` | normalisation et classement purs des adresses locales |
-| `scripts/application/pvp/PvpMatchContext.gd` | implémentation de l'état applicatif transitoire du match, sans écriture de profil ; l'AutoLoad historique `scripts/data/PvpMatchContext.gd` est une façade de migration sans logique |
+| `scripts/application/pvp/PvpMatchContext.gd` | état transitoire du match et enregistrement du résultat local ; l'AutoLoad `scripts/data/PvpMatchContext.gd` est une façade sans logique |
 | `scripts/application/pvp/PvpLobbyFlow.gd` | cycle découverte, session et coordinateur du salon, sans dépendre de la scène |
 | `scripts/application/CampaignModeSession.gd` | préparation locale des modes, draft IA et séries de campagne |
 | `scripts/application/ModePreparationService.gd` | cas d'usage commun : loadouts Classique/Aléatoire/Miroir et création/résultat du draft |
@@ -184,7 +182,6 @@ Les déclencheurs détaillés, les fichiers et les règles d'extension sont dans
 | --- | --- | --- |
 | `data/monsters/manifest.json` + familles | — | Définition complète de chaque carte, regroupée par famille et chargée au démarrage |
 | `data/gods.json` | — | Dieux, familles, couleurs et descriptions |
-| `data/npcs.json` | — | Six adversaires historiques, leurs decks et profils d'IA |
 | `data/campaign/campaign_v2.json` | `CampaignContentLoader` | Définition consolidée du graphe : 165 nœuds, rencontres, positions et arêtes |
 | `data/campaign/authoring/*.json` | `CampaignBalanceConfig` + builder Python | Courbe par chapitre et profils de récompense ; jamais lus par le combat |
 | `data/progression/content_gates.json` | `ContentGateConfig` | Boss obligatoires qui ouvrent les raretés épique et légendaire |
@@ -204,8 +201,6 @@ Les déclencheurs détaillés, les fichiers et les règles d'extension sont dans
 | `CampaignRewardService` | `grant_victory` | Récompense idempotente de fin de série, sans règle d’interface |
 | `CampaignEncounterPresenter` | `summary` | Données d'affichage de la fiche de niveau, sans création de rencontre ni progression |
 | `CampaignProgressStore`, `CampaignSaveMigration` | `load_progress`, `save`, `migrate` | Fichier dédié et conversion prudente des anciennes victoires |
-| `OpponentCatalog` | `build`, `build_neutral`, `deck_for`, `neutral_deck_for`, `levels_for`, `source_id_of`, `sources` | Historique : génère les adversaires dieu ou neutre × palier × difficulté et les sept sources |
-| `EncounterPath` | `states`, `current_index`, `next_level`, `completed_count` | Historique : états d'un ancien chemin linéaire, sans interface ni sauvegarde |
 | `CardPowerTierRules` | `effective_tier`, `is_allowed`, `lineage_problems` | Règle unique du palier : formule rareté + niveau, exception explicite et validation des lignées |
 | `GameModeRules`, `SeriesRules` | normalisation, libellés, conservation | Modes/paliers et FT1/FT2/FT3 communs à la campagne et au PVP |
 | `PvpLobbyRules` | `apply_change`, `apply_ready`, `lock` | Phases, révision et verrouillage propres au salon PVP |
@@ -215,7 +210,6 @@ Les déclencheurs détaillés, les fichiers et les règles d'extension sont dans
 | `SeriesState`, `SeriesEngine` | `begin`, `record_round`, `remember_loadouts`, `public_state` | Score de série, égalités et conservation des loadouts dans les deux environnements |
 | `LoadoutGenerator` | `generate_random`, `generate_mirror`, `reachable_totals` | Dieux et decks légaux au même total, solveur exact et contraintes de draft |
 | `DraftEngine` | `start`, `choose`, `advance`, `public_state` | Draft parallèle de 60 s, plan de huit paires vérifié, choix privés et complétion indépendante |
-| `BotCardTierRules` | `effective_level` | Adaptateur historique des bots : niveau de forme et plancher de rareté, sans changer leur niveau de jeu |
 | `MonsterLoader` | `get_monster`, `has_monster`, `has_effect`, `monster_affinity`, `monster_rarity`, `get_neutral_lineages`, `get_god`, `get_npc` | Charge les catalogues, fournit des copies et des lectures sans copie |
 | `ContentValidator` | `find_problems` | Liste les incohérences des catalogues ; `MonsterLoader` les signale au démarrage |
 | `PlayerInventory`, `CardProgressionRules` | `to_dict`, `from_dict`, `upgrade_cost`, `progress` | État économique sérialisable (âmes, bougies, cartes et coffre) et règles pures d’évolution |
@@ -241,7 +235,7 @@ renomme : une coupure ne laisse jamais un profil à moitié écrit. Un fichier
 illisible est renommé `savegame.json.unreadable` au lieu d'être écrasé, et un
 remplacement interrompu est récupéré au chargement suivant.
 
-Le format version 11 contient `decks_by_god` (trois tableaux d'identifiants de formes par dieu),
+Le format version 12 contient `decks_by_god` (trois tableaux d'identifiants de formes par dieu),
 `selected_deck_by_god` (indices de 0 à 2), `player_god_id`, `player_name` et
 `stats`, ainsi que `inventory` (âmes, bougies, dieux débloqués, copies, niveaux,
 achats de boutique, récompenses divines en attente et curseurs de transaction),
@@ -276,7 +270,9 @@ le même remplacement atomique que le profil. `CampaignSaveMigration` ne convert
 une ancienne victoire `per_npc` que si un seul nœud Classique fixe la revendique ;
 les cas ambigus restent dans `legacy.archived_stats`. La migration est idempotente
 grâce à `legacy_version`, et un échec d'écriture ne publie pas la progression en
-mémoire.
+mémoire. Les anciens compteurs sont isolés dans `legacy_campaign_stats` lors
+du décodage du profil. Ils sont retirés seulement après sauvegarde réussie de
+la campagne ; un échec du nettoyage conserve la source pour le prochain essai.
 
 `PvpMatchContext` ne contient que des données transitoires (participants, camps,
 snapshots du salon, loadouts, graine, cases bloquées, premier joueur, dernier
@@ -284,9 +280,11 @@ résultat). Dès qu'une manche est configurée, ses participants sont la source
 autoritaire du dieu et du deck affichés en combat. Les snapshots du salon sont
 conservés séparément pendant toute la connexion et sont les seules données
 autorisées à reconstruire le salon. Le retour détruit les loadouts générés ; une
-partie Classique suivante retrouve donc les profils d'origine. Le contexte ne
-touche jamais `PlayerData`, donc un match PVP ne modifie ni les statistiques de
-campagne ni `per_npc`.
+partie Classique suivante retrouve donc les profils d'origine. À la fin du
+combat, le contexte construit un résultat du point de vue local et enregistre
+les statistiques PVP. L'écran de résultat réessaie en cas d'échec disque. La
+clé du match évite les doublons et aucun résultat PVP n'entre dans les compteurs
+de campagne.
 
 `PlayerData` possède les banques et renvoie des copies via ses lectures. Les
 modifications du deck, du dieu et du numéro sélectionné sont validées et
@@ -695,55 +693,27 @@ raison pour laquelle le tiroir de la collection reste ouvert pendant l'étape
 « UTILISER ». Le voile des deux overlays vient d'un unique réglage,
 `UITheme.STORY_DIM`.
 
-## Anciens parcours par dieu
+## Profil et statistiques
 
-Les écrans et fabriques ci-dessous restent dans le dépôt pour les tests, la
-compatibilité des scènes et l'historique du profil. Ils ne sont plus atteints
-depuis le bouton Campagne.
+`StatsController` calcule la progression depuis les nœuds de la carte et la
+collection depuis l'inventaire. `ProfileStatsRules` conserve les totaux, les
+records de captures et les résultats par dieu joué, mode et contexte. Le filtre
+campagne/PVP s'applique aux résultats et aux records. Les niveaux, boss et
+mini-boss ne sont comptés qu'une fois ; une légendaire sans évolution ne compte
+pas comme une lignée entièrement évoluée.
 
-`EncounterSelectController` affiche une case par dieu, plus Pr.Stone, puis ouvre
-le chemin de la source choisie. `EncounterPathController` présente les quinze
-niveaux de cette source — trois paliers de cartes et cinq difficultés — et
-lance le combat. `OpponentCatalog.levels_for()` est le seul endroit qui ordonne
-ces niveaux ; `EncounterPath` en déduit les états verrouillé, disponible et
-terminé à partir de `PlayerData.is_npc_beaten()`. Une victoire débloque le
-niveau suivant ; une victoire antérieure hors séquence reste enregistrée dans le
-profil mais ne valide pas un rond isolé, elle compte dès que les niveaux
-précédents ont été gagnés. Aucun champ de sauvegarde n'est ajouté, et les ronds
-terminés comme le rond ouvert restent sélectionnables. `OpponentCatalog` génère
-à la demande les 105 rencontres.
+Les totaux historiques sont attribués à la campagne. Aucun historique par dieu
+joué ni record ne peut être déduit des anciens adversaires. Les nouveaux
+compteurs débutent donc à la mise à jour. Une manche terminée vaut un résultat,
+y compris les égalités FT2/FT3. Un abandon concède la série sans inventer
+une manche supplémentaire. Les 128 dernières clés de résultat protègent les
+réessais d'écriture contre le double comptage.
 
-Les decks des dieux restent majoritairement composés de leur
-famille ; Pr.Stone n'utilise que des lignées neutres. La difficulté ne modifie
-pas le deck et fournit le profil d'IA ainsi que l'identifiant stable
-`bot_<adversaire>_<palier>_<difficulté>`.
-
-`BotCardTierRules` donne aux bots un niveau de puissance distinct du niveau de
-forme utilisé par le moteur : commun et rare commencent au palier 1, épique au
-palier 3 et légendaire au palier 4. Le niveau effectif est le maximum du niveau
-de forme et de ce plancher. La collection, l'évolution, les coûts et le combat
-continuent donc d'utiliser les données originales des cartes. Les règles de
-`DeckRules` restent réservées aux decks des joueurs ; `MonsterLoader` fournit à la
-fabrique les lignées neutres et la rareté des formes.
-
-`BattleContext.select_opponent()` conserve la rencontre ; `current_opponent()`
-retombe sur `MonsterLoader.get_npc()` pour les adversaires historiques de
-`npcs.json`. `PreBattle`, `BoardController` et l'écran de résultat lisent la même
-source. `BattleContext.selected_source_id` retient le chemin ouvert, ce qui
-permet à `PreBattle` et au résultat d'y revenir ; `source_id_of()` déduit la
-source d'un adversaire généré. Depuis le résultat, `Niveau suivant` prépare
-directement le rond suivant du même chemin, `Rejouer` relance le même duel,
-`Choisir un autre niveau` rouvre le serpentin, `Choisir un autre dieu` revient
-à la grille et `Accueil` au menu principal ; le bouton du suivant disparaît
-après une défaite, au dernier rond ou tant que le résultat n'a pas été écrit sur
-le disque. Le bot sans dieu conserve un `god_id` vide et est présenté explicitement
-comme tel, sans ajouter de dieu jouable à `gods.json`. Le profil conserve un
-décompte par dieu et pour Pr.Stone avec le nombre de niveaux terminés sur quinze ;
-ce compteur est un historique de compatibilité et ne représente pas la
-progression de la campagne unifiée, qui est enregistrée par identifiant de nœud.
-Ces actions de résultat ne s'appliquent qu'aux anciens parcours : un résultat de
-campagne propose de rejouer, de passer à la manche suivante d'une série ou de
-revenir à la carte.
+Les anciens écrans de parcours et le catalogue d'adversaires ont été retirés.
+`CampaignSaveMigration` conserve uniquement la conversion des anciennes
+victoires. `BotIdentity` porte l'identité du professeur utilisé par la campagne
+et le tutoriel. Les adversaires de régression ne vivent que dans les fixtures
+de test, exclues des exports.
 
 ## Poser une carte en combat
 
@@ -762,27 +732,10 @@ relâcher demande `TurnManager.human_play()`, relâcher ailleurs annule sans sé
 
 ## IA
 
-Une seule IA, `ProfileAI`, joue tous les adversaires. `AIProfile` reçoit le
-profil construit par `OpponentCatalog` (ou celui de `npcs.json` pour les
-adversaires historiques) ; `ContentValidator` et `OpponentCatalog.problems()`
-en signalent les erreurs. `AITurnRunner.create_ai()` crée l'IA d'un profil.
-
-`OpponentCatalog` combine six dieux et un bot neutre, trois paliers de cartes et
-cinq difficultés. Le deck est déterministe pour un couple adversaire × palier :
-les cinq difficultés affrontent les mêmes cartes. L'identifiant
-`bot_<adversaire>_<palier>_<difficulté>` sert de clé aux statistiques.
-
-| Difficulté | `precision` | `anticipation` | Délai minimal |
-| --- | --- | --- | --- |
-| Très facile | 0 | non | 0,6 s |
-| Facile | 0,25 | non | 0,7 s |
-| Moyen | 0,5 | non | 0,8 s |
-| Difficile | 0,75 | non | 0,9 s |
-| Très difficile | 1 | oui | 1,2 s |
-
-Cette table décrit les cinq profils historiques d'`OpponentCatalog`. La campagne
-unifiée utilise en plus des profils à précision continue, avec 83 valeurs
-distinctes réparties entre 0 et 1 selon la profondeur et le rôle du nœud.
+`ProfileAI` joue les adversaires à partir du champ `ai` des rencontres de
+campagne. `AIProfile` valide la précision et l'anticipation ;
+`AITurnRunner.create_ai()` crée l'IA du profil. La campagne utilise des profils
+à précision continue de 0 à 1 selon la profondeur et le rôle du nœud.
 
 Avec la probabilité `precision`, l'IA joue le meilleur coup évalué, au hasard
 entre les ex aequo. Sinon elle commet une erreur crédible : un coup tiré au sort

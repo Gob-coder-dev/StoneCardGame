@@ -129,7 +129,7 @@ func _test_errors(page: Control) -> void:
 func _test_battle_level() -> void:
 	var saved_npc := BattleContext.selected_npc_id
 	var saved_first := BattleContext.forced_first_player
-	BattleContext.selected_npc_id = "disciple_muraille"
+	BattleContext.select_opponent(preload("res://tests/support/OpponentFixture.gd").get_npc("disciple_muraille"))
 	BattleContext.forced_first_player = GameState.PLAYER_HUMAN
 	var board: Control = (load("res://scenes/game/Board.tscn") as PackedScene).instantiate()
 	add_child(board)

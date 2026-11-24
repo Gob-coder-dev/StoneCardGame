@@ -15,7 +15,7 @@ signal replay_requested(sequence_ids: Array[String])
 signal closed
 
 const GodIdentityModel := preload("res://scripts/data/GodIdentity.gd")
-const OpponentCatalogModel := preload("res://scripts/data/OpponentCatalog.gd")
+const BotIdentityModel := preload("res://scripts/data/BotIdentity.gd")
 
 @onready var backdrop: Button = $Backdrop
 @onready var close_button: Button = $Panel/Margin/Content/Header/CloseButton
@@ -135,7 +135,7 @@ func open(summary: Dictionary, state: int) -> void:
 	power_hint.visible = power_hint.text != ""
 	_refresh_pips(tier)
 	_setup_gods(summary)
-	stars_label.text = OpponentCatalogModel.stars_text(int(summary.get("stars", 1)))
+	stars_label.text = BotIdentityModel.stars_text(int(summary.get("stars", 1)))
 	stars_word.text = str(summary.get("stars_word", "")).to_lower()
 	stars_word.visible = stars_word.text != ""
 	stars_hint.text = str(summary.get("stars_hint", ""))

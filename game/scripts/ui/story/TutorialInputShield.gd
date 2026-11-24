@@ -53,13 +53,13 @@ func _process(delta: float) -> void:
 
 ## Absorbe les appuis et les glissements : aucun widget situé dessous ne doit
 ## réagir pendant la pause.
-func _gui_input(event: InputEvent) -> void:
+func _gui_input(_event: InputEvent) -> void:
 	accept_event()
 
 
 ## Le GUI ne couvre pas les raccourcis clavier et manette : ils sont consommés
 ## ici tant que le bouclier est actif.
-func _input(event: InputEvent) -> void:
+func _input(_event: InputEvent) -> void:
 	if not is_holding():
 		return
 	get_viewport().set_input_as_handled()

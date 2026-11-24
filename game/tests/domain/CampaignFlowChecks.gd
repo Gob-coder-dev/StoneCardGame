@@ -70,18 +70,17 @@ func _enter(node_id: String) -> void:
 
 func _test_classic_result_once() -> void:
 	_enter("tuto_01")
-	var npc_id := str(BattleContext.current_opponent().get("id", ""))
-	var games_before := int(PlayerData.npc_record(npc_id).get("games", 0))
+	var games_before := int(PlayerData.stats.get("games_played", 0))
 	BattleContext.prepare_result(GameState.PLAYER_HUMAN, 9, 4, 2)
 	var first := BattleContext.persist_result()
 	_check(first == OK and BattleContext.last_result_saved
 		and _service.is_completed("tuto_01"),
 		"flux campagne : une victoire Classique termine le nœud et confirme la sauvegarde")
-	var games_after := int(PlayerData.npc_record(npc_id).get("games", 0))
+	var games_after := int(PlayerData.stats.get("games_played", 0))
 	_check(games_after == games_before + 1,
 		"flux campagne : la première sauvegarde enregistre une partie")
 	var again := BattleContext.persist_result()
-	_check(again == OK and int(PlayerData.npc_record(npc_id).get("games", 0)) == games_after,
+	_check(again == OK and int(PlayerData.stats.get("games_played", 0)) == games_after,
 		"flux campagne : réessayer un résultat déjà sauvé ne compte pas une seconde partie")
 	_check(_service.progress().attempts_for("tuto_01") == 1,
 		"flux campagne : une tentative est enregistrée avec le nœud")
@@ -198,8 +197,8 @@ func _test_mid_series_abandon() -> void:
 		and page.replay_btn.visible and page.level_btn.visible and page.menu_btn.visible
 		and not page.abandon_btn.visible and not page.next_btn.visible,
 		"résultat campagne : abandonner concède la série et rouvre les sorties de fin")
-	_check(int(PlayerData.stats.get("losses", 0)) == losses_before + 1,
-		"résultat campagne : l'abandon compte une défaite pour le joueur")
+	_check(int(PlayerData.stats.get("losses", 0)) == losses_before,
+		"résultat campagne : l'abandon ne crée pas de manche fictive dans les statistiques")
 	page.queue_free()
 	await get_tree().process_frame
 	_enter(SERIES_NODE)
@@ -218,7 +217,7 @@ func _test_result_screens() -> void:
 	add_child(defeat)
 	await get_tree().process_frame
 	_check(not defeat.next_btn.visible and defeat.replay_btn.visible
-		and defeat.level_btn.text == "Carte de campagne" and not defeat.gods_btn.visible,
+		and defeat.level_btn.text == "Carte de campagne" and not defeat.has_node("VBoxCenter/GodsButton"),
 		"résultat campagne : une défaite propose de rejouer et de revenir à la carte")
 	_check(not _service.is_completed("nerava_01"),
 		"résultat campagne : une défaite ne valide jamais le nœud")
@@ -255,7 +254,7 @@ func _test_result_screens() -> void:
 		"présentateur : un mode Aléatoire sans dieu imposé ne répète pas le mode comme dieu")
 	_check(not victory.next_btn.visible,
 		"résultat campagne : la victoire ne duplique plus la sortie vers la carte")
-	_check(victory.level_btn.text == "Carte de campagne" and not victory.gods_btn.visible,
+	_check(victory.level_btn.text == "Carte de campagne" and not victory.has_node("VBoxCenter/GodsButton"),
 		"résultat campagne : les anciennes sorties par dieu sont remplacées")
 	_check(victory.next_levels.visible
 		and victory.next_levels_title.text == "NIVEAU SUIVANT"

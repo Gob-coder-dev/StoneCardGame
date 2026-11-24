@@ -2,11 +2,9 @@
 ## Écran de résultat après une partie. En campagne, la victoire propose les
 ## niveaux suivants sous forme de cartes qui déposent le joueur sur la carte
 ## avec la fiche du niveau ouverte ; une série non terminée propose la manche
-## suivante. Les adversaires historiques conservent les cinq sorties d'origine.
+## suivante.
 extends Control
 
-const OpponentCatalogModel := preload("res://scripts/data/OpponentCatalog.gd")
-const EncounterPathModel := preload("res://scripts/domain/EncounterPath.gd")
 const Routes := preload("res://scripts/ui/GameRoutes.gd")
 const EncounterPresenter := preload("res://scripts/ui/campaign/CampaignEncounterPresenter.gd")
 const TouchButtonModel := preload("res://scripts/ui/input/TouchButton.gd")
@@ -43,7 +41,6 @@ const VICTORY_DIALOGUE_BEAT := 0.65
 @onready var next_btn: Button = $VBoxCenter/NextButton
 @onready var replay_btn: Button = $VBoxCenter/ReplayButton
 @onready var level_btn: Button = $VBoxCenter/LevelsButton
-@onready var gods_btn: Button = $VBoxCenter/GodsButton
 @onready var menu_btn: Button = $VBoxCenter/MainMenuButton
 @onready var save_status: Label = $VBoxCenter/SaveStatus
 @onready var retry_save_btn: Button = $VBoxCenter/RetrySaveButton
@@ -74,7 +71,6 @@ func _ready() -> void:
 	next_btn.pressed.connect(_on_next_level)
 	replay_btn.pressed.connect(_on_replay)
 	level_btn.pressed.connect(_on_level_select)
-	gods_btn.pressed.connect(_on_god_select)
 	menu_btn.pressed.connect(_on_menu)
 	retry_save_btn.pressed.connect(_on_retry_save)
 	abandon_btn.pressed.connect(_on_abandon)
@@ -267,8 +263,7 @@ func _add_unlock_message(unlock: Dictionary) -> void:
 	reward_cards.add_child(message)
 
 
-## En campagne, les anciennes sorties « autre niveau » et « autre dieu » ne
-## correspondent plus à une navigation : elles ramènent à la carte unifiée.
+## Les résultats de campagne donnent accès à la carte et à une nouvelle tentative.
 func _apply_campaign_copy() -> void:
 	if not _campaign:
 		return
@@ -298,36 +293,15 @@ func _on_back_requested() -> void:
 		_on_menu()
 
 
-## Niveau qui suit celui joué dans le même chemin historique. Vide au dernier
-## rond et hors du parcours par dieu.
-func _next_level() -> Dictionary:
-	if _campaign:
-		return {}
-	var source := BattleContext.current_source_id()
-	if source == "":
-		return {}
-	return EncounterPathModel.next_level(
-		OpponentCatalogModel.levels_for(source), BattleContext.selected_npc_id)
-
-
-## Une seule règle de visibilité pour les deux modes de résultat :
-## - campagne en cours de série : manche suivante et abandon, rien d'autre ;
-## - campagne série terminée (ou FT1) : rejouer, carte et accueil ;
-## - hors campagne : les cinq sorties historiques.
+## Une série en cours propose la manche suivante et l'abandon.
 func _refresh_actions() -> void:
 	var mid_series := _campaign and _series_active()
-	if _campaign:
-		next_btn.text = "Manche suivante"
-		next_btn.visible = mid_series and BattleContext.last_result_saved
-	else:
-		next_btn.text = "Niveau suivant"
-		next_btn.visible = BattleContext.last_winner == GameState.PLAYER_HUMAN \
-			and BattleContext.last_result_saved and not _next_level().is_empty()
+	next_btn.text = "Manche suivante"
+	next_btn.visible = mid_series and BattleContext.last_result_saved
 	replay_btn.visible = not mid_series
 	abandon_btn.visible = mid_series
 	level_btn.visible = not mid_series
 	menu_btn.visible = not mid_series
-	gods_btn.visible = not _campaign
 
 
 ## Une série est active tant qu'elle n'est pas terminée : c'est la seule
@@ -342,7 +316,7 @@ func _on_abandon() -> void:
 	abandon_popup.open("Voulez-vous vraiment abandonner et perdre la partie ?")
 
 
-## L'abandon concède la série : le profil compte une défaite et l'écran bascule
+## L'abandon concède la série et l'écran bascule
 ## sur le résultat de fin, avec les sorties habituelles.
 func _on_abandon_confirmed() -> void:
 	var result := BattleContext.abandon_campaign_series()
@@ -392,23 +366,7 @@ func _on_next_level() -> void:
 		Routes.go(get_tree(), Routes.CAMPAIGN_PREPARATION
 			if bool(prepared.get("requires_draft", false)) else Routes.PRE_BATTLE)
 		return
-	var next_level := _next_level()
-	if next_level.is_empty() or BattleContext.last_winner != GameState.PLAYER_HUMAN:
-		return
-	var source := BattleContext.current_source_id()
-	var opponent := OpponentCatalogModel.build_for_source(
-		source, str(next_level.get("bracket_id", "")), str(next_level.get("difficulty_id", "")))
-	if opponent.is_empty():
-		push_error("Result: impossible de générer l'adversaire du niveau suivant.")
-		return
-	BattleContext.select_source(source)
-	BattleContext.select_opponent(opponent)
-	BattleContext.forced_first_player = 0
-	Routes.go(get_tree(), Routes.PRE_BATTLE)
 
-
-## Successeurs directs du niveau gagné, accessibles et affichables. La carte de
-## campagne reste l'écran de décision : aucune de ces cartes ne lance un combat.
 func _next_level_entries() -> Array:
 	var result: Array = []
 	var service := CampaignContext.get_service()
@@ -550,22 +508,13 @@ func _on_replay() -> void:
 	Routes.go(get_tree(), Routes.PRE_BATTLE)
 
 
-## En campagne unifié, « autre niveau » signifie revenir à la carte. Le
-## parcours historique par dieu reste disponible pour ses propres résultats.
+## Le choix d'un autre niveau passe par la carte de campagne.
 func _on_level_select() -> void:
 	if _campaign:
 		CampaignContext.focus_node_id = BattleContext.campaign_node_id
 		Routes.go(get_tree(), Routes.CAMPAIGN_MAP)
 		return
-	BattleContext.select_source(BattleContext.navigation_source_id())
-	Routes.go(get_tree(), Routes.ENCOUNTER_PATH)
-
-
-func _on_god_select() -> void:
-	if _campaign:
-		Routes.go(get_tree(), Routes.CAMPAIGN_MAP)
-		return
-	Routes.go(get_tree(), Routes.ENCOUNTER_SELECT)
+	Routes.go(get_tree(), Routes.CAMPAIGN_MAP)
 
 
 func _on_menu() -> void:
