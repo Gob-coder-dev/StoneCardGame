@@ -9,6 +9,7 @@ const PowerHelp := preload("res://scripts/ui/PowerHelp.gd")
 const TouchButton := preload("res://scripts/ui/input/TouchButton.gd")
 const TAB_NAMES := ["Bases", "Modes de jeu", "Pouvoirs", "Decks"]
 const DemoPlayback := preload("res://scripts/ui/RulesDemoPlayback.gd")
+const CardGrid := preload("res://scripts/ui/collection/CardGridLayout.gd")
 
 @onready var tabs: HBoxContainer = $Content/Tabs
 @onready var god_tabs: GridContainer = $Content/GodTabs
@@ -78,8 +79,7 @@ func _show_basics() -> void:
 	_add_rule("Compare les faces",
 		"Seule la carte posée attaque. Au contact, compare son attaque à la défense de l’ennemi sur les faces "
 		+ "qui se touchent. Une attaque supérieure capture la cible, "
-		+ "qui rejoint ton camp. À égalité, le défenseur tient.\n\n"
-		+ "[b]3 contre 2 → capture     •     2 contre 2 → défense[/b]")
+		+ "qui rejoint ton camp. À égalité, le défenseur tient.")
 	_demos.add_clip("basics_compare")
 	_add_rule("Lis le plateau",
 		"Le plateau fait généralement %d × %d. Une croix marque une case bloquée. "
@@ -129,18 +129,50 @@ func _show_decks() -> void:
 	_add_rule("Lis une carte",
 		"Le cadre indique la famille. Le liseré indique la rareté. Chaque face accueille jusqu’à %d symboles. "
 		% BattleMonster.MAX_MARKERS_PER_SIDE
-		+ "Les pictogrammes en haut de la carte signalent ses pouvoirs.\n\n"
-		+ "Commune ivoire • Rare cyan • Épique violette • Légendaire dorée")
+		+ "Les pictogrammes en haut de la carte signalent ses pouvoirs.", null,
+		_card_examples("RarityExamples",
+			["avortons_des_caves_n1", "charognard_courbe_n1", "mille_gueules_n1", "le_voyeur_n1"],
+			["Commune", "Rare", "Épique", "Légendaire"], true))
 	_add_rule("Débloque les formes",
 		"La première copie débloque le niveau 1. Améliore la carte avec des copies supplémentaires et des âmes. "
 		+ "Une commune peut atteindre le niveau 4, une rare le niveau 3 et une épique le niveau 2. "
-		+ "Une légendaire a une seule forme.")
+		+ "Une légendaire a une seule forme.", null,
+		_card_examples("LevelExamples",
+			["charognard_courbe_n1", "charognard_courbe_n2", "charognard_courbe_n3"],
+			["Niveau 1", "Niveau 2", "Niveau 3"]))
 	_add_rule("Choisis la forme jouée",
 		"Le filtre de niveau change l’aperçu de la collection. Dans la fiche, consulte les formes avec les boutons "
 		+ "numérotés. « Utiliser » équipe la forme affichée si tu l’as débloquée et que ton deck respecte le budget.")
 
 
-func _add_rule(title: String, description: String, badge: Control = null) -> void:
+func _card_examples(group_name: String, ids: Array[String], captions: Array[String],
+		show_rarity_colors: bool = false) -> HBoxContainer:
+	var row := CardGrid.make_card_row()
+	row.name = group_name
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	for index in range(ids.size()):
+		var monster := MonsterLoader.get_monster(ids[index])
+		var column := VBoxContainer.new()
+		column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		column.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		row.add_child(column)
+		var card := MonsterCard.new()
+		card.setup(monster)
+		card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		card.resized.connect(func(): card.custom_minimum_size.y = card.size.x)
+		column.add_child(card)
+		var caption := Label.new()
+		caption.text = captions[index]
+		caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		caption.clip_text = true
+		caption.add_theme_font_size_override("font_size", UITheme.FONT_SMALL)
+		if show_rarity_colors:
+			caption.add_theme_color_override("font_color", UITheme.rarity_color(str(monster["rarity"])))
+		column.add_child(caption)
+	return row
+
+
+func _add_rule(title: String, description: String, badge: Control = null, examples: Control = null) -> void:
 	var panel := PanelContainer.new()
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var row := HBoxContainer.new()
@@ -169,6 +201,8 @@ func _add_rule(title: String, description: String, badge: Control = null) -> voi
 	body.add_theme_font_size_override("bold_font_size", UITheme.FONT_BODY)
 	body.text = description
 	content.add_child(body)
+	if examples != null:
+		content.add_child(examples)
 	page.add_child(panel)
 
 

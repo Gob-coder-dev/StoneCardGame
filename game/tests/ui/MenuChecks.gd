@@ -388,8 +388,16 @@ func _test_rules_legends() -> void:
 		"les règles affichent les valeurs lues dans le code")
 	rules.tabs.get_child(3).pressed.emit()
 	var decks := _rules_text(rules.page)
-	_check(decks.contains("Commune ivoire") and decks.contains("Rare cyan")
-		and decks.contains("Épique violette") and decks.contains("Légendaire dorée")
+	var rarities: HBoxContainer = rules.page.find_child("RarityExamples", true, false)
+	var levels: HBoxContainer = rules.page.find_child("LevelExamples", true, false)
+	var shown_rarities: Array[String] = []
+	for column in rarities.get_children():
+		var card: MonsterCard = column.get_child(0)
+		var rarity := str(MonsterLoader.get_monster(card.get_monster_id())["rarity"])
+		shown_rarities.append(rarity)
+	_check(shown_rarities == ["common", "rare", "epic", "legendary"]
+		and levels.get_child_count() == 3
+		and levels.get_child(2).get_child(0).get_monster_id() == "charognard_courbe_n3"
 		and decks.contains("première copie débloque")
 		and basics.contains("cases bleues sont à toi") and basics.contains("rouges sont à l’adversaire"),
 		"les règles expliquent les quatre raretés et les couleurs de propriété du plateau")
