@@ -15,8 +15,8 @@ import torch
 from samstone_rl.bridge import GodotProtocolError
 from samstone_rl.envs.samstone_env import SamStoneEnv
 from samstone_rl.evaluation.tournament import run_tournament
+from samstone_rl.training.phase_four_gate import phase_four_cases, phase_four_report
 from samstone_rl.training.validation import (
-    EvaluationSlice,
     PhaseFourGateReport,
     wilson_lower,
 )
@@ -255,32 +255,16 @@ class EvaluationMixin:
             env.agent_player = previous_player
         return anchors
 
-    def run_final_gate(self) -> PhaseFourGateReport:
+    def run_final_gate(
+        self, *, seed_offset=0, identity=None, on_progress=None
+    ) -> PhaseFourGateReport:
         if not self.curriculum.awaiting_final_validation:
             raise RuntimeError("le dernier palier doit etre battu avant la validation finale")
-        settings = self.config["evaluation"]["final_gate"]
-        games_per_slice = int(settings["games_per_slice"])
-        seed = int(settings["seed_base"])
         if self.evaluation_backend != "godot":
             raise RuntimeError("la certification finale exige le moteur Godot")
         self._prepare_evaluation_inference()
         oracle = self._evaluation_manifest()
-        cases = []
-        for stage_index, stage in enumerate(self.curriculum.stages):
-            for scenario_index, scenario in enumerate(self.scenarios):
-                for agent_player in (1, 2):
-                    for first_player in (1, 2):
-                        for _game in range(games_per_slice):
-                            cases.append(
-                                {
-                                    "stage": stage_index,
-                                    "scenario": scenario_index,
-                                    "agent": agent_player,
-                                    "first": first_player,
-                                    "seed": seed,
-                                }
-                            )
-                            seed += 1
+        cases = phase_four_cases(self.config, seed_offset)
 
         def play(env, case):
             return self._evaluation_game_with_retry(
@@ -300,52 +284,24 @@ class EvaluationMixin:
                 self.evaluation_envs,
                 play,
                 self.output / "evaluations/phase4",
-                {
+                identity
+                or {
                     "provenance": self.provenance,
                     "oracle": oracle,
                     "policy": policy_checksum(self.model),
                     "config": self.config,
                 },
+                on_progress=on_progress,
             )
         finally:
             for env, (opponent, player) in zip(self.evaluation_envs, previous, strict=True):
                 env.opponent, env.agent_player = opponent, player
-        groups = defaultdict(list)
-        for case, info in zip(cases, outcomes, strict=True):
-            groups[(case["stage"], case["scenario"], case["agent"], case["first"])].append(
-                int(info["winner"])
-            )
-        slices = []
-        for (stage_index, scenario_index, agent, first), winners in groups.items():
-            wins, draws = winners.count(agent), winners.count(0)
-            slices.append(
-                EvaluationSlice(
-                    self.curriculum.stages[stage_index].name,
-                    str(self.scenarios[scenario_index]["god"]),
-                    agent,
-                    first,
-                    wins,
-                    draws,
-                    len(winners) - wins - draws,
-                )
-            )
-        report = PhaseFourGateReport.build(
-            slices,
-            (stage.name for stage in self.curriculum.stages),
-            (str(scenario["god"]) for scenario in self.scenarios),
-            overall_threshold=float(settings["overall_win_rate"]),
-            confidence_floor=float(settings["confidence_floor"]),
-            slice_floor=float(settings["minimum_slice_win_rate"]),
-            minimum_games_per_slice=games_per_slice,
-            maximum_loss_rate=self._optional_rate(settings, "maximum_loss_rate"),
-            non_loss_confidence_floor=self._optional_rate(settings, "non_loss_confidence_floor"),
-            maximum_slice_loss_rate=self._optional_rate(settings, "maximum_slice_loss_rate"),
-        )
+        report = phase_four_report(self.config, cases, outcomes)
         self.curriculum.accept_final_validation(report.passed)
         gate_path = self.output / "phase4_gate.json"
-        gate_temporary = gate_path.with_suffix(".json.tmp")
-        gate_temporary.write_text(json.dumps(report.to_dict(), indent=2), encoding="utf-8")
-        gate_temporary.replace(gate_path)
+        from samstone_rl.utils.checkpoints import atomic_text
+
+        atomic_text(gate_path, json.dumps(report.to_dict(), indent=2))
         return report
 
     @staticmethod

@@ -105,11 +105,15 @@ def latest_status(run_directory: str | Path) -> dict[str, Any]:
     latest: dict[str, dict[str, Any]] = {}
     for event in events:
         latest[str(event.get("stream", "unknown"))] = event
-    return {
+    status = {
         "run": str(run),
         "streams": latest,
         "latest_alerts": list(alerts[-10:]),
     }
+    phase5 = run / "phase5_status.json"
+    if phase5.exists():
+        status["phase5"] = json.loads(phase5.read_text(encoding="utf-8"))
+    return status
 
 
 def _write_metrics_csv(path: Path, rows: list[dict[str, Any]]) -> None:

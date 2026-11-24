@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import math
 from collections.abc import Iterable
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
+
+from .god_thresholds import parse_god_thresholds, threshold_groups
 
 
 @dataclass(frozen=True)
@@ -61,6 +63,11 @@ class PhaseFourGateReport:
     failed_slices: tuple[str, ...]
     stages: tuple[StageResult, ...]
     slices: tuple[EvaluationSlice, ...]
+    god_thresholds: dict = field(default_factory=dict)
+    god_groups: dict = field(default_factory=dict)
+    core_god_thresholds: dict | None = None
+    god_stage_results: dict = field(default_factory=dict)
+    failed_god_stages: tuple[str, ...] = ()
 
     @classmethod
     def build(
@@ -75,10 +82,22 @@ class PhaseFourGateReport:
         maximum_loss_rate: float | None = None,
         non_loss_confidence_floor: float | None = None,
         maximum_slice_loss_rate: float | None = None,
+        god_thresholds: dict | None = None,
+        core_god_thresholds: dict | None = None,
     ) -> PhaseFourGateReport:
         collected = tuple(slices)
         expected = tuple(expected_stages)
         gods = tuple(expected_gods)
+        thresholds = parse_god_thresholds(god_thresholds)
+        pooled = (
+            parse_god_thresholds({"core": core_god_thresholds})["core"]
+            if core_god_thresholds is not None
+            else None
+        )
+        god_stage_results = {}
+        if set(thresholds) - set(gods):
+            raise ValueError("seuil configure pour un dieu absent de la validation")
+        god_groups = {}
         present = {item.stage for item in collected}
         missing = tuple(stage for stage in expected if stage not in present)
         present_slices = {
@@ -132,14 +151,79 @@ class PhaseFourGateReport:
                     passed,
                 )
             )
+            if thresholds:
+                by_god = {
+                    god: dict(
+                        wins=sum(s.wins for s in relevant if s.god == god),
+                        draws=sum(s.draws for s in relevant if s.god == god),
+                        games=sum(s.games for s in relevant if s.god == god),
+                    )
+                    for god in gods
+                }
+
+                def core_check(w, d, n):
+                    if n <= 0:
+                        return {"eligible": False, "games": n}
+                    eligible = w / n >= overall_threshold
+                    if maximum_loss_rate is None or non_loss_confidence_floor is None:
+                        eligible &= wilson_lower(w, n) >= confidence_floor
+                    else:
+                        eligible &= (n - w - d) / n <= maximum_loss_rate and wilson_lower(
+                            w + d, n
+                        ) >= non_loss_confidence_floor
+                    return dict(
+                        eligible=bool(eligible),
+                        wins=w,
+                        draws=d,
+                        games=n,
+                        win_rate=w / n,
+                        loss_rate=(n - w - d) / n,
+                    )
+
+                group = threshold_groups(by_god, thresholds, core_check)
+                god_groups[stage] = group
+                item = stage_results[-1]
+                stage_results[-1] = StageResult(**{**asdict(item), "passed": group["eligible"]})
+            if pooled is not None:
+                god_stage_results[stage] = {}
+                for god in gods:
+                    if god in thresholds:
+                        continue
+                    entries = [item for item in relevant if item.god == god]
+                    n = sum(item.games for item in entries)
+                    w = sum(item.wins for item in entries)
+                    loss = sum(item.losses for item in entries)
+                    god_stage_results[stage][god] = dict(
+                        games=n,
+                        wins=w,
+                        losses=loss,
+                        draws=n - w - loss,
+                        win_rate=w / n if n else 0.0,
+                        loss_rate=loss / n if n else 1.0,
+                        criteria=pooled,
+                        passed=(
+                            n > 0
+                            and n >= 4 * minimum_games_per_slice
+                            and w / n + 1e-12 >= pooled["minimum_win_rate"]
+                            and loss / n <= pooled["maximum_loss_rate"] + 1e-12
+                        ),
+                    )
+        failed_god_stages = tuple(
+            f"{stage}:{god}"
+            for stage, outcomes in god_stage_results.items()
+            for god, outcome in outcomes.items()
+            if not outcome["passed"]
+        )
         failed_slices = tuple(
             f"{item.stage}:{item.god}:agent{item.agent_player}:first{item.first_player}"
             for item in collected
             if (
                 item.games < minimum_games_per_slice
-                or item.win_rate < slice_floor
+                or (item.god not in thresholds and item.win_rate < slice_floor)
                 or (
-                    maximum_slice_loss_rate is not None and item.loss_rate > maximum_slice_loss_rate
+                    item.god not in thresholds
+                    and maximum_slice_loss_rate is not None
+                    and item.loss_rate > maximum_slice_loss_rate
                 )
             )
         )
@@ -147,6 +231,7 @@ class PhaseFourGateReport:
             not missing
             and not missing_slices
             and not failed_slices
+            and not failed_god_stages
             and all(item.passed for item in stage_results)
         )
         return cls(
@@ -163,6 +248,11 @@ class PhaseFourGateReport:
             failed_slices,
             tuple(stage_results),
             collected,
+            thresholds,
+            god_groups,
+            pooled,
+            god_stage_results,
+            failed_god_stages,
         )
 
     def to_dict(self) -> dict:
@@ -176,11 +266,16 @@ class PhaseFourGateReport:
                 "non_loss_confidence_floor": self.non_loss_confidence_floor,
                 "maximum_slice_loss_rate": self.maximum_slice_loss_rate,
                 "minimum_games_per_slice": self.minimum_games_per_slice,
+                "god_thresholds": self.god_thresholds,
+                "core_god_thresholds": self.core_god_thresholds,
             },
             "missing_stages": list(self.missing_stages),
             "missing_slices": list(self.missing_slices),
             "failed_slices": list(self.failed_slices),
             "stages": [asdict(item) for item in self.stages],
+            "god_groups": self.god_groups,
+            "god_stage_results": self.god_stage_results,
+            "failed_god_stages": list(self.failed_god_stages),
             "slices": [
                 {
                     **asdict(item),

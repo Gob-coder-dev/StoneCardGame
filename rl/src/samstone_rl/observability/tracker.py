@@ -16,6 +16,8 @@ import numpy as np
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
+from samstone_rl.utils.checkpoints import atomic_text
+
 
 def utc_now() -> str:
     return datetime.now(UTC).isoformat()
@@ -113,9 +115,7 @@ class RunTracker:
 
     def write_manifest(self, manifest: Mapping[str, Any]) -> None:
         payload = json_value(manifest)
-        temporary = self.manifest_path.with_suffix(".json.tmp")
-        temporary.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
-        temporary.replace(self.manifest_path)
+        atomic_text(self.manifest_path, json.dumps(payload, indent=2, ensure_ascii=False))
 
     def initialize_manifest(
         self,
@@ -200,6 +200,36 @@ class RunTracker:
             }
         )
         current["extra"]["engine_manifest"] = json_value(manifest)
+        self.write_manifest(current)
+
+    def migrate_noncombat_sources(
+        self, oracle: Mapping[str, Any], proof: Mapping[str, Any]
+    ) -> None:
+        """Replace only an oracle's broad source hash after a verified audit."""
+        current = json.loads(self.manifest_path.read_text(encoding="utf-8"))
+        previous = current.get("extra", {}).get("oracle_manifest")
+        if previous is None or previous == oracle:
+            return
+        before, after = dict(previous), dict(oracle)
+        if (
+            before.pop("rules_checksum", None) != proof["previous_rules_checksum"]
+            or after.pop("rules_checksum", None) != proof["rules_checksum"]
+            or before != after
+        ):
+            raise ValueError("migration hors combat incompatible avec l'arbitre")
+        old_checksum = hashlib.sha256(json.dumps(previous, sort_keys=True).encode()).hexdigest()
+        if current.get("checksums", {}).get("oracle") != old_checksum:
+            raise ValueError("checksum de l'arbitre anterieur incoherent")
+        current["checksums"]["oracle"] = hashlib.sha256(
+            json.dumps(oracle, sort_keys=True).encode()
+        ).hexdigest()
+        current["extra"]["oracle_manifest"] = json_value(oracle)
+        current["extra"].setdefault("noncombat_source_migrations", []).append(
+            {
+                "changed_at": utc_now(),
+                **json_value(proof),
+            }
+        )
         self.write_manifest(current)
 
     def update_manifest(self, **updates: Any) -> None:

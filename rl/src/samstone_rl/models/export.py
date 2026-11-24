@@ -25,6 +25,8 @@ def export_policy(
     checkpoint_path: str | Path, output: str | Path, *, allow_unvalidated: bool = False
 ) -> dict[str, Any]:
     checkpoint = load_checkpoint(checkpoint_path)
+    if "veskar_extensions" in policy_spec(checkpoint.get("config", {})):
+        raise ValueError("politique Veskar experimentale: export Godot non pris en charge")
     model = restore_policy(checkpoint)
     if not allow_unvalidated:
         require_certified(checkpoint, "boss", provenance())

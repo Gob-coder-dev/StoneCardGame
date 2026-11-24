@@ -10,6 +10,8 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import tempfile
+import time
 from pathlib import Path
 from typing import Any
 
@@ -38,13 +40,41 @@ def state_checksum(state: dict[str, torch.Tensor]) -> str:
     return digest.hexdigest()
 
 
+def replace_with_retry(temporary: Path, target: Path) -> None:
+    """Keep replacement atomic while a Windows reader briefly denies delete."""
+    for attempt in range(41):
+        try:
+            temporary.replace(target)
+            return
+        except PermissionError as error:
+            if getattr(error, "winerror", None) not in (5, 32, 33) or attempt == 40:
+                raise
+            time.sleep(min(0.01 * 2**attempt, 0.1))
+
+
 def atomic_text(path: Path, text: str) -> None:
-    temporary = path.with_suffix(path.suffix + ".tmp")
-    with temporary.open("w", encoding="utf-8", newline="\n") as stream:
-        stream.write(text)
-        stream.flush()
-        os.fsync(stream.fileno())
-    temporary.replace(path)
+    with tempfile.NamedTemporaryFile(
+        mode="w",
+        encoding="utf-8",
+        newline="\n",
+        dir=path.parent,
+        prefix=path.name + ".",
+        suffix=".tmp",
+        delete=False,
+    ) as stream:
+        temporary = Path(stream.name)
+        try:
+            stream.write(text)
+            stream.flush()
+            os.fsync(stream.fileno())
+        except BaseException:
+            stream.close()
+            temporary.unlink(missing_ok=True)
+            raise
+    try:
+        replace_with_retry(temporary, path)
+    finally:
+        temporary.unlink(missing_ok=True)
 
 
 def save_checkpoint(path: str | Path, payload: dict[str, Any]) -> None:
@@ -58,7 +88,7 @@ def save_checkpoint(path: str | Path, payload: dict[str, Any]) -> None:
     checksum = file_checksum(temporary)
     journal = target.with_suffix(target.suffix + ".pending.json")
     atomic_text(journal, json.dumps({"target": target.name, "sha256": checksum}))
-    temporary.replace(target)
+    replace_with_retry(temporary, target)
     atomic_text(target.with_suffix(target.suffix + ".sha256"), f"{checksum}  {target.name}\n")
     journal.unlink()
 

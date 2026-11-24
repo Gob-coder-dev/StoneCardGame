@@ -56,6 +56,11 @@ class TacticalActorCritic(nn.Module):
     ) -> tuple[Categorical, torch.Tensor]:
         self._validate_inputs(observations, action_mask, action_features)
         state = self.encode_state(observations)
+        logits = self.action_logits(state, action_features)
+        logits = logits.masked_fill(~action_mask, -1.0e9)
+        return Categorical(logits=logits), self.critic(state).squeeze(-1)
+
+    def action_logits(self, state, action_features):
         actions = self.action_encoder(action_features)
         # Factor the shared state projection once per state. Keep the same
         # parameters/checkpoint keys and nonlinearity as the concatenated MLP.
@@ -63,11 +68,7 @@ class TacticalActorCritic(nn.Module):
         shared = F.linear(state, projection.weight[:, : self.hidden_dim], projection.bias)
         per_action = F.linear(actions, projection.weight[:, self.hidden_dim :])
         scores = self.action_scorer[2](torch.tanh(shared.unsqueeze(1) + per_action))
-        logits = self.legacy_actor(state) + scores.squeeze(-1)
-        # A finite sentinel avoids DirectML gradient overflow while remaining
-        # exactly zero after softmax at float32 precision.
-        logits = logits.masked_fill(~action_mask, -1.0e9)
-        return Categorical(logits=logits), self.critic(state).squeeze(-1)
+        return self.legacy_actor(state) + scores.squeeze(-1)
 
     def act(
         self,

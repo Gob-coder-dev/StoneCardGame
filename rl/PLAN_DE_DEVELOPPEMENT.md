@@ -56,8 +56,20 @@ successives de 500 parties, au moins 80 % de victoires, au plus 10 % de défaite
 et une borne de confiance des non-défaites de 87 %. La validation finale de
 phase 4 utilise également 80 % / 10 % / 87 % pour certifier le socle généraliste.
 Les exigences des boss spécialisés restent indépendantes et inchangées.
+Veskar est évalué séparément avec 60 % de victoires minimum et 20 % de défaites
+maximum. Les seuils 80 % / 10 % / 87 % ci-dessus s’appliquent au groupe des autres
+dieux. L’exception de Veskar est vérifiée sur l’ensemble de ses parties de chaque
+palier ; ses tranches restent complètes sans seuil de taux supplémentaire par
+petite série. Elle s’applique aux promotions et à la validation finale de phase 4.
 Les confirmations utilisent des seeds
 renouvelés et leur compteur est sauvegardé.
+
+La garde finale applique en plus un contrôle à chaque dieu hors Veskar contre
+chaque palier : au moins 80 % de victoires et au plus 10 % de défaites sur les
+400 parties regroupant camps et ordres de jeu. Chaque tranche de 100 parties
+de ces dieux doit conserver au moins 70 % de victoires et au plus 20 % de
+défaites. Les contrôles agrégés du socle et l'exception de Veskar restent actifs.
+Les promotions intermédiaires ne sont pas modifiées par ce changement.
 
 La pré-évaluation peut avancer dans les paliers déjà maîtrisés avant PPO.
 Son compteur survit aux reprises. Ses seeds sont séparés de ceux des
@@ -70,16 +82,101 @@ L'identité du registre inclut poids, moteur, contexte et planning.
 Sa réussite permet de produire `phase4_validated.pt` avec une certification
 liée aux poids exacts.
 
+La commande PPO principale orchestre cette validation automatiquement via
+`training/phase_four_automation.py`. Le candidat et son identité sont figés
+avant le premier match. `latest.pt` contient l'état du cycle et reprend une
+validation interrompue avant toute nouvelle optimisation. Une erreur technique
+arrête le programme et ne compte pas comme un échec statistique.
+
+Après un échec des critères, Adam et le curriculum sont conservés ; les
+confirmations sont réinitialisées. Il faut au moins 100 nouvelles mises à jour,
+des poids différents et les deux confirmations habituelles avant un nouveau
+tournoi, avec des seeds distincts. Les critères ne sont pas assouplis.
+`phase4_automation.maximum_failed_attempts` borne le nombre d'échecs à trois.
+Le budget PPO reste applicable ; une validation déjà en cours peut néanmoins
+se terminer après épuisement du budget. Une réussite sauvegarde le certificat
+et arrête la phase 4 sans démarrer la phase 5. L'état est publié dans
+`phase4_status.json` et la progression finale dans les métriques de suivi.
+
+Une révision explicite des critères peut être appliquée à un tournoi Godot
+déjà terminé avec `validate_phase4.py --reuse-recorded`. La commande retrouve
+le candidat figé et le registre SQLite grâce à l'identité originale et au
+planning original, vérifie les poids, le moteur et la couverture complète,
+puis utilise la même fonction de calcul que la validation en direct.
+Elle refuse un changement de règles, de contenu, de decks ou de planning.
+Un changement des sources Python doit être autorisé explicitement.
+Le rapport et le certificat indiquent les anciens et nouveaux critères,
+les empreintes du candidat et du registre, et le caractère rétrospectif du
+recalcul. Les snapshots originaux sont conservés ; l'ancien `latest.pt` est
+archivé avant remplacement. Ce résultat ne mesure pas une généralisation
+sur de nouvelles parties.
+
 ### Phase 5 — self-play
 
-Logiciel implémenté. L'initialisation exige une phase 4 certifiée et compatible.
-La ligue conserve des adversaires gelés et borne leur cache mémoire. Un épisode
-garde son adversaire même si le cache cesse de le référencer.
+Le protocole `champion_v1` remplace le renouvellement des adversaires à
+intervalles fixes. Le modèle certifié de phase 4 est le champion initial.
+Le candidat conserve son optimiseur PPO et apprend en Python. Les poids de
+tirage sont 60 % champion, 20 % anciens champions et 20 % bots, renormalisés
+quand une catégorie n'existe pas encore. Chaque épisode garde son adversaire.
 
-La validation compare candidat et politique initiale contre les bots Godot,
-puis mesure les matchs entre dieux. Les critères sont ceux du YAML.
-`phase5_validated.pt` est produit après réussite ; une nouvelle mise à jour PPO
-nécessite une nouvelle validation.
+Tous les 100 updates, une présélection couvre les 36 combinaisons de dieux,
+les camps et les premiers joueurs (144 matchs). Un score d'au moins 52 % peut
+ouvrir une tentative après le délai minimum. Le candidat est alors figé ;
+aucune optimisation ne s'effectue pendant les confirmations.
+Les bots des huit paliers sont évalués en premier, puis les anciens champions.
+Un échec de conservation termine la tentative avant les longues confirmations.
+
+Une promotion exige deux confirmations indépendantes de 1 152 matchs chacune,
+au moins 53 % de score et une borne de confiance bootstrap appariée supérieure
+à 50 % à chaque confirmation. Le score compte les victoires pour 1 et les nuls
+pour 0,5. Le bootstrap rééchantillonne les paires qui inversent les modèles sur
+une même situation initiale. Il s'agit d'une estimation unilatérale à 95 %, pas
+d'une garantie d'erreur globale sur toute une suite adaptative de tentatives.
+
+Les scores de chaque dieu sont comparés au champion jouant contre lui-même sur
+les mêmes situations ; une baisse supérieure à 5 points bloque la promotion.
+Les confrontations individuelles sont diagnostiquées, sans plancher absolu
+qui pénaliserait un désavantage naturel entre dieux. Jusqu'à trois anciens
+champions, dont toujours la référence initiale, servent de garde : score minimum
+48 % et baisse maximale de 5 points par rapport au champion courant contre
+chaque référence. Les bots des huit paliers contrôlent aussi la conservation
+du taux de victoire de phase 4, avec une baisse maximale de 5 points par palier
+et 8 points par dieu. Toutes ces valeurs se trouvent dans le YAML.
+
+Le champion est remplacé seulement après réussite des contrôles. L'objectif
+de campagne est de trois promotions ; ce nombre ne prouve pas un niveau optimal.
+La dernière exige en plus 1 728 duels sur de nouvelles seeds et de nouveaux
+contrôles historiques et Godot. Sa réussite produit `phase5_validated.pt`, puis
+arrête automatiquement le run. La patience est de 1 500 mises à jour sans
+promotion ; le budget PPO reste une limite indépendante. Les arrêts pour
+plateau ou budget épuisé ont le code de sortie 2 et ne produisent pas de certificat.
+
+Le checkpoint est la source de reprise. Il contient les champions immuables,
+le candidat en validation, les empreintes, les compteurs et les rapports.
+Les tournois Godot parallèles enregistrent seulement les résultats compacts
+dans SQLite ; les matrices de features terminales ne sont pas conservées.
+Une interruption reprend les matchs manquants avant toute optimisation,
+y compris si le budget est épuisé. Une erreur technique ne compte pas comme
+un échec de performance. Les sources et les critères restent figés pendant
+une tentative. Les modèles CPU ont un cache borné et les évaluations préservent
+les générateurs aléatoires et le réglage des threads de l'apprentissage.
+Une reprise autorisant explicitement un changement des seules sources Python
+archive la tentative interrompue et recommence la validation des mêmes poids
+sur de nouveaux seeds, avant toute mise à jour PPO. Le backend Python regroupe
+les décisions des parties qui partagent un checkpoint adverse, avec un RNG
+propre à chaque partie.
+La collecte PPO omet l'encodage d'une observation terminale qu'elle remplacerait
+immédiatement au reset. Les récompenses et statistiques finales sont enregistrées.
+Les décisions du champion utilisent un masque construit depuis l'état du jeu,
+en conservant la convention du codec pour les cartes répétées.
+
+Une migration de l'ancien plan conserve poids, Adam et compteurs mais démarre
+le nouveau curriculum à zéro promotion avec la phase 4 comme référence.
+Les anciens fichiers et le manifeste de ligue sont archivés, sans attribuer
+de validation rétroactive aux snapshots non évalués. Le statut est publié dans
+`phase5_status.json`, les métriques dans TensorBoard et les preuves dans
+`evaluations/phase5/`. `validate_phase5.py` vérifie le certificat automatique ;
+il ne relance plus une ancienne campagne manuelle.
 
 ### Phase 6 — recherche de decks
 

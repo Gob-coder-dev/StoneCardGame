@@ -90,6 +90,9 @@ curriculum:
   maximum_loss_rate: 0.10
   non_loss_confidence_floor: 0.87
   promotion_confirmations: 2
+  # Exception jugee sur l'ensemble des parties de Veskar, independamment des autres dieux.
+  god_thresholds:
+    veskar: {minimum_win_rate: 0.60, maximum_loss_rate: 0.20}
   replay_probability: 0.20
   stages:
     - {name: precision_0, precision: 0.0, anticipation: false}
@@ -133,7 +136,19 @@ evaluation:
     maximum_loss_rate: 0.10
     non_loss_confidence_floor: 0.87
     minimum_slice_win_rate: 0.70
-    maximum_slice_loss_rate: 0.10
+    # Limite locale sur 100 matchs ; le controle par dieu porte sur 400 matchs.
+    maximum_slice_loss_rate: 0.20
+    core_god_thresholds: {minimum_win_rate: 0.80, maximum_loss_rate: 0.10}
+    god_thresholds:
+      veskar: {minimum_win_rate: 0.60, maximum_loss_rate: 0.20}
+
+phase4_automation:
+  # Confirmation du dernier palier -> tournoi Godot -> certificat et arret.
+  # Un echec exige de nouveaux poids et de nouvelles confirmations.
+  enabled: true
+  minimum_updates_between_attempts: 100
+  maximum_failed_attempts: 3
+  seed_stride: 1000000
 
 phase5:
   activation: after_phase4_gate

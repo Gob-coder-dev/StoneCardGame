@@ -7,6 +7,7 @@ from typing import Any
 import numpy as np
 
 from samstone_rl.opponents import GodotProfileOpponent
+from samstone_rl.training.god_thresholds import parse_god_thresholds, threshold_groups
 from samstone_rl.training.validation import wilson_lower
 
 
@@ -80,8 +81,10 @@ class CurriculumManager:
         maximum_loss_rate: float | None = None,
         non_loss_confidence_floor: float | None = None,
         promotion_confirmations: int = 1,
+        god_thresholds: Mapping[str, Any] | None = None,
     ) -> None:
         self.target_win_rate = target_win_rate
+        self.god_thresholds = parse_god_thresholds(god_thresholds)
         self.confidence_floor = confidence_floor
         self.replay_probability = replay_probability
         self.stages = stages
@@ -292,7 +295,25 @@ class CurriculumManager:
             metrics["reset_attempts"] = int(reset_attempts)
         return metrics
 
-    def promotion_metrics(self, wins: int, draws: int, games: int) -> dict[str, float | bool | int]:
+    def promotion_metrics(self, wins: int, draws: int, games: int, by_god=None) -> dict:
+        metrics = self._base_promotion_metrics(wins, draws, games)
+        if self.god_thresholds:
+            groups = threshold_groups(by_god, self.god_thresholds, self._base_promotion_metrics)
+            if (
+                isinstance(by_god, Mapping)
+                and by_god
+                and any(
+                    sum(int(v[k]) for v in by_god.values()) != expected
+                    for k, expected in (("wins", wins), ("draws", draws), ("games", games))
+                )
+            ):
+                groups["eligible"] = False
+                groups["inconsistent_totals"] = True
+            metrics["eligible"] = groups["eligible"]
+            metrics["god_thresholds"] = groups
+        return metrics
+
+    def _base_promotion_metrics(self, wins: int, draws: int, games: int) -> dict:
         losses = games - wins - draws
         if games <= 0 or losses < 0:
             return {
@@ -330,10 +351,10 @@ class CurriculumManager:
             "consecutive_promotion_successes": self.consecutive_promotion_successes,
         }
 
-    def consider_promotion(self, wins: int, games: int, draws: int = 0) -> bool:
+    def consider_promotion(self, wins: int, games: int, draws: int = 0, by_god=None) -> bool:
         if games <= 0 or self.completed or self.awaiting_final_validation:
             return False
-        if not bool(self.promotion_metrics(wins, draws, games)["eligible"]):
+        if not bool(self.promotion_metrics(wins, draws, games, by_god)["eligible"]):
             # A failed held-out evaluation breaks the confirmation streak. This
             # prevents an old good result from validating a later regression.
             self.consecutive_promotion_successes = 0
@@ -368,6 +389,7 @@ class CurriculumManager:
             "current": asdict(self.current),
             "bootstrap_evaluation_completed": self.bootstrap_evaluation_completed,
             "target_win_rate": self.target_win_rate,
+            "god_thresholds": self.god_thresholds,
             "confidence_floor": self.confidence_floor,
             "maximum_loss_rate": self.maximum_loss_rate,
             "non_loss_confidence_floor": self.non_loss_confidence_floor,
