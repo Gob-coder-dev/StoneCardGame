@@ -32,10 +32,18 @@ func add_clip(id: String) -> void:
 
 
 func clear() -> void:
+	suspend()
+	_slots.clear()
+
+
+func suspend() -> void:
 	set_process(false)
 	for slot in _players.keys():
 		_stop_clip(slot)
-	_slots.clear()
+
+
+func resume() -> void:
+	set_process(not _slots.is_empty())
 
 
 func _process(_delta: float) -> void:

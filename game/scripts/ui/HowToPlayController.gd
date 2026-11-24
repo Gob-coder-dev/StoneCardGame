@@ -47,6 +47,14 @@ func _ready() -> void:
 	_select_tab(Tab.BASICS)
 
 
+func menu_page_deactivated() -> void:
+	_demos.suspend()
+
+
+func menu_page_activated() -> void:
+	_demos.resume()
+
+
 func _select_tab(tab: Tab) -> void:
 	_active_tab = tab
 	for index in range(tabs.get_child_count()):
@@ -251,7 +259,9 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _notification(what: int) -> void:
-	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST and not get_meta("menu_preview", false):
+		if MenuNavigation.cancel_for_back():
+			return
 		_go_back()
 
 

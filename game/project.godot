@@ -36,6 +36,7 @@ RitualOpeningContext="*res://scripts/application/economy/RitualOpeningContext.gd
 Audio="*res://scripts/application/audio/AudioService.gd"
 SafeArea="*res://scripts/ui/SafeArea.gd"
 InterfaceTheme="*res://scripts/ui/InterfaceTheme.gd"
+MenuNavigation="*res://scripts/ui/MenuNavigation.gd"
 
 [display]
 

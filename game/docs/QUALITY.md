@@ -99,7 +99,7 @@ Les exceptions `unused_signal` sont limitées aux déclarations de contrats dont
 les signaux sont émis par une sous-classe ou un collaborateur identifié dans le
 commentaire. Les avertissements du projet restent activés.
 
-Les deux suites doivent terminer avec le code `0`. Une vérification visuelle
+Les trois suites doivent terminer avec le code `0`. Une vérification visuelle
 reste obligatoire sur téléphone et tablette pour les proportions, gestes,
 transitions et coûts de première ouverture.
 

@@ -23,12 +23,18 @@ const CAMPAIGN_RESULT := "res://scenes/menus/Result.tscn"
 const PVP_LOBBY := "res://scenes/menus/PvpLobby.tscn"
 const PVP_PREPARATION := "res://scenes/menus/PvpPreparation.tscn"
 const PVP_RESULT := "res://scenes/menus/PvpResult.tscn"
+const MAIN_MENUS: Array[String] = [SHOP, COLLECTION, MAIN_MENU, QUESTS, HOW_TO_PLAY]
 
 
 static func go(tree: SceneTree, scene_path: String) -> Error:
 	if tree == null or scene_path.is_empty() or not ResourceLoader.exists(scene_path, "PackedScene"):
 		push_error("GameRoutes: scène introuvable '%s'." % scene_path)
 		return ERR_FILE_NOT_FOUND
+	var menus := tree.root.get_node_or_null("MenuNavigation")
+	if menus != null and menus.navigate_to(scene_path):
+		return OK
+	if menus != null:
+		menus.cancel()
 	var error := tree.change_scene_to_file(scene_path)
 	if error != OK:
 		push_error("GameRoutes: ouverture impossible de '%s' (%s)." % [

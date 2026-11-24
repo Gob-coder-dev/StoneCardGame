@@ -51,12 +51,26 @@ func _ready() -> void:
 	add_child(timer)
 
 
+func menu_page_activated() -> void:
+	_on_tick()
+
+
 func _apply_columns() -> void:
 	# Deux fiches par ligne sur tous les formats : la largeur logique 1080 des
 	# téléphones ne doit jamais déclencher une grille « tablette » à quatre cartes.
 	offers_grid.columns = 2
 	rituals_grid.columns = 2
 	gods_grid.columns = 2
+
+
+func menu_swipe_allowed() -> bool:
+	return not purchase_modal.visible and not refresh_popup.is_open() \
+		and not _purchase_in_progress and not _refresh_in_progress
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST and not get_meta("menu_preview", false):
+		MenuNavigation.cancel_for_back()
 
 
 func _refresh() -> void:

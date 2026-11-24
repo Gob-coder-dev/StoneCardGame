@@ -65,6 +65,8 @@ func _ready() -> void:
 ## Les ancres sont des vrais Controls de l'accueil : le spotlight ne dessine
 ## jamais une copie et le joueur voit exactement la commande qu'il utilisera.
 func _register_story_anchors() -> void:
+	if get_meta("menu_preview", false):
+		return
 	StoryService.register_anchor("menu.profile", profile_button)
 	StoryService.register_anchor("menu.campaign", campaign_button)
 	StoryService.register_anchor("menu.pvp", pvp_button)
@@ -75,7 +77,18 @@ func _register_story_anchors() -> void:
 ## Le premier lancement présente les menus avant toute navigation. Une fois le
 ## chapitre terminé, l'accueil ne le rejoue plus.
 func _start_story_onboarding() -> void:
-	StoryService.notify_screen(Routes.MAIN_MENU)
+	if not get_meta("menu_preview", false):
+		StoryService.notify_screen(Routes.MAIN_MENU)
+
+
+func menu_page_activated() -> void:
+	_refresh()
+	_register_story_anchors()
+	_start_story_onboarding()
+
+
+func menu_swipe_allowed() -> bool:
+	return not deck_warning_overlay.visible and not sound_settings.is_open()
 
 
 func _fit_portrait() -> void:
@@ -99,7 +112,8 @@ func _refresh() -> void:
 	god_title.add_theme_color_override("font_color", UITheme.COL_TEXT_DIM)
 	_restore_deck_status()
 	var deck := PlayerData.get_active_deck()
-	CardArtCache.activate_god(PlayerData.player_god_id, 1, deck)
+	if not get_meta("menu_preview", false):
+		CardArtCache.activate_god(PlayerData.player_god_id, 1, deck)
 	var progress := CardArtCache.progress_for_god(PlayerData.player_god_id)
 	_on_art_warmup_progress(PlayerData.player_god_id, progress.x, progress.y)
 
@@ -184,6 +198,10 @@ func _notification(what: int) -> void:
 	# Le retour Android quitte l'application depuis l'accueil ; les autres
 	# écrans l'interceptent avant d'arriver ici.
 	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
+		if get_meta("menu_preview", false):
+			return
+		if MenuNavigation.cancel_for_back():
+			return
 		if is_instance_valid(sound_settings) and sound_settings.is_open():
 			sound_settings.close()
 			return

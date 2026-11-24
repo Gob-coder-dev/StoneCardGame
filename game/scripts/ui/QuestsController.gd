@@ -45,6 +45,10 @@ func _ready() -> void:
 	add_child(tick)
 
 
+func menu_page_activated() -> void:
+	_update_countdown()
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
 		_close()
@@ -52,7 +56,9 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _notification(what: int) -> void:
-	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST and not get_meta("menu_preview", false):
+		if MenuNavigation.cancel_for_back():
+			return
 		_close()
 
 

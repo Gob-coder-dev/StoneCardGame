@@ -20,13 +20,7 @@ const RULES_TAB := 4
 	$Tabs/RulesButton
 ]
 
-const SCENES: Array[String] = [
-	Routes.SHOP,
-	Routes.COLLECTION,
-	Routes.MAIN_MENU,
-	Routes.QUESTS,
-	Routes.HOW_TO_PLAY,
-]
+const SCENES: Array[String] = Routes.MAIN_MENUS
 
 const ICONS: Array[Texture2D] = [preload("res://assets/ui/nav-shop.svg"),
 	preload("res://assets/ui/nav-decks.svg"),
@@ -40,13 +34,18 @@ func _ready() -> void:
 		_add_tab_content(_buttons[index], index)
 		_buttons[index].pressed.connect(_on_tab_pressed.bind(index))
 		_apply_tab_style(_buttons[index], index == current_tab)
+	if not get_parent().get_meta("menu_preview", false):
+		register_story_anchors()
+	_refresh_badge()
+	PlayerData.quests_changed.connect(_refresh_badge)
+
+
+func register_story_anchors() -> void:
 	StoryService.register_anchor("nav.shop", _buttons[0])
 	StoryService.register_anchor("nav.deck", _buttons[1])
 	StoryService.register_anchor("nav.home", _buttons[2])
 	StoryService.register_anchor("nav.quests", _buttons[QUESTS_TAB])
 	StoryService.register_anchor("nav.rules", _buttons[RULES_TAB])
-	_refresh_badge()
-	PlayerData.quests_changed.connect(_refresh_badge)
 
 
 func _add_tab_content(button: Button, index: int) -> void:

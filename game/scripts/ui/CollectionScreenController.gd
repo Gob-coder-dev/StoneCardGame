@@ -123,7 +123,21 @@ func _ready() -> void:
 	sort_menu.visible = false
 	_refresh_all(false, true)
 	StoryService.spotlight_requested.connect(_on_story_spotlight_requested)
+	if not get_meta("menu_preview", false):
+		StoryService.notify_screen(Routes.COLLECTION)
+
+
+func menu_page_activated() -> void:
+	_prepare_card_art()
+	_register_story_anchors()
 	StoryService.notify_screen(Routes.COLLECTION)
+
+
+func menu_swipe_allowed() -> bool:
+	return not confirm_popup.is_open() and not pending_rewards_vault.visible \
+		and not info_sheet.visible and not replacement_panel.visible \
+		and not is_instance_valid(_action_drawer) and not god_menu.visible \
+		and not sort_menu.visible and not level_menu.visible
 
 
 func _toggle_level_menu() -> void:
@@ -331,7 +345,9 @@ func _event_hits_control(event: InputEvent, control: Control) -> bool:
 
 
 func _notification(what: int) -> void:
-	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST and not get_meta("menu_preview", false):
+		if MenuNavigation.cancel_for_back():
+			return
 		_go_back()
 
 
@@ -474,6 +490,8 @@ func _populate_collection() -> void:
 
 
 func _register_story_anchors() -> void:
+	if get_meta("menu_preview", false):
+		return
 	StoryService.register_anchor("collection.deck_panel", $Content/Scroll/Page/DeckPanel)
 	for row in deck_rows.get_children():
 		for wrapper in row.get_children():
@@ -724,7 +742,8 @@ func _commit_operation(operation: Dictionary) -> bool:
 
 
 func _prepare_card_art() -> void:
-	CardArtCache.activate_god(PlayerData.player_god_id, _preview_level, _current_deck)
+	if not get_meta("menu_preview", false):
+		CardArtCache.activate_god(PlayerData.player_god_id, _preview_level, _current_deck)
 
 
 func _upgrade_card(lineage_id: String) -> void:

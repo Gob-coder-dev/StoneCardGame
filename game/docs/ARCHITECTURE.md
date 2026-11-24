@@ -641,6 +641,30 @@ règles est dans [CAMPAIGN.md](CAMPAIGN.md).
 diagnostique un changement impossible. Les contrôleurs conservent la décision
 de navigation propre à leur écran, mais ne recopient plus les chemins `res://`.
 
+## Navigation des menus
+
+`GameRoutes.MAIN_MENUS` définit l’ordre Boutique, Decks, Accueil, Quêtes,
+Règles, partagé avec `BottomNav`. L’autoload `MenuNavigation` coordonne les
+glissements et les clics sur la barre. `input/MenuSwipe` reconnaît l’axe du
+geste sans dépendre des scènes. Chaque contrôleur indique si ses fenêtres
+autorisent le glissement avec `menu_swipe_allowed()`.
+
+`MenuPageCache` prépare les deux voisins pendant les périodes sans geste,
+une page par frame. Les pages cachées sont invisibles et désactivées. Leur
+signature de profil est vérifiée périodiquement et avant leur réutilisation,
+avec la rotation de boutique ou la journée locale des quêtes. Les règles
+conservent leur onglet et leur défilement tant que le dieu reste identique.
+Une page périmée est reconstruite et le cache est libéré en quittant les menus.
+
+Pendant le glissement, les deux scènes réelles restent jointives et la barre
+du bas garde sa position. La fin du mouvement dépend de la distance restante.
+Les pages préparées portent la métadonnée `menu_preview` pour ne pas remplacer
+les ancres du tutoriel ni lancer son scénario. `menu_page_activated()` réactive
+les services propres à la page ; `menu_page_deactivated()` libère notamment
+les décodeurs vidéo des règles. Les minuteurs et tweens héritent de la
+désactivation du menu. `MenuNavigationChecks` vérifie ces contrats avec les
+événements tactiles du viewport.
+
 ## Scénario et tutorat
 
 `StoryService` charge les dialogues et les chapitres, met les séquences en file
@@ -859,7 +883,8 @@ camp dont le dieu est le sien (`GameState.god_of()`).
 
 ## Vérification
 
-Les scènes `GodSystemChecks.tscn` et `TouchInputChecks.tscn` sont les points d'entrée.
+Les scènes `GodSystemChecks.tscn`, `TouchInputChecks.tscn` et
+`MenuNavigationChecks.tscn` sont les points d’entrée.
 Les assertions et fixtures sont dans `tests/support/CombatTestSuite.gd`.
 `PlayerProfileFixture` redirige les écritures des tests d'interface vers un
 fichier dédié, puis restaure le profil en mémoire et le chemin initial.
@@ -875,7 +900,7 @@ Les dieux sont équipés dans les deux camps, et des ouvertures dédiées garant
 que les comparaisons Déclin et Essaim déclenchent réellement leurs auras.
 `TurnSequenceChecks` vérifie aussi les fins retardées et l'annulation des présentations.
 
-`GodSystemChecks` et `TouchInputChecks` doivent terminer avec le code `0`,
+`GodSystemChecks`, `TouchInputChecks` et `MenuNavigationChecks` doivent terminer avec le code `0`,
 sans échec ni erreur Godot. Le nombre de vérifications n'est pas figé ici :
 la sortie des lanceurs fait foi.
 
