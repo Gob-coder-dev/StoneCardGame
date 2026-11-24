@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import Any
 
@@ -39,30 +40,58 @@ class CheckpointOpponent:
         rng: np.random.Generator,
         player: int,
     ) -> dict[str, Any]:
-        snapshot = bridge.get_state(player)
-        observation = snapshot["observation"]
-        mask = self.codec.legal_mask(legal_actions, observation["hand"])
-        if not mask.any():
+        return self.choose_many([(bridge, legal_actions, rng, player)])[0]
+
+    def choose_many(
+        self,
+        requests: Sequence[
+            tuple[GodotProcess, list[dict[str, Any]] | None, np.random.Generator, int]
+        ],
+        *,
+        evaluate_tactics: Callable[[np.ndarray], np.ndarray] | None = None,
+    ) -> list[dict[str, Any]]:
+        """Choose moves with independent RNGs and optional batched tactical scores."""
+        if not requests:
+            return []
+        observations = [
+            bridge.get_state(player)["observation"] for bridge, _, _, player in requests
+        ]
+        masks_array = np.stack(
+            [
+                bridge.action_mask(player)
+                if moves is None
+                else self.codec.legal_mask(moves, observation["hand"])
+                for observation, (bridge, moves, _, player) in zip(
+                    observations, requests, strict=True
+                )
+            ]
+        )
+        if not masks_array.any(axis=1).all():
             raise RuntimeError("le checkpoint adverse n'a aucune action legale")
+        scores = None
+        if isinstance(self.model, TacticalActorCritic):
+            scores = (
+                evaluate_tactics(masks_array)
+                if evaluate_tactics is not None
+                else [bridge.tactical_action_scores(player) for bridge, _, _, player in requests]
+            )
         with torch.no_grad():
             encoded = torch.as_tensor(
-                self.encoder.encode(observation), dtype=torch.float32, device=self.device
-            ).unsqueeze(0)
-            masks = torch.as_tensor(mask, dtype=torch.bool, device=self.device).unsqueeze(0)
-            scores = (
-                [bridge.tactical_action_scores(player)]
-                if isinstance(self.model, TacticalActorCritic)
-                else None
+                np.stack([self.encoder.encode(observation) for observation in observations]),
+                dtype=torch.float32,
+                device=self.device,
             )
+            masks = torch.as_tensor(masks_array, dtype=torch.bool, device=self.device)
             distribution, _value = self.model.distribution_and_value(
                 encoded,
                 masks,
                 *feature_args(self.model, encoded, masks, scores),
             )
-        probabilities = distribution.probs[0].cpu().numpy()
-        action = (
-            int(probabilities.argmax())
-            if self.deterministic
-            else int(rng.choice(len(probabilities), p=probabilities))
-        )
-        return self.codec.action_to_move(action, observation["hand"])
+        probabilities = distribution.probs.cpu().numpy()
+        moves = []
+        for observation, row, (_, _, rng, _) in zip(
+            observations, probabilities, requests, strict=True
+        ):
+            action = int(row.argmax()) if self.deterministic else int(rng.choice(len(row), p=row))
+            moves.append(self.codec.action_to_move(action, observation["hand"]))
+        return moves

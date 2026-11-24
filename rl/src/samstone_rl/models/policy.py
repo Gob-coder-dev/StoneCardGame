@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Literal, TypedDict
+from typing import Any, Literal, NotRequired, TypedDict
 
 import numpy as np
 import torch
@@ -27,12 +27,13 @@ class PolicySpec(TypedDict):
     feature_size: int
     hidden_dim: int
     action_hidden_dim: int
+    veskar_extensions: NotRequired[dict[str, bool]]
 
 
 def policy_spec(config: dict[str, Any]) -> PolicySpec:
     model = config.get("model", {})
     tactical = model.get("architecture", "actor_critic") == "tactical_actor_critic"
-    return {
+    result = {
         "architecture": "tactical_actor_critic" if tactical else "actor_critic",
         "observation_schema": ObservationEncoder.SCHEMA_VERSION,
         "observation_size": ObservationEncoder().get_obs_size(),
@@ -42,18 +43,36 @@ def policy_spec(config: dict[str, Any]) -> PolicySpec:
         "hidden_dim": int(model.get("hidden_dim", 256)),
         "action_hidden_dim": int(model.get("action_hidden_dim", 128)) if tactical else 0,
     }
+    extensions = model.get("veskar_extensions", {})
+    if set(extensions) - {"outcome", "adapter"} or any(
+        not isinstance(v, bool) for v in extensions.values()
+    ):
+        raise ValueError("extensions Veskar invalides")
+    if any(extensions.values()):
+        if not tactical:
+            raise ValueError("extensions Veskar reservees au modele tactique")
+        result["veskar_extensions"] = {k: extensions.get(k, False) for k in ("outcome", "adapter")}
+    return result
 
 
 def build_policy(config: dict[str, Any], device: str | torch.device = "cpu") -> Policy:
     spec = policy_spec(config)
     architecture = config.get("model", {}).get("architecture", "actor_critic")
     if architecture == "tactical_actor_critic":
-        model: Policy = TacticalActorCritic(
+        model_class = TacticalActorCritic
+        extra = {}
+        if "veskar_extensions" in spec:
+            from .veskar_policy import VeskarPolicy
+
+            model_class = VeskarPolicy
+            extra = spec["veskar_extensions"]
+        model: Policy = model_class(
             spec["observation_size"],
             spec["action_count"],
             spec["feature_size"],
             spec["hidden_dim"],
             spec["action_hidden_dim"],
+            **extra,
         )
     elif architecture == "actor_critic":
         model = ActorCritic(spec["observation_size"], spec["action_count"], spec["hidden_dim"])
@@ -82,7 +101,11 @@ def feature_args(
     encoder = TacticalActionEncoder()
     obs = observations.detach().cpu().numpy()
     mask = masks.detach().cpu().numpy()
-    values = np.stack([encoder.encode(o, m, s) for o, m, s in zip(obs, mask, scores, strict=True)])
+    values = (
+        encoder.encode_batch(obs, mask, scores)
+        if isinstance(scores, np.ndarray)
+        else np.stack([encoder.encode(o, m, s) for o, m, s in zip(obs, mask, scores, strict=True)])
+    )
     return (torch.as_tensor(values, dtype=torch.float32, device=observations.device),)
 
 

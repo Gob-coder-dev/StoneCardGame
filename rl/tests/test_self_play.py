@@ -1,6 +1,4 @@
-import hashlib
 import json
-import os
 from pathlib import Path
 
 import numpy as np
@@ -10,17 +8,16 @@ import yaml
 from checkpoint_fixtures import certified
 
 from samstone_rl.models.policy import build_policy
-from samstone_rl.opponents.baselines import GodotProfileOpponent
 from samstone_rl.opponents.checkpoint import CheckpointOpponent
-from samstone_rl.training.curriculum import DEFAULT_STAGES
 from samstone_rl.training.league import LeagueOpponent, SelfPlayLeague
-from samstone_rl.training.phase_five_gate import (
-    GODS,
-    MatchCount,
-    PhaseFiveValidator,
-    judge_phase_five,
-)
 from samstone_rl.training.ppo_self_play import PhaseFiveTrainer
+from samstone_rl.utils.certification import require_certified
+from samstone_rl.utils.checkpoints import (
+    load_checkpoint,
+    policy_checksum,
+    save_checkpoint,
+    state_checksum,
+)
 
 
 def _checkpoint(path: Path, completed: bool = True) -> None:
@@ -66,200 +63,360 @@ def test_phase_five_rejects_unvalidated_checkpoint(tmp_path):
         PhaseFiveTrainer(config, phase4_checkpoint=checkpoint)
 
 
-def test_validated_checkpoint_activates_official_self_play(tmp_path):
-    checkpoint = tmp_path / "validated.pt"
-    _checkpoint(checkpoint)
+@pytest.fixture
+def run_config(tmp_path):
     config = yaml.safe_load(
         (Path(__file__).resolve().parents[1] / "configs/ppo_self_play_v2.yaml").read_text(
             encoding="utf-8"
         )
     )
     config["output_dir"] = str(tmp_path / "run")
-    config["phase5"]["league_directory"] = str(tmp_path / "run/league")
     config["model"]["hidden_dim"] = 16
-    config["monitoring"]["tensorboard"] = False
+    config["ppo"].update(
+        rollout_steps=8,
+        num_envs=2,
+        minibatches=2,
+        total_timesteps=64,
+        min_update_epochs=1,
+        max_update_epochs=1,
+    )
+    config["environment"]["evaluation_backend"] = "python"
+    config["monitoring"].update(
+        tensorboard=False, checkpoint_every_updates=0, snapshot_every_updates=0
+    )
+    config["evaluation"]["every_updates"] = 100
+    config["phase5"]["training_weights"] = {"current": 1.0}
+    config["phase5"]["minimum_updates_between_attempts"] = 1
     path = tmp_path / "config.yaml"
     path.write_text(yaml.safe_dump(config), encoding="utf-8")
-    with PhaseFiveTrainer(path, phase4_checkpoint=checkpoint) as trainer:
-        assert len(trainer.league.entries) == 2
-        assert trainer.curriculum.stage_index == 7
-        assert trainer.league.weights["godot"] == 0.80
-        trainer._after_training_update(0, 501, [], None)
-        assert trainer.league.weights["godot"] == 0.25
-        assert isinstance(trainer._training_opponent(), LeagueOpponent)
-
-
-def test_phase_five_trains_mixed_gods_against_frozen_checkpoint(tmp_path):
     source = tmp_path / "phase4_validated.pt"
     _checkpoint(source)
-    config_data = yaml.safe_load(
-        (Path(__file__).resolve().parents[1] / "configs" / "ppo_self_play_v2.yaml").read_text(
-            encoding="utf-8"
+    return config, path, source
+
+
+def test_initial_champion_is_frozen_and_is_not_replaced_on_a_timer(run_config):
+    config, path, source = run_config
+    with PhaseFiveTrainer(path, phase4_checkpoint=source) as trainer:
+        assert len(trainer.league.entries) == 1
+        assert trainer.curriculum.stage_index == 7
+        champion = dict(trainer.phase5_state["champions"][0])
+        trainer._after_training_update(0, 501, [], None)
+        assert trainer.phase5_state["champions"] == [champion]
+        assert isinstance(trainer._training_opponent(), LeagueOpponent)
+        assert not trainer._phase4_auto_enabled
+
+
+def test_candidate_trains_with_mixed_gods_and_resume_preserves_adam(run_config):
+    config, path, source = run_config
+    with PhaseFiveTrainer(path, phase4_checkpoint=source) as trainer:
+        trainer.config["phase5"]["mirror_probability"] = 0
+        match = trainer._training_scenario_options(0, 1)["config"]
+        assert match["human_god"] != match["ai_god"]
+        trainer.config["phase5"]["mirror_probability"] = config["phase5"]["mirror_probability"]
+        trainer.train()
+        latest = trainer.output / "latest.pt"
+        saved = load_checkpoint(latest)
+        assert saved["global_step"] == 64
+        assert saved["phase5"]["champion_curriculum"]["status"] == "budget_exhausted"
+        assert not saved["phase5"]["completed"]
+        assert len(trainer.league.entries) == 1
+        assert saved["optimizer"]["state"]
+        events = [
+            json.loads(line)
+            for line in (trainer.output / "league/results.jsonl").read_text().splitlines()
+        ]
+        assert any(e["context"]["god"] != e["context"]["opponent_god"] for e in events)
+    with PhaseFiveTrainer(path, resume=latest) as trainer:
+        assert trainer._resume_global_step == 64
+        assert len(trainer.optimizer.state) == len(saved["optimizer"]["state"])
+        assert state_checksum(trainer.model.state_dict()) == state_checksum(saved["model"])
+
+
+def _improve(trainer):
+    with torch.no_grad():
+        next(trainer.model.parameters()).add_(0.001)
+
+
+def _passed(trainer, pending):
+    return dict(
+        passed=True,
+        candidate={"score": 0.6},
+        confirmations=[{"passed": True}] * 2,
+        holdout={"passed": True} if pending["final"] else None,
+    )
+
+
+def test_promotions_require_validation_and_final_success_stops_ppo(run_config, monkeypatch):
+    config, path, source = run_config
+    config["phase5"]["target_promotions"] = 2
+    path.write_text(yaml.safe_dump(config), encoding="utf-8")
+    with PhaseFiveTrainer(path, phase4_checkpoint=source) as trainer:
+        trainer.evaluation_backend = "godot"
+        trainer._oracle_manifest = load_checkpoint(source)["certification"]["oracle"]
+        monkeypatch.setattr(
+            "samstone_rl.training.phase_five_curriculum.evaluate_candidate", _passed
         )
-    )
-    run = tmp_path / "run"
-    config_data["output_dir"] = str(run)
-    config_data["phase5"]["league_directory"] = str(run / "league")
-    config_data["phase5"]["weight_schedule"][0]["weights"] = {
-        "current": 1.0,
-        "recent": 0.0,
-        "historical": 0.0,
-        "best": 0.0,
-        "godot": 0.0,
-    }
-    config_data["phase5"]["mirror_probability"] = 0.0
-    config_data["phase5"]["snapshot_every_updates"] = 1
-    config_data["model"]["hidden_dim"] = 16
-    config_data["ppo"].update(
-        {"rollout_steps": 8, "num_envs": 2, "minibatches": 2, "total_timesteps": 64}
-    )
-    config_data["environment"]["evaluation_backend"] = "python"
-    config_data["evaluation"]["every_updates"] = 100
-    config_data["monitoring"]["tensorboard"] = False
-    config = tmp_path / "phase5.yaml"
-    config.write_text(yaml.safe_dump(config_data), encoding="utf-8")
-    trainer = PhaseFiveTrainer(config, phase4_checkpoint=source)
-    match = trainer._training_scenario_options(0, 1)["config"]
-    assert match["human_god"] != match["ai_god"]
-    trainer.train()
-    checkpoint = torch.load(run / "latest.pt", map_location="cpu", weights_only=False)
-    assert checkpoint["global_step"] == 64
-    assert checkpoint["phase5"]["completed"] is False
-    assert (run / "phase4_baseline.pt").is_file()
-    assert len(trainer.league.entries) >= 3
-    results = (run / "league" / "results.jsonl").read_text(encoding="utf-8")
-    assert '"god": ' in results
-    assert any(
-        item["context"]["god"] != item["context"]["opponent_god"]
-        for item in (json.loads(line) for line in results.splitlines())
-    )
-    resumed = PhaseFiveTrainer(config, resume=run / "latest.pt")
-    try:
-        assert resumed._resume_global_step == 64
-        assert resumed.league.entries
-    finally:
-        resumed.close()
-    checkpoint["phase5"]["completed"] = True
-    certified = run / "phase5_validated.pt"
-    torch.save(checkpoint, certified)
-    resumed = PhaseFiveTrainer(config, resume=certified)
-    try:
-        assert resumed._checkpoint_extra()["phase5"]["completed"] is False
-    finally:
-        resumed.close()
+        _improve(trainer)
+        assert not trainer._start_candidate(16, 1, {})
+        assert trainer.phase5_state["promotions"] == 1
+        assert len(trainer.league.entries) == 2
+        assert trainer.league.entries[-1].category == "current"
+        _improve(trainer)
+        assert trainer._start_candidate(32, 2, {})
+        assert trainer.phase5_completed
+        assert trainer.phase5_state["promotions"] == 2
+        certified = load_checkpoint(trainer.output / "phase5_validated.pt")
+        require_certified(certified, "phase5", trainer.provenance)
+        assert certified["certification"]["report"]["independent_final_holdout"]
+        assert certified["update"] == 2
+        assert trainer._before_training()
 
 
-def test_phase_five_gate_requires_complete_tournament_and_no_regression():
-    settings = {
-        "godot_games_per_slice": 1,
-        "mixed_games_per_slice": 1,
-        "maximum_stage_regression": 0.05,
-        "maximum_god_regression": 0.08,
-        "minimum_head_to_head_score": 0.52,
-        "minimum_head_to_head_wilson": 0.49,
-        "minimum_god_score": 0.45,
-        "minimum_matchup_score": 0.30,
-    }
-    godot = {}
-    mixed = {"overall": MatchCount(144)}
-    for stage in DEFAULT_STAGES:
-        godot[f"stage:{stage.name}"] = MatchCount(24)
-    for god in GODS:
-        godot[f"god:{god}"] = MatchCount(20)
-        mixed[f"god:{god}"] = MatchCount(24)
-        for stage in DEFAULT_STAGES:
-            for player in (1, 2):
-                for first in (1, 2):
-                    godot[f"slice:{stage.name}:{god}:{player}:{first}"] = MatchCount(1)
-        for other in GODS:
-            mixed[f"matchup:{god}:{other}"] = MatchCount(4)
-            for player in (1, 2):
-                for first in (1, 2):
-                    mixed[f"slice:{god}:{other}:{player}:{first}"] = MatchCount(1)
-    assert judge_phase_five(godot, godot, mixed, settings)["passed"]
-    mixed.pop("slice:veskar:enigma:1:1")
-    report = judge_phase_five(godot, godot, mixed, settings)
-    assert not report["passed"]
-    assert any("tranche mixte incomplete" in message for message in report["failures"])
-
-
-@pytest.mark.skipif(not os.environ.get("GODOT_BIN"), reason="GODOT_BIN non defini")
-def test_phase_five_gate_plays_godot_and_mixed_match(tmp_path):
-    run = tmp_path / "run"
-    run.mkdir()
-    baseline = run / "phase4_baseline.pt"
-    _checkpoint(baseline)
-    candidate = run / "latest.pt"
-    payload = torch.load(baseline, map_location="cpu", weights_only=False)
-    payload["phase5"] = {
-        "initial_policy_checksum": hashlib.sha256(baseline.read_bytes()).hexdigest(),
-        "completed": False,
-    }
-    config_data = yaml.safe_load(
-        (Path(__file__).resolve().parents[1] / "configs" / "ppo_self_play_v2.yaml").read_text(
-            encoding="utf-8"
+def test_failed_promotion_keeps_champion_and_optimizer(run_config, monkeypatch):
+    _, path, source = run_config
+    with PhaseFiveTrainer(path, phase4_checkpoint=source) as trainer:
+        trainer.evaluation_backend = "godot"
+        trainer._oracle_manifest = load_checkpoint(source)["certification"]["oracle"]
+        original = dict(trainer.phase5_state["champions"][0])
+        _improve(trainer)
+        monkeypatch.setattr(
+            "samstone_rl.training.phase_five_curriculum.evaluate_candidate",
+            lambda *a: dict(passed=False, reason="confirmation"),
         )
-    )
-    config_data["output_dir"] = str(run)
-    config_data["phase5"]["validation"]["minimum_updates"] = 0
-    config_data["model"]["hidden_dim"] = 16
-    payload["config"] = config_data
-    torch.save(payload, candidate)
-    config = tmp_path / "config.yaml"
-    config.write_text(yaml.safe_dump(config_data), encoding="utf-8")
-    validator = PhaseFiveValidator(config, candidate)
-    try:
-        first, second = validator.scenarios[:2]
-        assert validator._play(
-            validator.models["candidate"], GodotProfileOpponent(0.0), first, first, 1, 1, 4567
-        ) in (-1, 0, 1)
-        opponent = CheckpointOpponent(baseline)
-        assert validator._play(
-            validator.models["candidate"], opponent, first, second, 2, 1, 4568
-        ) in (-1, 0, 1)
-        target = validator.write_result({"passed": True, "failures": []})
-        assert target.is_file()
-        validated = torch.load(run / "phase5_validated.pt", map_location="cpu", weights_only=False)
-        assert validated["phase5"]["completed"]
-        trainer_run = tmp_path / "trainer"
-        config_data["output_dir"] = str(trainer_run)
-        config_data["phase5"]["league_directory"] = str(trainer_run / "league")
-        config_data["model"]["hidden_dim"] = 16
-        config_data["ppo"].update(
-            {"rollout_steps": 8, "num_envs": 2, "minibatches": 2, "total_timesteps": 16}
+        assert not trainer._start_candidate(16, 1, {})
+        assert trainer.phase5_state["champions"] == [original]
+        assert trainer.phase5_state["failed_attempts"] == 1
+        assert trainer.phase5_state["next_attempt_update"] == 2
+        assert not (trainer.output / "phase5_validated.pt").exists()
+        attempts = trainer.phase5_state["attempts"]
+        assert not trainer._start_candidate(32, 2, {})
+        assert trainer.phase5_state["attempts"] == attempts
+
+
+def test_interrupted_candidate_resumes_before_any_ppo_even_when_budget_exhausted(
+    run_config, monkeypatch
+):
+    _, path, source = run_config
+    oracle = load_checkpoint(source)["certification"]["oracle"]
+    monkeypatch.setattr(PhaseFiveTrainer, "_evaluation_manifest", lambda self: oracle)
+    with PhaseFiveTrainer(path, phase4_checkpoint=source) as trainer:
+        trainer.evaluation_backend = "godot"
+        trainer._oracle_manifest = oracle
+        _improve(trainer)
+
+        def interrupt(*args):
+            raise InterruptedError("simulated")
+
+        monkeypatch.setattr(
+            "samstone_rl.training.phase_five_curriculum.evaluate_candidate", interrupt
         )
-        config_data["evaluation"].update({"games": 8, "num_envs": 4, "every_updates": 1})
-        config_data["phase5"]["snapshot_every_updates"] = 1
-        config_data["monitoring"]["tensorboard"] = False
-        config.write_text(yaml.safe_dump(config_data), encoding="utf-8")
-        trainer = PhaseFiveTrainer(config, phase4_checkpoint=baseline)
-        try:
-            outcomes = trainer._mixed_worker(
-                trainer.evaluation_env,
-                [(first, second, 1, 2, 7890)],
-                CheckpointOpponent(trainer.phase4_baseline),
+        with pytest.raises(InterruptedError):
+            trainer._start_candidate(64, 4, {})
+        latest = trainer.output / "latest.pt"
+        frozen = dict(trainer.phase5_state["pending"])
+    with PhaseFiveTrainer(path, resume=latest) as trainer:
+        trainer._oracle_manifest = oracle
+        monkeypatch.setattr(
+            "samstone_rl.training.phase_five_curriculum.evaluate_candidate", _passed
+        )
+        monkeypatch.setattr(trainer, "_collect_rollout", lambda *a: pytest.fail("unexpected PPO"))
+        trainer.train()
+        assert trainer.phase5_state["promotions"] == 1
+        assert trainer.phase5_state["status"] == "budget_exhausted"
+        assert load_checkpoint(trainer.output / frozen["path"])["global_step"] == 64
+
+
+def test_plateau_stops_without_fabricating_a_certificate(run_config):
+    config, path, source = run_config
+    config["phase5"]["maximum_updates_without_promotion"] = 1
+    path.write_text(yaml.safe_dump(config), encoding="utf-8")
+    with PhaseFiveTrainer(path, phase4_checkpoint=source) as trainer:
+        trainer.train()
+        latest = load_checkpoint(trainer.output / "latest.pt")
+        assert latest["global_step"] == 16
+        assert latest["phase5"]["champion_curriculum"]["status"] == "plateau"
+        assert trainer._phase5_exit_code == 2
+        assert not (trainer.output / "phase5_validated.pt").exists()
+
+
+def test_snapshot_commit_is_recovered_before_any_new_rollout(run_config, monkeypatch):
+    _, path, source = run_config
+    oracle = load_checkpoint(source)["certification"]["oracle"]
+    monkeypatch.setattr(PhaseFiveTrainer, "_evaluation_manifest", lambda self: oracle)
+    with PhaseFiveTrainer(path, phase4_checkpoint=source) as trainer:
+        trainer.evaluation_backend = "godot"
+        _improve(trainer)
+        trainer._save("latest.pt", 16, {}, 1)
+        latest = trainer.output / "latest.pt"
+        original = trainer._save
+
+        def interrupted_save(name, *args):
+            if name == "latest.pt":
+                raise OSError("crash between candidate and latest commits")
+            original(name, *args)
+
+        monkeypatch.setattr(trainer, "_save", interrupted_save)
+        with pytest.raises(OSError):
+            trainer._start_candidate(16, 1, {})
+    with PhaseFiveTrainer(path, resume=latest) as trainer:
+        monkeypatch.setattr(
+            "samstone_rl.training.phase_five_curriculum.evaluate_candidate", _passed
+        )
+        assert not trainer._before_training()
+        assert trainer.phase5_state["promotions"] == 1
+        assert trainer.phase5_state["attempts"] == 1
+
+
+def test_legacy_migration_is_explicit_and_keeps_learned_state(run_config):
+    _, path, source = run_config
+    with PhaseFiveTrainer(path, phase4_checkpoint=source) as trainer:
+        trainer.train()
+        latest = trainer.output / "latest.pt"
+        payload = load_checkpoint(latest)
+        payload["phase5"].pop("champion_curriculum")
+        payload["config"]["phase5"] = dict(
+            weight_schedule=[], league_directory=str(latest.parent / "league")
+        )
+        payload["config"]["evaluation"] = dict(
+            every_updates=100,
+            games=500,
+            num_envs=10,
+            seed_base=5100000000,
+            anchor_games_per_stage=0,
+            final_gate={"overall_win_rate": 0.85},
+        )
+        manifest = latest.parent / "run_manifest.json"
+        recorded = json.loads(manifest.read_text(encoding="utf-8"))
+        recorded["config"] = payload["config"]
+        recorded["config_sha256"] = "legacy-config"
+        manifest.write_text(json.dumps(recorded), encoding="utf-8")
+        save_checkpoint(latest, payload)
+    with pytest.raises(ValueError, match="migrate-legacy"):
+        PhaseFiveTrainer(path, resume=latest)
+    with PhaseFiveTrainer(path, resume=latest, migrate_legacy_phase5=True) as trainer:
+        assert trainer._resume_update == payload["update"]
+        assert state_checksum(trainer.model.state_dict()) == state_checksum(payload["model"])
+        assert len(trainer.optimizer.state) == len(payload["optimizer"]["state"])
+        assert trainer.phase5_state["promotions"] == 0
+        assert trainer.phase5_state["legacy_migration"]
+        assert (trainer.league_directory / "legacy_manifest.json").exists()
+        assert (trainer.output / "checkpoints/legacy_phase5_source.pt").exists()
+
+
+def test_champion_integrity_is_checked_on_resume(run_config):
+    _, path, source = run_config
+    with PhaseFiveTrainer(path, phase4_checkpoint=source) as trainer:
+        latest = trainer.output / "latest.pt"
+        champion = trainer.output / trainer.phase5_state["champions"][0]["path"]
+    champion.write_bytes(b"damaged")
+    with pytest.raises(ValueError, match="altere"):
+        PhaseFiveTrainer(path, resume=latest)
+
+
+def test_ppo_stops_at_the_actual_final_promotion_without_using_remaining_budget(
+    run_config, monkeypatch
+):
+    config, path, source = run_config
+    config["evaluation"]["every_updates"] = 1
+    config["phase5"]["target_promotions"] = 2
+    path.write_text(yaml.safe_dump(config), encoding="utf-8")
+    oracle = load_checkpoint(source)["certification"]["oracle"]
+    monkeypatch.setattr(PhaseFiveTrainer, "_evaluation_manifest", lambda self: oracle)
+    with PhaseFiveTrainer(path, phase4_checkpoint=source) as trainer:
+        trainer.evaluation_backend = "godot"
+
+        def screen(**kwargs):
+            return dict(
+                wins=16,
+                draws=0,
+                losses=0,
+                games=16,
+                win_rate=1.0,
+                wilson_lower=0.8,
+                by_god={},
+                by_blocked_count={},
+                anchors={},
+                score=0.6,
+                screening_eligible=True,
             )
-            assert len(outcomes) == 1
-            assert outcomes[0][:2] == (first["god"], second["god"])
-            assert (
-                0.0
-                <= trainer._evaluation_score({"win_rate": 0.8, "mixed_vs_phase4": {"score": 0.55}})
-                <= 1.0
-            )
-            mixed = trainer._evaluate_mixed()
-            assert mixed["games"] == 144
-            assert len(mixed["by_matchup"]) == 36
-            assert all(item["games"] == 4 for item in mixed["by_matchup"].values())
-            trainer.train()
-            assert (trainer_run / "best.pt").is_file()
-            events = [
-                json.loads(line)
-                for line in (trainer_run / "metrics.jsonl").read_text(encoding="utf-8").splitlines()
-            ]
-            evaluation = next(item for item in events if item["stream"] == "evaluation")
-            assert evaluation["metrics"]["mixed_vs_phase4"]["games"] == 144
-            assert "selection_score" in evaluation["metrics"]
-        finally:
-            trainer.close()
-    finally:
-        validator.env.close()
+
+        monkeypatch.setattr(trainer, "evaluate", screen)
+        monkeypatch.setattr(
+            "samstone_rl.training.phase_five_curriculum.evaluate_candidate", _passed
+        )
+        trainer.train()
+        final = load_checkpoint(trainer.output / "phase5_validated.pt")
+        assert final["global_step"] == 32
+        assert final["update"] == 2
+        assert final["optimizer"]["state"]
+        assert final["phase5"]["champion_curriculum"]["promotions"] == 2
+        assert trainer._phase5_exit_code == 0
+
+
+def test_pending_evaluation_refuses_modified_sources(run_config, monkeypatch):
+    _, path, source = run_config
+    oracle = load_checkpoint(source)["certification"]["oracle"]
+    monkeypatch.setattr(PhaseFiveTrainer, "_evaluation_manifest", lambda self: oracle)
+    with PhaseFiveTrainer(path, phase4_checkpoint=source) as trainer:
+        trainer.evaluation_backend = "godot"
+        _improve(trainer)
+
+        def interrupt(*args):
+            raise InterruptedError()
+
+        monkeypatch.setattr(
+            "samstone_rl.training.phase_five_curriculum.evaluate_candidate", interrupt
+        )
+        with pytest.raises(InterruptedError):
+            trainer._start_candidate(16, 1, {})
+        trainer.provenance = {**trainer.provenance, "python_source": "different"}
+        with pytest.raises(ValueError, match="figee incompatible"):
+            trainer._resolve_candidate()
+
+
+def test_authorized_source_change_restarts_pending_candidate_before_learning(
+    run_config, monkeypatch
+):
+    _, path, source = run_config
+    oracle = load_checkpoint(source)["certification"]["oracle"]
+    monkeypatch.setattr(PhaseFiveTrainer, "_evaluation_manifest", lambda self: oracle)
+    with PhaseFiveTrainer(path, phase4_checkpoint=source) as trainer:
+        trainer.evaluation_backend = "godot"
+        _improve(trainer)
+
+        def interrupt(*args):
+            raise InterruptedError()
+
+        monkeypatch.setattr(
+            "samstone_rl.training.phase_five_curriculum.evaluate_candidate", interrupt
+        )
+        with pytest.raises(InterruptedError):
+            trainer._start_candidate(16, 1, {})
+        previous = dict(trainer.phase5_state["pending"])
+        weights = policy_checksum(trainer.model)
+        trainer.provenance = {**trainer.provenance, "python_source": "new sources"}
+        trainer._allow_pending_source_restart = True
+
+        # Explicit source migration still cannot change tournament criteria.
+        trainer.config["phase5"]["promotion"]["minimum_score"] += 0.01
+        with pytest.raises(ValueError, match="figee incompatible"):
+            trainer._before_training()
+        trainer.config["phase5"]["promotion"]["minimum_score"] -= 0.01
+        observed = []
+
+        def evaluate(trainer, pending):
+            observed.append(dict(pending))
+            return dict(passed=False, reason="confirmation")
+
+        monkeypatch.setattr(
+            "samstone_rl.training.phase_five_curriculum.evaluate_candidate", evaluate
+        )
+        assert trainer._before_training() is False
+        assert policy_checksum(trainer.model) == weights
+        assert observed[0]["attempt"] == previous["attempt"] + 1
+        assert observed[0]["step"] == previous["step"]
+        assert observed[0]["update"] == previous["update"]
+        assert observed[0]["contract"]["provenance"] == trainer.provenance
+        assert (trainer.output / previous["path"]).is_file()
+        assert trainer.phase5_state["superseded_attempts"][0]["path"] == previous["path"]
+        assert trainer.phase5_state["failed_attempts"] == 1

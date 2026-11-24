@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import math
+from collections.abc import Mapping
 from copy import deepcopy
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from types import MappingProxyType
 from typing import Any, ClassVar
 
 import gymnasium as gym
@@ -53,29 +56,80 @@ class RewardScheme:
     final_margin_scale: float = 5.0
     board_control_delta: float = 0.0
     board_control_delta_limit: int = 4
+    terminal_by_god: Mapping[str, Mapping[str, float]] = field(default_factory=dict)
+    shaping_by_god: Mapping[str, Mapping[str, float]] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        overrides = {}
+        if not isinstance(self.terminal_by_god, Mapping):
+            raise ValueError("terminal_by_god doit etre un dictionnaire")
+        for god, values in self.terminal_by_god.items():
+            if (
+                not isinstance(god, str)
+                or not god
+                or not isinstance(values, Mapping)
+                or set(values) != {"win", "draw", "loss"}
+            ):
+                raise ValueError("chaque recompense par dieu exige win, draw et loss")
+            normalized = {key: float(value) for key, value in values.items()}
+            if (
+                not all(math.isfinite(v) for v in normalized.values())
+                or not normalized["win"] > normalized["draw"] > normalized["loss"]
+            ):
+                raise ValueError("recompenses finies exigees, avec win > draw > loss")
+            overrides[god] = MappingProxyType(normalized)
+        object.__setattr__(self, "terminal_by_god", MappingProxyType(overrides))
+        shaping = {}
+        if not isinstance(self.shaping_by_god, Mapping):
+            raise ValueError("shaping_by_god doit etre un dictionnaire")
+        for god, values in self.shaping_by_god.items():
+            if (
+                not isinstance(god, str)
+                or not god
+                or not isinstance(values, Mapping)
+                or not values
+                or set(values) - {"final_margin", "board_control_delta"}
+            ):
+                raise ValueError("bonus par dieu invalides")
+            normalized = {key: float(value) for key, value in values.items()}
+            if not all(math.isfinite(v) and v >= 0 for v in normalized.values()):
+                raise ValueError("bonus par dieu finis et positifs ou nuls requis")
+            shaping[god] = MappingProxyType(normalized)
+        object.__setattr__(self, "shaping_by_god", MappingProxyType(shaping))
+
+    def terminal_reward(self, winner: int, agent: int, god: str) -> float:
+        outcome = "draw" if winner == 0 else ("win" if winner == agent else "loss")
+        override = self.terminal_by_god.get(god)
+        if override is not None:
+            return override[outcome]
+        return self.terminal if outcome == "win" else (-self.terminal if outcome == "loss" else 0.0)
 
     def captures(self, count: int) -> float:
         return self.capture * count + self.multi_capture * max(0, count - 1)
 
-    def board_margin(self, own_score: int, opponent_score: int) -> float:
+    def board_margin(self, own_score: int, opponent_score: int, god: str = "") -> float:
         """Return bounded terminal shaping from the final score difference."""
-        if self.final_margin == 0.0:
+        coefficient = self.shaping_by_god.get(god, {}).get("final_margin", self.final_margin)
+        if coefficient == 0.0:
             return 0.0
         scale = max(float(self.final_margin_scale), 1e-6)
-        return float(self.final_margin * np.tanh((own_score - opponent_score) / scale))
+        return float(coefficient * np.tanh((own_score - opponent_score) / scale))
 
-    def control_delta(self, previous_margin: int, current_margin: int) -> float:
+    def control_delta(self, previous_margin: int, current_margin: int, god: str = "") -> float:
         """Reward durable board control gained over a complete Gym transition.
 
         A Gym transition includes the agent action *and* all immediate opponent
         replies.  Rewarding the margin difference here therefore does not pay
         for a card which is captured and immediately lost again.
         """
-        if self.board_control_delta == 0.0:
+        coefficient = self.shaping_by_god.get(god, {}).get(
+            "board_control_delta", self.board_control_delta
+        )
+        if coefficient == 0.0:
             return 0.0
         limit = max(int(self.board_control_delta_limit), 1)
         delta = int(np.clip(current_margin - previous_margin, -limit, limit))
-        return float(self.board_control_delta * delta)
+        return float(coefficient * delta)
 
 
 class MaskedDiscrete(spaces.Discrete):
@@ -195,7 +249,7 @@ class SamStoneEnv(gym.Env[np.ndarray, int]):
         terminal_reward = self._terminal_reward() if terminated else 0.0
         final_margin_reward = self._final_margin_reward() if terminated else 0.0
         control_delta_reward = self.reward_scheme.control_delta(
-            previous_margin, self._score_margin()
+            previous_margin, self._score_margin(), self._own_god()
         )
         reward = capture_reward + terminal_reward + final_margin_reward + control_delta_reward
         self._episode_return += reward
@@ -238,14 +292,19 @@ class SamStoneEnv(gym.Env[np.ndarray, int]):
 
     def _terminal_reward(self) -> float:
         winner = int(self._raw["winner"])
-        return (
-            self.reward_scheme.terminal
-            if winner == self.agent_player
-            else (-self.reward_scheme.terminal if winner else 0.0)
+        return self.reward_scheme.terminal_reward(
+            winner,
+            self.agent_player,
+            self._own_god(),
         )
 
+    def _own_god(self) -> str:
+        return str(self._episode_config["human_god" if self.agent_player == 1 else "ai_god"])
+
     def _final_margin_reward(self) -> float:
-        return self.reward_scheme.board_margin(self._own_score(), self._opponent_score())
+        return self.reward_scheme.board_margin(
+            self._own_score(), self._opponent_score(), self._own_god()
+        )
 
     def _own_score(self) -> int:
         return int(self._raw["score_human"] if self.agent_player == 1 else self._raw["score_ai"])

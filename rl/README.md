@@ -52,7 +52,7 @@ Le [bilan de validation](VALIDATION.md) détaille les corrections, contrôles et
 ## Chaîne d'entraînement
 
 1. Phase 4 : politique universelle tactique contre les profils Godot.
-2. Phase 5 : self-play contre une ligue de checkpoints gelés.
+2. Phase 5 : candidat PPO et paliers de champions figés, remplacés après validation.
 3. Phase 6 : recherche de decks avec une politique universelle certifiée.
 4. Phase 6B : spécialisation d'une politique par dieu et deck final.
 5. Export : fichier `.sspolicy` float32 et inférence incrémentale dans Godot.
@@ -62,14 +62,51 @@ La configuration principale est `configs/ppo_phase4_vectorized.yaml` :
 2 048 transitions et dix arbitres Godot. Le curriculum comprend quatre niveaux
 de précision puis quatre niveaux d'anticipation.
 
+Veskar dispose d’une exception de passage de phase 4 : au moins **60 % de
+victoires** et au plus **20 % de défaites**, sur ses résultats agrégés. Les
+autres dieux conservent leurs critères. La reprise après ce changement est
+documentée dans le [guide des commandes](GUIDE_COMMANDES.md).
+
 Les confirmations périodiques renouvellent leurs seeds. Pré-évaluation,
 confirmations, ancrages et tournoi final ont des plages séparées dans la
 configuration officielle. La validation finale de phase 4 conserve ses matchs
 sur disque et reprend les cas manquants à contexte et poids identiques.
 
+La commande principale gère automatiquement toute la phase 4 : après les
+confirmations du dernier palier, elle fige un candidat et lance le tournoi
+final Godot. Une réussite produit `phase4_validated.pt` puis arrête le programme,
+prêt pour la phase 5. Un échec des critères relance PPO, puis exige de nouveaux
+poids et de nouvelles confirmations avant une autre tentative. La configuration
+borne ce cycle à trois validations échouées et au budget PPO disponible.
+`phase4_status.json` indique l'état courant ; une interruption se reprend avec
+`latest.pt`, y compris pendant le tournoi. La phase 5 se lance séparément.
+
 Une certification porte sur les poids exacts, leurs contrats et un rapport
 réussi. Une mise à jour PPO produit un nouveau candidat à valider. Le seul
 booléen `completed` ne suffit pas à certifier un modèle.
+
+La garde finale exige aussi 80 % de victoires et au plus 10 % de défaites
+pour chaque dieu hors Veskar contre chaque palier, sur ses 400 parties.
+Les séries de 100 parties conservent un plancher de victoire de 70 % et un
+plafond de défaite de 20 %. Veskar garde son contrôle agrégé 60 % / 20 %.
+Après une révision volontaire des seuils, `validate_phase4.py --reuse-recorded`
+peut recalculer le rapport à partir du tournoi complet du candidat figé.
+Ce recalcul conserve la provenance et est signalé comme rétrospectif ; il
+ne constitue pas une nouvelle évaluation indépendante.
+
+La phase 5 utilise `phase5.protocol: champion_v1` dans
+`configs/ppo_self_play_v2.yaml`. Une présélection de 144 matchs précède les
+contrôles contre les bots et les anciens champions, puis deux
+confirmations contre le même champion : score d'au moins 53 % (victoire = 1,
+nul = 0,5), avec borne bootstrap appariée au-dessus de 50 %. Les résultats
+par dieu sont comparés à ceux du champion dans les mêmes confrontations.
+Les anciens champions et les bots Godot vérifient la conservation des acquis.
+Après trois promotions, dont la dernière confirmée sur un tournoi indépendant,
+`phase5_validated.pt` est produit et le programme s'arrête. Une absence de
+promotion pendant 1 500 mises à jour ou un budget épuisé arrête aussi le run,
+sans certification. `phase5_status.json` distingue ces situations.
+Les anciens runs de phase 5 se reprennent avec une migration explicite,
+documentée dans le guide, en conservant les poids et Adam.
 
 ## Organisation
 

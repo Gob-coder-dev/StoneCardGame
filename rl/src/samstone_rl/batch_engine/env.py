@@ -4,6 +4,7 @@ import math
 from collections.abc import Sequence
 from copy import deepcopy
 from dataclasses import dataclass, field
+from functools import partial
 from pathlib import Path
 from typing import Any
 
@@ -13,6 +14,7 @@ from samstone_rl.envs.action_space import ActionCodec
 from samstone_rl.fast_engine import FastSimulator, StoneCatalog
 from samstone_rl.fast_engine.core import _weighted_index
 from samstone_rl.opponents import GodotProfileOpponent, Opponent, RandomOpponent
+from samstone_rl.opponents.checkpoint import CheckpointOpponent
 from samstone_rl.tactics import TacticalActionEncoder
 from samstone_rl.vector_engine import VectorTacticalEvaluator
 
@@ -21,16 +23,30 @@ from .encoding import DirectStateEncoder
 
 
 class _SimulatorBridge:
-    """Small opponent-facing facade without observation serialization."""
+    """Expose simulator observations, tactical scores and native action masks."""
 
-    def __init__(self, simulator: FastSimulator) -> None:
+    def __init__(self, simulator: FastSimulator, encoder: DirectStateEncoder) -> None:
         self.simulator = simulator
+        self.encoder = encoder
 
     def choose_profile_action(self, precision: float, anticipation: bool) -> dict[str, Any]:
         return self.simulator.choose_profile_action(precision, anticipation)
 
     def legal_actions(self) -> list[dict[str, Any]]:
         return self.simulator.legal_actions()
+
+    def action_mask(self, observer: int) -> np.ndarray:
+        state = self.simulator.state
+        assert state is not None
+        mask = self.encoder.action_mask(state, observer)
+        # ActionCodec resolves a card ID to its first hand slot. Preserve that
+        # convention for decks containing repeated IDs.
+        seen = set()
+        for index, card in enumerate(state.hands[observer]):
+            if card in seen:
+                mask[index * 16 : (index + 1) * 16] = False
+            seen.add(card)
+        return mask
 
     def get_state(self, observer: int) -> dict[str, Any]:
         """Expose the opponent's own hidden hand, never the agent's hand."""
@@ -124,7 +140,7 @@ class BatchSamStoneEnv:
         self.slots: list[_Slot] = []
         for _ in range(self.num_envs):
             simulator = FastSimulator(self.catalog)
-            self.slots.append(_Slot(simulator, _SimulatorBridge(simulator)))
+            self.slots.append(_Slot(simulator, _SimulatorBridge(simulator, self.encoder)))
         self.observations = np.zeros(
             (self.num_envs, self.encoder.observation_size), dtype=np.float32
         )
@@ -217,8 +233,9 @@ class BatchSamStoneEnv:
         )
 
     def step(
-        self, actions: Sequence[int]
-    ) -> list[tuple[np.ndarray, float, bool, bool, dict[str, Any]]]:
+        self, actions: Sequence[int], *, encode_terminal: bool = True
+    ) -> list[tuple[np.ndarray | None, float, bool, bool, dict[str, Any]]]:
+        """Optionally omit terminal observations when PPO immediately resets them."""
         if len(actions) != self.num_envs:
             raise ValueError(f"{self.num_envs} actions attendues, {len(actions)} recues")
         pending = [
@@ -231,14 +248,16 @@ class BatchSamStoneEnv:
             )
             for index in range(self.num_envs)
         ]
-        self._encode_many(list(range(self.num_envs)))
+        self._encode_many(
+            [index for index, values in enumerate(advanced) if encode_terminal or not values[1]]
+        )
         return [
             (
-                self.observations[index],
+                self.observations[index] if encode_terminal or not values[1] else None,
                 float(values[0]),
                 values[1],
                 False,
-                self._info(index, *values[2]),
+                self._info(index, *values[2], include_observation=encode_terminal or not values[1]),
             )
             for index, values in enumerate(advanced)
         ]
@@ -295,7 +314,7 @@ class BatchSamStoneEnv:
         terminal_reward = self._terminal_reward(slot) if terminated else 0.0
         final_margin_reward = self._final_margin_reward(slot) if terminated else 0.0
         control_delta_reward = self.reward_scheme.control_delta(
-            previous_margin, self._score_margin(slot)
+            previous_margin, self._score_margin(slot), state.gods[slot.agent_player]
         )
         reward = capture_reward + terminal_reward + final_margin_reward + control_delta_reward
         slot.episode_return += reward
@@ -310,7 +329,7 @@ class BatchSamStoneEnv:
         return float(reward), terminated, details
 
     def _play_opponents_batch(self, indices: Sequence[int]) -> dict[int, int]:
-        """Score teacher moves independently of the agent's tactical features.
+        """Play checkpoint opponents in batches and compute teacher scores separately.
 
         The Python backend uses native exact scores, optionally in persistent
         CPU workers. The Godot backend is retained for conformity diagnostics;
@@ -318,6 +337,7 @@ class BatchSamStoneEnv:
         """
         captures = {int(index): 0 for index in indices}
         profile_requests: list[tuple[int, bool, GodotProfileOpponent]] = []
+        checkpoint_groups: dict[CheckpointOpponent, list[int]] = {}
         for raw_index in indices:
             index = int(raw_index)
             slot = self._slot(index)
@@ -326,6 +346,9 @@ class BatchSamStoneEnv:
             if state.is_game_over or state.current_player == slot.agent_player:
                 continue
             opponent = getattr(slot.opponent, "selected", None) or slot.opponent
+            if isinstance(opponent, CheckpointOpponent):
+                checkpoint_groups.setdefault(opponent, []).append(index)
+                continue
             if isinstance(opponent, GodotProfileOpponent):
                 if (
                     self.vector_tactical is None and self.profile_oracle is None
@@ -352,6 +375,33 @@ class BatchSamStoneEnv:
             result = slot.simulator.step(move)
             captures[index] += len(result.get("captures", ()))
             slot.turns += 1
+        # League entries share cached opponent instances. Group by instance so
+        # different checkpoints and sampling settings keep separate forwards.
+        for opponent, group in checkpoint_groups.items():
+            requests = []
+            for index in group:
+                slot = self.slots[index]
+                requests.append(
+                    (
+                        slot.bridge,
+                        None,
+                        slot.rng,
+                        slot.simulator.state.current_player,
+                    )
+                )
+            evaluate_tactics = None
+            if self.vector_tactical is not None:
+                evaluate_tactics = partial(
+                    self.vector_tactical.evaluate,
+                    [self.slots[index].simulator for index in group],
+                    [player for _, _, _, player in requests],
+                )
+            moves = opponent.choose_many(requests, evaluate_tactics=evaluate_tactics)
+            for index, move in zip(group, moves, strict=True):
+                slot = self.slots[index]
+                result = slot.simulator.step(move)
+                captures[index] += len(result.get("captures", ()))
+                slot.turns += 1
         if not profile_requests:
             return captures
         request_indices = [item[0] for item in profile_requests]
@@ -532,13 +582,15 @@ class BatchSamStoneEnv:
     def _terminal_reward(self, slot: _Slot) -> float:
         state = slot.simulator.state
         assert state is not None
-        if state.winner == slot.agent_player:
-            return float(self.reward_scheme.terminal)
-        return -float(self.reward_scheme.terminal) if state.winner else 0.0
+        return self.reward_scheme.terminal_reward(
+            state.winner, slot.agent_player, state.gods[slot.agent_player]
+        )
 
     def _final_margin_reward(self, slot: _Slot) -> float:
         own, opponent = self._scores(slot)
-        return float(self.reward_scheme.board_margin(own, opponent))
+        state = slot.simulator.state
+        assert state is not None
+        return float(self.reward_scheme.board_margin(own, opponent, state.gods[slot.agent_player]))
 
     def _info(
         self,
@@ -549,12 +601,13 @@ class BatchSamStoneEnv:
         terminal_reward: float = 0.0,
         final_margin_reward: float = 0.0,
         control_delta_reward: float = 0.0,
+        *,
+        include_observation: bool = True,
     ) -> dict[str, Any]:
         slot = self.slots[index]
         state = slot.simulator.state
         assert state is not None
         info: dict[str, Any] = {
-            "action_mask": self.action_masks[index],
             "winner": int(state.winner),
             "score_human": int(state.score_human),
             "score_ai": int(state.score_ai),
@@ -568,8 +621,10 @@ class BatchSamStoneEnv:
             "first_player": slot.first_player,
             "blocked": deepcopy(slot.blocked),
         }
-        if self.tactical_features_enabled:
-            info["action_features"] = self.action_features[index]
+        if include_observation:
+            info["action_mask"] = self.action_masks[index]
+            if self.tactical_features_enabled:
+                info["action_features"] = self.action_features[index]
         if state.is_game_over:
             own, opponent = self._scores(slot)
             god_key = "human_god" if slot.agent_player == 1 else "ai_god"

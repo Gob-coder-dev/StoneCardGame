@@ -30,13 +30,18 @@ class SelfPlayLeague:
     """Persistent frozen-checkpoint league; one opponent is sampled per episode."""
 
     def __init__(
-        self, directory: str | Path, weights: dict[str, float], device: str = "cpu"
+        self,
+        directory: str | Path,
+        weights: dict[str, float],
+        device: str = "cpu",
+        godot_stages=None,
     ) -> None:
         self.directory = Path(directory).resolve()
         self.directory.mkdir(parents=True, exist_ok=True)
         self.manifest_path = self.directory / "manifest.json"
         self.weights = weights
         self.device = device
+        self.godot_stages = tuple(godot_stages or DEFAULT_STAGES)
         self.entries = self._load_manifest()
         self._cache: OrderedDict[str, CheckpointOpponent] = OrderedDict()
         self.maximum_cached_models = 8
@@ -115,7 +120,7 @@ class SelfPlayLeague:
         category, members, _weight = available[int(rng.choice(len(available), p=probabilities))]
         self.selection_counts[category] += 1
         if category == "godot":
-            stage = DEFAULT_STAGES[int(rng.integers(len(DEFAULT_STAGES)))]
+            stage = self.godot_stages[int(rng.integers(len(self.godot_stages)))]
             return stage.opponent(), f"godot_{stage.name}", category
         entry = members[int(rng.integers(len(members)))]
         assert entry is not None
@@ -222,14 +227,12 @@ class SelfPlayLeague:
         ]
 
     def _save_manifest(self) -> None:
-        temporary = self.manifest_path.with_suffix(".tmp")
-        temporary.write_text(
+        atomic_text(
+            self.manifest_path,
             json.dumps(
                 {"version": 1, "entries": [asdict(item) for item in self.entries]}, indent=2
             ),
-            encoding="utf-8",
         )
-        temporary.replace(self.manifest_path)
 
     def _load_ratings(self) -> dict[str, float]:
         payload = (

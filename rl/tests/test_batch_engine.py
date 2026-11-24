@@ -391,3 +391,77 @@ def test_vector_tactical_batch_matches_scalar_across_all_phase4_scenarios():
     finally:
         vector.close()
         oracle.close()
+
+
+@pytest.mark.parametrize("tactical", [False, True])
+def test_ppo_can_skip_terminal_encoding_with_partial_resets(tactical, monkeypatch):
+    fast = BatchSamStoneEnv(2, RewardScheme(), tactical_features=tactical)
+    reference = BatchSamStoneEnv(2, RewardScheme(), tactical_features=tactical)
+    encoded = []
+    original = fast._encode_many
+
+    def record(indices):
+        encoded.extend(indices)
+        original(indices)
+
+    monkeypatch.setattr(fast, "_encode_many", record)
+
+    def reset(indices, episode):
+        kwargs = dict(
+            indices=indices,
+            seeds=[1000 + episode * 10 + i for i in indices],
+            agent_players=[1 + i % 2 for i in indices],
+            options=[
+                {
+                    "config": {
+                        **_config(*SCENARIOS[i]),
+                        "first_player": 1,
+                        "blocked": [[0, 0]] if i else [],
+                    }
+                }
+                for i in indices
+            ],
+        )
+        fast.reset_many(opponents=[RandomOpponent() for _ in indices], **kwargs)
+        reference.reset_many(opponents=[RandomOpponent() for _ in indices], **kwargs)
+
+    try:
+        reset([0, 1], 0)
+        completed = 0
+        for turn in range(24):
+            np.testing.assert_array_equal(fast.observations, reference.observations)
+            np.testing.assert_array_equal(fast.action_masks, reference.action_masks)
+            actions = [int(np.flatnonzero(mask)[-1]) for mask in reference.action_masks]
+            encoded.clear()
+            actual = fast.step(actions, encode_terminal=False)
+            expected = reference.step(actions)
+            finished = []
+            for i, (left, right) in enumerate(zip(actual, expected, strict=True)):
+                assert left[1:4] == right[1:4]
+                if left[2]:
+                    finished.append(i)
+                    assert i not in encoded
+                    assert left[0] is None
+                    assert "action_mask" not in left[4]
+                    assert "action_features" not in left[4]
+                    expected_info = {
+                        k: v
+                        for k, v in right[4].items()
+                        if k not in ("action_mask", "action_features")
+                    }
+                    assert left[4] == expected_info
+                else:
+                    assert i in encoded
+                    np.testing.assert_array_equal(left[0], right[0])
+                    np.testing.assert_array_equal(left[4]["action_mask"], right[4]["action_mask"])
+                    if tactical:
+                        np.testing.assert_array_equal(
+                            left[4]["action_features"], right[4]["action_features"]
+                        )
+            if finished:
+                completed += len(finished)
+                reset(finished, turn + 1)
+        assert completed >= 4
+    finally:
+        fast.close()
+        reference.close()

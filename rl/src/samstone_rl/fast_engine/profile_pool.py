@@ -4,15 +4,55 @@ Only the immutable catalogue is initialized per worker. Requests contain board
 data and the actor's hand, never the opponent's identities or actual RNG state.
 """
 
+import logging
 import sys
 from concurrent.futures import ProcessPoolExecutor
 from multiprocessing import get_context
+from threading import Thread
 
 from .catalog import StoneCatalog
 from .core import FastSimulator
 from .state import FastState
 
 _catalog = None
+
+
+def _shutdown_executor(executor, grace_seconds=5.0):
+    """Bound shutdown of our idle workers, including native-library finalizers.
+
+    scores() collects every submitted result synchronously before close().
+    Python 3.11 exposes no public worker termination API, so snapshot its owned
+    processes before shutdown clears that mapping. Never touches other pools.
+    """
+    processes = list((executor._processes or {}).values())
+    errors = []
+
+    def shutdown():
+        try:
+            executor.shutdown(wait=True, cancel_futures=True)
+        except BaseException as error:
+            errors.append(error)
+
+    thread = Thread(target=shutdown, name="profile-pool-shutdown", daemon=True)
+    thread.start()
+    thread.join(grace_seconds)
+    if thread.is_alive():
+        logging.getLogger(__name__).warning(
+            "Fermeture des workers du bot trop longue; arret des seuls workers de ce pool."
+        )
+        for process in processes:
+            if process.is_alive():
+                process.terminate()
+        for process in processes:
+            process.join(timeout=1)
+            if process.is_alive():
+                process.kill()
+                process.join(timeout=1)
+        thread.join(5)
+        if thread.is_alive():
+            raise RuntimeError("fermeture du pool Python impossible apres arret de ses workers")
+    if errors:
+        raise errors[0]
 
 
 def _initialize(game_root, checksum):
@@ -86,5 +126,5 @@ class PythonProfilePool:
 
     def close(self):
         if not self._closed:
-            self._executor.shutdown(wait=True, cancel_futures=True)
             self._closed = True
+            _shutdown_executor(self._executor)

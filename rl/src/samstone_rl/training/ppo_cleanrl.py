@@ -35,6 +35,7 @@ from samstone_rl.training.checkpointing import CheckpointMixin
 from samstone_rl.training.curriculum import CurriculumManager, stages_from_config
 from samstone_rl.training.evaluation import EvaluationMixin
 from samstone_rl.training.optimization import PPOOptimizer
+from samstone_rl.training.phase_four_automation import PhaseFourAutomationMixin
 from samstone_rl.training.rollout import RolloutMixin
 from samstone_rl.training.validation import (
     wilson_lower,
@@ -46,18 +47,19 @@ from samstone_rl.utils.run_lock import RunLock
 from samstone_rl.utils.seeding import set_seed
 
 
-class PPOTrainer(RolloutMixin, EvaluationMixin, CheckpointMixin):
+class PPOTrainer(PhaseFourAutomationMixin, RolloutMixin, EvaluationMixin, CheckpointMixin):
     def __init__(
         self,
         config_path: str | Path,
         output_override: str | Path | None = None,
         *,
         mode: str = "create",
+        resume_config_paths: tuple[tuple[str, ...], ...] = (),
     ) -> None:
         self._resources = ExitStack()
         self._rollout_executor = None
         try:
-            self._initialize(config_path, output_override, mode)
+            self._initialize(config_path, output_override, mode, resume_config_paths)
         except BaseException:
             self.close()
             raise
@@ -76,7 +78,11 @@ class PPOTrainer(RolloutMixin, EvaluationMixin, CheckpointMixin):
         self._resources.close()
 
     def _initialize(
-        self, config_path: str | Path, output_override: str | Path | None, mode: str
+        self,
+        config_path: str | Path,
+        output_override: str | Path | None,
+        mode: str,
+        resume_config_paths: tuple[tuple[str, ...], ...] = (),
     ) -> None:
         config_path = Path(config_path).resolve()
         with config_path.open(encoding="utf-8") as stream:
@@ -133,17 +139,23 @@ class PPOTrainer(RolloutMixin, EvaluationMixin, CheckpointMixin):
                 ("ppo", "total_timesteps"),
                 ("ppo", "learning_rate"),
                 ("monitoring",),
+                ("phase4_automation",),
                 ("device",),
                 ("environment", "godot_path"),
                 ("environment", "profile_backend"),
                 ("environment", "python_profile_workers"),
                 ("curriculum", "promotion_win_rate"),
+                ("curriculum", "god_thresholds"),
                 ("curriculum", "maximum_loss_rate"),
                 ("curriculum", "non_loss_confidence_floor"),
                 ("evaluation", "final_gate", "overall_win_rate"),
+                ("evaluation", "final_gate", "god_thresholds"),
+                ("evaluation", "final_gate", "core_god_thresholds"),
+                ("evaluation", "final_gate", "maximum_slice_loss_rate"),
                 ("evaluation", "final_gate", "maximum_loss_rate"),
                 ("evaluation", "final_gate", "non_loss_confidence_floor"),
             )
+            + resume_config_paths
             if mode in ("resume", "evaluate")
             else (),
         )
@@ -159,12 +171,15 @@ class PPOTrainer(RolloutMixin, EvaluationMixin, CheckpointMixin):
             maximum_loss_rate=curriculum.get("maximum_loss_rate"),
             non_loss_confidence_floor=curriculum.get("non_loss_confidence_floor"),
             promotion_confirmations=curriculum.get("promotion_confirmations", 1),
+            god_thresholds=curriculum.get("god_thresholds"),
         )
         if self.curriculum.god_sampling_enabled:
             self.curriculum.initialize_god_sampling(
                 [str(scenario["god"]) for scenario in self.scenarios]
             )
         self.num_envs = int(self.config["ppo"].get("num_envs", 1))
+        if set(self.curriculum.god_thresholds) - {str(s["god"]) for s in self.scenarios}:
+            raise ValueError("god_thresholds contient un dieu absent des scenarios")
         environment = self.config["environment"]
         reward = environment["reward"]
         self.reward_scheme = RewardScheme(
@@ -175,6 +190,8 @@ class PPOTrainer(RolloutMixin, EvaluationMixin, CheckpointMixin):
             final_margin_scale=float(reward.get("final_margin_scale", 5.0)),
             board_control_delta=float(reward.get("board_control_delta", 0.0)),
             board_control_delta_limit=int(reward.get("board_control_delta_limit", 4)),
+            terminal_by_god=reward.get("terminal_by_god", {}),
+            shaping_by_god=reward.get("shaping_by_god", {}),
         )
         self.training_backend = str(environment.get("backend", "godot"))
         self.evaluation_backend = str(
@@ -244,6 +261,7 @@ class PPOTrainer(RolloutMixin, EvaluationMixin, CheckpointMixin):
         self._evaluation_round = 0
         self._bootstrap_round = 0
         self._simulator_processes: dict[int, psutil.Process] = {}
+        self._initialize_phase_four_automation()
 
     def _make_env(self, backend: str) -> SamStoneEnv:
         env = SamStoneEnv(
@@ -293,13 +311,13 @@ class PPOTrainer(RolloutMixin, EvaluationMixin, CheckpointMixin):
         if architecture not in ("actor_critic", "tactical_actor_critic"):
             raise ValueError("model.architecture inconnu")
         evaluation = self.config["evaluation"]
-        if int(evaluation["games"]) <= 0 or int(evaluation["every_updates"]) <= 0:
+        if self._evaluation_game_count() <= 0 or int(evaluation["every_updates"]) <= 0:
             raise ValueError(
                 "la fréquence et le nombre de matchs d'évaluation doivent être positifs"
             )
         if int(evaluation.get("num_envs", 1)) <= 0:
             raise ValueError("evaluation.num_envs doit etre strictement positif")
-        if int(evaluation.get("confirmation_seed_stride", 10000)) < int(evaluation["games"]):
+        if int(evaluation.get("confirmation_seed_stride", 10000)) < self._evaluation_game_count():
             raise ValueError("les echantillons de confirmation doivent etre disjoints")
         bootstrap = self.config.get("curriculum", {}).get("bootstrap_evaluation", {})
         if not isinstance(bootstrap, dict):
@@ -351,7 +369,16 @@ class PPOTrainer(RolloutMixin, EvaluationMixin, CheckpointMixin):
         optimizer always receives ``rollout_steps * num_envs`` transitions.
         """
         ppo = self.config["ppo"]
+        if self._before_training():
+            return
+        if self._automatic_phase_four_gate(self._resume_global_step, self._resume_update, {}):
+            return
         if self._resume_global_step >= int(ppo["total_timesteps"]):
+            self._on_training_budget_exhausted(self._resume_global_step, self._resume_update, {})
+            if self._phase4_auto_enabled:
+                self._phase4_auto["status"] = "budget_exhausted"
+                self._phase4_exit_code = 2
+                self._publish_phase_four(self._resume_global_step, self._resume_update)
             print(json.dumps({"training_complete": True, "steps": self._resume_global_step}))
             return
         steps = int(ppo["rollout_steps"])
@@ -362,9 +389,15 @@ class PPOTrainer(RolloutMixin, EvaluationMixin, CheckpointMixin):
             None if self.batch_env is not None else ThreadPoolExecutor(max_workers=self.num_envs)
         )
         last_evaluation = self._run_bootstrap_evaluation()
+        if self._automatic_phase_four_gate(
+            self._resume_global_step, self._resume_update, last_evaluation or {}
+        ):
+            return
         observations, infos = self._reset_training_episodes(
             list(range(self.num_envs)), initial=self._resume_update == 0
         )
+        self._phase4_reset_envs = False
+        self._training_envs_need_reset = False
         # Scalar Godot workers are started lazily by ``reset``.  Recording the
         # engine manifest before that reset would query an inactive process.
         # The native batch backend is already available, so the same ordering
@@ -385,6 +418,7 @@ class PPOTrainer(RolloutMixin, EvaluationMixin, CheckpointMixin):
                 storage, profile = rollout.storage, rollout.profile
                 observations, infos = rollout.observations, rollout.infos
                 global_step, episodes = rollout.global_step, rollout.episodes
+                self._current_global_step, self._current_update = global_step, update
                 phase_started = time.perf_counter()
                 with torch.no_grad():
                     next_values = self.model.value(
@@ -435,7 +469,7 @@ class PPOTrainer(RolloutMixin, EvaluationMixin, CheckpointMixin):
                     metrics["terrain_sampling"] = sampling
                 context = {
                     "update": update,
-                    "stage": self.curriculum.current.name,
+                    "stage": self._evaluation_stage_name(),
                     "phase_five_ready": self.curriculum.phase_five_ready,
                     "environment_count": self.num_envs,
                 }
@@ -471,12 +505,7 @@ class PPOTrainer(RolloutMixin, EvaluationMixin, CheckpointMixin):
                     results["evaluation_seconds"] = evaluation_seconds
                     results["games_per_second"] = evaluated_games / evaluation_seconds
                     evaluated_stage_index = self.curriculum.stage_index
-                    promoted = self.curriculum.consider_promotion(
-                        int(results["wins"]), int(results["games"]), int(results["draws"])
-                    )
-                    results["promotion"] = self.curriculum.promotion_metrics(
-                        int(results["wins"]), int(results["draws"]), int(results["games"])
-                    )
+                    promoted = self._consider_evaluation_promotion(results)
                     results["promotion"]["consecutive_promotion_successes"] = (
                         self.curriculum.consecutive_promotion_successes
                     )
@@ -528,8 +557,20 @@ class PPOTrainer(RolloutMixin, EvaluationMixin, CheckpointMixin):
                         observations, infos = self._reset_training_episodes(
                             list(range(self.num_envs))
                         )
-                self._after_training_update(global_step, update, episodes, evaluation_result)
+                if self._after_training_update(global_step, update, episodes, evaluation_result):
+                    return
+                if self._automatic_phase_four_gate(global_step, update, last_evaluation):
+                    return
+                if self._phase4_reset_envs or getattr(self, "_training_envs_need_reset", False):
+                    observations, infos = self._reset_training_episodes(list(range(self.num_envs)))
+                    self._phase4_reset_envs = False
+                    self._training_envs_need_reset = False
             if updates_to_run:
+                self._on_training_budget_exhausted(global_step, final_update, last_evaluation)
+                if self._phase4_auto_enabled:
+                    self._phase4_auto["status"] = "budget_exhausted"
+                    self._phase4_exit_code = 2
+                    self._publish_phase_four(global_step, final_update)
                 # Preserve the most recent evaluation in the terminal checkpoint.
                 # This final save is still required when the last update is not an
                 # evaluation/checkpoint boundary.
@@ -652,7 +693,7 @@ class PPOTrainer(RolloutMixin, EvaluationMixin, CheckpointMixin):
 
     def _step_training_envs(self, actions: list[int]):
         if self.batch_env is not None:
-            return self.batch_env.step(actions)
+            return self.batch_env.step(actions, encode_terminal=False)
         requests = zip(self.training_envs, actions, strict=True)
         executor = getattr(self, "_rollout_executor", None)
         if executor is None:
@@ -791,10 +832,16 @@ class PPOTrainer(RolloutMixin, EvaluationMixin, CheckpointMixin):
             results["evaluation_seconds"] = evaluation_seconds
             results["games_per_second"] = evaluated_games / evaluation_seconds
             promoted = self.curriculum.consider_promotion(
-                int(results["wins"]), int(results["games"]), int(results["draws"])
+                int(results["wins"]),
+                int(results["games"]),
+                int(results["draws"]),
+                results.get("by_god"),
             )
             promotion = self.curriculum.promotion_metrics(
-                int(results["wins"]), int(results["draws"]), int(results["games"])
+                int(results["wins"]),
+                int(results["draws"]),
+                int(results["games"]),
+                results.get("by_god"),
             )
             results.update(
                 {
@@ -820,22 +867,22 @@ class PPOTrainer(RolloutMixin, EvaluationMixin, CheckpointMixin):
             if sampling := self.curriculum.update_terrain_sampling(results["by_blocked_count"]):
                 results["terrain_sampling"] = sampling
             context = {
-                "update": 0,
+                "update": self._resume_update,
                 "stage": evaluated_stage,
                 "phase_five_ready": self.curriculum.phase_five_ready,
                 "environment_count": self.num_envs,
                 "bootstrap_evaluation": True,
                 "bootstrap_attempt": attempt,
             }
-            self.tracker.log("evaluation", 0, results, context)
+            self.tracker.log("evaluation", self._resume_global_step, results, context)
             self._observe_health(
-                0,
+                self._resume_global_step,
                 {
                     "evaluation_win_rate": float(results["win_rate"]),
                     "evaluation_wilson_lower": float(results["wilson_lower"]),
                     "evaluation_stage": evaluated_stage,
                 },
-                0,
+                self._resume_update,
             )
             score = float(results["selection_score"])
             if evaluated_stage_index > self.best_stage_index or (
@@ -843,15 +890,15 @@ class PPOTrainer(RolloutMixin, EvaluationMixin, CheckpointMixin):
             ):
                 self.best_stage_index = evaluated_stage_index
                 self.best_win_rate = score
-                self._save("best.pt", 0, results, 0)
+                self._save("best.pt", self._resume_global_step, results, self._resume_update)
             # Persist every confirmation. Ctrl+C or a Godot interruption can
             # therefore resume the scan at the exact remaining confirmation.
-            self._save("latest.pt", 0, results, 0)
+            self._save("latest.pt", self._resume_global_step, results, self._resume_update)
             print(
                 json.dumps(
                     {
-                        "update": 0,
-                        "steps": 0,
+                        "update": self._resume_update,
+                        "steps": self._resume_global_step,
                         "stage": evaluated_stage,
                         "bootstrap_evaluation": True,
                         **results,
@@ -868,7 +915,7 @@ class PPOTrainer(RolloutMixin, EvaluationMixin, CheckpointMixin):
             # needed for this same stage.
         self.curriculum.complete_bootstrap_evaluation()
         if last_result is not None:
-            self._save("latest.pt", 0, last_result, 0)
+            self._save("latest.pt", self._resume_global_step, last_result, self._resume_update)
         return last_result
 
     @staticmethod
@@ -927,8 +974,36 @@ class PPOTrainer(RolloutMixin, EvaluationMixin, CheckpointMixin):
 
     def _after_training_update(
         self, global_step: int, update: int, episodes: list[dict], evaluation: dict | None
-    ) -> None:
+    ) -> bool | None:
         del global_step, update, episodes, evaluation
+
+    def _before_training(self) -> bool:
+        """Resume phase-specific validation before collecting more experience."""
+        return False
+
+    def _evaluation_game_count(self) -> int:
+        return int(self.config["evaluation"]["games"])
+
+    def _evaluation_stage_name(self) -> str:
+        return self.curriculum.current.name
+
+    def _on_training_budget_exhausted(self, step: int, update: int, evaluation: dict) -> None:
+        del step, update, evaluation
+
+    def _consider_evaluation_promotion(self, results: dict) -> bool:
+        promoted = self.curriculum.consider_promotion(
+            int(results["wins"]),
+            int(results["games"]),
+            int(results["draws"]),
+            results.get("by_god"),
+        )
+        results["promotion"] = self.curriculum.promotion_metrics(
+            int(results["wins"]),
+            int(results["draws"]),
+            int(results["games"]),
+            results.get("by_god"),
+        )
+        return promoted
 
     def _evaluation_score(self, results: dict[str, Any]) -> float:
         return float(results["win_rate"])
@@ -1212,7 +1287,7 @@ def main(argv: list[str] | None = None) -> int:
                 allow_python_source_change=arguments.allow_python_source_change,
             )
         trainer.train()
-    return 0
+    return trainer._phase4_exit_code
 
 
 if __name__ == "__main__":

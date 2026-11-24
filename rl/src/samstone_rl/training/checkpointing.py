@@ -14,6 +14,7 @@ from samstone_rl.models.policy import policy_spec
 from samstone_rl.utils.certification import certify_checkpoint
 from samstone_rl.utils.checkpoints import file_checksum, save_checkpoint
 from samstone_rl.utils.checkpoints import load_checkpoint as read_checkpoint
+from samstone_rl.utils.rules_compatibility import noncombat_change_proof, rules_sources
 
 
 class CheckpointMixin:
@@ -40,6 +41,8 @@ class CheckpointMixin:
         oracle = self._evaluation_manifest()
         if getattr(self, "_profile_backend_migration", False):
             self.tracker.migrate_profile_backend(manifest)
+        if getattr(self, "_noncombat_source_migration", None) is not None:
+            self.tracker.migrate_noncombat_sources(oracle, self._noncombat_source_migration)
         self.tracker.update_manifest(
             checksums={
                 "oracle": hashlib.sha256(json.dumps(oracle, sort_keys=True).encode()).hexdigest(),
@@ -76,6 +79,7 @@ class CheckpointMixin:
             "profile_backend": self.config.get("environment", {}).get("profile_backend", "python"),
             "weight_source": getattr(self, "_weight_source", None),
             "provenance": self.provenance,
+            "rules_sources": rules_sources(Path(__file__).resolve().parents[4] / "game"),
             "oracle_manifest": getattr(self, "_oracle_manifest", None),
             "evaluation_round": self._evaluation_round,
             "bootstrap_round": self._bootstrap_round,
@@ -85,6 +89,10 @@ class CheckpointMixin:
             },
             **self._checkpoint_extra(),
         }
+        if self._phase4_auto_enabled:
+            from copy import deepcopy
+
+            payload["phase4_automation"] = deepcopy(self._phase4_auto)
         if self.auxiliary_head is not None:
             assert self.auxiliary_optimizer is not None
             payload["auxiliary"] = {
@@ -96,8 +104,8 @@ class CheckpointMixin:
             payload["rng"]["torch_cuda"] = torch.cuda.get_rng_state_all()
         if self.device.type == "privateuseone":
             payload = self._checkpoint_to_cpu(payload)
-        if name == "phase4_validated.pt":
-            certify_checkpoint(payload, "phase4", evaluation, self._evaluation_manifest())
+        if name in ("phase4_validated.pt", "phase5_validated.pt"):
+            certify_checkpoint(payload, name.split("_")[0], evaluation, self._evaluation_manifest())
         save_checkpoint(target, payload)
 
     def load_checkpoint(
@@ -114,6 +122,7 @@ class CheckpointMixin:
         # the model and optimizer device.
         checkpoint = read_checkpoint(checkpoint_path)
         source_change = None
+        noncombat_proof = None
         if load_training_state:
             if checkpoint.get("provenance") != self.provenance:
                 saved = checkpoint.get("provenance")
@@ -126,17 +135,33 @@ class CheckpointMixin:
                     if isinstance(saved, dict)
                     else set()
                 )
-                source_only = changed == {"python_source"} and all(
-                    isinstance(identity.get("python_source"), str)
-                    and bool(identity["python_source"])
-                    for identity in (saved, self.provenance)
+                if "game_rules" in changed and changed <= {"python_source", "game_rules"}:
+                    noncombat_proof = noncombat_change_proof(
+                        Path(__file__).resolve().parents[4] / "game",
+                        saved["game_rules"],
+                        checkpoint.get("rules_sources"),
+                    )
+                compatible_sources = (
+                    isinstance(saved, dict)
+                    and bool(changed)
+                    and changed <= {"python_source", "game_rules"}
+                    and all(
+                        isinstance(identity.get("python_source"), str)
+                        and bool(identity["python_source"])
+                        for identity in (saved, self.provenance)
+                    )
                 )
-                if not (source_only and allow_python_source_change):
+                source_only = changed == {"python_source"}
+                if not (
+                    compatible_sources
+                    and ("game_rules" not in changed or noncombat_proof is not None)
+                    and ("python_source" not in changed or allow_python_source_change)
+                ):
                     detail = (
                         "seul le code Python differe; apres verification des changements, "
                         "utiliser --allow-python-source-change pour conserver la progression"
                         if source_only
-                        else "regles/contenu/version incompatibles pour une reprise; "
+                        else f"regles/contenu/version incompatibles pour une reprise ({', '.join(sorted(changed))}); "
                         "importer les poids avec --weights-only dans un nouveau run"
                     )
                     raise ValueError(detail)
@@ -148,7 +173,20 @@ class CheckpointMixin:
                 }
             saved_oracle = checkpoint.get("oracle_manifest")
             if saved_oracle is not None and saved_oracle != self._evaluation_manifest():
-                raise ValueError("moteur d evaluation different du checkpoint")
+                current_oracle = self._evaluation_manifest()
+                difference = {
+                    key
+                    for key in saved_oracle.keys() | current_oracle.keys()
+                    if saved_oracle.get(key) != current_oracle.get(key)
+                }
+                if not (
+                    noncombat_proof is not None
+                    and difference == {"rules_checksum"}
+                    and saved_oracle.get("rules_checksum")
+                    == noncombat_proof["previous_rules_checksum"]
+                    and current_oracle.get("rules_checksum") == noncombat_proof["rules_checksum"]
+                ):
+                    raise ValueError("moteur d evaluation different du checkpoint")
             if checkpoint.get("policy_spec") != policy_spec(self.config):
                 raise ValueError("contrat de politique incompatible pour une reprise")
             old_config = checkpoint.get("config", {})
@@ -223,11 +261,23 @@ class CheckpointMixin:
         # Confirmations must use the same promotion contract. Preserve the
         # learned stage and optimizer, but evaluate amended thresholds afresh.
         previous_curriculum = checkpoint.get("config", {}).get("curriculum", {})
-        if any(
+        criteria_changed = any(
             previous_curriculum.get(key) != self.config["curriculum"].get(key)
-            for key in ("promotion_win_rate", "maximum_loss_rate", "non_loss_confidence_floor")
-        ):
+            for key in (
+                "promotion_win_rate",
+                "maximum_loss_rate",
+                "non_loss_confidence_floor",
+                "god_thresholds",
+            )
+        ) or (
+            checkpoint.get("config", {}).get("evaluation", {}).get("final_gate", {})
+            != self.config.get("evaluation", {}).get("final_gate", {})
+        )
+        if criteria_changed:
             self.curriculum.consecutive_promotion_successes = 0
+            self.curriculum.awaiting_final_validation = False
+            self.curriculum.completed = False
+            self.curriculum.bootstrap_evaluation_completed = False
         self.best_win_rate = float(
             checkpoint.get("best_win_rate", checkpoint.get("evaluation", {}).get("win_rate", -1.0))
         )
@@ -255,6 +305,8 @@ class CheckpointMixin:
             torch.cuda.set_rng_state_all(rng["torch_cuda"])
         if source_change is not None:
             self.tracker.update_manifest(extra={"resume_source_change": source_change})
+        self._noncombat_source_migration = noncombat_proof
+        self._restore_phase_four_automation(checkpoint, criteria_changed)
         return checkpoint
 
     @staticmethod

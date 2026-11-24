@@ -112,11 +112,56 @@ et `--weights-only`. Un changement volontaire de learning rate compatible exige
 `--reset-optimizer`. Ne pas contourner un refus d'empreinte en modifiant le
 manifeste ou le fichier `.sha256`.
 
+Les scripts de campagne, de boutique et d'inventaire entrent aussi dans
+l'empreinte globale Godot. Si seuls ces fichiers hors combat ont changé,
+la reprise vérifie automatiquement les empreintes individuelles, puis conserve
+la progression et journalise la migration. Les nouveaux checkpoints contiennent
+ces empreintes ; pour un ancien checkpoint, une version Git parmi les 64 derniers
+commits doit correspondre exactement à l'ancienne empreinte globale. Sans cette
+preuve, ou si un script de combat, du bot, le catalogue ou le contrat change,
+la reprise reste refusée. `--allow-python-source-change` autorise séparément
+les changements Python vérifiés ; il ne désactive aucun de ces contrôles.
+
 Une reprise peut prolonger `ppo.total_timesteps`, ajuster le suivi, changer de
 périphérique ou déplacer l’exécutable Godot compatible. Ces changements sont
 historisés dans le manifeste. Le taux d’apprentissage ne peut changer qu’avec
 `--reset-optimizer`. Les paramètres qui définissent l’expérience, comme les
 récompenses, `gamma`, les scénarios et le curriculum, exigent un nouveau run.
+
+## Reprise principale avec le seuil de Veskar à 60 %
+
+Dans `configs/ppo_phase4_vectorized.yaml`, `curriculum.god_thresholds` et
+`evaluation.final_gate.god_thresholds` exigent au moins 60 % de victoires et au
+plus 20 % de défaites pour Veskar. Les autres dieux conservent les seuils du
+parcours principal. Ils sont évalués en groupe, indépendamment de Veskar, avec
+leurs contrôles de confiance et leurs limites par tranche habituels.
+
+Veskar est jugé sur l’ensemble de ses parties dans une confirmation, puis sur
+l’ensemble de ses parties de chaque palier lors de la validation finale. Les
+tranches camp/premier joueur restent obligatoires et complètes ; leurs petites
+séries n’imposent pas chacune le seuil de victoire de Veskar.
+
+Depuis `rl/`, reprendre les poids et Adam du run principal :
+
+```powershell
+$env:GODOT_BIN = "C:\Program Files (x86)\godot\Godot_v4.7.2-stable_win64.exe"
+.\.venv311\Scripts\python.exe -u -m samstone_rl.training.ppo_cleanrl `
+  --config configs\ppo_phase4_vectorized.yaml `
+  --resume runs\ppo_phase4_aligned_v3\latest.pt `
+  --allow-python-source-change `
+  --quiet
+```
+
+Le changement des critères conserve le palier et l’optimiseur mais remet à zéro
+les confirmations et relance la pré-évaluation de ce palier. Le passage à la
+phase suivante exige toujours les validations Godot ; aucun résultat n’est forcé.
+L’option de changement Python est nécessaire après le nettoyage et les correctifs.
+Elle ne permet pas de changer les récompenses, le contenu ou les schémas.
+
+Les campagnes Veskar terminées ont été retirées des scripts et de la documentation.
+Leurs résultats et checkpoints locaux sous `artifacts/` sont conservés ; les
+anciens modèles restent lisibles. Les tests de non-régression et les outils de
+validation générale sont maintenus.
 
 ## Suivi et benchmarks
 
@@ -159,14 +204,68 @@ Ces mesures ne remplacent pas une comparaison de niveau à budget d'apprentissag
 égal sur plusieurs graines. Ne pas modifier simultanément récompenses,
 curriculum et paramètres PPO pour interpréter une expérience.
 
-## Valider la phase 4
+## Phase 4 automatique et validation finale
 
-Arrêter l'entraîneur avant d'utiliser le même dossier pour la certification.
-Le dernier palier doit être maîtrisé et attendre sa validation finale.
+Le lancement principal suffit désormais pour apprendre, confirmer les paliers,
+valider le candidat final et s'arrêter après certification :
+
+```powershell
+$env:GODOT_BIN = "C:\Program Files (x86)\godot\Godot_v4.7.2-stable_win64.exe"
+.\.venv311\Scripts\python.exe -u -m samstone_rl.training.ppo_cleanrl `
+  --config configs\ppo_phase4_vectorized.yaml `
+  --resume runs\ppo_phase4_aligned_v3\latest.pt `
+  --allow-python-source-change `
+  --quiet
+```
+
+Les confirmations intermédiaires conservent leurs critères. Après celles du
+dernier palier, PPO s'interrompt pendant le tournoi Godot de 19 200 parties.
+Le candidat est figé sous `evaluations/phase4/candidates/`. Une réussite crée
+`phase4_validated.pt`, sauvegarde `latest.pt` et arrête le programme. La phase 5
+se lance ensuite séparément.
+
+Un échec des critères reprend l'apprentissage avec Adam conservé. La tentative
+suivante exige au moins 100 nouvelles mises à jour, de nouveaux poids et deux
+nouvelles confirmations. Ses seeds sont distincts des tentatives précédentes.
+Le programme s'arrête aussi après trois validations finales échouées ou après
+épuisement de `ppo.total_timesteps`, avec un code de sortie 2 et sans certification.
+Ces limites se règlent dans `phase4_automation` et `ppo`. Augmenter
+`maximum_failed_attempts` ou le budget PPO permet de reprendre depuis `latest.pt`.
+
+Le checkpoint historique du run v3, sans cet automate, reprend d'abord PPO
+et renouvelle ses confirmations avant de proposer un nouveau candidat : il
+ne relance pas immédiatement le tournoi manuel déjà échoué.
+
+Pour suivre l'état même avec `--quiet`, dans un autre PowerShell depuis `rl/` :
+
+```powershell
+while ($true) {
+  Clear-Host
+  Get-Content runs\ppo_phase4_aligned_v3\phase4_status.json -Raw -ErrorAction SilentlyContinue
+  Start-Sleep -Seconds 5
+}
+```
+
+`phase` indique `training`, `validating`, `completed`, `retry_limit_reached` ou
+`budget_exhausted`. Pendant le tournoi, `completed_games` et `total_games`
+indiquent la progression, également enregistrée sous `final_gate_progress` dans
+TensorBoard. Le fichier de statut informe ; le checkpoint contient l'état de
+reprise faisant autorité.
+
+Après une interruption, relancer exactement la commande principale ci-dessus.
+Une validation en cours reprend ses matchs manquants sur le même candidat,
+avant toute mise à jour PPO. Une erreur technique reste visible et ne compte
+pas parmi les échecs statistiques. Garder les sources et les critères du
+candidat pendant cette reprise : `--allow-python-source-change` ne permet pas
+de mélanger deux contextes dans une validation figée.
+
+La commande de validation manuelle reste disponible pour un diagnostic isolé.
+Arrêter l'entraîneur avant de l'utiliser dans le même dossier. Le dernier
+palier doit être maîtrisé et attendre sa validation finale.
 
 ```powershell
 .\.venv311\Scripts\python.exe scripts\validate_phase4.py `
-  runs\ppo_phase4_aligned_v3\best.pt --config configs\ppo_phase4_vectorized.yaml
+  runs\ppo_phase4_aligned_v3\latest.pt --config configs\ppo_phase4_vectorized.yaml
 ```
 
 Le tournoi complet représente 19 200 parties. Ses résultats sont conservés sous
@@ -181,21 +280,196 @@ sont conservés comme provenance de la source ; ils ne deviennent pas des étape
 d'apprentissage du nouveau run. Il ne faut pas utiliser les résultats partiels
 de ce tournoi pour ajuster les hyperparamètres.
 
-## Self-play et decks
+## Recalculer une validation finale avec les critères révisés
+
+Les critères d'entrée en phase 5 conservent les contrôles globaux et l'exception
+de Veskar. Chaque dieu hors Veskar doit aussi obtenir au moins 80 % de victoires
+et au plus 10 % de défaites par palier sur 400 parties. Les tranches de 100
+parties ont un plancher de victoire de 70 % et un plafond de défaite de 20 %.
+Ces changements concernent la garde finale, pas les confirmations de promotion.
+
+Le run v3 ayant déjà terminé ses trois tournois, recalculer les résultats du
+dernier candidat sans reprendre PPO ni rejouer les matchs :
 
 ```powershell
-.\.venv311\Scripts\python.exe -m samstone_rl.training.ppo_self_play `
-  --config configs\ppo_self_play_v2.yaml `
-  --phase4 runs\ppo_phase4_aligned_v3\phase4_validated.pt
+$env:GODOT_BIN = "C:\Program Files (x86)\godot\Godot_v4.7.2-stable_win64.exe"
+.\.venv311\Scripts\python.exe scripts\validate_phase4.py `
+  runs\ppo_phase4_aligned_v3\latest.pt `
+  --config configs\ppo_phase4_vectorized.yaml `
+  --reuse-recorded `
+  --allow-python-source-change
 ```
 
-Reprise de phase 5 : remplacer `--phase4 ...` par
-`--resume runs\ppo_self_play_v2\latest.pt`.
+Ajouter `--check-only` pour vérifier sans écrire de certificat. Godot ne sert
+ici qu'à vérifier le manifeste du moteur ; les résultats sont lus dans le
+registre original. Une incompatibilité ou une série incomplète arrête la
+commande sans lancer de nouvelles parties et sans certifier le modèle.
+
+Une réussite crée `phase4_validated.pt`, met à jour `latest.pt` et le statut
+`completed`, en conservant les poids, Adam et les compteurs. L'ancien latest
+est archivé sous `evaluations/phase4/candidates/*.before_reassessment.pt`.
+Le rapport révisé `*.reassessment.json` conserve le caractère rétrospectif,
+les deux jeux de critères et les empreintes des preuves. Les candidats et
+leurs anciens rapports restent intacts. Ce recalcul ne constitue pas une
+nouvelle évaluation indépendante. Il n'assouplit pas automatiquement les seuils.
+Après réussite, lancer la phase 5 avec la commande suivante.
+
+## Phase 5 : champion, candidat et arrêt automatique
+
+La collecte reste en Python et les validations utilisent Godot. Le modèle de
+phase 4 est le premier champion figé ; le candidat poursuit PPO. Le champion
+change seulement après deux confirmations réussies et les contrôles de
+conservation par dieu, contre les anciens champions et les bots.
+
+Pour le run de phase 5 déjà commencé avec l'ancien plan, arrêter d'abord
+l'ancien entraîneur, puis migrer dans le même dossier :
+
+```powershell
+$env:GODOT_BIN = "C:\Program Files (x86)\godot\Godot_v4.7.2-stable_win64.exe"
+.\.venv311\Scripts\python.exe -u -m samstone_rl.training.ppo_self_play `
+  --config configs\ppo_self_play_v2.yaml `
+  --resume runs\ppo_self_play_v2\latest.pt `
+  --migrate-legacy-phase5 `
+  --allow-python-source-change `
+  --quiet
+```
+
+La migration conserve les poids, Adam, le RNG et les compteurs d'apprentissage.
+Le nombre de promotions repart de zéro avec le champion de phase 4 ; le modèle
+ayant déjà appris reste le candidat. L'ancien checkpoint est archivé dans
+`checkpoints/legacy_phase5_source.pt` et le manifeste dans
+`league/legacy_manifest.json`. Les anciens fichiers restent sur disque.
+
+Pour les reprises suivantes, sans autre changement du code :
+
+```powershell
+.\.venv311\Scripts\python.exe -u -m samstone_rl.training.ppo_self_play `
+  --config configs\ppo_self_play_v2.yaml `
+  --resume runs\ppo_self_play_v2\latest.pt `
+  --quiet
+```
+
+Pour démarrer un nouveau run, le dossier configuré doit être neuf. Remplacer
+`--resume ...` par `--phase4 runs\ppo_phase4_aligned_v3\phase4_validated.pt`.
+Si seules les sources Python diffèrent depuis la certification de phase 4,
+`--allow-python-source-change` autorise explicitement cette transition.
+Les règles, le contenu, les schémas, les decks et les récompenses restent vérifiés.
+
+Le déroulement par défaut est le suivant :
+
+- Présélection toutes les 100 mises à jour : 144 duels équilibrés, score minimum
+  52 %. Une présélection réussie ne remplace pas le champion.
+- Le candidat figé passe d'abord les contrôles contre les bots des huit paliers,
+  puis contre les anciens champions. Un échec arrête la tentative immédiatement.
+- Deux confirmations distinctes de 1 152 duels, au moins 53 % de
+  score et borne bootstrap appariée supérieure à 50 % à chaque confirmation.
+- Contrôle de conservation par dieu contre le champion.
+  Les désavantages entre dieux sont comparés à leur référence, sans imposer un
+  même taux de victoire absolu à toutes les confrontations.
+- Trois promotions visées. La dernière exige aussi 1 728 duels indépendants et
+  de nouveaux contrôles historiques et Godot. Après réussite, le programme
+  produit `phase5_validated.pt` et s'arrête automatiquement.
+
+Le score compte victoire = 1, nul = 0,5 et défaite = 0. Le bootstrap travaille
+sur les paires qui inversent les modèles dans les mêmes conditions initiales.
+Il estime la confiance dans le score ; il ne prouve pas que le niveau maximal
+du jeu a été atteint. Les confirmations et la fin de campagne ont des seeds
+distincts de la présélection et de la collecte.
+
+Le programme s'arrête également après 1 500 mises à jour sans promotion ou
+après épuisement du budget PPO. Ces arrêts ont le code de sortie 2 et ne
+produisent pas de certificat. `maximum_updates_without_promotion` ou
+`ppo.total_timesteps` peuvent être augmentés avant une reprise. Les critères
+ne sont jamais assouplis automatiquement.
+
+Une validation interrompue reprend ses matchs manquants avant toute optimisation.
+Après un changement des seules sources Python, `--allow-python-source-change`
+recommence la validation du candidat figé avec de nouveaux seeds et registres.
+La tentative précédente est conservée dans `superseded_attempts`. La nouvelle
+validation précède toute mise à jour PPO. Les changements de critères ou de
+règles exigent de reprendre le contexte d'origine. Une erreur technique reste
+visible avec `--quiet` et ne compte pas comme un échec de performance.
+
+Le backend Python regroupe les décisions des parties qui utilisent le même
+checkpoint adverse. Chaque partie conserve son générateur aléatoire. Pour
+mesurer ce regroupement avec les poids et l'optimiseur du run courant, arrêter
+l'entraînement puis lancer depuis `rl/` :
+
+```powershell
+.\.venv311\Scripts\python.exe -u scripts\benchmark_champion_batch.py `
+  --checkpoint runs\ppo_self_play_v2\latest.pt
+```
+
+Le benchmark alterne les décisions individuelles et groupées dans des dossiers
+temporaires. Il mesure la collecte et les mises à jour PPO, après échauffement.
+Le rapport est écrit dans `artifacts/champion_batch_benchmark.json`. Les mesures
+excluent les évaluations Godot et les sauvegardes. Les petits écarts d'arrondi
+entre tailles de lots peuvent faire diverger les trajectoires d'apprentissage.
+
+Pour comparer ensuite la collecte avec le masque direct et l'encodage terminal
+évité dans PPO, utiliser la commande suivante. `--ablation` mesure chaque
+changement séparément, puis les deux ensemble, dans les deux ordres.
+
+```powershell
+.\.venv311\Scripts\python.exe -u scripts\benchmark_champion_batch.py `
+  --checkpoint runs\ppo_self_play_v2\latest.pt `
+  --comparison rollout --ablation `
+  --output artifacts\phase5_rollout_optimizations.json
+```
+
+Les appels publics à `BatchSamStoneEnv.step()` produisent l'observation finale.
+La collecte PPO demande `encode_terminal=False`, enregistre récompenses et
+résultat, puis réinitialise chaque partie terminée avant la prochaine décision.
+Le masque adverse direct conserve la convention du premier emplacement pour
+une carte répétée dans la main.
+
+Le champion utilise aussi le moteur tactique vectorisé pendant la collecte
+Python. Pour mesurer le gain avec les mêmes poids et la même configuration,
+comparer le calcul tactique individuel et groupé avec cette commande.
+
+```powershell
+.\.venv311\Scripts\python.exe -u scripts\benchmark_champion_batch.py `
+  --checkpoint runs\ppo_self_play_v2\latest.pt `
+  --comparison tactics `
+  --output artifacts\phase5_champion_tactics.json
+```
+
+Dans un autre terminal, depuis `rl/` :
+
+```powershell
+.\.venv311\Scripts\python.exe -m tensorboard.main `
+  --logdir runs\ppo_self_play_v2\tensorboard --port 6006
+```
+
+Pour le suivi de l'état, dans un autre terminal :
+
+```powershell
+.\.venv311\Scripts\python.exe scripts\monitor_training.py runs\ppo_self_play_v2 --follow
+```
+
+TensorBoard : `http://localhost:6006`. Les séries utiles sont
+`evaluation/score`, `phase5_curriculum/promotions`,
+`phase5_curriculum/updates_since_promotion` et
+`phase5_promotion/minimum_confirmation_score_lower`.
+`phase5_status.json` distingue `training`, `evaluating`, `completed`, `plateau`
+et `budget_exhausted`, avec la sous-étape et la progression des matchs.
+
+Les champions sont sous `league/champion_*.pt`, les candidats et rapports sous
+`evaluations/phase5/candidates/`, et les résultats compacts dans les registres
+SQLite de `evaluations/phase5/`. Le cache des modèles CPU est borné. Le rapport
+certifié identifie les politiques de référence et les registres utilisés.
+
+La validation finale est automatique. Pour inspecter ensuite le certificat :
 
 ```powershell
 .\.venv311\Scripts\python.exe scripts\validate_phase5.py `
-  runs\ppo_self_play_v2\best.pt --config configs\ppo_self_play_v2.yaml
+  runs\ppo_self_play_v2\latest.pt --config configs\ppo_self_play_v2.yaml
 ```
+
+Cette commande vérifie le certificat existant ; elle ne lance pas un autre
+apprentissage ni l'ancien tournoi manuel.
+
+## Decks après phase 5
 
 Après certification de phase 5, lancer la recherche pour les six dieux :
 
@@ -282,11 +556,14 @@ réservent des espaces différents aux phases et aux validations :
 | Usage | Base |
 | --- | ---: |
 | Phase 4, confirmations / ancrages / pré-évaluation / finale | 4,1 / 4,2 / 4,5 / 4,9 milliards |
-| Phase 5, confirmations / tournoi mixte de suivi | 5,1 / 5,2 milliards |
-| Phase 5, finales Godot / mixtes | 5,8 / 5,9 milliards |
+| Phase 5, base champion/candidat | 6 × 10¹² |
 | Phase 6, sélection courte / moyenne / finale | 6,1 / 6,2 / 6,9 milliards |
 | Spécialisation, suivi / universelle / finale | 7,1 / 7,2 / 7,9 milliards |
 | Comparaisons / ablations | 8,1 / 8,2 milliards |
+
+La phase 5 ajoute à sa base un domaine par type d'évaluation (pas de 10¹⁰),
+une tentative (pas de 10⁶) et une ronde (pas de 10⁴). Les deux rôles d'une paire
+et les modèles de référence comparés utilisent volontairement la même seed.
 
 Les seeds communs entre candidats d'une même comparaison sont intentionnels :
 ils permettent une mesure appariée. Les parties finales ne servent pas à choisir

@@ -1,328 +1,119 @@
-from __future__ import annotations
+"""Promotion and independent final assessment of a frozen phase-5 candidate."""
 
-import json
-from collections import defaultdict
-from dataclasses import asdict, dataclass
-from pathlib import Path
-from typing import Any
-
-import torch
-import yaml
-
-from samstone_rl.envs.samstone_env import RewardScheme, SamStoneEnv
-from samstone_rl.fast_engine import StoneCatalog
-from samstone_rl.models.policy import Policy, act_from_info, restore_policy
-from samstone_rl.models.tactical_actor_critic import TacticalActorCritic
-from samstone_rl.opponents.checkpoint import CheckpointOpponent
-from samstone_rl.training.curriculum import DEFAULT_STAGES, stages_from_config
-from samstone_rl.training.validation import wilson_lower
-from samstone_rl.utils.certification import certify_checkpoint
-from samstone_rl.utils.checkpoints import file_checksum, load_checkpoint, save_checkpoint
-from samstone_rl.utils.provenance import provenance
-
-GODS = ("veskar", "nerava", "kharun", "ilyr", "sylkha", "enigma")
+from samstone_rl.training.phase_five_protocol import (
+    duel_summary,
+    promotion_judgement,
+    regression_judgement,
+)
 
 
-@dataclass(frozen=True)
-class MatchCount:
-    wins: int = 0
-    draws: int = 0
-    losses: int = 0
-
-    @property
-    def games(self) -> int:
-        return self.wins + self.draws + self.losses
-
-    @property
-    def win_rate(self) -> float:
-        return self.wins / self.games if self.games else 0.0
-
-    @property
-    def score(self) -> float:
-        return (self.wins + 0.5 * self.draws) / self.games if self.games else 0.0
-
-    def to_dict(self) -> dict[str, Any]:
-        return {
-            **asdict(self),
-            "games": self.games,
-            "win_rate": self.win_rate,
-            "score": self.score,
-            "win_wilson_lower": wilson_lower(self.wins, self.games),
-        }
-
-
-def summarize_outcomes(outcomes: list[int]) -> MatchCount:
-    return MatchCount(outcomes.count(1), outcomes.count(0), outcomes.count(-1))
-
-
-def judge_phase_five(
-    candidate: dict[str, MatchCount],
-    baseline: dict[str, MatchCount],
-    mixed: dict[str, MatchCount],
-    settings: dict[str, Any],
-) -> dict[str, Any]:
-    """Check held-out Godot retention and mixed-god play against phase 4."""
-    failures: list[str] = []
-    stages = settings.get("stages", [stage.name for stage in DEFAULT_STAGES])
-    gods = GODS
-    for stage in stages:
-        key = f"stage:{stage}"
-        if key not in candidate or key not in baseline or not candidate[key].games:
-            failures.append(f"evaluation Godot absente: {key}")
-            continue
-        gap = baseline[key].win_rate - candidate[key].win_rate
-        if gap > float(settings["maximum_stage_regression"]):
-            failures.append(f"regression Godot {stage}: {gap:.3f}")
-    for god in gods:
-        key = f"god:{god}"
-        if not baseline.get(key, MatchCount()).games or not candidate.get(key, MatchCount()).games:
-            failures.append(f"evaluation Godot absente: {key}")
-        elif baseline[key].win_rate - candidate[key].win_rate > float(
-            settings["maximum_god_regression"]
-        ):
-            failures.append(f"regression Godot {god}")
-        for stage in stages:
-            for player in (1, 2):
-                for first in (1, 2):
-                    slice_key = f"slice:{stage}:{god}:{player}:{first}"
-                    expected_games = int(settings["godot_games_per_slice"])
-                    if (
-                        candidate.get(slice_key, MatchCount()).games != expected_games
-                        or baseline.get(slice_key, MatchCount()).games != expected_games
-                    ):
-                        failures.append(f"tranche Godot incomplete: {slice_key}")
-    total = mixed.get("overall", MatchCount())
-    if not total.games:
-        failures.append("tournoi mixte absent")
-    else:
-        if total.score < float(settings["minimum_head_to_head_score"]):
-            failures.append(f"score contre phase 4 trop faible: {total.score:.3f}")
-        if wilson_lower(total.wins, total.games) < float(settings["minimum_head_to_head_wilson"]):
-            failures.append("borne Wilson des victoires contre phase 4 trop faible")
-    for god in gods:
-        key = f"god:{god}"
-        outcome = mixed.get(key, MatchCount())
-        if not outcome.games or outcome.score < float(settings["minimum_god_score"]):
-            failures.append(f"score mixte insuffisant pour {god}")
-        for opposing_god in gods:
-            matchup = mixed.get(f"matchup:{god}:{opposing_god}", MatchCount())
-            if not matchup.games or matchup.score < float(settings["minimum_matchup_score"]):
-                failures.append(f"matchup insuffisant: {god} contre {opposing_god}")
-            for player in (1, 2):
-                for first in (1, 2):
-                    slice_key = f"slice:{god}:{opposing_god}:{player}:{first}"
-                    if mixed.get(slice_key, MatchCount()).games != int(
-                        settings["mixed_games_per_slice"]
-                    ):
-                        failures.append(f"tranche mixte incomplete: {slice_key}")
-    return {
-        "schema_version": 1,
-        "passed": not failures,
-        "failures": failures,
-        "criteria": settings,
-        "godot_candidate": {key: value.to_dict() for key, value in candidate.items()},
-        "godot_phase4": {key: value.to_dict() for key, value in baseline.items()},
-        "mixed_vs_phase4": {key: value.to_dict() for key, value in mixed.items()},
-    }
-
-
-class PhaseFiveValidator:
-    """Run the final held-out tournament in the authoritative Godot engine."""
-
-    def __init__(
-        self, config_path: str | Path, checkpoint_path: str | Path, godot_path: str | None = None
-    ) -> None:
-        self.config_path = Path(config_path).resolve()
-        self.checkpoint_path = Path(checkpoint_path).resolve()
-        self.config = yaml.safe_load(self.config_path.read_text(encoding="utf-8"))
-        self.output = (self.config_path.parent.parent / self.config["output_dir"]).resolve()
-        manifest = self.output / "run_manifest.json"
-        if manifest.is_file():
-            expected_catalog = (
-                json.loads(manifest.read_text(encoding="utf-8")).get("checksums", {}).get("catalog")
+def evaluate_candidate(trainer, pending: dict) -> dict:
+    """All rounds reuse exact frozen weights; ledgers make interruptions resumable."""
+    arena, settings = trainer.arena, trainer.config["phase5"]
+    actor = arena.opponent(trainer.output / pending["path"]).model
+    champion = trainer.output / trainer.phase5_state["champions"][-1]["path"]
+    guards = evaluate_guards(trainer, actor, pending, domain=3)
+    if not guards["passed"]:
+        return dict(passed=False, reason="retention", guards=guards, confirmations=[])
+    all_cases, all_outcomes, rounds = [], [], []
+    for round_index in range(int(settings["promotion"]["confirmations"])):
+        seed = trainer._phase5_seed(1, pending["attempt"], round_index)
+        cases, outcomes, summary = arena.duels(
+            actor,
+            champion,
+            int(settings["promotion"]["games_per_slice"]),
+            seed,
+            f"confirmation_{round_index + 1}",
+        )
+        judgement = promotion_judgement(summary, settings["promotion"], seed)
+        rounds.append(judgement)
+        if not judgement["passed"]:
+            return dict(
+                passed=False,
+                reason="confirmation",
+                guards=guards,
+                confirmations=rounds,
+                minimum_confirmation_score=min(r["score"] for r in rounds),
+                minimum_confirmation_score_lower=min(r["score_lower"] for r in rounds),
             )
-            if expected_catalog and expected_catalog != StoneCatalog().checksum:
-                raise ValueError("les cartes ont change depuis le run de phase 5")
-        if not self.checkpoint_path.is_relative_to(self.output):
-            raise ValueError("checkpoint de phase 5 hors du dossier de run")
-        self.phase4_baseline = self.output / "phase4_baseline.pt"
-        if not self.phase4_baseline.is_file():
-            raise FileNotFoundError(self.phase4_baseline)
-        self.checkpoint = load_checkpoint(self.checkpoint_path)
-        if self.checkpoint.get("config") != self.config:
-            raise ValueError("la configuration ne correspond pas au checkpoint de phase 5")
-        expected = self.checkpoint.get("phase5", {}).get("initial_policy_checksum")
-        if not expected or expected != self._checksum(self.phase4_baseline):
-            raise ValueError("le checkpoint ne correspond pas a la politique initiale")
-        baseline = load_checkpoint(self.phase4_baseline)
-        if not baseline.get("curriculum", {}).get("completed"):
-            raise ValueError("la politique initiale n'a pas valide la phase 4")
-        self.scenarios = self.config["environment"]["scenarios"]
-        if {item["god"] for item in self.scenarios} != set(GODS):
-            raise ValueError("la garde de phase 5 exige six dieux")
-        settings = self.config["phase5"]["validation"]
-        if int(self.checkpoint.get("update", 0)) < int(settings.get("minimum_updates", 0)):
-            raise ValueError("phase 5 trop courte pour la validation finale")
-        if min(int(settings["godot_games_per_slice"]), int(settings["mixed_games_per_slice"])) <= 0:
-            raise ValueError("nombre de matchs de validation invalide")
-        self.stages = stages_from_config(self.config["curriculum"].get("stages"))
-        self.settings = {**settings, "stages": [stage.name for stage in self.stages]}
-        self.models = {
-            "candidate": self._model(self.checkpoint),
-            "phase4": self._model(baseline),
-        }
-        reward = self.config["environment"]["reward"]
-        self.env = SamStoneEnv(
-            godot_path=godot_path or self.config["environment"].get("godot_path"),
-            reward_scheme=RewardScheme(**reward),
-            backend="godot",
-            tactical_features=any(isinstance(m, TacticalActorCritic) for m in self.models.values()),
+        all_cases.extend(cases)
+        all_outcomes.extend(outcomes)
+    pooled = duel_summary(all_cases, all_outcomes, trainer.scenarios)
+    reference = arena.champion_reference(all_cases, champion, "champion_self_reference")
+    regression = regression_judgement(
+        pooled, reference, float(settings["promotion"]["maximum_god_regression"])
+    )
+    report = dict(
+        passed=regression["passed"],
+        confirmations=rounds,
+        minimum_confirmation_score=min(r["score"] for r in rounds),
+        minimum_confirmation_score_lower=min(r["score_lower"] for r in rounds),
+        candidate=pooled,
+        champion_self_reference=reference,
+        god_regression=regression,
+        guards=guards,
+    )
+    if not report["passed"]:
+        report["reason"] = "god_regression"
+        return report
+    if pending["final"]:
+        seed = trainer._phase5_seed(2, pending["attempt"])
+        cases, outcomes, summary = arena.duels(
+            actor,
+            champion,
+            int(settings["final"]["games_per_slice"]),
+            seed,
+            "final_holdout",
         )
-
-    @staticmethod
-    def _model(checkpoint: dict[str, Any]) -> Policy:
-        return restore_policy(checkpoint)
-
-    @staticmethod
-    def _checksum(path: Path) -> str:
-        return file_checksum(path)
-
-    @staticmethod
-    def _options(own: dict, other: dict, player: int, first: int) -> dict:
-        if player == 1:
-            config = {
-                "human_god": own["god"],
-                "human_deck": list(own["deck"]),
-                "ai_god": other["god"],
-                "ai_deck": list(other["deck"]),
-            }
-        else:
-            config = {
-                "human_god": other["god"],
-                "human_deck": list(other["deck"]),
-                "ai_god": own["god"],
-                "ai_deck": list(own["deck"]),
-            }
-        config["first_player"] = first
-        return {"config": config}
-
-    def _play(
-        self,
-        model: Policy,
-        opponent: Any,
-        own: dict,
-        other: dict,
-        player: int,
-        first: int,
-        seed: int,
-    ) -> int:
-        self.env.opponent = opponent
-        self.env.agent_player = player
-        observation, info = self.env.reset(
-            seed=seed, options=self._options(own, other, player, first)
+        holdout = promotion_judgement(summary, settings["promotion"], seed)
+        baseline = arena.champion_reference(cases, champion, "final_champion_self_reference")
+        holdout["god_regression"] = regression_judgement(
+            summary, baseline, float(settings["promotion"]["maximum_god_regression"])
         )
-        if not hasattr(self, "_oracle_manifest"):
-            self._oracle_manifest = self.env.bridge.engine_manifest()
-        while "episode" not in info:
-            with torch.no_grad():
-                action, _, _ = act_from_info(model, observation, info)
-            observation, _, _, _, info = self.env.step(int(action.item()))
-        winner = int(info["winner"])
-        return 1 if winner == player else (0 if winner == 0 else -1)
+        holdout["guards"] = evaluate_guards(trainer, actor, pending, domain=5)
+        holdout["passed"] &= holdout["god_regression"]["passed"] and holdout["guards"]["passed"]
+        report["holdout"] = holdout
+        report["passed"] = holdout["passed"]
+        if not report["passed"]:
+            report["reason"] = "final_holdout"
+    return report
 
-    def run(self) -> dict[str, Any]:
-        godot: dict[str, dict[str, list[int]]] = {
-            "candidate": defaultdict(list),
-            "phase4": defaultdict(list),
-        }
-        mixed: dict[str, list[int]] = defaultdict(list)
-        try:
-            games = int(self.settings["godot_games_per_slice"])
-            base_seed = int(self.settings["godot_seed_base"])
-            for stage_index, stage in enumerate(self.stages):
-                for god_index, scenario in enumerate(self.scenarios):
-                    for player in (1, 2):
-                        for first in (1, 2):
-                            for offset in range(games):
-                                seed = (
-                                    base_seed
-                                    + stage_index * 1000000
-                                    + god_index * 10000
-                                    + player * 1000
-                                    + first * 100
-                                    + offset
-                                )
-                                for name in ("candidate", "phase4"):
-                                    result = self._play(
-                                        self.models[name],
-                                        stage.opponent(),
-                                        scenario,
-                                        scenario,
-                                        player,
-                                        first,
-                                        seed,
-                                    )
-                                    godot[name][f"stage:{stage.name}"].append(result)
-                                    godot[name][f"god:{scenario['god']}"].append(result)
-                                    godot[name][
-                                        f"slice:{stage.name}:{scenario['god']}:{player}:{first}"
-                                    ].append(result)
-                print(
-                    f"Godot: {stage.name} termine contre six dieux (candidat et phase 4)",
-                    flush=True,
-                )
-            games = int(self.settings["mixed_games_per_slice"])
-            base_seed = int(self.settings["mixed_seed_base"])
-            opponent = CheckpointOpponent(self.phase4_baseline, deterministic=True)
-            for own_index, own in enumerate(self.scenarios):
-                for opposing_index, other in enumerate(self.scenarios):
-                    for player in (1, 2):
-                        for first in (1, 2):
-                            for offset in range(games):
-                                seed = (
-                                    base_seed
-                                    + own_index * 1000000
-                                    + opposing_index * 10000
-                                    + player * 1000
-                                    + first * 100
-                                    + offset
-                                )
-                                result = self._play(
-                                    self.models["candidate"],
-                                    opponent,
-                                    own,
-                                    other,
-                                    player,
-                                    first,
-                                    seed,
-                                )
-                                mixed["overall"].append(result)
-                                mixed[f"god:{own['god']}"].append(result)
-                                mixed[f"matchup:{own['god']}:{other['god']}"].append(result)
-                                mixed[f"slice:{own['god']}:{other['god']}:{player}:{first}"].append(
-                                    result
-                                )
-                print(f"Tournoi mixte: {own['god']} contre six dieux", flush=True)
-        finally:
-            self.env.close()
-        return judge_phase_five(
-            {key: summarize_outcomes(value) for key, value in godot["candidate"].items()},
-            {key: summarize_outcomes(value) for key, value in godot["phase4"].items()},
-            {key: summarize_outcomes(value) for key, value in mixed.items()},
-            self.settings,
+
+def evaluate_guards(trainer, actor, pending, domain):
+    settings, arena = trainer.config["phase5"], trainer.arena
+    retention = arena.retention(
+        actor,
+        trainer.phase4_baseline,
+        int(settings["retention"]["games_per_slice"]),
+        trainer._phase5_seed(domain + 1, pending["attempt"]),
+        "final_retention" if domain == 5 else "retention",
+    )
+    if not retention["passed"]:
+        return dict(passed=False, history={}, godot=retention)
+    history = trainer._phase5_history()
+    current = arena.opponent(trainer.output / trainer.phase5_state["champions"][-1]["path"]).model
+    results = {}
+    for index, entry in enumerate(history):
+        seed = trainer._phase5_seed(domain, pending["attempt"], index)
+        path = trainer.output / entry["path"]
+        repetitions = int(settings["history"]["games_per_slice"])
+        _, _, candidate = arena.duels(
+            actor, path, repetitions, seed, f"history_{domain}_{index}_candidate"
         )
-
-    def write_result(self, report: dict[str, Any]) -> Path:
-        path = self.output / "phase5_gate.json"
-        temporary = path.with_suffix(".json.tmp")
-        temporary.write_text(json.dumps(report, indent=2), encoding="utf-8")
-        temporary.replace(path)
-        if report["passed"]:
-            target = self.output / "phase5_validated.pt"
-            payload = dict(self.checkpoint)
-            payload["provenance"] = provenance()
-            payload["oracle_manifest"] = self._oracle_manifest
-            payload["phase5"] = {**payload["phase5"], "completed": True, "gate_report": str(path)}
-            certify_checkpoint(payload, "phase5", report, self._oracle_manifest)
-            save_checkpoint(target, payload)
-        return path
+        _, _, reference = arena.duels(
+            current, path, repetitions, seed, f"history_{domain}_{index}_reference"
+        )
+        results[str(entry["generation"])] = dict(
+            passed=(
+                candidate["score"] >= float(settings["history"]["minimum_score"])
+                and candidate["score"]
+                >= reference["score"] - float(settings["history"]["maximum_regression"]) - 1e-12
+            ),
+            candidate_score=candidate["score"],
+            reference_score=reference["score"],
+        )
+    return dict(
+        passed=retention["passed"] and all(r["passed"] for r in results.values()),
+        history=results,
+        godot=retention,
+    )
