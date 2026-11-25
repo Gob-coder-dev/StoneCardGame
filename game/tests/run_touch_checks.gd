@@ -268,19 +268,19 @@ func _check_collection() -> void:
 	var first_card: MonsterCard = deck_rows.get_child(0).get_child(0).get_child(0)
 	await _swipe(_center(first_card), Vector2(0, -150))
 	_check(scroll.scroll_vertical > 50, "deck : glisser depuis une carte fait défiler")
-	_check(not is_instance_valid(page._action_drawer), "deck : un glissement n'ouvre pas le tiroir")
+	_check(not is_instance_valid(page._drawer.drawer), "deck : un glissement n'ouvre pas le tiroir")
 	await _reset_scroll(scroll)
 	await _tap(_center(first_card))
-	_check(is_instance_valid(page._action_drawer), "deck : un appui ouvre le tiroir")
+	_check(is_instance_valid(page._drawer.drawer), "deck : un appui ouvre le tiroir")
 	await _tap(_center(first_card))
-	_check(not is_instance_valid(page._action_drawer), "deck : un second appui referme le tiroir une seule fois")
+	_check(not is_instance_valid(page._drawer.drawer), "deck : un second appui referme le tiroir une seule fois")
 	await _swipe(_center(first_card), Vector2(0, -220))
 	_check(scroll._scrolling, "défilement : l'inertie est active après le geste")
 	var visible_card := _find_visible_card(scroll, scroll.get_global_rect())
 	if visible_card != null:
 		var stopped_at := scroll.scroll_vertical
 		await _tap(_center(visible_card))
-		_check(not is_instance_valid(page._action_drawer), "inertie : toucher une carte arrête la liste sans l'ouvrir")
+		_check(not is_instance_valid(page._drawer.drawer), "inertie : toucher une carte arrête la liste sans l'ouvrir")
 		_check(scroll.scroll_vertical == stopped_at, "inertie : la liste reste arrêtée après le toucher")
 	else:
 		_check(false, "inertie : une carte est visible pour tester l'arrêt")
@@ -290,17 +290,17 @@ func _check_collection() -> void:
 	_press(first_position, 1)
 	_release(first_position, false, 1)
 	await _settle()
-	_check(not is_instance_valid(page._action_drawer), "multitouch : le second doigt ne termine pas l'appui du premier")
+	_check(not is_instance_valid(page._drawer.drawer), "multitouch : le second doigt ne termine pas l'appui du premier")
 	_release(first_position)
 	await _settle()
-	_check(is_instance_valid(page._action_drawer), "multitouch : le premier doigt déclenche une seule action")
-	page._close_action_drawer()
+	_check(is_instance_valid(page._drawer.drawer), "multitouch : le premier doigt déclenche une seule action")
+	page._drawer.close()
 	await _settle()
 	await _tap(_center(first_card))
-	_check(is_instance_valid(page._action_drawer), "deck : rouvrir le tiroir pour tester le fond")
+	_check(is_instance_valid(page._drawer.drawer), "deck : rouvrir le tiroir pour tester le fond")
 	var deck_title: Label = scroll.get_node("Page/DeckPanel/DeckContent/DeckHeader/DeckTitle")
 	await _tap(_center(deck_title))
-	_check(not is_instance_valid(page._action_drawer), "deck : toucher une zone vide referme le tiroir")
+	_check(not is_instance_valid(page._drawer.drawer), "deck : toucher une zone vide referme le tiroir")
 
 	# Les cartes du deck sont masquées dans la collection : prendre la première affichée.
 	var collection_card: MonsterCard = null
@@ -313,7 +313,7 @@ func _check_collection() -> void:
 	var before := scroll.scroll_vertical
 	await _swipe(_center(collection_card), Vector2(0, -180))
 	_check(scroll.scroll_vertical > before + 60, "collection : glisser sur l'illustration fait défiler")
-	_check(not is_instance_valid(page._action_drawer), "collection : aucune sélection accidentelle")
+	_check(not is_instance_valid(page._drawer.drawer), "collection : aucune sélection accidentelle")
 
 	var sort: Button = scroll.get_node("Page/CollectionHeader/SortButton")
 	await _reset_scroll(scroll)
@@ -358,10 +358,10 @@ func _check_collection() -> void:
 	_press(_center(first_card))
 	_release(_center(first_card), true)
 	await _settle()
-	_check(not is_instance_valid(page._action_drawer), "carte : un toucher annulé par le système n'active rien")
+	_check(not is_instance_valid(page._drawer.drawer), "carte : un toucher annulé par le système n'active rien")
 	await _tap(_center(first_card))
-	if is_instance_valid(page._action_drawer):
-		var info_button: Button = page._action_drawer.get_node("Actions/InfoButton")
+	if is_instance_valid(page._drawer.drawer):
+		var info_button: Button = page._drawer.drawer.get_node("Actions/InfoButton")
 		await _swipe(_center(info_button), Vector2(0, -150))
 		_check(not page.info_sheet.visible, "tiroir : glisser sur Infos n'ouvre pas la fiche")
 		await _tap(_center(info_button))
@@ -427,7 +427,7 @@ func _check_evolution_inputs() -> void:
 	# Une carte proche du bas est remontée d'une frame supplémentaire afin que
 	# son tiroir superposé reste entièrement visible sous elle.
 	await get_tree().process_frame
-	var info_button: Button = page._action_drawer.info_button
+	var info_button: Button = page._drawer.drawer.info_button
 	await _tap(_center(info_button))
 	var info: MonsterInfoSheet = page.info_sheet
 	_check(info.visible and info._shown_variant == "avortons_des_caves_n4", "niveaux : Infos ouvre au toucher la forme affichée")

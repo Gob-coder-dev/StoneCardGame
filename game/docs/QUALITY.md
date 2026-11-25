@@ -55,6 +55,49 @@ travail restent hors du code et sont ignorées par Git.
 - Une optimisation doit viser une mesure ou supprimer un travail répété ; elle
   ne doit pas introduire un second cache sans cycle de vie explicite.
 
+### Mesures du cache des menus et des textures
+
+Mesures isolées sous Windows avec Godot 4.7.2 headless, comparées au commit
+`6ee13a2`. Les délais sont les médianes de sept séries après échauffement.
+Le profil avancé utilise les données du catalogue historique et la pastille
+affiche les mêmes 20 paliers dans les deux versions.
+
+| Opération sur le profil avancé | Avant | Après |
+| --- | ---: | ---: |
+| Clés du cache des trois pages Cartes, Quêtes et Boutique | 235 µs | 2,4 µs |
+| Calcul de la pastille de quêtes | 2,81 ms | 1,26 ms |
+
+L’échantillon de textures contient trois cartes de chacun des sept dossiers
+d’illustrations et les portraits d’Énigma, Sylkha et Véskar. À résolution et
+mipmaps identiques, les fichiers `.ctex` occupent 15,27 Mio sans perte,
+6,28 Mio à la qualité WebP 0,92 et 5,26 Mio à la qualité 0,85. Ces chiffres
+concernent le stockage des fichiers importés. WebP avec ou sans perte utilise
+des textures décompressées en mémoire graphique. Les réglages livrés restent
+sans perte jusqu’à la vérification des contours, des détails et de la
+lisibilité sur le plateau et dans la fiche de carte sur appareil.
+[Documentation Godot sur les textures](https://docs.godotengine.org/en/4.6/classes/class_compressedtexture2d.html)
+
+Pour une comparaison Android, utiliser le même téléphone, la même version
+d’Android, le même profil de jeu et le même taux de rafraîchissement. Relever
+`TotalTime` sur plusieurs démarrages à froid et le `TOTAL PSS` après stabilisation
+de l’accueil puis du combat. Mesurer le délai jusqu’à un accueil utilisable
+séparément du temps de lancement de l’activité. [Mesures de démarrage](https://developer.android.com/topic/performance/baselineprofiles/manually-create-measure) · [Mesures mémoire](https://developer.android.com/tools/dumpsys)
+
+```powershell
+adb devices -l
+adb shell am force-stop com.beastpact.game
+adb shell am start -W -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -p com.beastpact.game
+adb shell dumpsys meminfo com.beastpact.game
+```
+
+Pour les saccades, relever les percentiles 50, 95 et 99 des intervalles de
+présentation du calque du jeu pendant la même séquence accueil → collection →
+carte → combat. Si le téléphone expose l’histogramme `present2present` du
+calque, réinitialiser `adb shell dumpsys SurfaceFlinger --timestats -clear`,
+activer la collecte avec `-enable` avant la séquence puis exporter avec `-dump`.
+N’interpréter les résultats que si le calque du jeu apparaît dans le relevé.
+[Collecte TimeStats AOSP](https://android.googlesource.com/platform/frameworks/native/+/master/services/surfaceflinger/TimeStats/TimeStats.cpp)
+
 ## Git
 
 Les sources `.gd.uid`, les fichiers `<asset>.import`, les scènes, ressources,

@@ -2,8 +2,10 @@ extends "res://tests/support/CombatTestSuite.gd"
 const Fixture := preload("res://tests/support/PlayerProfileFixture.gd")
 const Storage := preload("res://scripts/data/PlayerSaveStorage.gd")
 const PlayerModel := preload("res://scripts/data/PlayerData.gd")
+const DeckActions := preload("res://scripts/application/CollectionDeckActions.gd")
 
 func run() -> void:
+	_test_deck_actions()
 	var fixture := Fixture.new()
 	var page: Control = (load("res://scenes/menus/CollectionScreen.tscn") as PackedScene).instantiate()
 	add_child(page)
@@ -17,6 +19,27 @@ func run() -> void:
 	await get_tree().process_frame
 	await _test_battle_level()
 	fixture.restore()
+
+
+func _test_deck_actions() -> void:
+	var store := {"accepted": false, "deck": []}
+	var actions := DeckActions.new(MonsterLoader,
+		func(id: String) -> bool: return id == "avortons_des_caves_n2",
+		func(deck: Array) -> bool:
+			if not store["accepted"]:
+				return false
+			store["deck"] = deck.duplicate()
+			return true)
+	var deck := ["avortons_des_caves_n1"]
+	var operation := actions.equip(deck, "avortons_des_caves_n2", "veskar")
+	_check(operation["success"] and operation["deck"] == ["avortons_des_caves_n2"]
+		and deck == ["avortons_des_caves_n1"], "collection : le niveau change sur une copie du deck")
+	_check(actions.equip(deck, "avortons_des_caves_n3", "veskar")["reason"] == DeckActions.REASON_NOT_OWNED
+		and not actions.commit(operation["deck"]) and store["deck"].is_empty(),
+		"collection : la possession et l’échec du stockage sont testables sans la scène")
+	store["accepted"] = true
+	_check(actions.commit(operation["deck"]) and store["deck"] == operation["deck"],
+		"collection : le stockage injecté reçoit exactement le deck validé")
 
 
 func _card(page: Control, lineage: String) -> MonsterCard:

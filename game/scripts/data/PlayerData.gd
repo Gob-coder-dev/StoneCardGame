@@ -31,6 +31,7 @@ var _inventory: PlayerInventory = null
 var _quests: Dictionary = {}
 ## Reçu et identité de la manche dont les autres écritures restent à confirmer.
 var _pending_campaign_result: Dictionary = {}
+var _profile_revision := 0
 
 ## Dieu équipé : il détermine les familles de cartes accessibles au deck.
 var player_god_id: String = ""
@@ -151,8 +152,12 @@ func _init(save_path: String = SAVE_PATH) -> void:
 
 func get_profile() -> Dictionary:
 	return SaveCodec.encode(_decks_by_god, _selected_deck_by_god, player_god_id,
-		player_name, stats, inventory_dict(), quests_dict(), legacy_campaign_stats,
+		player_name, stats, inventory_dict(), _quests, legacy_campaign_stats,
 		_pending_campaign_result)
+
+
+func profile_revision() -> int:
+	return _profile_revision
 
 
 func save() -> Error:
@@ -161,6 +166,8 @@ func save() -> Error:
 	var error := SaveStorage.write(_save_path, get_profile())
 	if error != OK:
 		push_error("PlayerData: profil non enregistré (%s)." % error_string(error))
+	else:
+		_profile_revision += 1
 	return error
 
 
@@ -194,6 +201,7 @@ func _apply_profile(profile: Dictionary) -> void:
 		if profile.get("quests", {}) is Dictionary else {}
 	var pending: Variant = profile.get("pending_campaign_result", {})
 	_pending_campaign_result = pending.duplicate(true) if pending is Dictionary else {}
+	_profile_revision += 1
 
 
 func _ready() -> void:
@@ -368,28 +376,35 @@ func commit_economy(next: PlayerInventory, neutral_deck_override: Variant = null
 		return ERR_INVALID_PARAMETER
 	_ensure_inventory()
 	var previous_inventory := _inventory
-	var previous_decks := _decks_by_god.duplicate(true)
 	var previous_quests := _quests
-	_inventory = next
-	if quests is Dictionary:
-		_quests = (quests as Dictionary).duplicate(true)
+	var previous_deck: Array
+	var neutral_bank: Array = []
+	var neutral_slot := -1
 	if neutral_deck_override is Array:
-		var candidate: Array = (neutral_deck_override as Array).duplicate()
+		var candidate: Array = neutral_deck_override
 		if not bool(DeckRules.validate_deck(candidate, false, "").get("valid", false)):
-			_inventory = previous_inventory
-			_quests = previous_quests
 			return ERR_INVALID_DATA
 		var neutral_key := SaveCodec.NEUTRAL_DECK_KEY
-		var slot := int(_selected_deck_by_god.get(neutral_key, 0))
-		_decks_by_god[neutral_key][slot] = candidate
+		neutral_bank = _decks_by_god[neutral_key]
+		neutral_slot = int(_selected_deck_by_god.get(neutral_key, 0))
+		previous_deck = neutral_bank[neutral_slot]
+		neutral_bank[neutral_slot] = candidate.duplicate()
+	var inventory_updated := not previous_inventory.same_visible_items(next)
+	var quests_updated: bool = quests is Dictionary and _quests != quests
+	_inventory = next
+	if quests_updated:
+		_quests = (quests as Dictionary).duplicate(true)
 	var error := save()
 	if error != OK:
 		_inventory = previous_inventory
-		_decks_by_god = previous_decks
 		_quests = previous_quests
+		if neutral_slot >= 0:
+			neutral_bank[neutral_slot] = previous_deck
 	else:
-		inventory_changed.emit()
-		quests_changed.emit()
+		if inventory_updated or (neutral_slot >= 0 and previous_deck != neutral_bank[neutral_slot]):
+			inventory_changed.emit()
+		if quests_updated:
+			quests_changed.emit()
 	return error
 
 

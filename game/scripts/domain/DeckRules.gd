@@ -4,6 +4,8 @@
 class_name DeckRules
 extends RefCounted
 
+const CatalogueModel := preload("res://scripts/data/MonsterLoader.gd")
+
 ## Plateau 4×4 : sans case bloquée, chaque joueur pose 8 monstres.
 const DECK_SIZE: int = 8
 ## 10 points en moyenne par monstre.
@@ -19,10 +21,11 @@ const REASON_MISSING: String = "missing"
 const REASON_GOD: String = "wrong_god"
 
 
-static func deck_cost(monster_ids: Array) -> float:
+static func deck_cost(monster_ids: Array, catalogue: CatalogueModel = null) -> float:
+	var source := catalogue if catalogue != null else MonsterLoader
 	var total: float = 0.0
 	for monster_id in monster_ids:
-		total += MonsterLoader.monster_cost(str(monster_id))
+		total += source.monster_cost(str(monster_id))
 	return total
 
 
@@ -98,20 +101,23 @@ static func can_replace(monster_ids: Array, old_id: String, new_id: String, god_
 
 ## Les opérations suivantes renvoient toujours une copie du deck. En cas
 ## d'échec, cette copie est inchangée et reason explique la cause à l'UI.
-static func try_add(monster_ids: Array, monster_id: String, god_id: String = "") -> Dictionary:
+static func try_add(monster_ids: Array, monster_id: String, god_id: String = "",
+		catalogue: CatalogueModel = null) -> Dictionary:
+	var source := catalogue if catalogue != null else MonsterLoader
 	var deck := monster_ids.duplicate()
-	if not MonsterLoader.has_monster(monster_id):
+	if not source.has_monster(monster_id):
 		return _operation_result(false, deck, REASON_UNKNOWN)
-	if lineage_index(deck, MonsterLoader.monster_lineage(monster_id)) >= 0:
+	if lineage_index(deck, source.monster_lineage(monster_id), source) >= 0:
 		return _operation_result(false, deck, REASON_DUPLICATE)
-	if god_id != "" and not MonsterLoader.is_monster_available_to_god(monster_id, god_id):
+	if god_id != "" and not source.is_monster_available_to_god(monster_id, god_id):
 		return _operation_result(false, deck, REASON_GOD)
 	if deck.size() >= DECK_SIZE:
 		return _operation_result(false, deck, REASON_FULL)
 	deck.append(monster_id)
-	if deck_cost(deck) > DECK_BUDGET:
-		return _operation_result(false, monster_ids.duplicate(), REASON_BUDGET, deck_cost(deck))
-	return _operation_result(true, deck, "", deck_cost(deck))
+	var cost := deck_cost(deck, source)
+	if cost > DECK_BUDGET:
+		return _operation_result(false, monster_ids.duplicate(), REASON_BUDGET, cost)
+	return _operation_result(true, deck, "", cost)
 
 
 static func try_remove(monster_ids: Array, monster_id: String) -> Dictionary:
@@ -129,28 +135,31 @@ static func try_clear(_monster_ids: Array) -> Dictionary:
 	return _operation_result(true, [], "")
 
 
-static func try_replace(monster_ids: Array, old_id: String, new_id: String, god_id: String = "") -> Dictionary:
+static func try_replace(monster_ids: Array, old_id: String, new_id: String, god_id: String = "",
+		catalogue: CatalogueModel = null) -> Dictionary:
+	var source := catalogue if catalogue != null else MonsterLoader
 	var deck := monster_ids.duplicate()
 	var index := deck.find(old_id)
 	if index < 0:
 		return _operation_result(false, deck, REASON_MISSING)
-	if not MonsterLoader.has_monster(new_id):
+	if not source.has_monster(new_id):
 		return _operation_result(false, deck, REASON_UNKNOWN)
-	if god_id != "" and not MonsterLoader.is_monster_available_to_god(new_id, god_id):
+	if god_id != "" and not source.is_monster_available_to_god(new_id, god_id):
 		return _operation_result(false, deck, REASON_GOD)
-	var duplicate_index := lineage_index(deck, MonsterLoader.monster_lineage(new_id))
+	var duplicate_index := lineage_index(deck, source.monster_lineage(new_id), source)
 	if duplicate_index >= 0 and duplicate_index != index:
 		return _operation_result(false, deck, REASON_DUPLICATE)
 	deck[index] = new_id
-	var cost := deck_cost(deck)
+	var cost := deck_cost(deck, source)
 	if cost > DECK_BUDGET:
 		return _operation_result(false, monster_ids.duplicate(), REASON_BUDGET, cost)
 	return _operation_result(true, deck, "", cost)
 
 
-static func lineage_index(monster_ids: Array, lineage_id: String) -> int:
+static func lineage_index(monster_ids: Array, lineage_id: String, catalogue: CatalogueModel = null) -> int:
+	var source := catalogue if catalogue != null else MonsterLoader
 	for index in range(monster_ids.size()):
-		if MonsterLoader.monster_lineage(str(monster_ids[index])) == lineage_id:
+		if source.monster_lineage(str(monster_ids[index])) == lineage_id:
 			return index
 	return -1
 

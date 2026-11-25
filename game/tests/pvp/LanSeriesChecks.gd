@@ -86,6 +86,8 @@ func run() -> void:
 	_test_draft_determinism_and_privacy()
 	_test_classic_ft2_initializes_both_clients()
 	_test_classic_ft3_initializes_both_clients()
+	_test_continuation_after_send_failure()
+	_test_rematch_after_ft1_draw()
 	_test_classic_ignores_power_tier()
 	_test_random_and_mirror_still_work()
 	_test_invalid_draft_messages()
@@ -100,6 +102,42 @@ func _choose_all(flow: LanSeriesCoordinator) -> bool:
 		if not flow.choose_local(str(offers[0])):
 			return false
 	return true
+
+
+func _test_continuation_after_send_failure() -> void:
+	var pair := _pair(RulesModel.MODE_CLASSIC, RulesModel.SERIES_FT2)
+	var host: LanSeriesCoordinator = pair["host"]
+	var client: LanSeriesCoordinator = pair["client"]
+	var link: LanTransportLink = pair["client_transport"]
+	_check(not host.request_next_round() and not client.request_rematch(),
+		"série LAN : la manche en cours ne peut pas être remplacée")
+	_check(host.host_record_round(GameState.PLAYER_ONE, 9, 7), "série LAN : la première manche est enregistrée")
+	link.set("online", false)
+	_check(not client.request_next_round() and host.request_next_round()
+		and pair["rounds_host"].size() == 1, "série LAN : le premier accord attend l’autre joueur")
+	link.set("online", true)
+	_check(client.request_next_round() and pair["rounds_host"].size() == 2
+		and pair["rounds_client"].size() == 2
+		and host.phase() == RulesModel.PHASE_IN_MATCH,
+		"série LAN : réessayer après un échec d’envoi lance exactement une nouvelle manche")
+	_check(not client.request_next_round(), "série LAN : le changement de manche efface les accords")
+	var previous_series := host.series_id()
+	_check(host.host_record_round(GameState.PLAYER_ONE, 10, 6) and not client.request_next_round()
+		and client.request_rematch() and host.request_rematch()
+		and host.series_id() != previous_series and client.series_id() == host.series_id()
+		and pair["rounds_host"].size() == 3 and pair["rounds_client"].size() == 3,
+		"série LAN : les deux accords de revanche démarrent une nouvelle série")
+
+
+func _test_rematch_after_ft1_draw() -> void:
+	var pair := _pair(RulesModel.MODE_CLASSIC, RulesModel.SERIES_FT1)
+	var host: LanSeriesCoordinator = pair["host"]
+	var client: LanSeriesCoordinator = pair["client"]
+	var previous_series := host.series_id()
+	_check(host.host_record_round(GameState.PLAYER_NONE, 8, 8) and not host.series().finished
+		and host.request_rematch() and client.request_rematch()
+		and host.series_id() != previous_series and client.series_id() == host.series_id(),
+		"série LAN : une égalité en FT1 permet une revanche avec accord mutuel")
 
 
 func _test_client_receives_live_draft_deadline() -> void:

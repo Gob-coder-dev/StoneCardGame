@@ -18,6 +18,7 @@ const RulesModel := preload("res://scripts/domain/MatchRules.gd")
 const LoadoutModel := preload("res://scripts/domain/Loadout.gd")
 const LoadoutFactoryModel := preload("res://scripts/application/pvp/PvpLoadoutFactory.gd")
 const StateProjector := preload("res://scripts/network/pvp/LanSeriesStateProjector.gd")
+const Continuation := preload("res://scripts/network/pvp/LanSeriesContinuation.gd")
 
 signal state_changed(state: Dictionary)
 signal preparation_started(state: Dictionary)
@@ -49,10 +50,7 @@ var _client_chosen_step := -1
 var _client_chosen := ""
 var _local_profile: Dictionary = {}
 var _remote_profile: Dictionary = {}
-var _next_local := false
-var _next_remote := false
-var _rematch_local := false
-var _rematch_remote := false
+var _continuation := Continuation.new()
 ## Collaborateur conservé pour toute la série : ses index du catalogue sont
 ## réutilisés entre les manches au lieu d'être reconstruits à chaque fois.
 var _loadout_factory: PvpLoadoutFactory = LoadoutFactoryModel.new()
@@ -84,22 +82,7 @@ func close() -> void:
 	if _transport != null and _transport.message_received.is_connected(_on_message):
 		_transport.message_received.disconnect(_on_message)
 	_transport = null
-	_series = null
-	_phase = RulesModel.PHASE_RULES_READY
-	_prep_id = ""
-	_loadout_one = null
-	_loadout_two = null
-	_confirmed_one = false
-	_confirmed_two = false
-	_draft = null
-	_draft_deadline_ms = 0
-	_client_draft = {}
-	_client_chosen_step = -1
-	_client_chosen = ""
-	_next_local = false
-	_next_remote = false
-	_rematch_local = false
-	_rematch_remote = false
+	reset_series()
 	_local_profile = {}
 	_remote_profile = {}
 	_rules = {}
@@ -111,6 +94,10 @@ func close() -> void:
 func reset_series() -> void:
 	_series = null
 	_phase = RulesModel.PHASE_RULES_READY
+	_reset_preparation()
+
+
+func _reset_preparation() -> void:
 	_prep_id = ""
 	_loadout_one = null
 	_loadout_two = null
@@ -121,10 +108,7 @@ func reset_series() -> void:
 	_client_draft = {}
 	_client_chosen_step = -1
 	_client_chosen = ""
-	_next_local = false
-	_next_remote = false
-	_rematch_local = false
-	_rematch_remote = false
+	_continuation.reset()
 
 
 func rules() -> Dictionary:
@@ -181,80 +165,57 @@ func host_start_series() -> bool:
 ## L'hôte seul prépare la manche suivante, avec une nouvelle graine dérivée de
 ## la série et un nouvel identifiant de préparation.
 func host_next_round() -> bool:
-	if not _is_host or _series == null or _series.finished:
+	if not _is_host or not Continuation.can_request(Continuation.Kind.NEXT_ROUND, _series, _phase):
 		return false
-	if not _prepare_round():
-		return false
-	_next_local = false
-	_next_remote = false
-	return true
+	return _prepare_round()
 
 
 ## Accord de manche suivante : les deux appareils doivent le demander. Le
 ## client envoie une demande au même format que le lancement de match ; l'hôte
 ## ne prépare rien tant que l'autre camp n'a pas confirmé.
 func request_rematch() -> bool:
-	if _series == null or _closed:
-		return false
-	if not _series.finished and _series.series_format != RulesModel.SERIES_FT1:
-		return false
-	if _rematch_local:
-		return true
-	_rematch_local = true
-	if _is_host:
-		if _rematch_remote:
-			return host_rematch_series()
-		return true
-	if _transport == null:
-		return false
-	return _transport.send_to(LanProtocol.SERVER_ID, LanProtocol.KIND_START_REQUEST,
-		{"match_id": "rematch-" + _series.series_id})
+	return _request_continuation(Continuation.Kind.REMATCH)
 
 
 func request_next_round() -> bool:
-	if _series == null or _series.finished or _closed:
+	return _request_continuation(Continuation.Kind.NEXT_ROUND)
+
+
+func _request_continuation(kind: Continuation.Kind) -> bool:
+	if _closed or _transport == null or not Continuation.can_request(kind, _series, _phase):
 		return false
-	if _next_local:
+	if _continuation.requested_locally(kind):
 		return true
-	_next_local = true
+	_continuation.set_local(kind, true)
 	if _is_host:
-		if _next_remote:
-			return host_next_round()
-		return true
-	if _transport == null:
-		return false
-	return _transport.send_to(LanProtocol.SERVER_ID, LanProtocol.KIND_START_REQUEST,
-		{"match_id": _series.series_id})
+		return not _continuation.agreed(kind) or _continue_series(kind)
+	var sent := _transport.send_to(LanProtocol.SERVER_ID, LanProtocol.KIND_START_REQUEST,
+		{"match_id": Continuation.request_id(kind, _series.series_id)})
+	if not sent:
+		_continuation.set_local(kind, false)
+	return sent
+
+
+func _continue_series(kind: Continuation.Kind) -> bool:
+	return host_rematch_series() if kind == Continuation.Kind.REMATCH else host_next_round()
 
 
 ## Nouvelle série après une série terminée ou une égalité FT1. Les règles et
 ## les profils restent, mais l'identifiant de série et la graine changent.
 ## L'accord des deux camps est exigé via `request_rematch()`.
 func host_rematch_series() -> bool:
-	if not _is_host or _transport == null or _series == null:
-		return false
-	if not _series.finished and _series.series_format != RulesModel.SERIES_FT1:
+	if not _is_host or _transport == null \
+			or not Continuation.can_request(Continuation.Kind.REMATCH, _series, _phase):
 		return false
 	var sid := "series-%d-%d" % [Time.get_ticks_usec(), _transport.local_peer_id()]
 	_series = SeriesEngineModel.begin(sid, _rules, randi())
-	_rematch_local = false
-	_rematch_remote = false
-	_next_local = false
-	_next_remote = false
 	return _prepare_round()
 
 
 func _prepare_round() -> bool:
 	if _series == null:
 		return false
-	_confirmed_one = false
-	_confirmed_two = false
-	_loadout_one = null
-	_loadout_two = null
-	_draft = null
-	_client_draft = {}
-	_client_chosen_step = -1
-	_client_chosen = ""
+	_reset_preparation()
 	_prep_id = "prep-%d-%d" % [_series.round_index, Time.get_ticks_usec()]
 	_phase = RulesModel.PHASE_PREPARING
 	match _series.mode:
@@ -535,7 +496,7 @@ func host_record_round(winner: int, score_one: int, score_two: int) -> bool:
 	if not bool(result.get("ok", false)):
 		_fail(str(result.get("reason", "Résultat de manche invalide.")))
 		return false
-	_phase = RulesModel.PHASE_ROUND_RESULT
+	_phase = _result_phase()
 	var payload := {
 		"series_id": _series.series_id,
 		"preparation_id": _prep_id,
@@ -556,8 +517,6 @@ func host_record_round(winner: int, score_one: int, score_two: int) -> bool:
 		return false
 	_transport.broadcast(LanProtocol.KIND_ROUND_RESULT, payload)
 	_broadcast_series_state()
-	if _series.finished:
-		_phase = RulesModel.PHASE_SERIES_COMPLETE
 	round_finished.emit(public_state())
 	if _series.finished:
 		series_finished.emit(public_state())
@@ -680,6 +639,7 @@ func _on_prepare_start(payload: Dictionary) -> void:
 		_reset_for_new_series(payload)
 	if _series == null:
 		_reset_for_new_series(payload)
+	_reset_preparation()
 	_series.round_index = int(payload.get("round_index", 1))
 	_series.rules_revision = int(payload.get("rules_revision", 0))
 	_rules["revision"] = _series.rules_revision
@@ -689,12 +649,6 @@ func _on_prepare_start(payload: Dictionary) -> void:
 	_draft_deadline_ms = int(payload.get("deadline_unix_ms", 0))
 	# Une nouvelle préparation invalide les confirmations et les demandes de
 	# manche précédentes : chaque manche exige un accord et deux confirmations.
-	_confirmed_one = false
-	_confirmed_two = false
-	_next_local = false
-	_next_remote = false
-	_loadout_one = null
-	_loadout_two = null
 	_phase = RulesModel.PHASE_PREPARING
 	preparation_started.emit(public_state())
 	_emit_state()
@@ -856,7 +810,7 @@ func _on_round_result(payload: Dictionary) -> void:
 	_series.round_index = int(payload.get("next_round_index", _series.round_index))
 	_series.finished = bool(payload.get("finished", false))
 	_series.winner = int(payload.get("series_winner", GameState.PLAYER_NONE))
-	_phase = RulesModel.PHASE_SERIES_COMPLETE if _series.finished else RulesModel.PHASE_ROUND_RESULT
+	_phase = _result_phase()
 	round_finished.emit(public_state())
 	if _series.finished:
 		series_finished.emit(public_state())
@@ -864,21 +818,9 @@ func _on_round_result(payload: Dictionary) -> void:
 
 
 func _on_next_request(payload: Dictionary) -> void:
-	if _series == null:
-		return
-	var requested := str(payload.get("match_id", ""))
-	if requested == "rematch-" + _series.series_id:
-		if not _series.finished and _series.series_format != RulesModel.SERIES_FT1:
-			return
-		_rematch_remote = true
-		if _rematch_local:
-			host_rematch_series()
-		return
-	if requested != _series.series_id:
-		return
-	_next_remote = true
-	if _next_local:
-		host_next_round()
+	var kind := _continuation.receive(str(payload.get("match_id", "")), _series, _phase)
+	if _continuation.agreed(kind):
+		_continue_series(kind)
 
 
 ## Le client n'accepte un nouvel identifiant de série que s'il a lui-même
@@ -889,9 +831,8 @@ func _accepts_new_series(payload: Dictionary) -> bool:
 		return true
 	if str(payload.get("series_id", "")) == _series.series_id:
 		return true
-	if not _rematch_local:
-		return false
-	return _series.finished or _series.series_format == RulesModel.SERIES_FT1
+	return _continuation.requested_locally(Continuation.Kind.REMATCH) \
+		and Continuation.can_request(Continuation.Kind.REMATCH, _series, _phase)
 
 
 func _reset_for_new_series(payload: Dictionary) -> void:
@@ -907,20 +848,7 @@ func _reset_for_new_series(payload: Dictionary) -> void:
 	_series.rules_revision = int(payload.get("rules_revision", 0))
 	_rules = series_rules
 	_rules["revision"] = _series.rules_revision
-	_prep_id = ""
-	_loadout_one = null
-	_loadout_two = null
-	_confirmed_one = false
-	_confirmed_two = false
-	_draft = null
-	_draft_deadline_ms = 0
-	_client_draft = {}
-	_client_chosen_step = -1
-	_client_chosen = ""
-	_next_local = false
-	_next_remote = false
-	_rematch_local = false
-	_rematch_remote = false
+	_reset_preparation()
 	_phase = RulesModel.PHASE_PREPARING
 
 
@@ -932,10 +860,13 @@ func _on_series_state(payload: Dictionary) -> void:
 		return
 	_series = restored
 	_rules["revision"] = _series.rules_revision
-	_phase = RulesModel.PHASE_SERIES_COMPLETE if _series.finished \
-		else (RulesModel.PHASE_ROUND_RESULT if _series.wins_one + _series.wins_two + _series.ties > 0
-			else _phase)
+	if _series.finished or _series.wins_one + _series.wins_two + _series.ties > 0:
+		_phase = _result_phase()
 	_emit_state()
+
+
+func _result_phase() -> String:
+	return RulesModel.PHASE_SERIES_COMPLETE if _series.finished else RulesModel.PHASE_ROUND_RESULT
 
 
 ## ─── Vues et utilitaires ────────────────────────────────────────────────────

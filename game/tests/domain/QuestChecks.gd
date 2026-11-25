@@ -36,6 +36,7 @@ func run() -> void:
 	_test_rewards()
 	_test_sorting()
 	_test_card_tiers()
+	_test_badge_projection()
 	await _test_daily_screen_clock()
 	CampaignContext.reset_for_tests()
 	for suffix in ["", ".tmp", ".unreadable"]:
@@ -314,6 +315,20 @@ func _test_card_tiers() -> void:
 	var fourth := service.claim("feast_of_souls")
 	_check(not bool(fourth.get("ok", false)),
 		"quêtes : une quête de cartes terminée ne se réclame plus")
+
+
+func _test_badge_projection() -> void:
+	var service := Service.new()
+	var displayed := service.view()
+	var revision := PlayerData.profile_revision()
+	var badge := service.badge()
+	_check(bool(badge["ok"]) and int(badge["claimable"]) == int(displayed["claimable"])
+		and PlayerData.profile_revision() == revision,
+		"quêtes : la pastille compte les mêmes paliers et relire le jour courant n’écrit rien")
+	var definition := Config.definition("daily_pvp")
+	definition["metric"] = "modified"
+	_check(Config.definition("daily_pvp")["metric"] == "pvp_matches",
+		"quêtes : le catalogue indexé conserve des copies indépendantes")
 
 
 func _daily_ids(view: Dictionary) -> Array:

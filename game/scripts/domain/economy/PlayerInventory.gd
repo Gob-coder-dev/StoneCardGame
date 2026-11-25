@@ -23,6 +23,12 @@ var shop_state: Dictionary = {}
 var ritual_purchase_counter: int = 0
 
 
+func same_visible_items(other: PlayerInventory) -> bool:
+	return souls == other.souls and candles == other.candles \
+		and cards == other.cards and unlocked_gods == other.unlocked_gods \
+		and pending_card_rewards == other.pending_card_rewards
+
+
 static func from_dict(raw: Variant) -> PlayerInventory:
 	var result := PlayerInventory.new()
 	if not raw is Dictionary:

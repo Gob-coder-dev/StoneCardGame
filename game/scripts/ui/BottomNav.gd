@@ -14,6 +14,7 @@ const RULES_TAB := 4
 @export var current_tab: Tab = Tab.PLAY
 var _read_day: Callable = Calendar.today
 var _badge_day := -1
+var _badge_revision := -1
 var _refreshing_badge := false
 
 @onready var _buttons: Array[Button] = [
@@ -42,6 +43,7 @@ func _ready() -> void:
 		register_story_anchors()
 		_refresh_badge()
 	PlayerData.quests_changed.connect(_refresh_badge)
+	PlayerData.inventory_changed.connect(_refresh_badge)
 	var timer := Timer.new()
 	timer.wait_time = 1.0
 	timer.autostart = true
@@ -60,7 +62,8 @@ func _notification(what: int) -> void:
 
 
 func _check_badge_day() -> void:
-	if not get_parent().get_meta("menu_preview", false) and int(_read_day.call()) != _badge_day:
+	if not get_parent().get_meta("menu_preview", false) \
+			and (int(_read_day.call()) != _badge_day or PlayerData.profile_revision() != _badge_revision):
 		_refresh_badge()
 
 
@@ -137,11 +140,14 @@ func _refresh_badge() -> void:
 	if badge == null:
 		return
 	var day := int(_read_day.call())
+	if day == _badge_day and PlayerData.profile_revision() == _badge_revision:
+		return
 	_refreshing_badge = true
-	var view := QuestServiceModel.new().view(day)
+	var view := QuestServiceModel.new().badge(day)
 	_refreshing_badge = false
 	if bool(view["ok"]):
 		_badge_day = day
+		_badge_revision = PlayerData.profile_revision()
 	var count := int(view["claimable"])
 	badge.visible = count > 0
 	var label := badge.get_node_or_null("Count") as Label

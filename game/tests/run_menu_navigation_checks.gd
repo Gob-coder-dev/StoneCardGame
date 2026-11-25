@@ -128,7 +128,7 @@ func _card_gestures() -> void:
 		"un aperçu ne remplace pas les ancres de la page courante")
 	_touch(origin + Vector2(-85, 0), false)
 	await _settled()
-	_check(_page._action_drawer == null,
+	_check(_page._drawer.drawer == null,
 		"un glissement sur une carte n’ouvre pas son tiroir")
 	var scroll: ScrollContainer = _page.scroll
 	await _drag(origin, origin + Vector2(0, -200))

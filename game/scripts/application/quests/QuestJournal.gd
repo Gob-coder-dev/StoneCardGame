@@ -12,6 +12,7 @@ const AccessServiceModel := preload("res://scripts/application/progression/Progr
 const Events := preload("res://scripts/domain/quests/QuestEventRules.gd")
 
 var _metrics := MetricsModel.new()
+var _access: ContentAccessState
 var _day_override := -1
 
 
@@ -20,8 +21,9 @@ func _init(day_override: int = -1) -> void:
 	_day_override = day_override
 
 
-func sync(state: StateModel, day: int = -1) -> bool:
+func sync(state: StateModel, day: int = -1, access: ContentAccessState = null) -> bool:
 	_metrics = MetricsModel.new()
+	_access = access
 	var changed := _sync_gate_activations(state)
 	var today := day if day >= 0 else (_day_override if _day_override >= 0 else Calendar.today())
 	return _ensure_daily(state, today) or changed
@@ -70,8 +72,9 @@ func _eligible(quest: Dictionary) -> bool:
 
 
 func _is_accessible(definition: Dictionary) -> bool:
-	return AccessServiceModel.new().is_gate_unlocked(
-		str(definition.get("required_gate", "")))
+	if _access == null:
+		_access = AccessServiceModel.new().state()
+	return _access.has_gate(str(definition.get("required_gate", "")))
 
 
 func _sync_gate_activations(state: StateModel) -> bool:

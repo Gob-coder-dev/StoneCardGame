@@ -11,42 +11,58 @@ const RitualConfigModel := preload("res://scripts/data/economy/RitualConfig.gd")
 const GateConfigModel := preload("res://scripts/data/progression/ContentGateConfig.gd")
 
 static var _cache: Dictionary = {}
+static var _by_id: Dictionary[String, Dictionary] = {}
 
 
 static func get_config() -> Dictionary:
+	return _data().duplicate(true)
+
+
+static func _data() -> Dictionary:
 	if _cache.is_empty():
 		_cache = _read()
-	return _cache.duplicate(true)
+	return _cache
 
 
 static func clear_cache_for_tests() -> void:
 	_cache.clear()
+	_by_id.clear()
 
 
 static func dailies() -> Array:
-	var raw: Variant = get_config().get("daily", [])
-	return raw if raw is Array else []
+	var raw: Variant = _data().get("daily", [])
+	return (raw as Array).duplicate(true) if raw is Array else []
 
 
 static func uniques() -> Array:
-	var raw: Variant = get_config().get("unique", [])
-	return raw if raw is Array else []
+	var raw: Variant = _data().get("unique", [])
+	return (raw as Array).duplicate(true) if raw is Array else []
 
 
 static func daily_count() -> int:
-	return maxi(1, int(get_config().get("daily_count", 3)))
+	return maxi(1, int(_data().get("daily_count", 3)))
 
 
 ## Bougies offertes à la quotidienne la plus exigeante du tirage.
 static func candle_reward() -> int:
-	return maxi(0, int(get_config().get("candle_reward", 0)))
+	return maxi(0, int(_data().get("candle_reward", 0)))
 
 
 static func definition(quest_id: String) -> Dictionary:
-	for quest in dailies() + uniques():
-		if quest is Dictionary and str(quest.get("id", "")) == quest_id:
-			return quest
-	return {}
+	if _by_id.is_empty():
+		_index_definitions()
+	return _by_id.get(quest_id, {}).duplicate(true)
+
+
+static func _index_definitions() -> void:
+	for kind in ["daily", "unique"]:
+		var entries: Variant = _data().get(kind, [])
+		if entries is Array:
+			for quest in entries:
+				if quest is Dictionary:
+					var quest_id := str(quest.get("id", ""))
+					if not _by_id.has(quest_id):
+						_by_id[quest_id] = quest
 
 
 static func problems(config: Dictionary = {}) -> Array[String]:

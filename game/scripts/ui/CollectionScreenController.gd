@@ -10,18 +10,15 @@ const Gesture := preload("res://scripts/ui/input/TapGesture.gd")
 
 ## Dans l'ordre de SortMode et des boutons du menu de tri.
 const SORT_LABELS: Array[String] = ["FAMILLE", "COÛT", "RARETÉ", "NOM"]
-const ACTION_DRAWER_SCENE := preload("res://scenes/ui/CardActionDrawer.tscn")
 const DeckPanelView := preload("res://scripts/ui/collection/DeckPanel.gd")
 const CollectionGridView := preload("res://scripts/ui/collection/CollectionGrid.gd")
 const GodSelectorView := preload("res://scripts/ui/collection/GodSelector.gd")
 const NumberedSelector := preload("res://scripts/ui/collection/NumberedSelector.gd")
-const ActionPlacement := preload("res://scripts/ui/collection/CardActionPlacement.gd")
 const EconomyServiceModel := preload("res://scripts/application/economy/EconomyService.gd")
-const ACTION_DRAWER_GAP := 10.0
-const ACTION_DRAWER_MARGIN := 24.0
+const Drawer := preload("res://scripts/ui/collection/CollectionDrawer.gd")
+const DeckActions := preload("res://scripts/application/CollectionDeckActions.gd")
 ## Ancre du bouton que le tutoriel peut mettre en surbrillance dans le tiroir.
 const GUIDED_DRAWER_ANCHOR := "collection.action.primary"
-const BOTTOM_SPACER_DEFAULT := 30.0
 const CLEAR_DECK_CONFIRMATION: String = "Voulez-vous vraiment supprimer complètement ce deck ?"
 var _deck_panel: RefCounted
 var _collection_grid: RefCounted
@@ -65,19 +62,16 @@ var _preview_level := 1
 @onready var action_drawer_layer: Control = $ActionDrawerLayer
 @onready var bottom_spacer: Control = $Content/Scroll/Page/BottomSpacer
 
+@onready var _drawer := Drawer.new(action_drawer_layer, scroll, bottom_spacer)
+
 var _current_deck: Array = []
 var _sort_mode: int = SortMode.FAMILY
-var _action_drawer: CardActionDrawer = null
-var _action_card: MonsterCard = null
-var _action_wrapper: Control = null
-var _action_monster_id: String = ""
-var _action_source: int = -1
+var _deck_actions := DeckActions.new(MonsterLoader, PlayerData.owns_monster, PlayerData.set_player_deck)
 var _replacement_monster_id: String = ""
 var _scroll_tap := Gesture.new()
 var _outside_pointer: int = -1
 var _outside_origin := Vector2.ZERO
 var _outside_canceled: bool = false
-var _adjusting_drawer_scroll: bool = false
 var _suppress_scroll_tap: bool = false
 var _clearing_scroll_tap: bool = false
 
@@ -88,7 +82,7 @@ func _ready() -> void:
 	scroll.gui_input.connect(_on_scroll_gui_input)
 	scroll.scroll_started.connect(_on_scroll_started)
 	scroll.get_v_scroll_bar().value_changed.connect(_on_scroll_value_changed)
-	action_drawer_layer.resized.connect(_position_action_drawer)
+	action_drawer_layer.resized.connect(_drawer.position_drawer)
 	god_button.pressed.connect(_toggle_god_menu)
 	_deck_panel = DeckPanelView.new(deck_rows)
 	_collection_grid = CollectionGridView.new(collection_rows, locked_collection_rows,
@@ -136,13 +130,13 @@ func menu_page_activated() -> void:
 func menu_swipe_allowed() -> bool:
 	return not confirm_popup.is_open() and not pending_rewards_vault.visible \
 		and not info_sheet.visible and not replacement_panel.visible \
-		and not is_instance_valid(_action_drawer) and not god_menu.visible \
+		and not is_instance_valid(_drawer.drawer) and not god_menu.visible \
 		and not sort_menu.visible and not level_menu.visible
 
 
 func _toggle_level_menu() -> void:
 	_suppress_scroll_tap_once()
-	_close_action_drawer()
+	_drawer.close()
 	god_menu.visible = false
 	sort_menu.visible = false
 	_update_sort_labels()
@@ -151,7 +145,7 @@ func _toggle_level_menu() -> void:
 
 
 func _select_preview_level(level: int) -> void:
-	_close_action_drawer()
+	_drawer.close()
 	_preview_level = level
 	_prepare_card_art()
 	level_menu.visible = false
@@ -163,7 +157,7 @@ func _select_preview_level(level: int) -> void:
 
 func _toggle_god_menu() -> void:
 	_suppress_scroll_tap_once()
-	_close_action_drawer()
+	_drawer.close()
 	level_menu.visible = false
 	sort_menu.visible = false
 	_update_sort_labels()
@@ -205,7 +199,7 @@ func _select_deck(slot: int) -> void:
 
 
 func _close_card_panels() -> void:
-	_close_action_drawer()
+	_drawer.close()
 	_dismiss_confirm_popup()
 	info_sheet.close_sheet()
 	replacement_panel.close_panel()
@@ -240,9 +234,9 @@ func _on_scroll_gui_input(event: InputEvent) -> void:
 		return
 	if info_sheet.visible or replacement_panel.visible:
 		return
-	if is_instance_valid(_action_drawer):
+	if is_instance_valid(_drawer.drawer):
 		if not _drawer_must_stay_open():
-			_close_action_drawer()
+			_drawer.close()
 	elif god_menu.visible or sort_menu.visible or level_menu.visible:
 		_close_inline_menus()
 
@@ -274,11 +268,11 @@ func _unhandled_input(event: InputEvent) -> void:
 func _input(event: InputEvent) -> void:
 	if not _outside_tap_released(event):
 		return
-	if is_instance_valid(_action_drawer) \
-			and not _event_hits_control(event, _action_drawer) \
-			and not _event_hits_control(event, _action_card) \
+	if is_instance_valid(_drawer.drawer) \
+			and not _event_hits_control(event, _drawer.drawer) \
+			and not _event_hits_control(event, _drawer.card) \
 			and not _drawer_must_stay_open():
-		_close_action_drawer()
+		_drawer.close()
 	if sort_menu.visible \
 			and not _event_hits_control(event, sort_menu) \
 			and not _event_hits_control(event, sort_button):
@@ -366,8 +360,8 @@ func _go_back() -> void:
 		replacement_panel.close_panel()
 		_replacement_monster_id = ""
 		return
-	if is_instance_valid(_action_drawer):
-		_close_action_drawer()
+	if is_instance_valid(_drawer.drawer):
+		_drawer.close()
 		return
 	if god_menu.visible or sort_menu.visible or level_menu.visible:
 		_close_inline_menus()
@@ -385,7 +379,7 @@ func _setup_sort() -> void:
 
 func _toggle_sort_menu() -> void:
 	_suppress_scroll_tap_once()
-	_close_action_drawer()
+	_drawer.close()
 	level_menu.visible = false
 	god_menu.visible = false
 	_refresh_god_panel()
@@ -412,7 +406,7 @@ func _update_sort_labels() -> void:
 
 func _refresh_all(preserve_scroll: bool = true, rebuild_collection: bool = false) -> void:
 	var previous_scroll := scroll.scroll_vertical
-	_close_action_drawer()
+	_drawer.close()
 	_refresh_deck()
 	if rebuild_collection:
 		_populate_collection()
@@ -484,7 +478,7 @@ func _clear_deck() -> void:
 
 
 func _populate_collection() -> void:
-	_close_action_drawer()
+	_drawer.close()
 	_collection_grid.rebuild(PlayerData.player_god_id, _current_deck, _sort_mode)
 	_register_story_anchors()
 
@@ -519,99 +513,35 @@ func _open_card_actions(monster_id: String, wrapper: VBoxContainer, source: int)
 		_show_error("Cette carte ou ce niveau n'est pas encore débloqué.")
 		return
 	Audio.play_sfx(AudioCatalog.SFX_BUTTON)
-	if _action_monster_id == monster_id and _action_source == source and is_instance_valid(_action_drawer):
-		_close_action_drawer()
+	var card_source := source as CardActionDrawer.Source
+	if _drawer.matches(monster_id, card_source):
+		_drawer.close()
 		return
-	_close_action_drawer()
+	_drawer.close()
 	level_menu.visible = false
 	god_menu.visible = false
 	_refresh_god_panel()
 	sort_menu.visible = false
 	_update_sort_labels()
-	_action_monster_id = monster_id
-	_action_source = source
-	_action_wrapper = wrapper
-	_action_card = wrapper.get_child(0) as MonsterCard
-	if _action_card != null:
-		_action_card.set_selected(true)
-	_action_drawer = ACTION_DRAWER_SCENE.instantiate() as CardActionDrawer
-	action_drawer_layer.add_child(_action_drawer)
-	_action_drawer.setup(monster_id, source)
-	_action_drawer.info_requested.connect(_on_info_requested)
-	_action_drawer.primary_requested.connect(_on_primary_requested)
-	_action_drawer.upgrade_requested.connect(_open_upgrade_preview)
-	_action_drawer.visible = false
-	StoryService.register_anchor("collection.action.primary", _action_drawer.primary_button)
-	StoryService.register_anchor("collection.action.info", _action_drawer.info_button)
-	StoryService.notify_event("collection_card_opened", {"monster_id": monster_id, "source": int(source)})
-	_position_action_drawer_deferred()
-
-
-func _position_action_drawer_deferred() -> void:
-	await get_tree().process_frame
-	if not _has_action_drawer_target():
-		return
-	var drawer_height := _action_drawer.get_combined_minimum_size().y
-	_adjusting_drawer_scroll = true
-	bottom_spacer.custom_minimum_size.y = maxf(BOTTOM_SPACER_DEFAULT,
-		drawer_height + ACTION_DRAWER_GAP + ACTION_DRAWER_MARGIN)
-	await get_tree().process_frame
-	if not _has_action_drawer_target():
-		_adjusting_drawer_scroll = false
-		return
-	var placement := _action_drawer_placement()
-	var visible_rect := ActionPlacement.control_rect_in(action_drawer_layer, scroll)
-	var overflow := float(placement.get("bottom", 0.0)) \
-		+ ACTION_DRAWER_GAP + drawer_height \
-		- (visible_rect.end.y - ACTION_DRAWER_MARGIN)
-	if overflow > 0.0:
-		scroll.scroll_vertical += ceili(overflow)
-		await get_tree().process_frame
-	_adjusting_drawer_scroll = false
-	if not is_instance_valid(_action_drawer):
-		return
-	_position_action_drawer()
-	_action_drawer.visible = true
-
-
-## Le tiroir vit dans une couche superposée : il ne participe jamais au calcul
-## des colonnes et ne peut donc modifier ni la carte ni la grille.
-func _position_action_drawer() -> void:
-	if not _has_action_drawer_target():
-		return
-	var placement := _action_drawer_placement()
-	if placement.is_empty():
-		return
-	var minimum := _action_drawer.get_combined_minimum_size()
-	var drawer_size := Vector2(maxf(1.0, float(placement["width"])), minimum.y)
-	_action_drawer.custom_minimum_size = drawer_size
-	_action_drawer.size = drawer_size
-	_action_drawer.position = Vector2(float(placement["x"]),
-		float(placement["bottom"]) + ACTION_DRAWER_GAP)
-
-
-func _has_action_drawer_target() -> bool:
-	return is_instance_valid(_action_drawer) and is_instance_valid(_action_wrapper) \
-		and is_instance_valid(_action_card)
-
-
-func _action_drawer_placement() -> Dictionary:
-	if not _has_action_drawer_target():
-		return {}
-	return ActionPlacement.resolve(action_drawer_layer, _action_wrapper, _action_card,
-		_action_source == CardActionDrawer.Source.COLLECTION)
+	var drawer := _drawer.open(monster_id, wrapper, card_source)
+	drawer.info_requested.connect(_on_info_requested)
+	drawer.primary_requested.connect(_on_primary_requested)
+	drawer.upgrade_requested.connect(_open_upgrade_preview)
+	StoryService.register_anchor(GUIDED_DRAWER_ANCHOR, drawer.primary_button)
+	StoryService.register_anchor("collection.action.info", drawer.info_button)
+	StoryService.notify_event("collection_card_opened", {"monster_id": monster_id, "source": source})
 
 
 func _on_scroll_value_changed(_value: float) -> void:
 	# Une superposition ne doit jamais poursuivre sa carte pendant le scroll.
 	# Le prochain appui la rouvrira à la bonne position.
-	if not _adjusting_drawer_scroll and not _drawer_must_stay_open():
-		_close_action_drawer()
+	if not _drawer.adjusting_scroll and not _drawer_must_stay_open():
+		_drawer.close()
 
 
 func _on_scroll_started() -> void:
 	if not _drawer_must_stay_open():
-		_close_action_drawer()
+		_drawer.close()
 
 
 ## Pendant une étape guidée, le tiroir qui porte le bouton en surbrillance ne
@@ -619,31 +549,15 @@ func _on_scroll_started() -> void:
 ## lui et l'étape ne pourrait plus être accomplie. Les fermetures programmées
 ## (UTILISER, changement de deck) n'utilisent pas ce garde.
 func _drawer_must_stay_open() -> bool:
-	if not is_instance_valid(_action_drawer):
+	if not is_instance_valid(_drawer.drawer):
 		return false
 	return StoryService.is_tutorial_beat_active() \
 		or StoryService.is_guiding_anchor(GUIDED_DRAWER_ANCHOR)
 
 
-func _close_action_drawer() -> void:
-	if is_instance_valid(_action_card):
-		_action_card.set_selected(false)
-	if is_instance_valid(_action_drawer):
-		var parent := _action_drawer.get_parent()
-		if parent != null:
-			parent.remove_child(_action_drawer)
-		_action_drawer.queue_free()
-	_action_drawer = null
-	_action_card = null
-	_action_wrapper = null
-	_action_monster_id = ""
-	_action_source = -1
-	bottom_spacer.custom_minimum_size.y = BOTTOM_SPACER_DEFAULT
-
-
 func _on_info_requested(monster_id: String) -> void:
-	var opener := _action_card
-	_close_action_drawer()
+	var opener := _drawer.card
+	_drawer.close()
 	info_sheet.open_for(monster_id, _current_deck, opener)
 
 
@@ -655,8 +569,8 @@ func _open_upgrade_preview(lineage_id: String) -> void:
 	if next_id == "":
 		_show_error("Cette carte est déjà au niveau maximal.")
 		return
-	var opener := _action_card
-	_close_action_drawer()
+	var opener := _drawer.card
+	_drawer.close()
 	info_sheet.open_for(next_id, _current_deck, opener)
 
 
@@ -668,23 +582,16 @@ func _on_primary_requested(monster_id: String, source: CardActionDrawer.Source) 
 
 
 func _request_use(monster_id: String) -> void:
-	if not PlayerData.owns_monster(monster_id):
-		_show_error("Cette carte ou ce niveau n'est pas encore débloqué.")
-		return
-	var lineage := MonsterLoader.monster_lineage(monster_id)
-	var index := DeckRules.lineage_index(_current_deck, lineage)
-	var operation: Dictionary
-	if index >= 0:
-		operation = DeckRules.try_set_level(_current_deck, lineage, MonsterLoader.monster_level(monster_id), PlayerData.player_god_id)
-	else:
-		operation = DeckRules.try_add(_current_deck, monster_id, PlayerData.player_god_id)
+	var operation := _deck_actions.equip(_current_deck, monster_id, PlayerData.player_god_id)
 	if operation["success"]:
 		if _commit_operation(operation):
 			info_sheet.close_sheet()
 		return
 	match operation["reason"]:
+		DeckActions.REASON_NOT_OWNED:
+			_show_error("Cette carte ou ce niveau n'est pas encore débloqué.")
 		DeckRules.REASON_FULL:
-			_close_action_drawer()
+			_drawer.close()
 			info_sheet.close_sheet()
 			_replacement_monster_id = monster_id
 			replacement_panel.open_for(_current_deck, monster_id)
@@ -698,7 +605,7 @@ func _request_use(monster_id: String) -> void:
 
 func _on_replacement_requested(old_id: String) -> void:
 	var incoming_id := _replacement_monster_id
-	var operation := DeckRules.try_replace(_current_deck, old_id, incoming_id, PlayerData.player_god_id)
+	var operation := _deck_actions.replace(_current_deck, old_id, incoming_id, PlayerData.player_god_id)
 	if not operation["success"]:
 		if operation["reason"] == DeckRules.REASON_BUDGET:
 			replacement_panel.show_budget_error(operation["cost"])
@@ -717,7 +624,7 @@ func _on_replacement_requested(old_id: String) -> void:
 func _register_replacement_anchor(incoming_id: String) -> void:
 	var target_id := ""
 	for old_id in _current_deck:
-		if DeckRules.can_replace(_current_deck, str(old_id), incoming_id, PlayerData.player_god_id):
+		if _deck_actions.replace(_current_deck, str(old_id), incoming_id, PlayerData.player_god_id)["success"]:
 			target_id = str(old_id)
 			break
 	if target_id == "" and not _current_deck.is_empty():
@@ -733,7 +640,7 @@ func _commit_operation(operation: Dictionary) -> bool:
 	if not operation.get("success", false):
 		return false
 	var new_deck: Array = operation["deck"]
-	if not PlayerData.set_player_deck(new_deck):
+	if not _deck_actions.commit(new_deck):
 		_show_error("Impossible de modifier ce deck : la sauvegarde a échoué.")
 		return false
 	_current_deck = new_deck.duplicate()
@@ -753,7 +660,7 @@ func _upgrade_card(lineage_id: String) -> void:
 	if not bool(result.get("ok", false)):
 		_show_error(str(result.get("reason", "Amélioration impossible.")))
 		return
-	_close_action_drawer()
+	_drawer.close()
 	_clear_status()
 	_populate_collection()
 	_refresh_deck()

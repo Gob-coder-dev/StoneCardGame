@@ -127,7 +127,7 @@ func _test_collection_economy_ui() -> void:
 		CardActionDrawer.Source.DECK)
 	for _frame in range(4):
 		await get_tree().process_frame
-	var drawer: CardActionDrawer = page._action_drawer
+	var drawer: CardActionDrawer = page._drawer.drawer
 	_check(drawer != null and drawer.upgrade_button.visible
 		and drawer.upgrade_button.soul_icon_texture() != null
 		and drawer.upgrade_button.text == "AMÉLIORER"
@@ -144,7 +144,7 @@ func _test_collection_economy_ui() -> void:
 		"deck : le tiroir reste sous la carte et reprend sa largeur")
 	page.scroll.scroll_vertical += 20
 	await get_tree().process_frame
-	_check(not is_instance_valid(page._action_drawer),
+	_check(not is_instance_valid(page._drawer.drawer),
 		"deck : le tiroir se ferme au premier défilement au lieu de se déplacer")
 	page.queue_free()
 	await get_tree().process_frame
@@ -193,7 +193,7 @@ func _test_rewards_and_upgrade() -> void:
 		CardActionDrawer.Source.COLLECTION)
 	for _frame in range(4):
 		await get_tree().process_frame
-	page._action_drawer.upgrade_button.pressed.emit()
+	page._drawer.drawer.upgrade_button.pressed.emit()
 	var preview: MonsterCard = page.info_sheet.card_container.get_child(0)
 	_check(page.info_sheet.visible
 		and page.info_sheet._shown_variant == "gueule_de_travers_n2"
@@ -293,7 +293,7 @@ func _test_deferred_god_reward() -> void:
 		for _frame in range(4):
 			await get_tree().process_frame
 		var target_rect := tested_wrapper.get_global_rect()
-		var drawer_rect: Rect2 = page._action_drawer.get_global_rect()
+		var drawer_rect: Rect2 = page._drawer.drawer.get_global_rect()
 		lateral_alignment_valid = lateral_alignment_valid \
 			and absf(drawer_rect.position.x - target_rect.position.x) < 1.0 \
 			and absf(drawer_rect.size.x - target_rect.size.x) < 1.0
@@ -310,13 +310,13 @@ func _test_deferred_god_reward() -> void:
 	var positions_after: Array = collection_wrappers.map(func(wrapper: Control):
 		return wrapper.position)
 	var collection_rect := selected_wrapper.get_global_rect()
-	_check(page._action_drawer.get_parent() == page.action_drawer_layer
+	_check(page._drawer.drawer.get_parent() == page.action_drawer_layer
 		and selected_card.size == card_size_before
 		and selected_wrapper.size == wrapper_size_before
 		and positions_after == positions_before
-		and page._action_drawer.visible
-		and page._action_drawer.global_position.y >= collection_rect.end.y
-		and is_equal_approx(page._action_drawer.size.x, collection_rect.size.x),
+		and page._drawer.drawer.visible
+		and page._drawer.drawer.global_position.y >= collection_rect.end.y
+		and is_equal_approx(page._drawer.drawer.size.x, collection_rect.size.x),
 		"collection : sélectionner une carte superpose le tiroir sans déplacer la grille")
 	page._open_pending_rewards()
 	var vault: PendingRewardsVault = page.pending_rewards_vault

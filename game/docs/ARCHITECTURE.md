@@ -119,6 +119,7 @@ et affiche `EN PARTIE` jusqu'à son propre retour.
 | `scripts/network/LanSession.gd` (autoload) | cycle ENet, états, signaux, RPC sur `/root/LanSession`, reset idempotent |
 | `scripts/network/LanLobbyCoordinator.gd` | poignée de main, camps, règles et révisions, PRÊT, configuration autoritaire du match |
 | `scripts/network/LanSeriesCoordinator.gd` | préparation de série, draft parallèle, loadouts, confirmations, score et manches |
+| `scripts/network/pvp/LanSeriesContinuation.gd` | phases et accord des deux joueurs pour la manche suivante ou la revanche |
 | `scripts/network/LanPvpPresence.gd` | présence persistante `LOBBY`/`PREPARATION`/`PRE_BATTLE`/`IN_MATCH`/`RESULT`, sans navigation distante |
 | `scripts/network/LanMatchCoordinator.gd` | commandes, séquences, accusés, empreintes et désynchronisation |
 | `scripts/network/LanAddressResolver.gd` | normalisation et classement purs des adresses locales |
@@ -497,7 +498,10 @@ Aucune animation ne change le plateau logique ni ne relance le hasard.
 
 ## Écran de collection
 
-`CollectionScreenController` coordonne les choix et enregistre les opérations.
+`CollectionScreenController` coordonne les choix et les panneaux. `CollectionDeckActions`
+prépare les modifications du deck avec un catalogue et des opérations de lecture
+et d’écriture injectés. `CollectionDrawer` gère la sélection visuelle, la position
+et la fermeture du tiroir au-dessus de la grille.
 `GodSelector`, `NumberedSelector`, `DeckPanel` et `CollectionGrid` possèdent
 chacun leur vue. `NumberedSelector` partage les boutons tactiles des decks et
 des niveaux ; il émet `value_selected` et ignore les règles et la sauvegarde.

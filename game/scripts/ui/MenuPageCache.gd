@@ -9,15 +9,17 @@ const CHECK_INTERVAL := 0.25
 const BUILD_INTERVAL := 0.08
 
 var _pages: Dictionary[String, Control] = {}
-var _keys: Dictionary[String, int] = {}
+var _keys: Dictionary[String, Array] = {}
 var _wanted: Array[String] = []
 var _can_prepare: Callable
 var _active: Control
 var _elapsed := 0.0
+var _shop_rotation_seconds := 1
 
 
 func setup(can_prepare: Callable) -> void:
 	_can_prepare = can_prepare
+	_shop_rotation_seconds = maxi(1, int(EconomyConfig.get_config().get("shop_rotation_seconds", 10800)))
 	get_tree().scene_changed.connect(synchronize)
 	set_process(false)
 
@@ -84,18 +86,16 @@ func _discard(path: String) -> void:
 		page.queue_free()
 
 
-func _state_key(path: String) -> int:
+func _state_key(path: String) -> Array:
 	# Les règles conservent l’onglet consulté malgré une récompense récoltée.
 	if path == Routes.HOW_TO_PLAY:
-		return hash(PlayerData.player_god_id)
-	var profile := PlayerData.get_profile()
+		return [PlayerData.player_god_id]
 	var period := 0
 	if path == Routes.SHOP:
-		var seconds := maxi(1, int(EconomyConfig.get_config().get("shop_rotation_seconds", 10800)))
-		period = floori(Time.get_unix_time_from_system() / seconds)
+		period = floori(Time.get_unix_time_from_system() / _shop_rotation_seconds)
 	elif path == Routes.QUESTS:
 		period = Calendar.today()
-	return hash([profile, period])
+	return [PlayerData.profile_revision(), period]
 
 
 func _process(delta: float) -> void:

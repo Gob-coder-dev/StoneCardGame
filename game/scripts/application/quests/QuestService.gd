@@ -32,17 +32,15 @@ func _init(day_override: int = -1) -> void:
 	_journal = Journal.new(day_override)
 
 
-## Projection complète consommée par l'écran et par la pastille de navigation.
+## Projection complète de l'écran des quêtes.
 func view(day: int = -1, persist: bool = true) -> Dictionary:
-	_metrics = MetricsModel.new()
+	var access := AccessServiceModel.new().state()
 	var state := StateModel.from_dict(PlayerData.quests_dict())
-	var changed := _journal.sync(state, day)
-	if changed and persist:
-		var rollover_error := _commit(state)
-		if rollover_error != OK:
-			return {"ok": false, "reason": "Quêtes non enregistrées (%s)."
-				% error_string(rollover_error), "daily": [], "unique": [],
-				"claimable": 0, "seconds_to_reset": Calendar.seconds_to_reset()}
+	var rollover_error := _synchronize(state, access, day, persist)
+	if rollover_error != OK:
+		return {"ok": false, "reason": "Quêtes non enregistrées (%s)."
+			% error_string(rollover_error), "daily": [], "unique": [],
+			"claimable": 0, "seconds_to_reset": Calendar.seconds_to_reset()}
 	var inventory := InventoryModel.from_dict(PlayerData.inventory_dict())
 	var daily: Array = []
 	for quest_id in state.daily_ids:
@@ -51,7 +49,7 @@ func view(day: int = -1, persist: bool = true) -> Dictionary:
 			daily.append(_entry(definition, state, true, inventory))
 	var unique: Array = []
 	for definition in ConfigModel.uniques():
-		if definition is Dictionary and _is_accessible(definition):
+		if definition is Dictionary and _is_accessible(definition, access):
 			unique.append(_entry(definition, state, false, inventory))
 	# Les paliers récoltables passent devant, puis les objectifs en cours ;
 	# l'ordre du catalogue départage les égalités de façon stable.
@@ -69,7 +67,29 @@ func view(day: int = -1, persist: bool = true) -> Dictionary:
 
 
 func claimable_count() -> int:
-	return int(view().get("claimable", 0))
+	return int(badge().get("claimable", 0))
+
+
+## La pastille compte les paliers sans construire les cartes, les gains ni le tri.
+func badge(day: int = -1) -> Dictionary:
+	var access := AccessServiceModel.new().state()
+	var state := StateModel.from_dict(PlayerData.quests_dict())
+	if _synchronize(state, access, day, true) != OK:
+		return {"ok": false, "claimable": 0}
+	var count := 0
+	for quest_id in state.daily_ids:
+		count += _available_tiers(ConfigModel.definition(quest_id), state, true)
+	for definition in ConfigModel.uniques():
+		if definition is Dictionary and _is_accessible(definition, access):
+			count += _available_tiers(definition, state, false)
+	return {"ok": true, "claimable": count}
+
+
+func _synchronize(state: StateModel, access: ContentAccessState, day: int, persist: bool) -> Error:
+	_metrics = MetricsModel.new()
+	if _journal.sync(state, day, access) and persist:
+		return _commit(state)
+	return OK
 
 
 ## `kind` identifie l'action déjà acceptée par le jeu. `key` est l'identifiant
@@ -94,11 +114,12 @@ func claim(quest_id: String) -> Dictionary:
 	var definition := ConfigModel.definition(quest_id)
 	if definition.is_empty():
 		return _fail("Quête inconnue.")
-	if not _is_accessible(definition):
+	var access := AccessServiceModel.new().state()
+	if not _is_accessible(definition, access):
 		return _fail("Cette quête n'est pas encore accessible.")
 	_metrics = MetricsModel.new()
 	var state := StateModel.from_dict(PlayerData.quests_dict())
-	_journal.sync(state)
+	_journal.sync(state, -1, access)
 	var daily := state.daily_ids.has(quest_id)
 	if not daily and _in_daily_pool(quest_id):
 		return _fail("Cette quête n'est pas active aujourd'hui.")
@@ -218,9 +239,13 @@ func _value(definition: Dictionary, state: StateModel, daily: bool) -> int:
 	return raw
 
 
-func _is_accessible(definition: Dictionary) -> bool:
-	return AccessServiceModel.new().is_gate_unlocked(
-		str(definition.get("required_gate", "")))
+func _available_tiers(definition: Dictionary, state: StateModel, daily: bool) -> int:
+	var claimed := state.claimed_tier(str(definition.get("id", "")), daily)
+	return Rules.claimable_count(definition, claimed, _value(definition, state, daily))
+
+
+func _is_accessible(definition: Dictionary, access: ContentAccessState) -> bool:
+	return access.has_gate(str(definition.get("required_gate", "")))
 
 
 ## Active chaque défi conditionnel une seule fois et photographie sa métrique.

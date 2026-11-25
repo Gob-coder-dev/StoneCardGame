@@ -13,6 +13,7 @@ func run() -> void:
 	_test_blocked_recovery()
 	_test_autosave()
 	_test_failed_save()
+	_test_economy_notifications()
 
 
 func _test_codec() -> void:
@@ -160,6 +161,28 @@ func _test_failed_save() -> void:
 	_check(player.record_match({"winner": 1, "score_local": 9, "score_opponent": 5, "captures": 3}) != OK
 		and player.get_profile() == previous and Storage.read(TEST_PATH) == disk,
 		"un échec d'enregistrement restaure toutes les statistiques de la partie")
+	player.free()
+	_remove_test_files()
+
+
+func _test_economy_notifications() -> void:
+	_remove_test_files()
+	var player := PlayerModel.new(TEST_PATH)
+	player.load_save()
+	var changes := {"inventory": 0, "quests": 0}
+	player.inventory_changed.connect(func() -> void: changes["inventory"] += 1)
+	player.quests_changed.connect(func() -> void: changes["quests"] += 1)
+	var next := PlayerInventory.from_dict(player.inventory_dict())
+	next.shop_state = {"rotation_id": 2}
+	var revision := player.profile_revision()
+	_check(player.commit_economy(next) == OK and player.profile_revision() == revision + 1
+		and changes == {"inventory": 0, "quests": 0},
+		"profil : une rotation est sauvegardée sans notifier deux écrans inchangés")
+	next = PlayerInventory.from_dict(player.inventory_dict())
+	next.souls += 1
+	_check(player.commit_economy(next, null, {"day_index": 2}) == OK
+		and changes == {"inventory": 1, "quests": 1},
+		"profil : les changements visibles sont émis une fois après la transaction")
 	player.free()
 	_remove_test_files()
 

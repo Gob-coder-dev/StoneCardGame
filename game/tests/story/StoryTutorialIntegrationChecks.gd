@@ -285,15 +285,15 @@ func _test_collection_swap() -> void:
 				and StoryLayer._spotlight._target == StoryService.get_anchor("collection.action.primary"))
 		_check(guided and StoryService.is_guiding_anchor("collection.action.primary"),
 			"échange : l'étape guide réellement le bouton UTILISER")
-		var drawer := collection._action_drawer as CardActionDrawer
+		var drawer := collection._drawer.drawer as CardActionDrawer
 		_tap_at(collection, drawer.get_global_rect().position + Vector2(-80.0, -80.0))
 		await get_tree().process_frame
-		_check(is_instance_valid(collection._action_drawer),
+		_check(is_instance_valid(collection._drawer.drawer),
 			"échange : un appui à côté ne referme plus le tiroir guidé")
 		collection._on_scroll_started()
-		_check(is_instance_valid(collection._action_drawer),
+		_check(is_instance_valid(collection._drawer.drawer),
 			"échange : un défilement ne referme plus le tiroir guidé")
-		collection._close_action_drawer()
+		collection._drawer.close()
 		var lost := await _wait_until(func() -> bool:
 			return not StoryLayer._spotlight.visible \
 				and StoryService._tutorial._wait_for == "")
@@ -305,7 +305,7 @@ func _test_collection_swap() -> void:
 				and StoryLayer._spotlight._target == StoryService.get_anchor("collection.action.primary"))
 		_check(rearmed and StoryService._tutorial._current_step.get("id", "") == "swap_use",
 			"échange : rouvrir la carte remet la même consigne en place")
-		var guided_drawer := collection._action_drawer as CardActionDrawer
+		var guided_drawer := collection._drawer.drawer as CardActionDrawer
 		guided_drawer.primary_button.pressed.emit()
 		var target_ready := await _wait_until(func() -> bool:
 			return StoryService.get_anchor("collection.replace.first") != null and collection.replacement_panel.visible, 120)
