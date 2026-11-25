@@ -95,7 +95,7 @@ func abandon_campaign_series() -> Dictionary:
 	var error := PlayerData.record_forfeit(_result_snapshot())
 	if error != OK:
 		return {"ok": false, "reason": "L'abandon n'a pas pu être enregistré."}
-	return SeriesEngineModel.concede(state, GameState.PLAYER_TWO)
+	return campaign_mode_session.concede()
 
 
 ## Mémorise la rencontre et son identifiant de statistiques en une seule fois.

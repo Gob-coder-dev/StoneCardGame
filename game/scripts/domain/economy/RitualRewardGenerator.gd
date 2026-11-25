@@ -112,14 +112,7 @@ static func _rarity_set(raw: Variant) -> Dictionary:
 
 
 static func _all_lineages() -> Array[String]:
-	var result: Array[String] = []
-	var seen := {}
-	for monster in MonsterLoader.get_all_monsters():
-		var lineage_id := MonsterLoader.monster_lineage(str(monster.get("id", "")))
-		if lineage_id == "" or seen.has(lineage_id):
-			continue
-		seen[lineage_id] = true
-		result.append(lineage_id)
+	var result := MonsterLoader.lineage_ids()
 	result.sort()
 	return result
 

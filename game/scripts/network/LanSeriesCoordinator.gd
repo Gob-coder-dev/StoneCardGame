@@ -148,7 +148,7 @@ func preparation_id() -> String:
 
 
 func series() -> SeriesState:
-	return _series
+	return _series.copy() if _series != null else null
 
 
 ## ─── Hôte : démarrage et préparation ────────────────────────────────────────

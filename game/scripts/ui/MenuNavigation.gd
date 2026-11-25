@@ -144,6 +144,8 @@ func _freeze() -> void:
 func _set_offset(value: float) -> void:
 	if not is_instance_valid(_current):
 		return
+	if Accessibility.reduced_motion:
+		return
 	var width := _current.size.x
 	_offset = clampf(value * _direction, 0.0, width) * _direction
 	if _incoming == null:
@@ -156,6 +158,9 @@ func _set_offset(value: float) -> void:
 
 func _settle(commit: bool, duration: float) -> void:
 	_gesture.reset()
+	if Accessibility.reduced_motion:
+		_finish(commit)
+		return
 	_tween = create_tween()
 	var endpoint := _current.size.x * _direction if commit else 0.0
 	var remaining := absf(endpoint - _offset) / _current.size.x

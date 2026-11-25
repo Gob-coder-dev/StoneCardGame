@@ -23,6 +23,8 @@ var _riposte: Riposte
 var _possible_cards: Array[String] = []
 var _hand_size := 0
 var _aura_before := 0
+var _endgame_search: Endgame
+var _endgame_used_random := false
 
 
 func _init(state: GameState, anticipation: bool) -> void:
@@ -54,9 +56,13 @@ func random_samples() -> int:
 
 ## Le placement utilise toujours le moteur commun, puis le modèle adapté à
 ## l'avancement du match. La détection du hasard et les graines restent inchangées.
-func evaluate(move: Dictionary, sample: int) -> Dictionary:
+## Avec un budget, {} indique que le prochain appel doit reprendre le même tirage.
+func evaluate(move: Dictionary, sample: int, budget_usec: int = 0) -> Dictionary:
+	if _endgame_search != null:
+		return _advance_endgame(budget_usec)
 	# Les appels synchrones des tests et des outils restent valides ; MoveSearch
 	# prépare normalement ce modèle avant la première évaluation.
+	var started := Time.get_ticks_usec()
 	prepare_step()
 	var monster_id: String = move["monster_id"]
 	var row: int = move["row"]
@@ -66,17 +72,27 @@ func evaluate(move: Dictionary, sample: int) -> Dictionary:
 	var seeded_state := simulation.random_state
 	var result := Resolver.apply_move(simulation, row, col, monster_id, GameState.PLAYER_AI)
 	var used_random := simulation.random_state != seeded_state
-	var value: float
 	if _endgame:
 		# Les coups adverses sont choisis parmi toutes ses cartes possibles.
 		simulation.human_hand = _possible_cards.duplicate()
-		value = Endgame.evaluate(simulation, _hand_size)
-	else:
-		value = float(result.get("captures", []).size())
-		if _anticipation:
-			value -= RISK_WEIGHT * _riposte.threat(simulation)
-			value += AURA_WEIGHT * (aura_blades(simulation) - _aura_before)
+		_endgame_search = Endgame.new(simulation, _hand_size)
+		_endgame_used_random = used_random
+		if budget_usec > 0:
+			budget_usec = maxi(1, budget_usec - (Time.get_ticks_usec() - started))
+		return _advance_endgame(budget_usec)
+	var value := float(result.get("captures", []).size())
+	if _anticipation:
+		value -= RISK_WEIGHT * _riposte.threat(simulation)
+		value += AURA_WEIGHT * (aura_blades(simulation) - _aura_before)
 	return {"value": value, "random": used_random}
+
+
+func _advance_endgame(budget_usec: int) -> Dictionary:
+	if not _endgame_search.step(budget_usec):
+		return {}
+	var result := {"value": _endgame_search.value(), "random": _endgame_used_random}
+	_endgame_search = null
+	return result
 
 ## Lames d'aura portées par l'IA, avant ou après son placement.
 static func aura_blades(state: GameState) -> int:

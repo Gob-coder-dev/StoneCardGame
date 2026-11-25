@@ -22,9 +22,7 @@ func state(preview: bool = false) -> ContentAccessState:
 	if service == null:
 		service = CampaignContext.get_service()
 	if service != null and service.has_method("is_ready") and service.is_ready():
-		var progress: Variant = service.progress()
-		if progress != null:
-			completed = progress.completed.duplicate()
+		completed = service.completed_nodes()
 	return Rules.resolve(Config.get_config(), completed)
 
 

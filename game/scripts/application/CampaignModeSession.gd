@@ -142,6 +142,8 @@ func record_round(winner: int, score_one: int, score_two: int) -> Dictionary:
 	if bool(result.get("ok", false)):
 		_phase = PHASE_SERIES_COMPLETE if _series.finished else PHASE_ROUND_RESULT
 		_emit_state()
+	if result.has("series"):
+		result["series"] = series()
 	return result
 
 
@@ -158,7 +160,17 @@ func public_state() -> Dictionary:
 
 
 func series() -> SeriesState:
-	return _series
+	return _series.copy() if _series != null else null
+
+
+func concede() -> Dictionary:
+	var result := SeriesEngine.concede(_series, GameState.PLAYER_TWO)
+	if bool(result.get("ok", false)):
+		_phase = PHASE_SERIES_COMPLETE
+		_emit_state()
+	if result.has("series"):
+		result["series"] = series()
+	return result
 
 
 func rules() -> Dictionary:

@@ -50,6 +50,8 @@ func _ready() -> void:
 	title_label.text = str(_opening.get("ritual_name", "Rituel")).to_upper()
 	lucky_label.visible = bool(_opening.get("lucky", false))
 	sigil.setup(_definition)
+	if Accessibility.reduced_motion:
+		sigil.set_process(false)
 	_show_sigil()
 
 
@@ -72,12 +74,25 @@ func _on_sigil_pressed() -> void:
 		return
 	_stage = Stage.BUSY
 	sigil_button.disabled = true
-	Audio.play_sfx(AudioCatalog.SFX_BIG_FLAME)
-	flames.ignite_full()
-	await _present_sealed_reward()
+	await _present_sealed_reward(true)
 
 
-func _present_sealed_reward() -> void:
+func _present_sealed_reward(full: bool) -> void:
+	if Accessibility.reduced_motion:
+		sigil_button.hide()
+		_show_reward_back()
+		reward_button.modulate.a = 0.0
+		var fade := create_tween()
+		fade.tween_property(reward_button, "modulate:a", 1.0, 0.15)
+		await fade.finished
+		_enable_reward_action(Stage.REWARD_BACK)
+		return
+	if full:
+		Audio.play_sfx(AudioCatalog.SFX_BIG_FLAME)
+		flames.ignite_full()
+	else:
+		Audio.play_sfx(AudioCatalog.SFX_LITTLE_FLAME)
+		flames.ignite_minor()
 	await flames.covered
 	sigil_button.hide()
 	_show_reward_back()
@@ -129,24 +144,36 @@ func _on_reward_pressed() -> void:
 func _reveal_current() -> void:
 	_stage = Stage.BUSY
 	reward_button.disabled = true
-	var close := create_tween()
-	close.tween_property(reward_button, "scale:x", 0.03, 0.18).set_trans(Tween.TRANS_QUAD)
-	await close.finished
+	if not Accessibility.reduced_motion:
+		var close := create_tween()
+		close.tween_property(reward_button, "scale:x", 0.03, 0.18).set_trans(Tween.TRANS_QUAD)
+		await close.finished
 	Audio.play_sfx(AudioCatalog.SFX_REVEAL)
 	var reward: Dictionary = (_opening.get("rewards", []) as Array)[_index]
 	_build_reward_front(reward)
 	_set_reward_action("Récompense suivante" if _index + 1 < _opening["rewards"].size()
 		else "Voir le récapitulatif")
-	var open := create_tween()
-	open.tween_property(reward_button, "scale:x", 1.0, 0.22) \
-		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	await open.finished
+	if not Accessibility.reduced_motion:
+		var open := create_tween()
+		open.tween_property(reward_button, "scale:x", 1.0, 0.22) \
+			.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		await open.finished
 	_enable_reward_action(Stage.REWARD_FRONT)
 
 
 func _advance() -> void:
 	_stage = Stage.BUSY
 	reward_button.disabled = true
+	if not Accessibility.reduced_motion:
+		await _slide_reward_out()
+	_index += 1
+	if _index >= (_opening.get("rewards", []) as Array).size():
+		_show_summary()
+		return
+	await _present_sealed_reward(false)
+
+
+func _slide_reward_out() -> void:
 	var start_position := reward_button.position
 	var direction := 1.0 if _index % 2 == 0 else -1.0
 	var target_position := start_position + Vector2(size.x * 0.66 * direction, 0.0)
@@ -158,13 +185,6 @@ func _advance() -> void:
 		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	await exit_tween.finished
 	reward_button.position = start_position
-	_index += 1
-	if _index >= (_opening.get("rewards", []) as Array).size():
-		_show_summary()
-		return
-	Audio.play_sfx(AudioCatalog.SFX_LITTLE_FLAME)
-	flames.ignite_minor()
-	await _present_sealed_reward()
 
 
 func _build_reward_front(reward: Dictionary) -> void:

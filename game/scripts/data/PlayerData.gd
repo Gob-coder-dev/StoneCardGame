@@ -356,8 +356,7 @@ func card_upgrade_state(lineage_id: String) -> Dictionary:
 	return {
 		"entry": entry,
 		"requirement": requirement,
-		"can_upgrade": not requirement.is_empty() and ProgressionRules.can_upgrade(
-			lineage_id, entry, _inventory.souls, config),
+		"can_upgrade": ProgressionRules.meets_requirement(entry, _inventory.souls, requirement),
 	}
 
 

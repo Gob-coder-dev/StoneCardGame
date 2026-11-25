@@ -26,7 +26,7 @@ func _init(result: Dictionary, service: CampaignService, node_id: String,
 	_record_quest = quest_recorder if quest_recorder.is_valid() else _quest_service.record_event
 	if service != null and service.has_node(node_id):
 		_first_victory = not service.is_completed(node_id)
-		_attempt = maxi(1, service.progress().attempts_for(node_id))
+		_attempt = maxi(1, service.attempts_for(node_id))
 
 
 func persist() -> Error:
@@ -93,7 +93,7 @@ static func _check_storage(service: CampaignService, node_id: String) -> Error:
 		return service.load_error() if service.load_error() != OK else ERR_INVALID_DATA
 	if not service.has_node(node_id):
 		return ERR_DOES_NOT_EXIST
-	return service.store().schema_error()
+	return service.storage_error()
 
 
 static func _finish_pending(service: CampaignService, pending: Dictionary, record_quest: Callable) -> Error:

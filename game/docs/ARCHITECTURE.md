@@ -148,7 +148,7 @@ L'audio est une couche applicative isolée, branchée sur l'autoload `Audio`.
 | --- | --- |
 | `scripts/application/audio/AudioCatalog.gd` | données pures : identifiants, chemins des 26 SFX et 4 musiques, clés de métadonnées, correspondance nom de scène → musique |
 | `scripts/application/audio/AudioService.gd` (autoload `Audio`) | bus `Music`/`SFX`, préférences persistantes, pool de 10 lecteurs courts, lecteur de musique à coupure franche, lecteur de jingle qui suspend la musique, cache de flux et branchement automatique des boutons |
-| `scenes/ui/SoundSettingsPopover.tscn` | carte de réglage de l'accueil : curseurs indépendants pour la musique et les effets |
+| `scenes/ui/SettingsPopover.tscn` | réglages de l’accueil avec les sections Son et Accessibilité |
 | `default_bus_layout.tres` | bus `Master`, `Music` et `SFX` réglables séparément, initialisés à 70 % |
 
 Les écrans n'appellent jamais `AudioServer` : ils utilisent

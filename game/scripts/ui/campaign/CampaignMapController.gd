@@ -103,7 +103,7 @@ func _refresh() -> void:
 		if int(states[node_id]) != CampaignUnlockRules.State.LOCKED:
 			_keyboard_nodes.append(node_id)
 	var anchor := _initial_anchor()
-	var selected := _service.progress().last_selected
+	var selected := _service.last_selected_node_id()
 	if selected == "" or not _service.has_node(selected):
 		selected = anchor
 	if not _setup_done:
@@ -112,7 +112,7 @@ func _refresh() -> void:
 	else:
 		map_view.refresh_states(states, selected)
 	var total := _service.graph().node_count()
-	var completed := _service.progress().completed_count()
+	var completed := _service.completed_count()
 	progress_label.text = "%d / %d niveaux terminés" % [completed, total]
 	_restore_status()
 
@@ -247,7 +247,7 @@ func _on_dialog_closed() -> void:
 
 
 func _restore_status() -> void:
-	var notice := _service.store().load_notice
+	var notice := _service.load_notice()
 	status_label.text = "Toutes les branches terminées restent accessibles." if notice.is_empty() else notice
 	status_label.add_theme_color_override("font_color", UITheme.COL_TEXT_DIM if notice.is_empty() else UITheme.COL_WARNING)
 

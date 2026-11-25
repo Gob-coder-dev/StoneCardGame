@@ -37,7 +37,8 @@ const DECK_WARNING: String = "VEUILLEZ COMPLÉTER VOTRE DECK"
 @onready var close_warning_button: Button = \
 	$DeckWarningOverlay/Center/Panel/Content/Actions/CloseButton
 @onready var bottom_nav: Control = $BottomNav
-@onready var sound_settings: SoundSettingsPopover = $SoundSettings
+@onready var settings_button: Button = $Content/SettingsButton
+@onready var settings: SettingsPopover = $Settings
 
 ## Navigation injectable : les tests vérifient la destination réelle sans
 ## changer de scène. Vide en jeu, la scène est alors ouverte normalement.
@@ -57,7 +58,7 @@ func _ready() -> void:
 	identity_panel.offset_top = -UITheme.HOME_IDENTITY_HEIGHT - UITheme.HOME_IDENTITY_LIFT
 	identity_panel.offset_bottom = -UITheme.HOME_IDENTITY_LIFT
 	portrait_area.resized.connect(_fit_portrait)
-	sound_settings.anchor_below(profile_button)
+	settings.setup(settings_button)
 	_fit_portrait.call_deferred()
 	_refresh()
 	CardArtCache.preload_god_portraits()
@@ -91,7 +92,7 @@ func menu_page_activated() -> void:
 
 
 func menu_swipe_allowed() -> bool:
-	return not deck_warning_overlay.visible and not sound_settings.is_open()
+	return not deck_warning_overlay.visible and not settings.is_open()
 
 
 func _fit_portrait() -> void:
@@ -160,7 +161,7 @@ func _on_mode_pressed(mode: String) -> void:
 
 
 func _show_deck_warning(opener: Button) -> void:
-	sound_settings.close()
+	settings.close()
 	_warning_focus.capture(deck_warning_overlay, opener)
 	var deck := PlayerData.get_active_deck()
 	deck_warning_message.text = "%s\n\nVotre deck contient %d carte%s sur %d. Complétez-le avant de lancer une campagne ou une partie PVP." % [
@@ -190,8 +191,8 @@ func _input(event: InputEvent) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if sound_settings.is_open() and event.is_action_pressed("ui_cancel"):
-		sound_settings.close()
+	if settings.is_open() and event.is_action_pressed("ui_cancel"):
+		settings.close()
 		get_viewport().set_input_as_handled()
 		return
 	if deck_warning_overlay.visible and event.is_action_pressed("ui_cancel"):
@@ -221,8 +222,8 @@ func _notification(what: int) -> void:
 			return
 		if MenuNavigation.cancel_for_back():
 			return
-		if is_instance_valid(sound_settings) and sound_settings.is_open():
-			sound_settings.close()
+		if is_instance_valid(settings) and settings.is_open():
+			settings.close()
 			return
 		Audio.quit_game()
 

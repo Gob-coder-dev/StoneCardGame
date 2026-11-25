@@ -9,6 +9,7 @@ signal god_help_requested(god_id: String, anchor: Button)
 
 const PowerHelp := preload("res://scripts/ui/PowerHelp.gd")
 const PowerHelpPopover := preload("res://scripts/ui/PowerHelpPopover.gd")
+const TouchButtonModel := preload("res://scripts/ui/input/TouchButton.gd")
 const COL_PLATE_BG := Color("#1a120a")
 const COL_HUMAN := Color("#3a7ad0")
 const COL_AI := Color("#d04040")
@@ -18,8 +19,10 @@ const COL_SCORE := Color("#ffe9a8")
 
 var _human_plate: PanelContainer
 var _ai_plate: PanelContainer
-var _human_name: Label
-var _ai_name: Label
+var _human_name: Button
+var _ai_name: Button
+var _name_dialog: AcceptDialog
+var _name_opener: Button
 var _human_god: Label
 var _ai_god: Label
 var _human_portrait: GodPortrait
@@ -42,6 +45,12 @@ func _ready() -> void:
 	var transparent := StyleBoxEmpty.new()
 	add_theme_stylebox_override("panel", transparent)
 	_build()
+	_name_dialog = AcceptDialog.new()
+	_name_dialog.title = "Combattant"
+	_name_dialog.ok_button_text = "Fermer"
+	_name_dialog.dialog_autowrap = true
+	_name_dialog.visibility_changed.connect(_restore_name_focus)
+	add_child(_name_dialog)
 
 
 func _build() -> void:
@@ -156,12 +165,17 @@ func _make_plate(accent_color: Color, portrait_on_right: bool) -> Dictionary:
 		row.add_child(god_column)
 		row.add_child(vbox)
 
-	var name_lbl := Label.new()
-	name_lbl.clip_text = true
-	name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_lbl.add_theme_font_size_override("font_size", 25)
-	name_lbl.add_theme_color_override("font_color", COL_NAME)
-	vbox.add_child(name_lbl)
+	var name_button: Button = TouchButtonModel.new()
+	name_button.clip_text = true
+	name_button.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	name_button.custom_minimum_size.y = 38
+	name_button.add_theme_font_size_override("font_size", 25)
+	name_button.add_theme_color_override("font_color", COL_NAME)
+	var empty := StyleBoxEmpty.new()
+	for state in ["normal", "hover", "pressed", "hover_pressed"]:
+		name_button.add_theme_stylebox_override(state, empty)
+	name_button.pressed.connect(_show_name.bind(name_button))
+	vbox.add_child(name_button)
 
 	var god_lbl := Label.new()
 	god_lbl.clip_text = true
@@ -176,7 +190,7 @@ func _make_plate(accent_color: Color, portrait_on_right: bool) -> Dictionary:
 	score_lbl.text = "0"
 	vbox.add_child(score_lbl)
 
-	return {"plate": plate, "name": name_lbl, "god": god_lbl,
+	return {"plate": plate, "name": name_button, "god": god_lbl,
 		"portrait": portrait, "score": score_lbl, "help": help}
 
 
@@ -195,11 +209,32 @@ func _plate_style(accent_color: Color, active: bool) -> StyleBoxFlat:
 
 ## ─── API publique ─────────────────────────────────────────────────────────────
 
-## Définit les noms affichés (le nom adverse sera clippé s'il est trop long).
+## Les plaques affichent un nom compact et conservent l'identité complète.
 func set_names(human_name: String, ai_name: String) -> void:
-	_ai_display_name = UIFormat.combatant_name(ai_name, 18)
-	_human_name.text = UIFormat.combatant_name(human_name, 18)
-	_ai_name.text = _ai_display_name
+	_set_name(_human_name, human_name)
+	_set_name(_ai_name, ai_name)
+	_ai_display_name = _ai_name.text
+
+
+func _set_name(button: Button, combatant: String) -> void:
+	var full_name := combatant.strip_edges()
+	if full_name.is_empty():
+		full_name = "Adversaire"
+	button.text = UIFormat.truncate(full_name, 18)
+	button.tooltip_text = full_name
+	button.accessibility_name = full_name
+
+
+func _show_name(button: Button) -> void:
+	_name_opener = button
+	_name_dialog.dialog_text = button.accessibility_name
+	_name_dialog.popup_centered(Vector2i(500, 160))
+
+
+func _restore_name_focus() -> void:
+	if not _name_dialog.visible and is_instance_valid(_name_opener):
+		_name_opener.grab_focus.call_deferred()
+		_name_opener = null
 
 
 ## Les portraits et noms de dieux sont séparés des noms des combattants : les

@@ -73,6 +73,7 @@ func _run() -> void:
 	await _check_main_menu()
 	await _check_shop_and_quest_scroll()
 	await _check_ritual_input()
+	await _check_reduced_ritual()
 	await _check_pvp_lobby()
 	await _check_pvp_draft_touch()
 	await _check_other_menus()
@@ -508,11 +509,27 @@ func _check_main_menu() -> void:
 		"accueil : FERMER referme la modale au toucher")
 	PlayerData._decks_by_god[god_id][slot] = original
 	menu._refresh()
-	await _tap(_center(menu.sound_settings.toggle_button))
-	_check(menu.sound_settings.is_open(),
-		"accueil : le bouton son ouvre ses deux réglages au toucher")
+	var settings: SettingsPopover = menu.settings
+	var original_motion := Accessibility.reduced_motion
+	await _tap(_center(menu.settings_button))
+	_check(settings.is_open(),
+		"accueil : le bouton Réglages ouvre la carte au toucher")
+	await _tap(_center(settings.reduced_motion))
+	_check(Accessibility.reduced_motion != original_motion,
+		"réglages : l’option de réduction des animations fonctionne au toucher")
+	await _tap(_center(settings.reduced_motion))
+	await _tap(_center(settings.close_button))
+	_check(not settings.is_open() and root.gui_get_focus_owner() == menu.settings_button,
+		"réglages : Fermer rend le focus au bouton Réglages")
+	await _key(KEY_ENTER)
+	await _key(KEY_TAB, true)
+	_check(settings.is_open() and root.gui_get_focus_owner() == settings.close_button,
+		"réglages : le parcours clavier reste dans la carte")
+	await _key(KEY_ESCAPE)
+	_check(not settings.is_open(), "réglages : Échap ferme la carte")
+	await _tap(_center(menu.settings_button))
 	await _tap(Vector2(menu.size.x - 40.0, menu.size.y * 0.5))
-	_check(not menu.sound_settings.is_open(),
+	_check(not settings.is_open(),
 		"accueil : toucher hors de la carte referme les réglages sans navigation")
 	for path in ["Content/Header/ProfileButton", "Content/Hero/Identity/ModeButtons/CampaignButton",
 			"Content/Hero/Identity/ModeButtons/PvpButton"]:
@@ -982,6 +999,26 @@ func _check_ritual_input() -> void:
 		"rituel : la manette ouvre le récapitulatif et sélectionne Terminer")
 	await _remove(page)
 	RitualOpeningContext.clear()
+
+
+func _check_reduced_ritual() -> void:
+	var previous := Accessibility.reduced_motion
+	Accessibility.reduced_motion = true
+	RitualOpeningContext.begin({"ritual_id": "small", "ritual_name": "Petit rituel",
+		"rewards": [{"type": "souls", "amount": 10}]})
+	var page := await _open_scene("res://scenes/menus/RitualOpening.tscn")
+	await _key(KEY_ENTER)
+	await get_tree().create_timer(0.22).timeout
+	_check(not page.flames.visible and page.reward_button.visible
+		and root.gui_get_focus_owner() == page.reward_button,
+		"mouvement réduit : le sceau ouvre la récompense sans embrasement")
+	await _joy(JOY_BUTTON_A)
+	await _key(KEY_ENTER)
+	_check(page.summary.visible and root.gui_get_focus_owner() == page.finish_button,
+		"mouvement réduit : la récompense et le récapitulatif restent accessibles")
+	await _remove(page)
+	RitualOpeningContext.clear()
+	Accessibility.reduced_motion = previous
 
 
 func _open_scene(path: String) -> Control:

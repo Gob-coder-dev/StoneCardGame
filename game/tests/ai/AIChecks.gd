@@ -311,6 +311,17 @@ func _test_endgame() -> void:
 	CombatResolverModel.apply_move(after_move, 0, 1, "fx_ranged_target", GameState.PLAYER_AI)
 	after_move.human_hand = Opponent.possible_cards(after_move)
 	var random_before := after_move.random_state
+	var sliced := EndgameSearch.new(after_move, 1)
+	var finished_in_first_slice := sliced.step(1)
+	_check(not finished_in_first_slice and sliced.step() and is_equal_approx(sliced.value(), 2.5),
+		"la fin de partie reprend une évaluation interrompue dans une autre image")
+	var ai = _ai(CAREFUL)
+	var sliced_move = ai.start_search(aura.clone_for_ai())
+	for frame in range(20):
+		if sliced_move.step(AITurnRunner.FRAME_BUDGET_USEC):
+			break
+	_check(sliced_move.chosen_move() == _ai(CAREFUL).choose_move(aura.clone_for_ai()),
+		"une recherche découpée choisit le même coup que le calcul synchrone")
 	_check(is_equal_approx(EndgameSearch.evaluate(after_move, 1), 2.5)
 		and after_move.human_hand == ["fx_swarm_bottom"] and after_move.random_state == random_before
 		and after_move.empty_playable_cells == 1,

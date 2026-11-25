@@ -50,6 +50,10 @@ static func can_upgrade(lineage_id: String, entry: Dictionary, souls: int,
 		config: Dictionary) -> bool:
 	var requirement_value := requirement(lineage_id,
 		int(entry.get("unlocked_level", 0)), config)
+	return meets_requirement(entry, souls, requirement_value)
+
+
+static func meets_requirement(entry: Dictionary, souls: int, requirement_value: Dictionary) -> bool:
 	return not requirement_value.is_empty() \
 		and int(entry.get("copies", 0)) >= int(requirement_value.get("copies", 0)) \
 		and souls >= int(requirement_value.get("souls", 0))

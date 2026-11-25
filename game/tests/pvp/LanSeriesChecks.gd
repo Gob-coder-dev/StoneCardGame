@@ -122,6 +122,9 @@ func _test_continuation_after_send_failure() -> void:
 		"série LAN : réessayer après un échec d’envoi lance exactement une nouvelle manche")
 	_check(not client.request_next_round(), "série LAN : le changement de manche efface les accords")
 	var previous_series := host.series_id()
+	var snapshot := host.series()
+	snapshot.wins_one = 42
+	_check(host.series().wins_one == 1, "série LAN : modifier la copie ne change pas le score réel")
 	_check(host.host_record_round(GameState.PLAYER_ONE, 10, 6) and not client.request_next_round()
 		and client.request_rematch() and host.request_rematch()
 		and host.series_id() != previous_series and client.series_id() == host.series_id()

@@ -1,8 +1,7 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=7 format=3]
 
-[ext_resource type="Script" path="res://scripts/ui/settings/SoundSettingsPopover.gd" id="1_controller"]
+[ext_resource type="Script" path="res://scripts/ui/settings/SettingsPopover.gd" id="1_controller"]
 [ext_resource type="Script" path="res://scripts/ui/input/TouchButton.gd" id="2_touch"]
-[ext_resource type="Texture2D" path="res://assets/ui/sound.svg" id="3_sound"]
 [ext_resource type="Texture2D" path="res://assets/ui/sound-slider-knob.svg" id="4_knob"]
 
 [sub_resource type="StyleBoxFlat" id="SliderTrack"]
@@ -30,7 +29,7 @@ corner_radius_bottom_left = 9
 
 [sub_resource type="StyleBoxEmpty" id="EmptyButton"]
 
-[node name="SoundSettingsPopover" type="Control"]
+[node name="SettingsPopover" type="Control"]
 z_index = 80
 layout_mode = 3
 anchors_preset = 15
@@ -56,51 +55,48 @@ theme_override_styles/hover = SubResource("EmptyButton")
 theme_override_styles/pressed = SubResource("EmptyButton")
 theme_override_styles/focus = SubResource("EmptyButton")
 
-[node name="ToggleButton" type="Button" parent="."]
-custom_minimum_size = Vector2(92, 92)
-layout_mode = 0
-offset_right = 92.0
-offset_bottom = 92.0
-tooltip_text = "Réglages du son"
-toggle_mode = true
-icon = ExtResource("3_sound")
-expand_icon = true
-icon_max_width = 54
-script = ExtResource("2_touch")
-
 [node name="Panel" type="PanelContainer" parent="."]
 visible = false
-custom_minimum_size = Vector2(560, 316)
+custom_minimum_size = Vector2(640, 0)
 layout_mode = 0
-offset_right = 560.0
-offset_bottom = 316.0
+offset_right = 640.0
 mouse_filter = 0
 theme_type_variation = &"DeckPanel"
 
 [node name="Content" type="VBoxContainer" parent="Panel"]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 16
 
 [node name="Title" type="Label" parent="Panel/Content"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.678, 0.49, 1)
 theme_override_font_sizes/font_size = 40
-text = "RÉGLAGES DU SON"
+text = "RÉGLAGES"
 horizontal_alignment = 1
 
-[node name="MusicHeader" type="HBoxContainer" parent="Panel/Content"]
+[node name="Sound" type="VBoxContainer" parent="Panel/Content"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="Panel/Content/Sound"]
+layout_mode = 2
+theme_type_variation = &"SectionTitle"
+theme_override_font_sizes/font_size = 32
+text = "Son"
+
+[node name="MusicHeader" type="HBoxContainer" parent="Panel/Content/Sound"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="Panel/Content/MusicHeader"]
+[node name="Label" type="Label" parent="Panel/Content/Sound/MusicHeader"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 30
-text = "MUSIQUE"
+text = "Musique"
 
-[node name="Spacer" type="Control" parent="Panel/Content/MusicHeader"]
+[node name="Spacer" type="Control" parent="Panel/Content/Sound/MusicHeader"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Value" type="Label" parent="Panel/Content/MusicHeader"]
+[node name="Value" type="Label" parent="Panel/Content/Sound/MusicHeader"]
 custom_minimum_size = Vector2(96, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.902, 0.7373, 0.4706, 1)
@@ -108,7 +104,8 @@ theme_override_font_sizes/font_size = 30
 text = "70 %"
 horizontal_alignment = 2
 
-[node name="MusicSlider" type="HSlider" parent="Panel/Content"]
+[node name="MusicSlider" type="HSlider" parent="Panel/Content/Sound"]
+accessibility_name = "Musique"
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 mouse_default_cursor_shape = 2
@@ -122,19 +119,19 @@ step = 1.0
 value = 70.0
 scrollable = false
 
-[node name="SfxHeader" type="HBoxContainer" parent="Panel/Content"]
+[node name="SfxHeader" type="HBoxContainer" parent="Panel/Content/Sound"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="Panel/Content/SfxHeader"]
+[node name="Label" type="Label" parent="Panel/Content/Sound/SfxHeader"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 30
-text = "EFFETS SONORES"
+text = "Effets sonores"
 
-[node name="Spacer" type="Control" parent="Panel/Content/SfxHeader"]
+[node name="Spacer" type="Control" parent="Panel/Content/Sound/SfxHeader"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Value" type="Label" parent="Panel/Content/SfxHeader"]
+[node name="Value" type="Label" parent="Panel/Content/Sound/SfxHeader"]
 custom_minimum_size = Vector2(96, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.902, 0.7373, 0.4706, 1)
@@ -142,7 +139,8 @@ theme_override_font_sizes/font_size = 30
 text = "70 %"
 horizontal_alignment = 2
 
-[node name="SfxSlider" type="HSlider" parent="Panel/Content"]
+[node name="SfxSlider" type="HSlider" parent="Panel/Content/Sound"]
+accessibility_name = "Effets sonores"
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 mouse_default_cursor_shape = 2
@@ -156,3 +154,44 @@ step = 1.0
 value = 70.0
 scrollable = false
 
+[node name="Separator" type="HSeparator" parent="Panel/Content"]
+layout_mode = 2
+
+[node name="Accessibility" type="VBoxContainer" parent="Panel/Content"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="Panel/Content/Accessibility"]
+layout_mode = 2
+theme_type_variation = &"SectionTitle"
+theme_override_font_sizes/font_size = 32
+text = "Accessibilité"
+
+[node name="ReducedMotion" type="CheckButton" parent="Panel/Content/Accessibility"]
+custom_minimum_size = Vector2(0, 76)
+layout_mode = 2
+theme_override_font_sizes/font_size = 34
+text = "Réduire les animations"
+script = ExtResource("2_touch")
+
+[node name="Description" type="Label" parent="Panel/Content/Accessibility"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7373, 0.698, 0.7412, 1)
+theme_override_font_sizes/font_size = 30
+text = "Les menus changent sans glisser et les récompenses du Rituel apparaissent avec des effets plus discrets."
+autowrap_mode = 3
+
+[node name="SaveError" type="Label" parent="Panel/Content/Accessibility"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.875, 0.5725, 0.6118, 1)
+theme_override_font_sizes/font_size = 30
+text = "Le réglage n’a pas pu être enregistré."
+autowrap_mode = 3
+
+[node name="CloseButton" type="Button" parent="Panel/Content"]
+custom_minimum_size = Vector2(0, 88)
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "Fermer"
+script = ExtResource("2_touch")

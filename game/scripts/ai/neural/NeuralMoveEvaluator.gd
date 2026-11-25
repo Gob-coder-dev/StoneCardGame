@@ -24,7 +24,7 @@ func random_samples() -> int:
 	return 1
 
 
-func evaluate(move: Dictionary, _sample: int) -> Dictionary:
+func evaluate(move: Dictionary, _sample: int, _budget_usec: int = 0) -> Dictionary:
 	var slot := _state.ai_hand.find(str(move["monster_id"]))
 	var action := slot * 16 + int(move["row"]) * 4 + int(move["col"])
 	var features := PackedFloat32Array()

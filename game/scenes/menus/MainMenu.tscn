@@ -1,11 +1,12 @@
-[gd_scene load_steps=7 format=3 uid="uid://b8hjkpj0hmjtc"]
+[gd_scene load_steps=8 format=3 uid="uid://b8hjkpj0hmjtc"]
 
 [ext_resource type="Script" uid="uid://c620obhplo3k1" path="res://scripts/ui/MainMenu.gd" id="1_mainmenu"]
 [ext_resource type="Script" uid="uid://cms1p5lxyjnml" path="res://scripts/ui/MenuBackground.gd" id="2_parchment"]
 [ext_resource type="PackedScene" path="res://scenes/ui/BottomNav.tscn" id="3_nav"]
 [ext_resource type="Script" uid="uid://153ulybbb0hg" path="res://scripts/ui/input/TouchButton.gd" id="4_touch_button"]
 [ext_resource type="PackedScene" path="res://scenes/ui/CurrencyBalances.tscn" id="5_currency"]
-[ext_resource type="PackedScene" path="res://scenes/ui/SoundSettingsPopover.tscn" id="6_sound_settings"]
+[ext_resource type="PackedScene" path="res://scenes/ui/SettingsPopover.tscn" id="6_settings"]
+[ext_resource type="Texture2D" path="res://assets/ui/settings.svg" id="7_gear"]
 
 [node name="MainMenu" type="Control" unique_id=1585933656]
 layout_mode = 3
@@ -38,7 +39,7 @@ offset_right = -40.0
 offset_bottom = -186.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 24
+theme_override_constants/separation = 12
 
 [node name="Header" type="HBoxContainer" parent="Content" unique_id=732867860]
 layout_mode = 2
@@ -56,6 +57,19 @@ layout_mode = 2
 size_flags_horizontal = 3
 
 [node name="CurrencyBalances" parent="Content/Header" instance=ExtResource("5_currency")]
+
+[node name="SettingsButton" type="Button" parent="Content"]
+custom_minimum_size = Vector2(256, 88)
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_constants/h_separation = 14
+theme_override_font_sizes/font_size = 32
+text = "Réglages"
+toggle_mode = true
+icon = ExtResource("7_gear")
+expand_icon = true
+icon_max_width = 46
+script = ExtResource("4_touch_button")
 
 [node name="GameTitle" type="VBoxContainer" parent="Content" unique_id=147584374]
 layout_mode = 2
@@ -195,7 +209,7 @@ script = ExtResource("4_touch_button")
 [node name="BottomNav" parent="." unique_id=2090898695 instance=ExtResource("3_nav")]
 grow_horizontal = 2
 
-[node name="SoundSettings" parent="." instance=ExtResource("6_sound_settings")]
+[node name="Settings" parent="." instance=ExtResource("6_settings")]
 
 [node name="DeckWarningOverlay" type="Control" parent="." unique_id=885755630]
 visible = false

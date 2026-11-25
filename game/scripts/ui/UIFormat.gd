@@ -43,6 +43,10 @@ static func combatant_name(value: String, max_characters: int = 20) -> String:
 			else first
 	if compact == "":
 		compact = "Adversaire"
-	if max_characters > 1 and compact.length() > max_characters:
-		return compact.left(max_characters - 1).strip_edges() + "…"
-	return compact
+	return truncate(compact, max_characters)
+
+
+static func truncate(value: String, max_characters: int) -> String:
+	if max_characters > 1 and value.length() > max_characters:
+		return value.left(max_characters - 1).strip_edges() + "…"
+	return value

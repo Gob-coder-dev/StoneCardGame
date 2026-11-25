@@ -122,4 +122,4 @@ func _campaign_nodes() -> int:
 	var service := CampaignContext.get_service()
 	if service == null or not service.is_ready():
 		return 0
-	return service.progress().completed.size()
+	return service.completed_count()

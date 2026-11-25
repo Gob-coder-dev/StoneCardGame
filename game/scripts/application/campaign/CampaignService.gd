@@ -29,7 +29,7 @@ func _init(initial_graph: CampaignGraph = null, initial_progress: CampaignProgre
 		initial_store: CampaignProgressStore = null,
 		diagnostics: Array[String] = []) -> void:
 	_graph = initial_graph if initial_graph != null else GraphModel.build({})
-	_progress = initial_progress if initial_progress != null else ProgressModel.from_dict({})
+	_progress = initial_progress.duplicate_progress() if initial_progress != null else ProgressModel.from_dict({})
 	_store = initial_store if initial_store != null else StoreModel.new()
 	_problems = diagnostics.duplicate()
 
@@ -95,11 +95,31 @@ func graph() -> CampaignGraph:
 
 
 func progress() -> CampaignProgress:
-	return _progress
+	return _progress.duplicate_progress()
 
 
-func store() -> CampaignProgressStore:
-	return _store
+func completed_nodes() -> Dictionary:
+	return _progress.completed.duplicate()
+
+
+func completed_count() -> int:
+	return _progress.completed_count()
+
+
+func last_selected_node_id() -> String:
+	return _progress.last_selected
+
+
+func attempts_for(node_id: String) -> int:
+	return _progress.attempts_for(node_id)
+
+
+func storage_error() -> Error:
+	return _store.schema_error()
+
+
+func load_notice() -> String:
+	return _store.load_notice
 
 
 func has_node(node_id: String) -> bool:

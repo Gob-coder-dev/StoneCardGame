@@ -27,8 +27,8 @@ func _init(moves: Array, evaluator, choose: Callable) -> void:
 
 
 ## Avance la préparation puis les tirages pendant environ budget_usec
-## microsecondes (0 : jusqu'au bout). Une fois la préparation terminée, évalue
-## toujours au moins un tirage. Renvoie true quand le coup est choisi.
+## microsecondes (0 : jusqu'au bout). Un tirage peut reprendre à l'image suivante.
+## Renvoie true quand le coup est choisi.
 func step(budget_usec: int = 0) -> bool:
 	if _finished:
 		return true
@@ -39,15 +39,17 @@ func step(budget_usec: int = 0) -> bool:
 			remaining = maxi(1, budget_usec - int(Time.get_ticks_usec() - started))
 		if not _evaluator.prepare_step(remaining):
 			return false
-		if budget_usec > 0 and Time.get_ticks_usec() - started >= budget_usec:
-			return false
-	var first := _next
 	while _next < _pending.size():
-		if budget_usec > 0 and _next > first and Time.get_ticks_usec() - started >= budget_usec:
-			return false
+		var remaining := budget_usec
+		if budget_usec > 0:
+			remaining -= Time.get_ticks_usec() - started
+			if remaining <= 0:
+				return false
 		var unit: Vector2i = _pending[_next]
+		var outcome: Dictionary = _evaluator.evaluate(_moves[unit.x], unit.y, remaining)
+		if outcome.is_empty():
+			return false
 		_next += 1
-		var outcome: Dictionary = _evaluator.evaluate(_moves[unit.x], unit.y)
 		_totals[unit.x] += float(outcome["value"])
 		_counts[unit.x] += 1
 		if unit.y == 0 and outcome["random"]:

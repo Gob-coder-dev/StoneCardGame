@@ -64,8 +64,25 @@ func _run() -> void:
 	await _traverse()
 	await _cached_pages()
 	await _resize_and_exit()
+	await _reduced_motion()
 	await _finish()
 
+
+func _reduced_motion() -> void:
+	var previous := Accessibility.reduced_motion
+	Accessibility.reduced_motion = true
+	await _open(2)
+	var original := _page
+	var origin := _point(0.5, 0.45)
+	var target := origin + Vector2(_page.size.x * 0.38, 0)
+	await _drag(origin, target)
+	_check(is_zero_approx(original.position.x), "mouvement réduit : le menu reste fixe pendant le geste")
+	_touch(target, false)
+	await _settled()
+	_page = get_tree().current_scene as Control
+	_check(_page.scene_file_path == Routes.COLLECTION and is_zero_approx(_page.position.x),
+		"mouvement réduit : le balayage change toujours de menu au relâchement")
+	Accessibility.reduced_motion = previous
 
 func _canceled_gestures() -> void:
 	await _open(1)

@@ -39,7 +39,7 @@ func get_service() -> CampaignService:
 func preview_completed_nodes() -> Dictionary:
 	var service := _test_service if _test_service != null else _service
 	if service != null:
-		return service.progress().completed.duplicate() if service.is_ready() else {}
+		return service.completed_nodes() if service.is_ready() else {}
 	var progress := ProgressStore.new().preview_progress()
 	return progress.completed.duplicate() if progress != null else {}
 

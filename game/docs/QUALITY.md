@@ -114,6 +114,26 @@ données de conception et ancienne campagne ; le lanceur inspecte le ZIP obtenu.
 
 ## Validation avant livraison
 
+### APK Android natif
+
+Après avoir exporté le preset `Android` dans Godot, finaliser l’APK avec les
+Build Tools du SDK Android et la même clé de signature que la version à mettre
+à jour. L’outil utilise les variables d’environnement de Godot
+`GODOT_ANDROID_KEYSTORE_RELEASE_PATH`, `GODOT_ANDROID_KEYSTORE_RELEASE_USER` et
+`GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD`. `JAVA_HOME` doit désigner le JDK si
+Java est absent du `PATH`.
+
+```powershell
+python game/tools/finalize_android_apk.py Beastpact.apk Beastpact-release.apk --build-tools "$env:ANDROID_HOME/build-tools/36.0.0"
+```
+
+L’outil corrige les types des attributs Vulkan et rétablit l’alias de l’icône
+adaptative dans un nouveau fichier. Il aligne l’archive avant de la signer et
+vérifie la signature, l’alignement, l’identité du paquet et la lecture du
+manifeste. [Documentation Android sur zipalign](https://developer.android.com/tools/zipalign)
+
+### Suites de contrôle
+
 Depuis la racine du dépôt :
 
 ```powershell

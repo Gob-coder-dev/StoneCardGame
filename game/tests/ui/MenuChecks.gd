@@ -17,7 +17,7 @@ func run() -> void:
 	await _test_deck_clear()
 	await _test_safe_area()
 	await _test_home_portraits()
-	await _test_sound_settings()
+	await _test_settings()
 	await _test_menu_modes()
 	await _test_preview_layout()
 	await _test_rules_legends()
@@ -223,7 +223,7 @@ func _test_home_portraits() -> void:
 	await get_tree().process_frame
 
 
-func _test_sound_settings() -> void:
+func _test_settings() -> void:
 	var original_music := Audio.music_volume_percent()
 	var original_sfx := Audio.sfx_volume_percent()
 	Audio.set_music_volume_percent(35.0, false)
@@ -232,21 +232,41 @@ func _test_sound_settings() -> void:
 	add_child(menu)
 	for frame in range(3):
 		await get_tree().process_frame
-	var settings: SoundSettingsPopover = menu.sound_settings
-	settings.open()
-	await get_tree().process_frame
+	var settings: SettingsPopover = menu.settings
+	var opener: Button = menu.settings_button
+	var title: Control = menu.get_node("Content/GameTitle")
+	opener.pressed.emit()
+	for frame in range(3):
+		await get_tree().process_frame
 	var music_bus := AudioServer.get_bus_index(Audio.MUSIC_BUS)
 	var sfx_bus := AudioServer.get_bus_index(Audio.SFX_BUS)
 	_check(settings.is_open() and settings.dismiss_button.visible
-		and settings.toggle_button.get_global_rect().position.y
-		>= menu.profile_button.get_global_rect().end.y - 1.0,
-		"accueil : le bouton son reste sous le profil et ouvre une carte bloquante")
+		and opener.text == "Réglages" and opener.icon.resource_path.ends_with("settings.svg")
+		and opener.get_global_rect().position.y >= menu.profile_button.get_global_rect().end.y
+		and opener.get_global_rect().end.y <= title.get_global_rect().position.y,
+		"accueil : le bouton Réglages est lisible, placé sous le profil et ouvre une carte bloquante")
 	_check(is_equal_approx(settings.music_slider.value, 35.0)
 		and is_equal_approx(settings.sfx_slider.value, 0.0)
 		and is_equal_approx(Audio.DEFAULT_VOLUME_PERCENT, 70.0)
 		and is_equal_approx(AudioServer.get_bus_volume_db(music_bus), linear_to_db(0.35))
 		and AudioServer.is_bus_mute(sfx_bus),
 		"audio : les deux curseurs reflètent leurs bus et zéro coupe réellement les SFX")
+	var original_motion := Accessibility.reduced_motion
+	_check(settings.reduced_motion.text == "Réduire les animations"
+		and settings.motion_description.is_visible_in_tree()
+		and settings.motion_description.text.contains("Rituel")
+		and settings.motion_description.text.contains("sans glisser")
+		and settings.reduced_motion.accessibility_description == settings.motion_description.text
+		and is_equal_approx(settings.panel.size.y, settings.panel.get_combined_minimum_size().y)
+		and settings.get_viewport_rect().encloses(settings.panel.get_global_rect()),
+		"accessibilité : les effets dans les menus et le Rituel sont expliqués sous le bouton")
+	settings.reduced_motion.button_pressed = not original_motion
+	var saved := ConfigFile.new()
+	_check(saved.load(Accessibility.PATH) == OK
+		and saved.get_value(Accessibility.SECTION, Accessibility.KEY) == not original_motion
+		and Accessibility.reduced_motion == not original_motion,
+		"accessibilité : le réglage de mouvement est appliqué et sauvegardé")
+	settings.reduced_motion.button_pressed = original_motion
 	settings.close()
 	_check(not settings.is_open() and not settings.dismiss_button.visible,
 		"accueil : fermer les réglages libère immédiatement le reste du menu")
@@ -627,6 +647,8 @@ func _test_generated_opponent_battle() -> void:
 	var saved_opponent := BattleContext.selected_opponent
 	var saved_first := BattleContext.forced_first_player
 	var opponent := OpponentFixtureModel.build("enigma", "n1", "moyen")
+	var full_name := "Le Gardien — des Royaumes Oubliés"
+	opponent["combatant_name"] = full_name
 	BattleContext.select_opponent(opponent)
 	BattleContext.forced_first_player = GameState.PLAYER_HUMAN
 	PlayerData.set_selected_deck(0)
@@ -640,6 +662,11 @@ func _test_generated_opponent_battle() -> void:
 		and state.god_of(GameState.PLAYER_AI) == "enigma"
 		and state.hand_of(GameState.PLAYER_AI) == MonsterLoader.build_hand(opponent["deck"]),
 		"un combat généré reçoit le deck, le dieu et l'identifiant de la rencontre choisie")
+	board.hud._ai_name.pressed.emit()
+	_check(board.hud._ai_name.text.ends_with("…") and board.hud._name_dialog.visible
+		and board.hud._name_dialog.dialog_text == full_name,
+		"le vrai plateau de campagne conserve le nom complet jusqu'à la fenêtre du combattant")
+	board.hud._name_dialog.hide()
 	board.queue_free()
 	await get_tree().process_frame
 	BattleContext.selected_npc_id = saved_npc
@@ -1212,11 +1239,19 @@ func _test_hud_game_over() -> void:
 	_check(hud._human_portrait.has_portrait() and hud._ai_portrait.has_portrait()
 		and hud._human_god.text == "Véskar" and hud._ai_god.text == "Kharûn",
 		"le HUD conserve l'image et le nom du dieu de chaque camp pendant le combat")
-	hud.set_names("Joueur", "Miroir — Nérava — Le Reflet des Fièvres")
+	var legacy_name := UIFormat.combatant_name("Miroir — Nérava — Le Reflet des Fièvres", 0)
+	hud.set_names("Joueur", legacy_name)
 	hud.set_active_player(GameState.PLAYER_AI)
 	_check(hud._ai_name.text == "Nérava" and hud._banner.text == "Tour de Nérava"
 		and hud._banner.custom_minimum_size.x == UITheme.HUD_BANNER_WIDTH,
 		"le HUD réduit les anciens noms composés dans la plaque et le bandeau de tour")
+	var full_name := "Camille — Soleil levant"
+	hud.set_names(full_name, "Adversaire")
+	hud._human_name.pressed.emit()
+	_check(hud._human_name.text.ends_with("…") and hud._human_name.accessibility_name == full_name
+		and hud._name_dialog.visible and hud._name_dialog.dialog_text == full_name,
+		"le nom compact du plateau ouvre le nom complet du combattant")
+	hud._name_dialog.hide()
 	hud.set_gods(GodIdentityModel.player("veskar"), GodIdentityModel.bot(""))
 	_check(hud._ai_god.text == "Sans dieu" and hud._ai_portrait.has_portrait(),
 		"le HUD identifie et illustre un adversaire sans dieu")

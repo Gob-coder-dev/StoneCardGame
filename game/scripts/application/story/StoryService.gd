@@ -533,7 +533,7 @@ func _story_state(key: String) -> bool:
 		return false
 	var service := CampaignContext.get_service()
 	if service != null and service.is_ready():
-		return bool(service.progress().story_states.get(key, false))
+		return service.story_state(key)
 	return false
 
 

@@ -16,7 +16,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 config/name="Beastpact"
 config/description="Un bestiaire de monstres et six dieux à maîtriser dans un jeu de cartes stratégique."
-config/version="0.12.2"
+config/version="0.12.3"
 run/main_scene="res://scenes/menus/MainMenu.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
 config/icon="res://assets/ui/icon.svg"
@@ -34,6 +34,7 @@ StoryService="*res://scripts/application/story/StoryService.gd"
 StoryLayer="*res://scripts/ui/story/StoryLayer.gd"
 RitualOpeningContext="*res://scripts/application/economy/RitualOpeningContext.gd"
 Audio="*res://scripts/application/audio/AudioService.gd"
+Accessibility="*res://scripts/ui/settings/AccessibilitySettings.gd"
 SafeArea="*res://scripts/ui/SafeArea.gd"
 InterfaceTheme="*res://scripts/ui/InterfaceTheme.gd"
 MenuNavigation="*res://scripts/ui/MenuNavigation.gd"

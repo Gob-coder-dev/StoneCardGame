@@ -15,6 +15,7 @@ const BAD_PATH := "user://campaign_missing_dir_checks/progress.json"
 func run() -> void:
 	_cleanup()
 	_test_round_trip()
+	_test_service_read_isolation()
 	_test_incomplete_progress()
 	_test_service_save_failure()
 	_test_migration()
@@ -67,6 +68,19 @@ func _test_round_trip() -> void:
 	copy.mark_completed("tuto_03")
 	_check(not progress.is_completed("tuto_03") and copy.is_completed("tuto_03"),
 		"progression : les copies de travail sont indépendantes")
+
+
+func _test_service_read_isolation() -> void:
+	var source := ProgressModel.new()
+	source.mark_completed("tuto_01")
+	var service := ServiceModel.new(null, source)
+	source.mark_completed("tuto_02")
+	var snapshot := service.progress()
+	snapshot.mark_completed("tuto_03")
+	var completed := service.completed_nodes()
+	completed.clear()
+	_check(service.completed_count() == 1 and service.is_completed("tuto_01"),
+		"campagne : les copies exposées ne peuvent pas modifier la progression détenue par le service")
 
 
 func _test_incomplete_progress() -> void:
