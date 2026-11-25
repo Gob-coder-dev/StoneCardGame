@@ -6,6 +6,7 @@ class_name CampaignProgress
 extends RefCounted
 
 const PROGRESS_VERSION: int = 1
+const Integer := preload("res://scripts/domain/IntegerValue.gd")
 
 var campaign_version: int = 0
 var completed: Dictionary = {}
@@ -23,7 +24,13 @@ var map_navigation: Dictionary = {}
 var migration: Dictionary = {}
 
 
+static func supports(source: Dictionary) -> bool:
+	return Integer.read(source.get("progress_version", 0)) <= PROGRESS_VERSION
+
+
 static func from_dict(source: Dictionary) -> CampaignProgress:
+	if not supports(source):
+		return null
 	var progress := CampaignProgress.new()
 	progress.campaign_version = int(source.get("campaign_version", 0))
 	var raw_completed: Variant = source.get("completed_node_ids", [])

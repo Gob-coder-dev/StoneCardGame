@@ -1,6 +1,6 @@
 ## Format de sauvegarde et évolution des profils, sans lecture/écriture disque.
 extends RefCounted
-const VERSION := 12
+const VERSION := 13
 const Integer := preload("res://scripts/domain/IntegerValue.gd")
 const StatsRules := preload("res://scripts/domain/ProfileStatsRules.gd")
 const EconomyConfigModel := preload("res://scripts/data/economy/EconomyConfig.gd")
@@ -17,7 +17,8 @@ static func supports(raw: Dictionary) -> bool:
 
 static func encode(decks: Dictionary, selections: Dictionary, god: String,
 		player_name: String, stats: Dictionary, inventory: Dictionary = {},
-		quests: Dictionary = {}, legacy_campaign_stats: Dictionary = {}) -> Dictionary:
+		quests: Dictionary = {}, legacy_campaign_stats: Dictionary = {},
+		pending_campaign_result: Dictionary = {}) -> Dictionary:
 	var actual_inventory := inventory.duplicate(true) if not inventory.is_empty() \
 		else _legacy_inventory().to_dict()
 	var result := {"save_version": VERSION, "decks_by_god": decks.duplicate(true),
@@ -26,6 +27,8 @@ static func encode(decks: Dictionary, selections: Dictionary, god: String,
 		"inventory": actual_inventory, "quests": quests.duplicate(true)}
 	if not legacy_campaign_stats.is_empty():
 		result["legacy_campaign_stats"] = legacy_campaign_stats.duplicate(true)
+	if not pending_campaign_result.is_empty():
+		result["pending_campaign_result"] = pending_campaign_result.duplicate(true)
 	return result
 
 static func decode(raw: Dictionary) -> Dictionary:
@@ -65,7 +68,9 @@ static func decode(raw: Dictionary) -> Dictionary:
 	if god != "" and not inventory.has_god(god):
 		god = ""
 	var quests: Dictionary = raw.get("quests", {}) if raw.get("quests") is Dictionary else {}
-	return encode(decks, selections, god, player_name, stats, inventory.to_dict(), quests, legacy)
+	var pending: Variant = raw.get("pending_campaign_result", {})
+	return encode(decks, selections, god, player_name, stats, inventory.to_dict(), quests, legacy,
+		pending if pending is Dictionary else {})
 
 
 static func starter_profile() -> Dictionary:

@@ -1,7 +1,5 @@
-## Persiste un résultat immuable par étapes reprenables : profil, récompense,
-## progression et quêtes. Une étape réussie n'est pas rejouée lors d'un réessai
-## dans la session courante.
-## Le contexte d'écran ne possède ni transaction ni décision de récompense.
+## Le profil enregistre d'un seul coup la manche, ses gains et le reçu à reprendre.
+## La progression et les quêtes sont rejouables après redémarrage grâce à ce reçu.
 extends RefCounted
 
 const Reward := preload("res://scripts/application/campaign/CampaignRewardService.gd")
@@ -15,10 +13,7 @@ var _service: CampaignService
 var _node_id: String
 var _first_victory := false
 var _attempt := 1
-var _stats_saved := false
-var _reward_saved := false
-var _completion_saved := false
-var _quests_saved := false
+var _finished := false
 var _record_quest: Callable
 var _quest_service := Quests.new()
 
@@ -35,46 +30,89 @@ func _init(result: Dictionary, service: CampaignService, node_id: String,
 
 
 func persist() -> Error:
-	if _node_id != "" and (_service == null or not _service.has_node(_node_id)):
-		return ERR_UNCONFIGURED
-	if not _stats_saved:
-		var error := PlayerData.record_match(_result, _quest_key() if _node_id != "" else "")
-		if error != OK:
-			return error
-		_stats_saved = true
-	if _node_id == "":
+	if _finished:
 		return OK
+	var error := PlayerData.record_match(_result) if _node_id == "" else _persist_campaign()
+	_finished = error == OK
+	return error
+
+
+func _persist_campaign() -> Error:
+	var error := _check_storage(_service, _node_id)
+	if error != OK:
+		return error
+	var key := _result_key()
+	var pending := PlayerData.pending_campaign_result()
+	if pending.is_empty():
+		error = _stage_result(key)
+		if error != OK:
+			return error
+		pending = PlayerData.pending_campaign_result()
+	elif pending.get("key") != key:
+		return ERR_BUSY
+	var receipt: Variant = pending.get("reward", {})
+	if not receipt is Dictionary:
+		return ERR_INVALID_DATA
+	reward = receipt.duplicate(true)
+	error = _finish_pending(_service, pending, _record_quest)
+	if bool(reward.get("first_victory", false)) and _service.is_completed(_node_id):
+		reward["unlocks"] = _content_unlocks()
+	return error
+
+
+func _stage_result(key: String) -> Error:
+	var prepared: Dictionary
 	if bool(_result.get("campaign_victory", false)):
-		var error := _persist_victory()
-		if error != OK:
-			return error
-	if not _quests_saved:
-		var error: Error = _record_quest.call("campaign_result", _quest_payload(), _quest_key())
-		if error != OK:
-			return error
-		_quests_saved = true
-	return OK
+		prepared = Reward.prepare_victory(_service, _node_id, _first_victory, _attempt)
+		if not prepared["ok"]:
+			return int(prepared.get("error", ERR_INVALID_DATA)) as Error
+	else:
+		prepared = {"inventory": null, "deck_override": null, "receipt": {}}
+	var pending := {"key": key, "node_id": _node_id, "result": _quest_payload(),
+		"reward": prepared["receipt"]}
+	return PlayerData.stage_campaign_result(pending, prepared["inventory"], prepared["deck_override"])
 
 
-func _persist_victory() -> Error:
-	if not _reward_saved:
-		var granted := Reward.apply_victory(_service, _node_id, _first_victory, _attempt)
-		if not bool(granted.get("ok", false)):
-			return int(granted.get("error", ERR_FILE_CANT_WRITE)) as Error
-		reward = granted.duplicate(true)
-		_reward_saved = true
-	if not _completion_saved:
-		var completion := Completion.apply_victory(_service, _node_id)
+static func resume_pending(service: CampaignService) -> Error:
+	var pending := PlayerData.pending_campaign_result()
+	if pending.is_empty():
+		return OK
+	var error := _check_storage(service, str(pending.get("node_id", "")))
+	if error != OK:
+		return error
+	var quests := Quests.new()
+	return _finish_pending(service, pending, quests.record_event)
+
+
+static func _check_storage(service: CampaignService, node_id: String) -> Error:
+	if PlayerData.profile_load_error != OK:
+		return PlayerData.profile_load_error
+	if service == null:
+		return ERR_UNCONFIGURED
+	if not service.is_ready():
+		return service.load_error() if service.load_error() != OK else ERR_INVALID_DATA
+	if not service.has_node(node_id):
+		return ERR_DOES_NOT_EXIST
+	return service.store().schema_error()
+
+
+static func _finish_pending(service: CampaignService, pending: Dictionary, record_quest: Callable) -> Error:
+	var key: Variant = pending.get("key")
+	var result: Variant = pending.get("result")
+	if not key is String or key.is_empty() or not result is Dictionary:
+		return ERR_INVALID_DATA
+	if bool(result.get("campaign_victory", false)):
+		var completion := Completion.apply_victory(service, pending["node_id"])
 		var error := int(completion.get("error", OK)) as Error
 		if error != OK:
 			return error
-		_completion_saved = true
-		if bool(completion.get("applied", false)):
-			reward["unlocks"] = _content_unlocks()
-	return OK
+	var quest_error: Error = record_quest.call("campaign_result", result, key)
+	if quest_error != OK:
+		return quest_error
+	return PlayerData.finish_campaign_result(key)
 
 
-func _quest_key() -> String:
+func _result_key() -> String:
 	return "campaign:%d:%s:%d:%d" % [_service.graph().campaign_version,
 		_node_id, _attempt, int(_result.get("round_index", 1))]
 

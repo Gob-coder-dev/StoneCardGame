@@ -42,6 +42,8 @@ func run() -> void:
 	_test_special_minis()
 	_test_profile_mirror()
 	_test_failed_preparation_is_transactional()
+	_test_impossible_match_does_not_start()
+	_test_driver_rejects_an_impossible_match()
 	_test_failed_attempt_save_is_transactional()
 	_check(PlayerData.get_profile() == profile_before,
 		"rencontres : aucun dieu ni deck généré n'est écrit dans le profil permanent")
@@ -322,3 +324,34 @@ func _test_failed_attempt_save_is_transactional() -> void:
 		and not BattleContext.has_mode_session(),
 		"rencontres : un échec de sauvegarde ne publie ni tentative ni session partielle")
 	CampaignContext.set_service_for_tests(_service)
+
+
+func _test_impossible_match_does_not_start() -> void:
+	BattleContext.clear_campaign_node()
+	var node := _graph.node("r03_b")
+	var original := node.encounter.duplicate(true)
+	node.encounter["player_hand_size"] = 1
+	node.encounter["opponent_hand_size"] = 1
+	var attempts := _service.progress().attempts_for(node.id)
+	var result := CampaignContext.enter_node(node.id)
+	_check(not bool(result["ok"]) and str(result["reason"]).contains("Mains insuffisantes")
+		and _service.progress().attempts_for(node.id) == attempts and not BattleContext.has_campaign_node(),
+		"rencontres : le lancement refuse une rencontre impossible sans consommer de tentative")
+	node.encounter = original
+
+
+func _test_driver_rejects_an_impossible_match() -> void:
+	_enter("tuto_02")
+	var opponent := BattleContext.current_opponent()
+	opponent["match_setup"]["player_hand_size"] = 1
+	opponent["match_setup"]["opponent_hand_size"] = 1
+	BattleContext.select_opponent(opponent)
+	var manager := TurnManager.new()
+	var driver := CampaignMatchDriver.new()
+	driver.setup(manager)
+	_check(not driver.start() and driver.start_error.contains("Mains insuffisantes")
+		and manager.get_state() == null,
+		"rencontres : un setup invalide ne remet aucun plateau au moteur de jeu")
+	driver.free()
+	manager.free()
+	BattleContext.clear_campaign_node()

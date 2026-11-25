@@ -14,6 +14,19 @@ const ConfigModel := preload("res://scripts/data/economy/EconomyConfig.gd")
 
 func grant_reward(transaction_id: String, souls: int, cards: Array = [],
 		starter_deck_cards: Array = [], candles: int = 0) -> Dictionary:
+	var prepared := prepare_reward(transaction_id, souls, cards, starter_deck_cards, candles)
+	if not prepared["ok"]:
+		return prepared
+	var receipt: Dictionary = prepared["receipt"]
+	if receipt["already_applied"]:
+		return receipt
+	var error := PlayerData.commit_economy(prepared["inventory"], prepared["deck_override"])
+	return receipt if error == OK else _save_fail(error)
+
+
+## Prépare les gains et leur reçu pour une transaction de profil plus large.
+func prepare_reward(transaction_id: String, souls: int, cards: Array,
+		starter_deck_cards: Array, candles: int) -> Dictionary:
 	if transaction_id == "":
 		return _fail("Identifiant de récompense absent.")
 	if souls < 0:
@@ -22,8 +35,9 @@ func grant_reward(transaction_id: String, souls: int, cards: Array = [],
 		return _fail("Montant de bougies invalide.")
 	var next := InventoryModel.from_dict(PlayerData.inventory_dict())
 	if next.has_transaction(transaction_id):
-		return {"ok": true, "reason": "", "already_applied": true,
-			"souls": 0, "candles": 0, "cards": [], "deferred_cards": []}
+		return {"ok": true, "inventory": next, "deck_override": null,
+			"receipt": {"ok": true, "reason": "", "already_applied": true,
+				"souls": 0, "candles": 0, "cards": [], "deferred_cards": []}}
 	next.souls += souls
 	next.candles += candles
 	var granted: Array = []
@@ -40,21 +54,24 @@ func grant_reward(transaction_id: String, souls: int, cards: Array = [],
 		else:
 			granted.append(reward)
 	next.mark_transaction(transaction_id)
-	var deck_override: Variant = null
-	if not starter_deck_cards.is_empty() and PlayerData.player_god_id == "":
-		var current := PlayerData.get_active_deck()
-		if current.size() < DeckRules.DECK_SIZE:
-			for raw_monster_id in starter_deck_cards:
-				var monster_id := str(raw_monster_id)
-				if next.owns_monster(monster_id) and current.size() < DeckRules.DECK_SIZE \
-						and DeckRules.lineage_index(current, MonsterLoader.monster_lineage(monster_id)) < 0:
-					current.append(monster_id)
-			deck_override = current
-	var error := PlayerData.commit_economy(next, deck_override)
-	if error != OK:
-		return _save_fail(error)
-	return {"ok": true, "reason": "", "already_applied": false,
-		"souls": souls, "candles": candles, "cards": granted, "deferred_cards": deferred}
+	return {"ok": true, "inventory": next,
+		"deck_override": _reward_deck(next, starter_deck_cards),
+		"receipt": {"ok": true, "reason": "", "already_applied": false,
+			"souls": souls, "candles": candles, "cards": granted, "deferred_cards": deferred}}
+
+
+func _reward_deck(inventory: PlayerInventory, starter_deck_cards: Array) -> Variant:
+	if starter_deck_cards.is_empty() or PlayerData.player_god_id != "":
+		return null
+	var current := PlayerData.get_active_deck()
+	if current.size() >= DeckRules.DECK_SIZE:
+		return null
+	for raw_monster_id in starter_deck_cards:
+		var monster_id := str(raw_monster_id)
+		if inventory.owns_monster(monster_id) and current.size() < DeckRules.DECK_SIZE \
+				and DeckRules.lineage_index(current, MonsterLoader.monster_lineage(monster_id)) < 0:
+			current.append(monster_id)
+	return current
 
 
 func upgrade_card(lineage_id: String) -> Dictionary:

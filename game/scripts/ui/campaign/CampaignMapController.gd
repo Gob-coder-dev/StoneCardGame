@@ -45,6 +45,7 @@ func _ready() -> void:
 	if not _service.is_ready():
 		_show_unavailable()
 		return
+	var recovery_error := CampaignContext.recover_pending_result()
 	background.set_god(GodIdentityModel.player(PlayerData.player_god_id))
 	title_label.text = (_service.graph().title if _service.graph().title != ""
 		else "CARTE DE CAMPAGNE").to_upper()
@@ -52,6 +53,13 @@ func _ready() -> void:
 	# la première frame de layout. Elle est révélée avec la bonne position.
 	map_view.modulate.a = 0.0
 	_refresh()
+	if CampaignContext.match_start_error != "":
+		status_label.text = CampaignContext.match_start_error
+		status_label.add_theme_color_override("font_color", UITheme.COL_ERROR)
+		CampaignContext.match_start_error = ""
+	elif recovery_error != OK:
+		status_label.text = "Le résultat précédent reste à enregistrer (%s)." % error_string(recovery_error)
+		status_label.add_theme_color_override("font_color", UITheme.COL_ERROR)
 	_register_story_anchors()
 	StoryService.notify_screen(Routes.CAMPAIGN_MAP)
 	_restore_map_position.call_deferred()

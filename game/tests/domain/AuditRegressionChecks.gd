@@ -14,6 +14,8 @@ const Progress := preload("res://scripts/domain/campaign/CampaignProgress.gd")
 const Service := preload("res://scripts/application/campaign/CampaignService.gd")
 const Store := preload("res://scripts/data/campaign/CampaignProgressStore.gd")
 const Fixture := preload("res://tests/support/PlayerProfileFixture.gd")
+const PvpContext := preload("res://scripts/application/pvp/PvpMatchContext.gd")
+const ResultScene := preload("res://scenes/menus/Result.tscn")
 const PATH := "user://audit_regression.json"
 
 var _quest_attempts := 0
@@ -33,11 +35,17 @@ func run() -> void:
 	var fixture := Fixture.new(Codec.starter_profile())
 	_test_malformed_profile()
 	_test_future_profile()
+	_test_future_campaign()
 	_test_ledger_compaction()
 	_test_atomic_upgrade()
 	_test_invalid_deck_rollback()
 	_test_result_retry(false)
 	_test_result_retry(true)
+	_test_result_restart("completion")
+	_test_result_restart("quest")
+	_test_result_restart("cleanup")
+	await _test_rewards_after_retry()
+	_test_pvp_result_atomic()
 	fixture.restore()
 	for suffix in ["", ".tmp", ".unreadable"]:
 		if FileAccess.file_exists(PATH + suffix):
@@ -71,6 +79,22 @@ func _test_future_profile() -> void:
 		and FileAccess.get_file_as_string(PATH) == before,
 		"sauvegarde : une version future reste intacte après une tentative d'écriture")
 	isolated.free()
+
+
+func _test_future_campaign() -> void:
+	Storage.write(PATH, {"progress_version": Progress.PROGRESS_VERSION + 1,
+		"campaign_version": 90, "future_field": {"must_survive": true}})
+	var before := FileAccess.get_file_as_string(PATH)
+	var service := Service.create_default(PATH)
+	var store := Store.new(PATH)
+	_check(not service.is_ready() and service.load_error() == ERR_UNAVAILABLE
+		and store.load_progress() == null,
+		"progression : un schéma futur est détecté avant la conversion de campagne")
+	_check(store.save(Progress.new()) == ERR_UNAVAILABLE
+		and not service.begin_attempt("tuto_01")["ok"]
+		and FileAccess.get_file_as_string(PATH) == before,
+		"progression : une écriture directe et une nouvelle tentative préservent le fichier futur")
+	DirAccess.remove_absolute(PATH)
 
 
 func _test_ledger_compaction() -> void:
@@ -153,3 +177,116 @@ func _fail_quest_once(kind: String, payload: Dictionary, key: String) -> Error:
 	if _quest_attempts == 1:
 		return ERR_FILE_CANT_WRITE
 	return Quests.new().record_event(kind, payload, key)
+
+
+func _test_result_restart(checkpoint: String) -> void:
+	PlayerData._apply_profile(Codec.starter_profile())
+	PlayerData.save()
+	var store := FaultStore.new(PATH)
+	var graph: CampaignGraph = Graph.build(Content.read()["definition"])
+	var service := Service.new(graph, Progress.new(), store, [])
+	service.begin_attempt("tuto_01")
+	CampaignContext.set_service_for_tests(service)
+	var starter_souls := PlayerData.souls()
+	var quest_recorder := Callable()
+	if checkpoint == "completion":
+		store.fail_next = true
+	elif checkpoint == "quest":
+		_quest_attempts = 0
+		quest_recorder = _fail_quest_once
+	else:
+		quest_recorder = _save_quest_before_cleanup_failure
+	var result := {"npc_id": "audit", "winner": 1, "score_local": 5,
+		"score_opponent": 4, "captures": 3, "campaign_victory": true, "round_index": 1}
+	var recorder := Persistence.new(result, service, "tuto_01", quest_recorder)
+	var failed := recorder.persist()
+	var awarded_souls := PlayerData.souls() - starter_souls
+	var paid_inventory := PlayerData.inventory_dict()
+	_check(failed == ERR_FILE_CANT_WRITE and awarded_souls > 0
+		and not PlayerData.pending_campaign_result().is_empty(),
+		"reprise après %s : l'intention et le reçu restent enregistrés" % checkpoint)
+	recorder = null
+	service = null
+	PlayerData.load_save()
+	var pending: Dictionary = PlayerData.pending_campaign_result()
+	_check(int(pending.get("reward", {}).get("souls", 0)) == awarded_souls,
+		"reprise après %s : le profil relu contient le montant exact" % checkpoint)
+	var reloaded := Service.create_default(PATH, {"unused": true})
+	CampaignContext.set_service_for_tests(reloaded)
+	var recovered := CampaignContext.recover_pending_result()
+	var paid_after := PlayerData.inventory_dict()
+	_check(recovered == OK and reloaded.is_completed("tuto_01")
+		and int(PlayerData.stats["games_played"]) == 1
+		and PlayerData.souls() == starter_souls + awarded_souls
+		and paid_after["cards"] == paid_inventory["cards"]
+		and paid_after["candles"] == paid_inventory["candles"]
+		and int(PlayerData.quests_dict().get("counters", {}).get("captures", 0)) == 3,
+		"reprise après %s : niveau, gains et compteurs appliqués une seule fois" % checkpoint)
+	PlayerData.load_save()
+	_check(PlayerData.pending_campaign_result().is_empty()
+		and CampaignContext.recover_pending_result() == OK
+		and int(PlayerData.stats["games_played"]) == 1,
+		"reprise après %s : un deuxième redémarrage ne rejoue rien" % checkpoint)
+	CampaignContext.reset_for_tests()
+
+
+func _save_quest_before_cleanup_failure(kind: String, payload: Dictionary, key: String) -> Error:
+	var error := Quests.new().record_event(kind, payload, key)
+	if error == OK:
+		PlayerData.profile_load_error = ERR_FILE_CANT_WRITE
+	return error
+
+
+func _test_rewards_after_retry() -> void:
+	PlayerData._apply_profile(Codec.starter_profile())
+	var service := Service.new(Graph.build(Content.read()["definition"]), Progress.new(), Store.new(PATH))
+	service.begin_attempt("tuto_01")
+	CampaignContext.set_service_for_tests(service)
+	BattleContext.enter_campaign_node("tuto_01", service)
+	BattleContext.prepare_result(GameState.PLAYER_HUMAN, 5, 4, 3)
+	var before := PlayerData.get_profile()
+	var profile_path: String = PlayerData._save_path
+	PlayerData._save_path = PATH + "/profile.json"
+	_expect_log("PlayerData: profil non enregistré")
+	var failed := BattleContext.persist_result()
+	PlayerData._save_path = profile_path
+	var page := ResultScene.instantiate()
+	add_child(page)
+	await get_tree().process_frame
+	_check(failed != OK and PlayerData.get_profile() == before
+		and PlayerData.pending_campaign_result().is_empty()
+		and page.retry_save_btn.visible and not page.rewards.visible,
+		"résultat : l'échec du premier enregistrement ne publie ni gains ni reçu")
+	page.retry_save_btn.pressed.emit()
+	_check(BattleContext.last_result_saved and page.rewards.visible
+		and page.reward_soul_row.visible and not page.retry_save_btn.visible,
+		"résultat : les gains apparaissent sur le même écran après le réessai")
+	page.queue_free()
+	await get_tree().process_frame
+	BattleContext.clear_campaign_node()
+	CampaignContext.reset_for_tests()
+
+
+func _test_pvp_result_atomic() -> void:
+	PlayerData._apply_profile(Codec.starter_profile())
+	var context := PvpContext.new()
+	context.match_id = "audit-pvp-result"
+	context.local_side = GameState.PLAYER_TWO
+	context.record_result(GameState.PLAYER_TWO, 0, 16)
+	context.prepare_profile_result(3, 2, 4)
+	var before := PlayerData.get_profile()
+	var profile_path: String = PlayerData._save_path
+	PlayerData._save_path = PATH + "/profile.json"
+	_expect_log("PlayerData: profil non enregistré")
+	var failed := context.persist_profile_result()
+	PlayerData._save_path = profile_path
+	_check(failed != OK and PlayerData.get_profile() == before,
+		"résultat PVP : une panne n'enregistre ni statistiques ni quêtes")
+	var saved := context.persist_profile_result()
+	context.prepare_profile_result(3, 2, 4)
+	var duplicate := context.persist_profile_result()
+	var counters: Dictionary = PlayerData.quests_dict().get("counters", {})
+	_check(saved == OK and duplicate == OK and int(PlayerData.stats["games_played"]) == 1
+		and int(counters.get("pvp_matches", 0)) == 1 and int(counters.get("perfect_rounds", 0)) == 1,
+		"résultat PVP : le réessai enregistre ensemble la manche et les deux compteurs une seule fois")
+	context.free()

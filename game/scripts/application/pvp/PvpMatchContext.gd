@@ -1,11 +1,12 @@
 ## PvpMatchContext.gd — AutoLoad applicatif
-## Données transitoires du match PVP local. Rien n'est sauvegardé ici : aucun
-## champ du profil du joueur n'est lu pour écrire, et aucune statistique de
-## campagne n'est enregistrée par ce mode.
+## Données transitoires du match PVP local. Le résultat confirmé est remis
+## au service qui enregistre ensemble les statistiques et les quêtes PVP.
 ##
 ## Un seul match vit à la fois ; `clear()` le termine. Le contexte est rempli
 ## par le salon après validation complète de la configuration de l'hôte.
 extends Node
+
+const Quests := preload("res://scripts/application/quests/QuestService.gd")
 
 ## Cycle de vie explicite : une scène ne devine plus l'écran à afficher à
 ## partir d'un dictionnaire résiduel. `LOBBY_RETURN` couvre uniquement le
@@ -382,6 +383,6 @@ func prepare_profile_result(captures: int, best_move: int, board_size: int) -> v
 func persist_profile_result() -> Error:
 	if not last_result.has("profile_result") or bool(last_result.get("profile_saved", false)):
 		return OK
-	var error := PlayerData.record_match(last_result["profile_result"], str(last_result["profile_key"]))
+	var error := Quests.new().record_pvp_result(last_result["profile_result"], str(last_result["profile_key"]))
 	last_result["profile_saved"] = error == OK
 	return error

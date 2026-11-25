@@ -3,6 +3,7 @@
 extends "res://tests/support/CombatTestSuite.gd"
 
 const ValidatorModel := preload("res://scripts/domain/campaign/CampaignValidator.gd")
+const MatchSetup := preload("res://scripts/domain/campaign/CampaignMatchSetup.gd")
 const ContentLoader := preload("res://scripts/data/campaign/CampaignContentLoader.gd")
 const ProfileFixture := preload("res://tests/support/PlayerProfileFixture.gd")
 const CONTENT_PATH := "res://data/campaign/campaign_v2.json"
@@ -16,6 +17,7 @@ func run() -> void:
 	_test_mini_boss_rules()
 	_test_deck_and_tier_rules()
 	_test_nodes_and_positions()
+	_test_playable_hands()
 
 
 func _content_dict() -> Dictionary:
@@ -112,6 +114,25 @@ func _has(problems: Array[String], fragment: String) -> bool:
 		if problem.contains(fragment):
 			return true
 	return false
+
+
+func _test_playable_hands() -> void:
+	var data := _minimal()
+	var encounter: Dictionary = data["nodes"][2]["encounter"]
+	encounter.merge({"board_size": 3, "player_hand_size": 5, "opponent_hand_size": 4,
+		"blocked_cells": []}, true)
+	_check(_has(ValidatorModel.problems(data), "Mains insuffisantes"),
+		"rencontre : une main de quatre cartes ne peut pas commencer un plateau 3 × 3 vide")
+	encounter["forced_first_player"] = GameState.PLAYER_ONE
+	_check(ValidatorModel.problems(data).is_empty(),
+		"rencontre : le même plateau est valide quand le camp de cinq cartes commence")
+	encounter["forced_first_player"] = GameState.PLAYER_NONE
+	var story := {"initial_monsters": [{"row": 0, "col": 0}]}
+	_check(MatchSetup.problem(MatchSetup.resolve(encounter, story)) == "",
+		"rencontre : un monstre déjà posé réduit le nombre de poses nécessaires")
+	story["blocked_cells"] = [[0, 0]]
+	_check(MatchSetup.problem(MatchSetup.resolve(encounter, story)).contains("bloquée"),
+		"rencontre : un monstre initial sur une case bloquée est refusé")
 
 
 func _test_shipped_content() -> void:

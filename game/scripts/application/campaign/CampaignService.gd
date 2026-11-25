@@ -53,7 +53,12 @@ static func create_default(store_path: String = StoreModel.DEFAULT_PATH,
 
 
 func _load_progress(legacy_stats: Dictionary) -> void:
-	_progress = _store.load_progress()
+	var loaded := _store.load_progress()
+	if loaded == null:
+		_load_error = ERR_UNAVAILABLE
+		_problems.append("Cette progression a été créée par une version plus récente de Beastpact.")
+		return
+	_progress = loaded
 	if _progress.campaign_version == 0:
 		_progress.campaign_version = _graph.campaign_version
 	var stats := legacy_stats

@@ -11,17 +11,21 @@ const ConfigModel := preload("res://scripts/data/economy/EconomyConfig.gd")
 const AccessService := preload("res://scripts/application/progression/ProgressionAccessService.gd")
 
 
-func state(now_unix: int = 0) -> Dictionary:
+## Un aperçu peut projeter les offres sans réserver cette rotation sur le disque.
+func state(now_unix: int = 0, persist: bool = true, access: ContentAccessState = null) -> Dictionary:
 	var timestamp := now_unix if now_unix > 0 else int(Time.get_unix_time_from_system())
 	var config := ConfigModel.get_config()
-	var duration := maxi(1, int(config.get("shop_rotation_seconds", 10800)))
-	var rotation_id := floori(float(timestamp) / duration)
+	var duration := _rotation_duration(config)
+	var clock_rotation := floori(float(timestamp) / duration)
 	var next := InventoryModel.from_dict(PlayerData.inventory_dict())
-	var access := AccessService.new().state()
+	if access == null:
+		access = AccessService.new().state(not persist)
 	var saved_rotation := int(next.shop_state.get("rotation_id", -1))
 	var saved_revision := int(next.shop_state.get("access_revision", -1))
+	var rotation_id := maxi(saved_rotation, clock_rotation)
 	var refresh_revision := maxi(0, int(next.shop_state.get("refresh_revision", 0)))
-	if saved_rotation != rotation_id or saved_revision != access.revision:
+	# En cas de recul, conserver exactement le dernier tirage et ses achats.
+	if saved_rotation < clock_rotation or (saved_rotation == clock_rotation and saved_revision != access.revision):
 		refresh_revision = 0
 		next.shop_state = {
 			"rotation_id": rotation_id,
@@ -30,9 +34,10 @@ func state(now_unix: int = 0) -> Dictionary:
 			"offers": _generate_offers(rotation_id, 0, next, config, access),
 			"purchased_offer_ids": {},
 		}
-		var error := PlayerData.commit_inventory(next)
-		if error != OK:
-			return {"ok": false, "reason": "Boutique non enregistrée (%s)." % error_string(error)}
+		if persist:
+			var error := PlayerData.commit_inventory(next)
+			if error != OK:
+				return {"ok": false, "reason": "Boutique non enregistrée (%s)." % error_string(error)}
 	var offers: Array = (next.shop_state.get("offers", []) as Array).duplicate(true)
 	var purchased: Dictionary = (next.shop_state.get("purchased_offer_ids", {}) as Dictionary).duplicate()
 	for offer in offers:
@@ -76,9 +81,8 @@ func refresh(now_unix: int = 0) -> Dictionary:
 	var result_offers := offers.duplicate(true)
 	for offer in result_offers:
 		offer["purchased"] = false
-	var duration := maxi(1, int(config.get("shop_rotation_seconds", 10800)))
 	return {"ok": true, "reason": "", "rotation_id": rotation_id,
-		"ends_at": (rotation_id + 1) * duration, "refresh_revision": refresh_revision,
+		"ends_at": current["ends_at"], "refresh_revision": refresh_revision,
 		"refresh_price": price, "offers": result_offers}
 
 
@@ -153,7 +157,7 @@ func _generate_offers(rotation_id: int, refresh_revision: int,
 		if price <= 0:
 			price = quantity * int(rule.get("souls_per_copy", 0))
 		result.append({
-			"id": "%d:%d:%d" % [rotation_id, refresh_revision, index],
+			"id": "%d:%d:%d:%d" % [rotation_id, access.revision, refresh_revision, index],
 			"lineage_id": lineage_id,
 			"monster_id": first_form,
 			"rarity": rarity,
@@ -228,6 +232,10 @@ static func _all_unused(pools: Dictionary, used: Dictionary) -> Array:
 
 static func _reset_price(config: Dictionary) -> int:
 	return maxi(1, int(config.get("shop_reset_candles", 1)))
+
+
+static func _rotation_duration(config: Dictionary) -> int:
+	return maxi(1, int(config.get("shop_rotation_seconds", 10800)))
 
 
 static func _fail(reason: String) -> Dictionary:

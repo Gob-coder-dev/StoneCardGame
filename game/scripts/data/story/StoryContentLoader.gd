@@ -9,6 +9,7 @@ extends RefCounted
 const DIALOGUES_PATH := "res://data/story/dialogues.json"
 const TUTORIALS_PATH := "res://data/story/tutorials.json"
 const SPEAKER_POLICIES: Array[String] = ["opponent_god", "theme_god", "player_god"]
+const MatchSetup := preload("res://scripts/domain/campaign/CampaignMatchSetup.gd")
 
 
 static func read(dialogues_path: String = DIALOGUES_PATH,
@@ -213,6 +214,7 @@ static func _validate_tutorials(data: Dictionary, dialogues: Dictionary,
 
 static func _validate_match(chapter_id: String, setup: Dictionary,
 		problems: Array[String]) -> void:
+	var before := problems.size()
 	if setup.has("board_size"):
 		var board_size := int(setup.get("board_size", 0))
 		if board_size < GameState.MIN_BOARD_SIZE or board_size > GameState.MAX_BOARD_SIZE:
@@ -234,7 +236,7 @@ static func _validate_match(chapter_id: String, setup: Dictionary,
 				deck_key, chapter_id])
 			continue
 		for value in (deck as Array):
-			if not value is String or str(value).strip_edges() == "":
+			if not value is String or not MonsterLoader.has_monster(value):
 				problems.append("Tutoriels : carte invalide dans '%s' du chapitre '%s'." % [
 					deck_key, chapter_id])
 	if setup.has("first_player"):
@@ -242,8 +244,8 @@ static func _validate_match(chapter_id: String, setup: Dictionary,
 		if first != 0 and first != 1 and first != 2:
 			problems.append("Tutoriels : premier joueur invalide dans '%s'." % chapter_id)
 	for monster in setup.get("initial_monsters", []):
-		if not monster is Dictionary or str(monster.get("monster_id", "")) == "":
-			problems.append("Tutoriels : monstre initiale invalide dans '%s'." % chapter_id)
+		if not monster is Dictionary or not MonsterLoader.has_monster(str(monster.get("monster_id", ""))):
+			problems.append("Tutoriels : monstre initial invalide dans '%s'." % chapter_id)
 			continue
 		if int(monster.get("row", -1)) < 0 or int(monster.get("col", -1)) < 0:
 			problems.append("Tutoriels : position initiale invalide dans '%s'." % chapter_id)
@@ -262,3 +264,11 @@ static func _validate_match(chapter_id: String, setup: Dictionary,
 			continue
 		if int(move.get("row", -1)) < 0 or int(move.get("col", -1)) < 0:
 			problems.append("Tutoriels : position du bot invalide dans '%s'." % chapter_id)
+	# Une configuration partielle hérite du niveau et est contrôlée au lancement.
+	if problems.size() == before and setup.has_all(["board_size", "blocked_cells",
+			"first_player", "player_hand_size", "opponent_hand_size"]):
+		var problem := MatchSetup.problem(MatchSetup.resolve({}, setup),
+			MatchSetup.available_cards(setup, "player_deck", DeckRules.DECK_SIZE),
+			MatchSetup.available_cards(setup, "opponent_deck", DeckRules.DECK_SIZE))
+		if problem != "":
+			problems.append("Tutoriels — rencontre '%s' — %s" % [chapter_id, problem])

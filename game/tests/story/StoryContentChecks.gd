@@ -371,6 +371,11 @@ func _test_broken_content_is_reported() -> void:
 	LoaderModel._validate_tutorials(broken_block, {"sequences": {}}, block_problems)
 	_check(block_problems.size() == 1,
 		"validation : une case bloquée incomplète est refusée")
+	var short_hands: Array[String] = []
+	LoaderModel._validate_match("short_hands", {"board_size": 3, "blocked_cells": [],
+		"player_hand_size": 1, "opponent_hand_size": 1, "first_player": 1}, short_hands)
+	_check(short_hands.size() == 1 and short_hands[0].contains("Mains insuffisantes"),
+		"validation : un tutoriel aux mains trop courtes est refusé avant son lancement")
 	var rule_ok := TriggerRulesModel.EVENTS.has("level_start") \
 		and TriggerRulesModel.WAIT_EVENTS.has("prebattle_ready")
 	_check(rule_ok, "déclencheurs : le lancement et le tirage restent des événements connus")

@@ -277,20 +277,22 @@ construction hors exécution : elle fournit les 87 decks fixes uniques validés
 dans la campagne.
 
 Le profil local est enregistré dans `user://savegame.json`. Le format actuel est
-la version 12 : il conserve le pseudo, les statistiques, les trois decks de chaque
+la version 13. Il conserve le pseudo, les statistiques, les trois decks de chaque
 dieu et de la banque neutre, le deck sélectionné, les âmes, les bougies, les
 dieux débloqués, les copies et niveaux de cartes, les achats de la rotation et
 les récompenses divines conservées au coffre, les quêtes et les curseurs des
-transactions de campagne. Un profil d'une version future est protégé contre
-l'écrasement. Les
-écritures passent par un fichier temporaire pour éviter un profil partiellement
-écrit.
+transactions de campagne. Après sauvegarde des gains d’une manche, le profil
+conserve son reçu jusqu’à l’enregistrement de la progression et des quêtes.
+Le jeu reprend une écriture en attente au démarrage. Un profil d’une version
+future est protégé contre l’écrasement. Les écritures passent par un fichier
+temporaire pour éviter un profil partiellement écrit.
 
 La progression de la campagne est séparée dans
 `user://campaign_progress.json` : version de campagne, nœuds terminés, tentatives,
 dernier nœud consulté, états de tutoriel et archive de migration. Elle ne
 contient jamais les arêtes, les decks générés ni une route choisie. Les deux
-fichiers utilisent le même remplacement atomique. Les anciennes victoires par
+fichiers utilisent le même remplacement atomique. Une progression d’une version
+future est protégée contre l’écrasement. Les anciennes victoires par
 dieu ne sont converties que lorsqu'elles désignent un seul nœud sans ambiguïté ;
 les autres sont archivées. Les totaux historiques sont conservés et attribués
 à la campagne ; les anciens compteurs par adversaire sont retirés du profil

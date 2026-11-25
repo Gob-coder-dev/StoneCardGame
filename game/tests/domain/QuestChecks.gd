@@ -9,6 +9,8 @@ const StateModel := preload("res://scripts/domain/quests/QuestState.gd")
 const Rules := preload("res://scripts/domain/quests/QuestRules.gd")
 const DrawModel := preload("res://scripts/domain/quests/QuestDraw.gd")
 const Service := preload("res://scripts/application/quests/QuestService.gd")
+const QuestScene := preload("res://scenes/menus/Quests.tscn")
+const BottomNavScene := preload("res://scenes/ui/BottomNav.tscn")
 const InventoryModel := preload("res://scripts/domain/economy/PlayerInventory.gd")
 const Fixture := preload("res://tests/support/PlayerProfileFixture.gd")
 const CampaignContent := preload("res://scripts/data/campaign/CampaignContentLoader.gd")
@@ -34,6 +36,7 @@ func run() -> void:
 	_test_rewards()
 	_test_sorting()
 	_test_card_tiers()
+	await _test_daily_screen_clock()
 	CampaignContext.reset_for_tests()
 	for suffix in ["", ".tmp", ".unreadable"]:
 		if FileAccess.file_exists(CAMPAIGN_PATH + suffix):
@@ -318,3 +321,57 @@ func _daily_ids(view: Dictionary) -> Array:
 	for entry in view.get("daily", []):
 		ids.append(str(entry.get("id", "")))
 	return ids
+
+
+func _test_daily_screen_clock() -> void:
+	PlayerData._apply_profile(Codec.starter_profile())
+	var today := Calendar.today()
+	var state := StateModel.new()
+	state.reset_daily(today, ["daily_pvp"], "daily_pvp")
+	state.bump("pvp_matches", 1, true)
+	PlayerData.commit_economy(InventoryModel.from_dict(PlayerData.inventory_dict()), null, state.to_dict())
+	var date := {"day_index": today, "seconds_to_reset": 1}
+	var page := QuestScene.instantiate()
+	page._read_calendar = func(): return date
+	var nav := page.get_node("BottomNav") as BottomNav
+	nav._read_day = func(): return int(date["day_index"])
+	add_child(page)
+	await get_tree().process_frame
+	var badge := nav.get_node("Tabs/QuestsButton/Badge/Count") as Label
+	var initial_count := int(badge.text)
+	_check(page.daily_list.get_child_count() == 1 and initial_count > 0,
+		"quêtes : la page ouverte affiche le tirage et la pastille de la veille")
+	date["day_index"] = today + 1
+	date["seconds_to_reset"] = Calendar.SECONDS_PER_DAY
+	page.get_node("DayCheck").timeout.emit()
+	_check(int(PlayerData.quests_dict()["day_index"]) == today + 1
+		and page.daily_list.get_child_count() == Config.daily_count()
+		and int(badge.text) == initial_count - 1
+		and page._daily_subtitle.text.ends_with("24 h 00"),
+		"quêtes : à minuit le timer rafraîchit ensemble liste, pastille et compte à rebours")
+	date["day_index"] = today + 3
+	page.notification(NOTIFICATION_APPLICATION_RESUMED)
+	_check(int(PlayerData.quests_dict()["day_index"]) == today + 3
+		and page._displayed_day == today + 3 and nav._badge_day == today + 3,
+		"quêtes : le retour au premier plan rattrape plusieurs jours de veille")
+	date["day_index"] = today + 2
+	page.get_node("DayCheck").timeout.emit()
+	_check(page._displayed_day == today + 3 and page._daily_subtitle.text.ends_with("48 h 00"),
+		"quêtes : le compte à rebours respecte le dernier jour si l’horloge recule")
+	page.queue_free()
+	await get_tree().process_frame
+	_test_badge_outside_quests(today + 4)
+
+
+func _test_badge_outside_quests(day: int) -> void:
+	var clock := {"today": day - 1}
+	var menu := Control.new()
+	var nav := BottomNavScene.instantiate() as BottomNav
+	nav._read_day = func(): return clock["today"]
+	menu.add_child(nav)
+	add_child(menu)
+	clock["today"] = day
+	nav.notification(NOTIFICATION_APPLICATION_FOCUS_IN)
+	_check(nav._badge_day == day and int(PlayerData.quests_dict()["day_index"]) == day,
+		"quêtes : la pastille se met à jour au retour sur un autre menu")
+	menu.queue_free()

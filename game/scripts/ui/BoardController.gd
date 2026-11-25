@@ -16,7 +16,6 @@ const CampaignDriver := preload("res://scripts/ui/match/CampaignMatchDriver.gd")
 const LanDriver := preload("res://scripts/ui/match/LanMatchDriver.gd")
 const Routes := preload("res://scripts/ui/GameRoutes.gd")
 const BattleLayoutModel := preload("res://scripts/ui/BattleLayout.gd")
-const QuestModel := preload("res://scripts/application/quests/QuestService.gd")
 const PowerHelpPopover := preload("res://scripts/ui/PowerHelpPopover.gd")
 
 @onready var root: VBoxContainer = $Root
@@ -141,6 +140,10 @@ func _on_start_failed() -> void:
 		PvpMatchContext.clear()
 		LanSession.leave_with_notice("Impossible de démarrer la partie PVP.")
 		call_deferred("_return_to_pvp_lobby")
+	elif BattleContext.has_campaign_node() and _driver.start_error != "":
+		StoryService.stop_tutorial()
+		CampaignContext.match_start_error = _driver.start_error
+		Routes.go.call_deferred(get_tree(), Routes.CAMPAIGN_MAP)
 	else:
 		call_deferred("_return_to_cards")
 
@@ -360,7 +363,6 @@ func _on_match_finished(winner: int, score_one: int, score_two: int) -> void:
 	PvpMatchContext.record_result(winner, score_one, score_two)
 	PvpMatchContext.prepare_profile_result(_local_captures, _best_move_captures, turn_manager.get_state().board_size)
 	PvpMatchContext.persist_profile_result()
-	_record_pvp_quest(score_one, score_two)
 	await get_tree().create_timer(1.5).timeout
 	## Le verdict, le score et la revanche appartiennent à l'écran de résultat :
 	## la session réseau reste ouverte jusqu'à ce qu'il soit quitté.
@@ -375,17 +377,6 @@ func _on_match_aborted(message: String) -> void:
 	PvpMatchContext.clear()
 	LanSession.leave_with_notice(message)
 	Routes.go(get_tree(), Routes.PVP_LOBBY)
-
-
-## Les quêtes PVP sont comptées ici, une seule fois par appareil, quand la partie
-## se termine normalement (un abandon passe par `_on_match_aborted`).
-func _record_pvp_quest(score_one: int, score_two: int) -> void:
-	var local_one := PvpMatchContext.local_side == GameState.PLAYER_ONE
-	QuestModel.new().record_event("pvp_result", {
-		"score_local": score_one if local_one else score_two,
-		"score_opponent": score_two if local_one else score_one,
-		"board_size": GameState.DEFAULT_BOARD_SIZE,
-	})
 
 
 func _exit_tree() -> void:

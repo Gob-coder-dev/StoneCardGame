@@ -144,6 +144,9 @@ func _deck_is_ready(mode: String = "") -> bool:
 
 
 func _on_mode_pressed(mode: String) -> void:
+	if mode == "campaign" and CampaignContext.get_service().load_error() == ERR_UNAVAILABLE:
+		Routes.go_with_override(get_tree(), scene_changer, Routes.CAMPAIGN_MAP)
+		return
 	if not _deck_is_ready(mode):
 		_show_deck_warning()
 		return

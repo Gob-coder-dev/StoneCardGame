@@ -34,6 +34,7 @@ func run() -> void:
 	_test_ritual_compensation_and_unique()
 	await _test_shop_screen()
 	await _test_shop_refresh_ui()
+	await _test_shop_preview()
 	await _test_ritual_opening_screen()
 	await _test_result_reward_ui()
 	fixture.restore()
@@ -396,6 +397,14 @@ func _test_shop_refresh() -> void:
 	var candles_before := PlayerData.candles()
 	var offer: Dictionary = offers_before[0]
 	var bought := service.buy_offer(str(offer.get("id", "")), now + 1)
+	var inventory_before_rewind := PlayerData.inventory_dict()
+	var rewound := service.state(now - 10800)
+	var duplicate := service.buy_offer(str(offer["id"]), now - 10800)
+	var caught_up := service.state(now + 2)
+	_check(rewound["rotation_id"] == first["rotation_id"] and rewound["ends_at"] == ends_at
+		and bool(rewound["offers"][0]["purchased"]) and bool(caught_up["offers"][0]["purchased"])
+		and not bool(duplicate["ok"]) and PlayerData.inventory_dict() == inventory_before_rewind,
+		"boutique : reculer puis revenir à la fenêtre courante conserve le tirage et l’achat")
 	var refreshed := service.refresh(now + 2)
 	var offers_after: Array = refreshed.get("offers", [])
 	var first_after_id := ""
@@ -448,6 +457,32 @@ func _test_shop_refresh() -> void:
 	_check((empty_state.get("offers", []) as Array).is_empty()
 		and not bool(empty_refresh.get("ok", true)) and PlayerData.candles() == 5,
 		"boutique : un tirage vide n'est jamais facturé")
+
+
+func _test_shop_preview() -> void:
+	PlayerData._apply_profile(Codec.starter_profile())
+	PlayerData.save()
+	var before := PlayerData.get_profile()
+	var file_before := FileAccess.get_file_as_bytes(PlayerData._save_path)
+	var page := (load("res://scenes/menus/ShopScreen.tscn") as PackedScene).instantiate()
+	page.set_meta("menu_preview", true)
+	page.process_mode = Node.PROCESS_MODE_DISABLED
+	page.hide()
+	add_child(page)
+	await get_tree().process_frame
+	_check(page.offers_grid.get_child_count() == 4 and PlayerData.get_profile() == before
+		and FileAccess.get_file_as_bytes(PlayerData._save_path) == file_before,
+		"boutique : un aperçu caché affiche les offres sans écrire le profil")
+	page.remove_meta("menu_preview")
+	page.process_mode = Node.PROCESS_MODE_INHERIT
+	page.show()
+	page.menu_page_activated()
+	_check(page.offers_grid.get_child_count() == 4
+		and not PlayerData.inventory_dict()["shop_state"].is_empty()
+		and FileAccess.get_file_as_bytes(PlayerData._save_path) != file_before,
+		"boutique : seule l’activation confirme le tirage affiché")
+	page.queue_free()
+	await get_tree().process_frame
 
 
 func _test_ritual_config_and_transactions() -> void:

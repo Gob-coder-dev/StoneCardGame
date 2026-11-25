@@ -183,6 +183,7 @@ func _finish(commit: bool) -> void:
 		get_tree().scene_changed.emit()
 		if next.has_method("menu_page_activated"):
 			next.menu_page_activated()
+		next.get_node("BottomNav").menu_page_activated()
 	else:
 		_restore_current()
 		_clear()

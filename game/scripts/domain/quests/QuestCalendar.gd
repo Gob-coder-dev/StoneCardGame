@@ -28,6 +28,13 @@ static func today() -> int:
 	return day_index(int(Time.get_unix_time_from_system()), system_bias_minutes())
 
 
+## Les deux valeurs proviennent du même instant, même à la frontière de minuit.
+static func current() -> Dictionary:
+	var now := int(Time.get_unix_time_from_system())
+	var bias := system_bias_minutes()
+	return {"day_index": day_index(now, bias), "seconds_to_reset": seconds_until_next_day(now, bias)}
+
+
 static func seconds_to_reset() -> int:
 	return seconds_until_next_day(int(Time.get_unix_time_from_system()),
 		system_bias_minutes())

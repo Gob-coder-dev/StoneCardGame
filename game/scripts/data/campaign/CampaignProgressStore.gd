@@ -7,6 +7,7 @@ class_name CampaignProgressStore
 extends RefCounted
 
 const Storage := preload("res://scripts/data/PlayerSaveStorage.gd")
+const Json := preload("res://scripts/data/JsonFile.gd")
 const ProgressModel := preload("res://scripts/domain/campaign/CampaignProgress.gd")
 const DEFAULT_PATH := "user://campaign_progress.json"
 
@@ -34,7 +35,21 @@ func load_progress() -> CampaignProgress:
 	return ProgressModel.from_dict(load_raw())
 
 
+func preview_progress() -> CampaignProgress:
+	var raw: Variant = Json.read(_path)
+	if not raw is Dictionary:
+		raw = Json.read(_path + Storage.TEMP_SUFFIX)
+	return ProgressModel.from_dict(raw) if raw is Dictionary else null
+
+
+func schema_error() -> Error:
+	return OK if ProgressModel.supports(load_raw()) else ERR_UNAVAILABLE
+
+
 func save(progress: CampaignProgress) -> Error:
 	if progress == null:
 		return ERR_INVALID_PARAMETER
+	var error := schema_error()
+	if error != OK:
+		return error
 	return Storage.write(_path, progress.to_dict())

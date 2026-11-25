@@ -12,9 +12,11 @@ const AccessService := preload("res://scripts/application/progression/Progressio
 const AccessRules := preload("res://scripts/domain/economy/RitualAccessRules.gd")
 
 
-func state() -> Dictionary:
+func state(access: ContentAccessState = null) -> Dictionary:
 	var inventory := InventoryModel.from_dict(PlayerData.inventory_dict())
-	var access := AccessService.new().state()
+	var access_service := AccessService.new()
+	if access == null:
+		access = access_service.state()
 	var entries: Array = []
 	for definition in Rituals.definitions():
 		var copy: Dictionary = AccessRules.resolve(definition, access)
@@ -24,8 +26,8 @@ func state() -> Dictionary:
 		var gate_available := bool(copy.get("available", false))
 		copy["available"] = gate_available and has_candidate
 		if not gate_available:
-			copy["unavailable_reason"] = AccessService.new().locked_reason(
-				str(copy.get("required_gate", "")))
+			copy["unavailable_reason"] = access_service.locked_reason(
+				str(copy.get("required_gate", "")), access)
 		else:
 			copy["unavailable_reason"] = "" if has_candidate \
 				else "Toutes les cartes accessibles ont déjà été obtenues."

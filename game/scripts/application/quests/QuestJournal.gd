@@ -20,10 +20,11 @@ func _init(day_override: int = -1) -> void:
 	_day_override = day_override
 
 
-func sync(state: StateModel) -> bool:
+func sync(state: StateModel, day: int = -1) -> bool:
 	_metrics = MetricsModel.new()
 	var changed := _sync_gate_activations(state)
-	return _ensure_daily(state) or changed
+	var today := day if day >= 0 else (_day_override if _day_override >= 0 else Calendar.today())
+	return _ensure_daily(state, today) or changed
 
 
 func stage_event(state: StateModel, inventory: PlayerInventory, kind: String,
@@ -41,8 +42,7 @@ func stage_event(state: StateModel, inventory: PlayerInventory, kind: String,
 	return changed or not increments.is_empty()
 
 
-func _ensure_daily(state: StateModel) -> bool:
-	var today := _day_override if _day_override >= 0 else Calendar.today()
+func _ensure_daily(state: StateModel, today: int) -> bool:
 	# Un recul de l'horloge ne réouvre pas une journée déjà récompensée.
 	if state.day_index >= today:
 		return false

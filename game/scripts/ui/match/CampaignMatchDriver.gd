@@ -7,6 +7,7 @@ class_name CampaignMatchDriver
 extends MatchDriver
 
 const GodIdentityModel := preload("res://scripts/data/GodIdentity.gd")
+const MatchSetup := preload("res://scripts/domain/campaign/CampaignMatchSetup.gd")
 
 var _ai_runner: AITurnRunner = null
 var _npc_data: Dictionary = {}
@@ -21,14 +22,22 @@ func start() -> bool:
 		return false
 	var story := StoryService.match_setup_for_node(BattleContext.campaign_node_id)
 	var encounter_setup: Dictionary = _npc_data.get("match_setup", {})
-	var board_size := clampi(int(story.get("board_size", encounter_setup.get("board_size",
-		GameState.DEFAULT_BOARD_SIZE))), GameState.MIN_BOARD_SIZE, GameState.MAX_BOARD_SIZE)
+	var match_setup := MatchSetup.resolve(encounter_setup, story, BattleContext.forced_first_player)
 	var player_god_id := BattleContext.effective_player_god_id()
 	var opponent_god_id := BattleContext.effective_opponent_god_id()
-	var hands := _prepare_hands(story, encounter_setup, player_god_id)
+	var hands := _prepare_hands(story, match_setup, player_god_id,
+		bool(encounter_setup.get("allow_incomplete_player_deck", false)))
 	if hands.is_empty():
+		start_error = "Les decks disponibles ne permettent pas de préparer les mains de cette rencontre."
 		return false
-	var board := _prepare_board(story, encounter_setup, board_size)
+	var player_hand := MonsterLoader.build_hand(hands["player"])
+	var opponent_hand := MonsterLoader.build_hand(hands["opponent"])
+	start_error = MatchSetup.problem(match_setup, player_hand.size(), opponent_hand.size())
+	if start_error != "":
+		return false
+	var board_size := int(match_setup["board_size"])
+	var blocked: Array = BoardSetupGenerator.generate(board_size) \
+		if match_setup["random_blocked_cells"] else match_setup["blocked_cells"]
 	local_side = GameState.PLAYER_ONE
 	records_campaign_stats = true
 	local_name = PlayerData.player_name
@@ -39,25 +48,22 @@ func start() -> bool:
 	_ai_runner = AITurnRunner.new()
 	add_child(_ai_runner)
 	_ai_runner.setup(_create_ai(story), turn_manager)
-	turn_manager.start_game(MonsterLoader.build_hand(hands["player"]),
-		MonsterLoader.build_hand(hands["opponent"]), board["blocked"],
-		BattleContext.selected_npc_id, board["first_player"], player_god_id,
-		opponent_god_id, 0, board_size, board["initial_monsters"])
+	turn_manager.start_game(player_hand, opponent_hand, blocked,
+		BattleContext.selected_npc_id, match_setup["first_player"], player_god_id,
+		opponent_god_id, 0, board_size, match_setup["initial_monsters"])
 	return true
 
 
 ## Les scénarios peuvent fournir des mains courtes ; les rencontres ordinaires
 ## conservent la validation complète du deck et les tailles déclarées.
-func _prepare_hands(story: Dictionary, encounter_setup: Dictionary, player_god_id: String) -> Dictionary:
+func _prepare_hands(story: Dictionary, match_setup: Dictionary, player_god_id: String,
+		allow_incomplete: bool) -> Dictionary:
 	var story_match := not story.is_empty()
 	var deck: Array = BattleContext.effective_player_deck()
 	if story_match and story.get("player_deck") is Array:
 		deck = (story.get("player_deck") as Array).duplicate()
-	var player_hand_size := clampi(int(story.get("player_hand_size",
-		encounter_setup.get("player_hand_size", DeckRules.DECK_SIZE))), 1, DeckRules.DECK_SIZE)
-	var opponent_hand_size := clampi(int(story.get("opponent_hand_size",
-		encounter_setup.get("opponent_hand_size", DeckRules.DECK_SIZE))), 1, DeckRules.DECK_SIZE)
-	var allow_incomplete := bool(encounter_setup.get("allow_incomplete_player_deck", false))
+	var player_hand_size := clampi(int(match_setup["player_hand_size"]), 1, DeckRules.DECK_SIZE)
+	var opponent_hand_size := clampi(int(match_setup["opponent_hand_size"]), 1, DeckRules.DECK_SIZE)
 	if story_match:
 		player_hand_size = mini(player_hand_size, deck.size())
 		if player_hand_size <= 0:
@@ -77,24 +83,6 @@ func _prepare_hands(story: Dictionary, encounter_setup: Dictionary, player_god_i
 		return {}
 	opponent_deck = opponent_deck.slice(0, opponent_hand_size)
 	return {"player": deck, "opponent": opponent_deck}
-
-
-func _prepare_board(story: Dictionary, encounter_setup: Dictionary, board_size: int) -> Dictionary:
-	var story_match := not story.is_empty()
-	var blocked: Array = (encounter_setup.get("blocked_cells", []) as Array).duplicate(true)
-	if story_match and story.get("blocked_cells") is Array:
-		blocked = (story.get("blocked_cells") as Array).duplicate(true)
-	elif not story_match and bool(encounter_setup.get("random_blocked_cells", true)):
-		blocked = BoardSetupGenerator.generate(board_size)
-	var first_player := BattleContext.forced_first_player
-	if story_match:
-		var scripted_first := int(story.get("first_player", 0))
-		if scripted_first == GameState.PLAYER_HUMAN or scripted_first == GameState.PLAYER_AI:
-			first_player = scripted_first
-	var initial_monsters: Array = []
-	if story_match and story.get("initial_monsters") is Array:
-		initial_monsters = (story.get("initial_monsters") as Array).duplicate(true)
-	return {"blocked": blocked, "first_player": first_player, "initial_monsters": initial_monsters}
 
 
 func _create_ai(story: Dictionary) -> AIPlayer:

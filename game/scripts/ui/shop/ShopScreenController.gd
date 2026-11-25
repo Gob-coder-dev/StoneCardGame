@@ -5,6 +5,7 @@ extends Control
 const Shop := preload("res://scripts/application/economy/ShopService.gd")
 const Economy := preload("res://scripts/application/economy/EconomyService.gd")
 const Rituals := preload("res://scripts/application/economy/RitualService.gd")
+const AccessService := preload("res://scripts/application/progression/ProgressionAccessService.gd")
 const RitualOffer := preload("res://scripts/ui/shop/RitualOfferCard.gd")
 const GodOffer := preload("res://scripts/ui/shop/GodOfferCard.gd")
 const Routes := preload("res://scripts/ui/GameRoutes.gd")
@@ -18,6 +19,7 @@ const GodIdentityModel := preload("res://scripts/data/GodIdentity.gd")
 @onready var soul_balance: SoulBalance = $Content/Header/CurrencyBalances/SoulBalance
 @onready var candle_balance: CandleBalance = $Content/Header/CurrencyBalances/CandleBalance
 @onready var rotation_label: Label = $Content/Scroll/Page/RotationRow/Rotation
+@onready var scroll: ScrollContainer = $Content/Scroll
 @onready var refresh_button: ShopRefreshButton = $Content/Scroll/Page/RotationRow/RefreshButton
 @onready var offers_grid: GridContainer = $Content/Scroll/Page/Offers
 @onready var rituals_grid: GridContainer = $Content/Scroll/Page/Rituals
@@ -30,7 +32,6 @@ var _shop := Shop.new()
 var _economy := Economy.new()
 var _rituals := Rituals.new()
 var _ends_at := 0
-var _rotation_id := -1
 var _purchase_in_progress := false
 var _refresh_in_progress := false
 var _refresh_price := 0
@@ -52,7 +53,9 @@ func _ready() -> void:
 
 
 func menu_page_activated() -> void:
-	_on_tick()
+	var offset := scroll.scroll_vertical
+	_refresh()
+	scroll.set_deferred("scroll_vertical", offset)
 
 
 func _apply_columns() -> void:
@@ -73,23 +76,26 @@ func _notification(what: int) -> void:
 		MenuNavigation.cancel_for_back()
 
 
-func _refresh() -> void:
+func _refresh(now_unix: int = 0) -> void:
+	if now_unix <= 0:
+		now_unix = int(Time.get_unix_time_from_system())
 	_clear(offers_grid)
 	_clear(rituals_grid)
 	_clear(gods_grid)
-	var state := _shop.state()
+	var preview: bool = get_meta("menu_preview", false)
+	var access := AccessService.new().state(preview)
+	var state := _shop.state(now_unix, not preview, access)
 	if not bool(state.get("ok", false)):
 		_show_status(str(state.get("reason", "Boutique indisponible.")), true)
 		refresh_button.setup(0, false, "Boutique indisponible.")
-		_update_countdown()
+		rotation_label.text = ""
 		return
-	_rotation_id = int(state["rotation_id"])
 	_ends_at = int(state["ends_at"])
 	soul_balance.refresh()
 	candle_balance.refresh()
 	for offer in state.get("offers", []):
 		offers_grid.add_child(_offer_panel(offer))
-	var ritual_state := _rituals.state()
+	var ritual_state := _rituals.state(access)
 	if not bool(ritual_state.get("ok", false)):
 		_show_status("La configuration des Rituels est invalide.", true)
 	for definition in ritual_state.get("rituals", []):
@@ -100,7 +106,7 @@ func _refresh() -> void:
 	for god in MonsterLoader.get_all_gods():
 		gods_grid.add_child(_god_panel(god))
 	_update_refresh_button(state)
-	_update_countdown()
+	_update_countdown(now_unix)
 
 
 func _update_refresh_button(state: Dictionary) -> void:
@@ -273,16 +279,17 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _on_tick() -> void:
-	var duration := int(EconomyConfig.get_config().get("shop_rotation_seconds", 10800))
-	var current_rotation := floori(Time.get_unix_time_from_system() / duration)
-	if current_rotation != _rotation_id:
-		_refresh()
+	if get_meta("menu_preview", false):
+		return
+	var now := int(Time.get_unix_time_from_system())
+	if now >= _ends_at:
+		_refresh(now)
 	else:
-		_update_countdown()
+		_update_countdown(now)
 
 
-func _update_countdown() -> void:
-	var remaining := maxi(0, _ends_at - int(Time.get_unix_time_from_system()))
+func _update_countdown(now_unix: int) -> void:
+	var remaining := maxi(0, _ends_at - now_unix)
 	rotation_label.text = "NOUVELLES CARTES DANS %02d:%02d:%02d" % [
 		floori(float(remaining) / 3600.0), floori(float(remaining % 3600) / 60.0), remaining % 60]
 

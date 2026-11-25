@@ -235,7 +235,7 @@ renomme : une coupure ne laisse jamais un profil à moitié écrit. Un fichier
 illisible est renommé `savegame.json.unreadable` au lieu d'être écrasé, et un
 remplacement interrompu est récupéré au chargement suivant.
 
-Le format version 12 contient `decks_by_god` (trois tableaux d'identifiants de formes par dieu),
+Le format version 13 contient `decks_by_god` (trois tableaux d'identifiants de formes par dieu),
 `selected_deck_by_god` (indices de 0 à 2), `player_god_id`, `player_name` et
 `stats`, ainsi que `inventory` (âmes, bougies, dieux débloqués, copies, niveaux,
 achats de boutique, récompenses divines en attente et curseurs de transaction),
@@ -255,18 +255,20 @@ Les écrans ne publient plus d'événement d'achat séparé. `CardRewardGrant`
 centralise les copies, le coffre et la compensation des cartes au niveau maximal ;
 la campagne choisit explicitement de conserver les copies plutôt que de compenser.
 
-`CampaignResultPersistence` reçoit un résultat immuable. Il mémorise les étapes
-réussies (statistiques, récompense, progression, quêtes) lors d'un réessai dans
-la session. L'identité première victoire/replay et le numéro de tentative ne
-sont pas recalculés après une écriture partielle. La clé des quêtes inclut la
-manche ; un FT2 compte donc chacune de ses captures et sa victoire finale.
-Ces étapes ne constituent pas une transaction disque commune aux deux fichiers.
+`CampaignResultPersistence` enregistre les statistiques, les gains et le reçu
+`pending_campaign_result` dans la même écriture de profil. Le reçu contient
+l’identifiant de campagne, de niveau, de tentative et de manche, ainsi que les
+gains déjà versés. Il permet à `CampaignContext` de reprendre la progression et
+les quêtes après un redémarrage. Le jeu efface le reçu une fois ces opérations
+confirmées. La clé de manche protège les quêtes lors d’un réessai. Un FT2 compte
+donc chacune de ses captures et sa victoire finale.
 
 `user://campaign_progress.json` est indépendant du profil. Il contient
 `campaign_version`, `completed_node_ids`, `attempts_by_node`,
 `last_selected_node_id`, `tutorial_states` et la trace `legacy`, mais jamais les
 arêtes, decks générés ou loadouts de manche. `CampaignProgressStore` écrit par
-le même remplacement atomique que le profil. `CampaignSaveMigration` ne convertit
+le même remplacement atomique que le profil et bloque l’écriture d’un schéma
+de progression plus récent. `CampaignSaveMigration` ne convertit
 une ancienne victoire `per_npc` que si un seul nœud Classique fixe la revendique ;
 les cas ambigus restent dans `legacy.archived_stats`. La migration est idempotente
 grâce à `legacy_version`, et un échec d'écriture ne publie pas la progression en
@@ -281,10 +283,10 @@ autoritaire du dieu et du deck affichés en combat. Les snapshots du salon sont
 conservés séparément pendant toute la connexion et sont les seules données
 autorisées à reconstruire le salon. Le retour détruit les loadouts générés ; une
 partie Classique suivante retrouve donc les profils d'origine. À la fin du
-combat, le contexte construit un résultat du point de vue local et enregistre
-les statistiques PVP. L'écran de résultat réessaie en cas d'échec disque. La
-clé du match évite les doublons et aucun résultat PVP n'entre dans les compteurs
-de campagne.
+combat, le contexte construit un résultat du point de vue local et transmet
+les statistiques PVP et les compteurs de quête à une unique écriture de profil.
+L’écran de résultat réessaie en cas d’échec disque. La clé du match protège les
+deux enregistrements contre les doublons.
 
 `PlayerData` possède les banques et renvoie des copies via ses lectures. Les
 modifications du deck, du dieu et du numéro sélectionné sont validées et
@@ -294,10 +296,9 @@ et son dernier numéro, sans filtrer le deck précédent. Un deck incomplet est
 valide pour la sauvegarde, mais pas pour le combat. `MainMenu` et
 `BoardController` lisent `get_active_deck()` ; le moteur reçoit uniquement la
 composition sélectionnée et ne connaît pas les emplacements sauvegardés.
-Le résultat d'une campagne suit la même garantie : `BattleContext` prépare les
-valeurs puis ne marque la progression comme enregistrée qu'après le succès de
-`PlayerData.record_game()`. En cas d'erreur disque, le résultat affiche la cause,
-propose un nouvel essai et n'ouvre pas prématurément le niveau suivant.
+`BattleContext` prépare les valeurs d’une manche et délègue leur écriture à
+`CampaignResultPersistence`. En cas d’erreur, l’écran propose un réessai. Après
+confirmation, il rafraîchit les récompenses, les déblocages et les actions.
 
 `get_monster()` renvoie une copie modifiable. Les questions répétées pendant les
 simulations (`has_monster`, `has_effect`, `monster_cost`) lisent l'index du catalogue
@@ -348,7 +349,7 @@ actifs sont acceptés par le catalogue et les sauvegardes. Les champs historique
 `catalogue_ref` et `kind` ont été retirés : ils étaient redondants et aucun
 système de jeu ne les lisait.
 
-La version 11 conserve les banques de decks, les quêtes et un registre compact
+Le profil conserve les banques de decks, les quêtes et un registre compact
 des transactions de campagne. Un curseur ordonné par niveau remplace l'historique
 de chaque replay et manche ; les récompenses uniques gardent leur clé permanente.
 Cette compaction suppose le traitement séquentiel des manches et tentatives.

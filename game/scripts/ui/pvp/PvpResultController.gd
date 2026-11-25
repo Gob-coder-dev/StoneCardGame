@@ -14,6 +14,7 @@ const PresenceModel := preload("res://scripts/network/LanPvpPresence.gd")
 const RulesModel := preload("res://scripts/domain/MatchRules.gd")
 const Routes := preload("res://scripts/ui/GameRoutes.gd")
 const Presenter := preload("res://scripts/ui/pvp/PvpResultPresenter.gd")
+const SAVE_FAILED_TEXT := "Résultat non enregistré. Réessaie avant de quitter."
 
 @onready var result_label: Label = $VBoxCenter/ResultLabel
 @onready var detail_label: Label = $VBoxCenter/DetailLabel
@@ -55,7 +56,7 @@ func _ready() -> void:
 	_action_timeout = _make_timer("SeriesActionTimeout", 30.0, _on_action_timeout)
 	var retry := Button.new()
 	retry.name = "RetryStatsSave"
-	retry.text = "Réessayer l'enregistrement des statistiques"
+	retry.text = "Réessayer l'enregistrement du résultat"
 	$VBoxCenter.add_child(retry)
 	retry.pressed.connect(_save_profile_result)
 	retry.visible = not bool(PvpMatchContext.last_result.get("profile_saved", true))
@@ -70,9 +71,9 @@ func _save_profile_result() -> void:
 	if retry != null:
 		retry.visible = error != OK
 	if error != OK:
-		status_label.text = "Statistiques non enregistrées. Réessaie avant de quitter."
-	elif status_label.text == "Statistiques non enregistrées. Réessaie avant de quitter.":
-		status_label.text = "Statistiques enregistrées."
+		status_label.text = SAVE_FAILED_TEXT
+	elif status_label.text == SAVE_FAILED_TEXT:
+		status_label.text = "Résultat enregistré."
 
 
 func _make_timer(timer_name: String, seconds: float, callback: Callable) -> Timer:

@@ -26,6 +26,8 @@ const RITUAL_ICONS := {
 @onready var status_label: Label = $Root/Status
 
 var _service := QuestServiceModel.new()
+var _read_calendar: Callable = Calendar.current
+var _displayed_day := -1
 var _daily_subtitle: Label
 var _unique_subtitle: Label
 ## Vignettes en attente de leur illustration, par chemin d'asset.
@@ -39,14 +41,15 @@ func _ready() -> void:
 	CardArtCache.texture_ready.connect(_on_card_art_ready)
 	_build()
 	var tick := Timer.new()
+	tick.name = "DayCheck"
 	tick.wait_time = 1.0
 	tick.autostart = true
-	tick.timeout.connect(_update_countdown)
+	tick.timeout.connect(_check_calendar)
 	add_child(tick)
 
 
 func menu_page_activated() -> void:
-	_update_countdown()
+	_rebuild_for_date(_read_calendar.call())
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -60,6 +63,10 @@ func _notification(what: int) -> void:
 		if MenuNavigation.cancel_for_back():
 			return
 		_close()
+	elif (what == NOTIFICATION_APPLICATION_FOCUS_IN or what == NOTIFICATION_APPLICATION_RESUMED) \
+			and is_node_ready() \
+			and not get_meta("menu_preview", false):
+		_check_calendar()
 
 
 func _close() -> void:
@@ -133,16 +140,20 @@ func _make_header(title: String, accent: Color) -> Dictionary:
 
 ## ─── Construction ────────────────────────────────────────────────────────────
 
-func _build() -> void:
+func _build(date: Dictionary = {}) -> void:
+	if date.is_empty():
+		date = _read_calendar.call()
 	_card_art.clear()
 	_clear(daily_list)
 	_clear(unique_list)
-	var view := _service.view()
+	var view := _service.view(int(date["day_index"]), not get_meta("menu_preview", false))
 	if not bool(view.get("ok", false)):
+		_displayed_day = -1
 		_daily_subtitle.text = ""
 		_unique_subtitle.text = ""
 		_show_status(str(view.get("reason", "Quêtes indisponibles.")), true)
 		return
+	_displayed_day = int(view["day_index"])
 	_show_status("")
 	var daily: Array = view.get("daily", [])
 	var unique: Array = view.get("unique", [])
@@ -155,16 +166,31 @@ func _build() -> void:
 		if bool(entry.get("finished", false)):
 			finished += 1
 	_unique_subtitle.text = "%d / %d terminées" % [finished, unique.size()]
-	_update_countdown()
+	_update_countdown(date)
 
 
-func _update_countdown() -> void:
-	if _daily_subtitle == null:
-		return
-	var seconds := Calendar.seconds_to_reset()
+func _check_calendar() -> void:
+	var date: Dictionary = _read_calendar.call()
+	if int(date["day_index"]) > _displayed_day:
+		_rebuild_for_date(date)
+	else:
+		_update_countdown(date)
+
+
+func _rebuild_for_date(date: Dictionary) -> void:
+	var offset := scroll.scroll_vertical
+	_build(date)
+	_restore_scroll.call_deferred(offset)
+
+
+func _update_countdown(date: Dictionary) -> void:
+	var days_left := maxi(0, _displayed_day - int(date["day_index"]))
+	var seconds := int(date["seconds_to_reset"]) + days_left * Calendar.SECONDS_PER_DAY
 	var hours := floori(seconds / 3600.0)
 	var minutes := floori(float(seconds % 3600) / 60.0)
-	_daily_subtitle.text = "Nouvelles quêtes dans %d h %02d" % [hours, minutes]
+	var caption := "Nouvelles quêtes dans %d h %02d" % [hours, minutes]
+	if _daily_subtitle.text != caption:
+		_daily_subtitle.text = caption
 
 
 func _quest_card(entry: Dictionary) -> PanelContainer:
@@ -408,6 +434,10 @@ func _clear(node: Node) -> void:
 ## ─── Réclamation ─────────────────────────────────────────────────────────────
 
 func _claim(quest_id: String) -> void:
+	var date: Dictionary = _read_calendar.call()
+	if int(date["day_index"]) > _displayed_day:
+		_rebuild_for_date(date)
+		return
 	var offset := scroll.scroll_vertical
 	var result := _service.claim(quest_id)
 	if not bool(result.get("ok", false)):

@@ -102,7 +102,7 @@ func _ready() -> void:
 ## lue par-dessus le résultat et ne se rejoue pas : le déclencheur est `once`.
 ## Elle attend la fin de la pause pour laisser le verdict s'afficher seul.
 func _play_story_victory() -> void:
-	if not _campaign or not BattleContext.campaign_victory_confirmed():
+	if not _campaign or not BattleContext.last_result_saved or not BattleContext.campaign_victory_confirmed():
 		return
 	await get_tree().create_timer(victory_dialogue_beat).timeout
 	## Le joueur a pu quitter le résultat pendant la pause : le dialogue ne doit
@@ -299,6 +299,7 @@ func _refresh_actions() -> void:
 	next_btn.text = "Manche suivante"
 	next_btn.visible = mid_series and BattleContext.last_result_saved
 	replay_btn.visible = not mid_series
+	replay_btn.disabled = not BattleContext.last_result_saved
 	abandon_btn.visible = mid_series
 	level_btn.visible = not mid_series
 	menu_btn.visible = not mid_series
@@ -343,12 +344,14 @@ func _on_retry_save() -> void:
 	retry_save_btn.disabled = true
 	var error := BattleContext.persist_result()
 	retry_save_btn.disabled = false
+	_refresh_reward()
 	if error == OK:
 		save_status.text = "Progression enregistrée."
 		save_status.add_theme_color_override("font_color", UITheme.COL_SUCCESS)
 		retry_save_btn.visible = false
 		_refresh_actions()
 		_refresh_next_levels()
+		_play_story_victory()
 		return
 	save_status.text = "Échec de l'enregistrement (%s). Réessayez ou vérifiez l'espace disponible." \
 		% error_string(error)

@@ -4,6 +4,7 @@ extends PanelContainer
 
 const Routes := preload("res://scripts/ui/GameRoutes.gd")
 const QuestServiceModel := preload("res://scripts/application/quests/QuestService.gd")
+const Calendar := preload("res://scripts/domain/quests/QuestCalendar.gd")
 
 enum Tab { SHOP, CARDS, PLAY, QUESTS, RULES }
 
@@ -11,6 +12,9 @@ const QUESTS_TAB := 3
 const RULES_TAB := 4
 
 @export var current_tab: Tab = Tab.PLAY
+var _read_day: Callable = Calendar.today
+var _badge_day := -1
+var _refreshing_badge := false
 
 @onready var _buttons: Array[Button] = [
 	$Tabs/ShopButton,
@@ -36,8 +40,28 @@ func _ready() -> void:
 		_apply_tab_style(_buttons[index], index == current_tab)
 	if not get_parent().get_meta("menu_preview", false):
 		register_story_anchors()
-	_refresh_badge()
+		_refresh_badge()
 	PlayerData.quests_changed.connect(_refresh_badge)
+	var timer := Timer.new()
+	timer.wait_time = 1.0
+	timer.autostart = true
+	timer.timeout.connect(_check_badge_day)
+	add_child(timer)
+
+
+func menu_page_activated() -> void:
+	_refresh_badge()
+
+
+func _notification(what: int) -> void:
+	if (what == NOTIFICATION_APPLICATION_FOCUS_IN or what == NOTIFICATION_APPLICATION_RESUMED) \
+			and is_node_ready():
+		_check_badge_day()
+
+
+func _check_badge_day() -> void:
+	if not get_parent().get_meta("menu_preview", false) and int(_read_day.call()) != _badge_day:
+		_refresh_badge()
 
 
 func register_story_anchors() -> void:
@@ -106,10 +130,18 @@ func _add_badge(button: Button) -> void:
 
 
 func _refresh_badge() -> void:
+	if _refreshing_badge or get_parent().get_meta("menu_preview", false):
+		return
 	var badge := _buttons[QUESTS_TAB].get_node_or_null("Badge") as PanelContainer
 	if badge == null:
 		return
-	var count := QuestServiceModel.new().claimable_count()
+	var day := int(_read_day.call())
+	_refreshing_badge = true
+	var view := QuestServiceModel.new().view(day)
+	_refreshing_badge = false
+	if bool(view["ok"]):
+		_badge_day = day
+	var count := int(view["claimable"])
 	badge.visible = count > 0
 	var label := badge.get_node_or_null("Count") as Label
 	if label != null:

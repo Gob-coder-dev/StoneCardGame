@@ -33,11 +33,11 @@ func _init(day_override: int = -1) -> void:
 
 
 ## Projection complète consommée par l'écran et par la pastille de navigation.
-func view() -> Dictionary:
+func view(day: int = -1, persist: bool = true) -> Dictionary:
 	_metrics = MetricsModel.new()
 	var state := StateModel.from_dict(PlayerData.quests_dict())
-	var changed := _journal.sync(state)
-	if changed:
+	var changed := _journal.sync(state, day)
+	if changed and persist:
 		var rollover_error := _commit(state)
 		if rollover_error != OK:
 			return {"ok": false, "reason": "Quêtes non enregistrées (%s)."
@@ -80,6 +80,14 @@ func record_event(kind: String, payload: Dictionary, key: String = "") -> Error:
 	if not _journal.stage_event(state, next, kind, payload, key):
 		return OK
 	return PlayerData.commit_economy(next, null, state.to_dict())
+
+
+## La preuve de la manche couvre à la fois les statistiques et ses compteurs.
+func record_pvp_result(result: Dictionary, key: String) -> Error:
+	var state := StateModel.from_dict(PlayerData.quests_dict())
+	var next := InventoryModel.from_dict(PlayerData.inventory_dict())
+	_journal.stage_event(state, next, "pvp_result", result)
+	return PlayerData.record_match_with_quests(result, key, next, state.to_dict())
 
 
 func claim(quest_id: String) -> Dictionary:

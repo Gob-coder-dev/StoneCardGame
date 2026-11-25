@@ -253,8 +253,10 @@ func start_tutorial_for_scene(scene_path: String) -> void:
 
 ## Le setup de match du tutoriel reste une donnée du chapitre. Une fois le
 ## chapitre terminé, le même niveau retrouve exactement le setup de campagne.
-func match_setup_for_node(node_id: String) -> Dictionary:
-	if not is_ready() or _tutorial == null or not _tutorial.is_running():
+func match_setup_for_node(node_id: String, include_pending: bool = false) -> Dictionary:
+	if not is_ready() or _tutorial == null:
+		return {}
+	if not _tutorial.is_running() and not (include_pending and auto_start_tutorials):
 		return {}
 	var found := _chapter_for_node(node_id)
 	if found.is_empty():

@@ -7,6 +7,7 @@ extends RefCounted
 
 const GraphModel := preload("res://scripts/domain/campaign/CampaignGraph.gd")
 const NodeModel := preload("res://scripts/domain/campaign/CampaignNode.gd")
+const MatchSetup := preload("res://scripts/domain/campaign/CampaignMatchSetup.gd")
 const CardPowerTierRulesModel := preload("res://scripts/domain/CardPowerTierRules.gd")
 const DeckRulesModel := preload("res://scripts/domain/DeckRules.gd")
 const GameModeRulesModel := preload("res://scripts/domain/GameModeRules.gd")
@@ -304,26 +305,12 @@ static func _encounter_problems(node: CampaignNode, result: Array[String]) -> vo
 
 
 static func _board_problems(node: CampaignNode, result: Array[String]) -> void:
-	var encounter := node.encounter
-	var raw_board_size := int(encounter.get("board_size", GameState.DEFAULT_BOARD_SIZE))
-	if raw_board_size < GameState.MIN_BOARD_SIZE or raw_board_size > GameState.MAX_BOARD_SIZE:
-		result.append("taille de plateau hors bornes sur '%s'." % node.id)
-	for field in ["player_hand_size", "opponent_hand_size"]:
-		var hand_size := int(encounter.get(field, DeckRulesModel.DECK_SIZE))
-		if hand_size < 1 or hand_size > DeckRulesModel.DECK_SIZE:
-			result.append("%s hors bornes sur '%s'." % [field, node.id])
-	var blocked_seen := {}
-	for raw_cell in node.fixed_blocked_cells():
-		if not raw_cell is Array or raw_cell.size() != 2:
-			result.append("case bloquée invalide sur '%s'." % node.id)
-			continue
-		var row := int(raw_cell[0])
-		var col := int(raw_cell[1])
-		var key := "%d:%d" % [row, col]
-		if row < 0 or col < 0 or row >= raw_board_size or col >= raw_board_size \
-				or blocked_seen.has(key):
-			result.append("case bloquée hors plateau ou dupliquée sur '%s'." % node.id)
-		blocked_seen[key] = true
+	var available_opponent := DeckRulesModel.DECK_SIZE
+	if node.game_mode() == GameModeRulesModel.MODE_CLASSIC and node.opponent_deck_policy() == NodeModel.DECK_FIXED:
+		available_opponent = node.fixed_deck().size()
+	var problem := MatchSetup.problem(MatchSetup.resolve(node.encounter), DeckRulesModel.DECK_SIZE, available_opponent)
+	if problem != "":
+		result.append("Rencontre '%s' — %s" % [node.id, problem])
 	if node.allows_incomplete_player_deck() and node.id != "tuto_01":
 		result.append("deck incomplet autorisé hors du premier tutoriel sur '%s'." % node.id)
 

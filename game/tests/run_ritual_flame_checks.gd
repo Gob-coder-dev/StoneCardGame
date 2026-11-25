@@ -17,4 +17,4 @@ func _run() -> void:
 	await get_tree().process_frame
 	script = null
 	print("RITUAL_FLAME_CHECKS: %d passed, %d failed" % [passed, failed])
-	get_tree().quit(0 if failed == 0 else 1)
+	Audio.quit_game(0 if failed == 0 else 1)

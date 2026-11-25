@@ -29,6 +29,8 @@ var _selected_deck_by_god: Dictionary = {}
 var _inventory: PlayerInventory = null
 ## État brut des quêtes, écrit et relu par QuestService.
 var _quests: Dictionary = {}
+## Reçu et identité de la manche dont les autres écritures restent à confirmer.
+var _pending_campaign_result: Dictionary = {}
 
 ## Dieu équipé : il détermine les familles de cartes accessibles au deck.
 var player_god_id: String = ""
@@ -57,6 +59,43 @@ func record_match(result: Dictionary, result_key: String = "") -> Error:
 	return _commit_stats(StatsRules.record_match(stats, result, result_key))
 
 
+func record_match_with_quests(result: Dictionary, key: String,
+		inventory: PlayerInventory, quests: Dictionary) -> Error:
+	if inventory == null:
+		return ERR_INVALID_PARAMETER
+	if key != "" and stats.get("recent_results", []).has(key):
+		return OK
+	return _commit_stats(StatsRules.record_match(stats, result, key), inventory, null, quests)
+
+
+func pending_campaign_result() -> Dictionary:
+	return _pending_campaign_result.duplicate(true)
+
+
+## Le résultat local, son reçu et l'inventaire associé partagent la même écriture.
+func stage_campaign_result(pending: Dictionary, inventory: PlayerInventory,
+		neutral_deck_override: Variant = null) -> Error:
+	if not _pending_campaign_result.is_empty():
+		return ERR_BUSY
+	_pending_campaign_result = pending.duplicate(true)
+	var next_stats := StatsRules.record_match(stats, pending["result"], pending["key"])
+	var error := _commit_stats(next_stats, inventory, neutral_deck_override)
+	if error != OK:
+		_pending_campaign_result = {}
+	return error
+
+
+func finish_campaign_result(key: String) -> Error:
+	if _pending_campaign_result.get("key") != key:
+		return ERR_INVALID_DATA
+	var previous := _pending_campaign_result
+	_pending_campaign_result = {}
+	var error := save()
+	if error != OK:
+		_pending_campaign_result = previous
+	return error
+
+
 ## Un abandon casse la série de victoires sans inventer une manche jouée.
 func record_forfeit(result: Dictionary = {}) -> Error:
 	# Un abandon de série n'est pas une manche supplémentaire.
@@ -74,10 +113,11 @@ func record_forfeit(result: Dictionary = {}) -> Error:
 	return _commit_stats(next)
 
 
-func _commit_stats(next: Dictionary) -> Error:
+func _commit_stats(next: Dictionary, inventory: PlayerInventory = null,
+		neutral_deck_override: Variant = null, quests: Variant = null) -> Error:
 	var previous := stats
 	stats = next
-	var error := save()
+	var error := save() if inventory == null else commit_economy(inventory, neutral_deck_override, quests)
 	if error != OK:
 		stats = previous
 	return error
@@ -110,7 +150,8 @@ func _init(save_path: String = SAVE_PATH) -> void:
 
 func get_profile() -> Dictionary:
 	return SaveCodec.encode(_decks_by_god, _selected_deck_by_god, player_god_id,
-		player_name, stats, inventory_dict(), quests_dict(), legacy_campaign_stats)
+		player_name, stats, inventory_dict(), quests_dict(), legacy_campaign_stats,
+		_pending_campaign_result)
 
 
 func save() -> Error:
@@ -140,6 +181,8 @@ func _apply_profile(profile: Dictionary) -> void:
 	_inventory = InventoryModel.from_dict(profile.get("inventory", {}))
 	_quests = profile.get("quests", {}).duplicate(true) \
 		if profile.get("quests", {}) is Dictionary else {}
+	var pending: Variant = profile.get("pending_campaign_result", {})
+	_pending_campaign_result = pending.duplicate(true) if pending is Dictionary else {}
 
 
 func _ready() -> void:

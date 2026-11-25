@@ -29,6 +29,7 @@ var local_name: String = "Joueur"
 var opponent_name: String = "Adversaire"
 var local_god: Dictionary = {}
 var opponent_god: Dictionary = {}
+var start_error: String = ""
 ## Seule la campagne enregistre des statistiques persolnelles.
 var records_campaign_stats: bool = true
 

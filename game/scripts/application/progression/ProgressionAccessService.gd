@@ -14,7 +14,9 @@ func _init(campaign_service: Variant = null) -> void:
 	_campaign_service = campaign_service
 
 
-func state() -> ContentAccessState:
+func state(preview: bool = false) -> ContentAccessState:
+	if preview and _campaign_service == null:
+		return Rules.resolve(Config.get_config(), CampaignContext.preview_completed_nodes())
 	var completed := {}
 	var service: Variant = _campaign_service
 	if service == null:
@@ -38,8 +40,12 @@ func gate_definition(gate_id: String) -> Dictionary:
 	return Rules.gate(Config.get_config(), gate_id)
 
 
-func locked_reason(gate_id: String) -> String:
-	if gate_id == "" or is_gate_unlocked(gate_id):
+func locked_reason(gate_id: String, access: ContentAccessState = null) -> String:
+	if gate_id == "":
+		return ""
+	if access == null:
+		access = state()
+	if access.has_gate(gate_id):
 		return ""
 	var definition := gate_definition(gate_id)
 	var label := str(definition.get("label", "ce contenu"))

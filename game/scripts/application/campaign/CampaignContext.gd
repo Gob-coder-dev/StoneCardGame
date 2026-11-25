@@ -5,11 +5,15 @@
 extends Node
 
 const ServiceModel := preload("res://scripts/application/campaign/CampaignService.gd")
+const ProgressStore := preload("res://scripts/data/campaign/CampaignProgressStore.gd")
 const FactoryModel := preload("res://scripts/application/campaign/CampaignEncounterFactory.gd")
+const ResultPersistence := preload("res://scripts/application/campaign/CampaignResultPersistence.gd")
+const MatchSetup := preload("res://scripts/domain/campaign/CampaignMatchSetup.gd")
 
 ## Dernier nœud à recentrer sur la carte. Il n'est pas une progression : la
 ## vérité sauvegardée reste `CampaignProgress.last_selected`.
 var focus_node_id: String = ""
+var match_start_error: String = ""
 ## Demande venue du résultat : la carte centre sur ce nœud et ouvre sa fiche,
 ## sans jamais lancer la rencontre. Consommée une seule fois.
 var _requested_node_id: String = ""
@@ -18,12 +22,34 @@ var _service: CampaignService = null
 var _test_service: CampaignService = null
 
 
+func _ready() -> void:
+	if not PlayerData.pending_campaign_result().is_empty():
+		recover_pending_result.call_deferred()
+
+
 func get_service() -> CampaignService:
 	if _test_service != null:
 		return _test_service
 	if _service == null:
 		_service = ServiceModel.create_default()
 	return _service
+
+
+## Les aperçus lisent la progression sans déclencher la migration du profil.
+func preview_completed_nodes() -> Dictionary:
+	var service := _test_service if _test_service != null else _service
+	if service != null:
+		return service.progress().completed.duplicate() if service.is_ready() else {}
+	var progress := ProgressStore.new().preview_progress()
+	return progress.completed.duplicate() if progress != null else {}
+
+
+func recover_pending_result() -> Error:
+	if PlayerData.pending_campaign_result().is_empty():
+		return OK
+	if PlayerData.profile_load_error != OK:
+		return PlayerData.profile_load_error
+	return ResultPersistence.resume_pending(get_service())
 
 
 ## Les suites d'interface injectent un service sur un fichier temporaire.
@@ -37,6 +63,7 @@ func reset_for_tests() -> void:
 	_test_service = null
 	_service = null
 	focus_node_id = ""
+	match_start_error = ""
 	_requested_node_id = ""
 
 
@@ -67,6 +94,9 @@ func enter_node(node_id: String) -> Dictionary:
 	var service := get_service()
 	if not service.is_ready():
 		return _failure(_first_problem(service))
+	var recovery_error := recover_pending_result()
+	if recovery_error != OK:
+		return _failure("Le résultat précédent reste à enregistrer (%s)." % error_string(recovery_error))
 	var node := service.node(node_id)
 	if node == null:
 		return _failure("Niveau de campagne inconnu.")
@@ -86,6 +116,9 @@ func enter_node(node_id: String) -> Dictionary:
 		PlayerData.player_god_id, player_deck, attempt)
 	if not bool(built.get("ok", false)):
 		return _failure(str(built.get("reason", "Rencontre impossible à préparer.")))
+	var setup_problem := _match_setup_problem(node, built, player_deck.size())
+	if setup_problem != "":
+		return _failure(setup_problem)
 	var prepared_session: CampaignModeSession = null
 	if node.needs_series_session():
 		var prepared := _prepare_mode_session(built)
@@ -111,6 +144,24 @@ func enter_node(node_id: String) -> Dictionary:
 		"needs_preparation": node.needs_preparation(),
 		"needs_series_session": node.needs_series_session(),
 	}
+
+
+func _match_setup_problem(node: CampaignNode, built: Dictionary, player_count: int) -> String:
+	var opponent_count := DeckRules.DECK_SIZE
+	if node.game_mode() == GameModeRules.MODE_CLASSIC:
+		opponent_count = built["opponent"]["deck"].size()
+	else:
+		player_count = DeckRules.DECK_SIZE
+	var encounter: Dictionary = built["match_setup"]
+	var problem := MatchSetup.problem(MatchSetup.resolve(encounter), player_count, opponent_count)
+	if problem != "":
+		return problem
+	var story := StoryService.match_setup_for_node(node.id, true)
+	if story.is_empty():
+		return ""
+	return MatchSetup.problem(MatchSetup.resolve(encounter, story),
+		MatchSetup.available_cards(story, "player_deck", player_count),
+		MatchSetup.available_cards(story, "opponent_deck", opponent_count))
 
 
 func _prepare_mode_session(built: Dictionary) -> Dictionary:
