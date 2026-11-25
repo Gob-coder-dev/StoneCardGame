@@ -9,6 +9,8 @@ func run() -> void:
 	_test_codec()
 	_test_banks_codec()
 	_test_storage()
+	_test_incomplete_profile()
+	_test_blocked_recovery()
 	_test_autosave()
 	_test_failed_save()
 
@@ -172,7 +174,6 @@ func _test_storage() -> void:
 		"une sauvegarde remplace la précédente sans laisser de fichier temporaire")
 
 	_write_text(TEST_PATH, "{ profil abîmé")
-	_expect_log("Profil illisible mis de côté")
 	_check(Storage.read(TEST_PATH).is_empty() and not FileAccess.file_exists(TEST_PATH)
 		and FileAccess.get_file_as_string(TEST_PATH + Storage.UNREADABLE_SUFFIX) == "{ profil abîmé",
 		"un profil illisible est mis de côté au lieu d'être écrasé")
@@ -181,6 +182,48 @@ func _test_storage() -> void:
 	_check(Storage.read(TEST_PATH) == first and FileAccess.file_exists(TEST_PATH)
 		and not FileAccess.file_exists(TEST_PATH + Storage.TEMP_SUFFIX),
 		"un remplacement interrompu récupère le nouveau profil complet")
+	_remove_test_files()
+
+
+func _test_incomplete_profile() -> void:
+	var temporary := TEST_PATH + Storage.TEMP_SUFFIX
+	var archive := TEST_PATH + Storage.UNREADABLE_SUFFIX
+	var profile := Codec.starter_profile()
+	profile["player_name"] = "Sauvé"
+	_write_text(TEST_PATH, JSON.stringify({"save_version": Codec.VERSION, "inventory": {}}))
+	_write_text(archive, "ancien fichier endommagé")
+	_write_text(temporary, JSON.stringify(profile))
+	var player := PlayerModel.new(TEST_PATH)
+	player.load_save()
+	_check(player.profile_load_error == OK and player.player_name == "Sauvé"
+		and "récupéré" in player.profile_load_notice and not FileAccess.file_exists(temporary),
+		"un JSON incomplet laisse la place au profil temporaire complet")
+	_check(FileAccess.get_file_as_string(archive) == "ancien fichier endommagé"
+		and FileAccess.file_exists(archive + ".1"), "chaque original endommagé est conservé")
+	_write_text(TEST_PATH, "{}")
+	_write_text(temporary, "{}")
+	player.load_save()
+	_check("archivé" in player.profile_load_notice and player.player_name == "Joueur"
+		and FileAccess.file_exists(archive + ".2") and FileAccess.file_exists(temporary + Storage.UNREADABLE_SUFFIX),
+		"deux copies incomplètes sont archivées avant de proposer un profil neuf")
+	player.free()
+	for path in [archive + ".1", archive + ".2", temporary + Storage.UNREADABLE_SUFFIX]:
+		DirAccess.remove_absolute(path)
+	_remove_test_files()
+
+
+func _test_blocked_recovery() -> void:
+	var temporary := TEST_PATH + Storage.TEMP_SUFFIX
+	var previous := JSON.stringify(Codec.starter_profile())
+	DirAccess.make_dir_absolute(TEST_PATH)
+	_write_text(temporary, previous)
+	var player := PlayerModel.new(TEST_PATH)
+	player.load_save()
+	_check(player.profile_load_error != OK and player.save() == player.profile_load_error
+		and FileAccess.get_file_as_string(temporary) == previous,
+		"une restauration bloquée garde la copie complète et suspend les écritures")
+	player.free()
+	DirAccess.remove_absolute(TEST_PATH)
 	_remove_test_files()
 
 

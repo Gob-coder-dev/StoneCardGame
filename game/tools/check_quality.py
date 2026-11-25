@@ -123,12 +123,16 @@ def check_export(binary: str, output: Path, timeout: int) -> bool:
         return False
     with zipfile.ZipFile(archive) as package:
         names = package.namelist()
-        excluded = ("tests/", "tools/", "data/audio/sources/", "data/campaign/authoring/")
+        excluded = ("tests/", "tools/", "data/audio/sources/", "data/campaign/authoring/",
+                    "addons/rl_export/")
         unwanted = [name for name in names if name.startswith(excluded)
                     or name == "data/campaign/campaign_v1.json"]
-        clean = not unwanted and "project.binary" in names
+        identities = ("rl_rules.sha256", "lan_rules.sha256")
+        invalid = [name for name in identities if name not in names
+                   or not re.fullmatch(rb"[0-9a-f]{64}", package.read(name))]
+        clean = not unwanted and not invalid and "project.binary" in names
     print(f"{'PASS' if clean else 'FAIL'} export: {archive.stat().st_size / 1024**2:.2f} MiB, "
-          f"{len(unwanted)} excluded files found", flush=True)
+          f"{len(unwanted)} excluded files found, {len(invalid)} invalid identities", flush=True)
     return clean
 
 

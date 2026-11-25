@@ -161,6 +161,7 @@ func _detach_obsolete_wrappers(desired: Dictionary) -> Array[VBoxContainer]:
 func _make_wrapper() -> VBoxContainer:
 	var wrapper := Layout.make_card_wrapper(true, UITheme.CARD_COLLECTION)
 	var card := Layout.make_monster_card({}, MonsterCard.OWNER_NONE, UITheme.CARD_COLLECTION)
+	card.focus_mode = Control.FOCUS_ALL
 	card.card_pressed.connect(card_requested.emit.bind(wrapper, CardActionDrawer.Source.COLLECTION))
 	wrapper.add_child(card)
 	var progress := CardProgressView.new()

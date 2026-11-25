@@ -183,6 +183,15 @@ static func panel_style(bg: Color = COL_PANEL_BG, border: Color = COL_BORDER, bo
 	return sb
 
 
+static func focus_ring(radius: int) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.draw_center = false
+	style.border_color = COL_TEXT
+	style.set_border_width_all(5)
+	style.set_corner_radius_all(radius)
+	return style
+
+
 static func nav_tab_style(selected: bool, highlighted: bool = false) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
 	style.bg_color = COL_SELECTED if selected else COL_TAB_IDLE

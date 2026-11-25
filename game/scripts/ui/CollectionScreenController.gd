@@ -476,7 +476,7 @@ func _request_clear_deck() -> void:
 		return
 	_close_card_panels()
 	_close_inline_menus()
-	confirm_popup.open(CLEAR_DECK_CONFIRMATION)
+	confirm_popup.open(CLEAR_DECK_CONFIRMATION, "VIDER LE DECK", null, "ANNULER", clear_deck_button)
 
 
 func _clear_deck() -> void:
@@ -642,8 +642,9 @@ func _close_action_drawer() -> void:
 
 
 func _on_info_requested(monster_id: String) -> void:
+	var opener := _action_card
 	_close_action_drawer()
-	info_sheet.open_for(monster_id, _current_deck)
+	info_sheet.open_for(monster_id, _current_deck, opener)
 
 
 ## Le tiroir conduit vers l'aperçu grisé du prochain niveau. La transaction
@@ -654,8 +655,9 @@ func _open_upgrade_preview(lineage_id: String) -> void:
 	if next_id == "":
 		_show_error("Cette carte est déjà au niveau maximal.")
 		return
+	var opener := _action_card
 	_close_action_drawer()
-	info_sheet.open_for(next_id, _current_deck)
+	info_sheet.open_for(next_id, _current_deck, opener)
 
 
 func _on_primary_requested(monster_id: String, source: CardActionDrawer.Source) -> void:

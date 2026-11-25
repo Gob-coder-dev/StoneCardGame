@@ -314,7 +314,8 @@ func _series_active() -> bool:
 func _on_abandon() -> void:
 	if not _series_active() or abandon_popup.is_open():
 		return
-	abandon_popup.open("Voulez-vous vraiment abandonner et perdre la partie ?")
+	abandon_popup.open("Voulez-vous vraiment abandonner et perdre la partie ?",
+		"ABANDONNER", null, "ANNULER", abandon_btn)
 
 
 ## L'abandon concède la série et l'écran bascule

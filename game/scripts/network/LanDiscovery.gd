@@ -116,8 +116,7 @@ func _read_packet() -> void:
 		"name": str(payload["name"]),
 		"players": int(payload["players"]),
 		"app_version": str(payload["app_version"]),
-		"compatible": str(payload["app_version"]) == LanProtocol.app_version()
-			and str(payload["catalogue"]) == LanProtocol.catalogue_fingerprint(),
+		"compatible": LanProtocol.compatibility_problem(payload).is_empty(),
 	}
 	_entries["%s:%d" % [address, port]] = {"info": info, "seen": _clock}
 	while _entries.size() > MAX_ENTRIES:

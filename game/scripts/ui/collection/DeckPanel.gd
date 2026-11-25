@@ -32,6 +32,7 @@ func _make_deck_slot(index: int, expand: bool) -> Control:
 	if index < _current_deck.size():
 		var monster_id: String = _current_deck[index]
 		var card := Layout.make_monster_card(MonsterLoader.get_monster(monster_id), MonsterCard.OWNER_HUMAN, UITheme.CARD_DECK)
+		card.focus_mode = Control.FOCUS_ALL
 		card.set_edge_margin_ratio(UITheme.CARD_DECK_EDGE_MARGIN)
 		card.set_marker_scale(MonsterCard.BLADE_MARGIN / UITheme.CARD_DECK_EDGE_MARGIN)
 		card.card_pressed.connect(card_requested.emit.bind(wrapper, CardActionDrawer.Source.DECK))

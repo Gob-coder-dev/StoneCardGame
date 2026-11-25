@@ -76,6 +76,7 @@ var _node_id: String = ""
 var _state: int = 0
 var _replay_sequence_ids: Array[String] = []
 var _pips: Array[PanelContainer] = []
+var _focus := preload("res://scripts/ui/input/FocusScope.gd").new()
 
 
 func _ready() -> void:
@@ -109,9 +110,10 @@ func _ready() -> void:
 	technical_panel.add_theme_stylebox_override("panel", technical_style)
 
 
-func open(summary: Dictionary, state: int) -> void:
+func open(summary: Dictionary, state: int, opener: Control = null) -> void:
 	if summary.is_empty():
 		return
+	_focus.capture(self, opener)
 	_node_id = str(summary.get("id", ""))
 	_state = state
 	var accent := Color(str(summary.get("accent", UITheme.COL_NEON_PINK.to_html())))
@@ -147,18 +149,22 @@ func open(summary: Dictionary, state: int) -> void:
 	launch_button.text = "REJOUER" if state == 2 else "AFFRONTER"
 	error_label.visible = false
 	visible = true
-	launch_button.grab_focus()
+	if launch_button.disabled:
+		close_button.grab_focus()
+	else:
+		launch_button.grab_focus()
 
 
 func close() -> void:
 	if not visible:
 		return
-	# Le bouton qui a ouvert le dialogue ne doit pas recevoir le relâchement du
-	# dernier geste de lecture, sinon il peut relancer le niveau.
-	launch_button.release_focus()
-	replay_button.release_focus()
 	visible = false
+	_focus.restore()
 	closed.emit()
+
+
+func handle_navigation(event: InputEvent) -> void:
+	_focus.handle(event, [close_button, launch_button, replay_button], get_viewport())
 
 
 ## Le joueur voit toujours son dieu. En face, un dieu imposé ou miroir garde son

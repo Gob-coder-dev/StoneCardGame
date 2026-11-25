@@ -213,6 +213,8 @@ func _finish_flip(player_starts: bool) -> void:
 		if not is_inside_tree() or _leaving:
 			return
 	start_button.disabled = false
+	if get_viewport().gui_get_focus_owner() == null and not StoryService.is_playing():
+		start_button.grab_focus()
 	if _remote_ready:
 		status_label.text = "L'adversaire est prêt. Touchez COMMENCER."
 	StoryService.notify_event("prebattle_ready", {"player_starts": player_starts})

@@ -36,7 +36,10 @@ func configure(node: CampaignNode, node_state: int, accent: Color,
 	state = node_state
 	tooltip_text = "%s • %s" % [node.name if node != null else "", node.type_label()
 		if node != null else ""]
+	accessibility_name = tooltip_text
+	accessibility_description = UnlockRulesModel.state_label(state)
 	disabled = state == UnlockRulesModel.State.LOCKED
+	focus_mode = Control.FOCUS_NONE if disabled else Control.FOCUS_ALL
 	_set_pulse(state == UnlockRulesModel.State.AVAILABLE)
 	_refresh()
 
@@ -49,6 +52,7 @@ func recycle() -> void:
 	state = UnlockRulesModel.State.LOCKED
 	chosen = false
 	disabled = true
+	focus_mode = Control.FOCUS_NONE
 	tooltip_text = ""
 	_style_key = ""
 	visible = false
@@ -107,7 +111,9 @@ func _refresh() -> void:
 	add_theme_stylebox_override("pressed", pressed_style)
 	add_theme_stylebox_override("hover_pressed", pressed_style)
 	add_theme_stylebox_override("disabled", style)
-	add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	var focus_style := UITheme.focus_ring(radius)
+	focus_style.set_expand_margin_all(8)
+	add_theme_stylebox_override("focus", focus_style)
 	queue_redraw()
 
 

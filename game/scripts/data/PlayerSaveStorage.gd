@@ -9,6 +9,7 @@ const Json := preload("res://scripts/data/JsonFile.gd")
 const TEMP_SUFFIX := ".tmp"
 ## Un profil illisible est renommé avec ce suffixe au lieu d'être écrasé.
 const UNREADABLE_SUFFIX := ".unreadable"
+enum ReadState { CLEAN, RECOVERED, ARCHIVED, FAILED }
 
 
 ## Écrit data en JSON. Le profil précédent n'est remplacé qu'une fois le
@@ -31,19 +32,50 @@ static func write(path: String, data: Dictionary) -> Error:
 ## côté pour que la prochaine sauvegarde ne le détruise pas. Si un remplacement
 ## a été interrompu, le nouveau profil resté à côté est récupéré.
 static func read(path: String) -> Dictionary:
+	return read_result(path)["data"]
+
+
+static func read_result(path: String, validator: Callable = Callable()) -> Dictionary:
+	var archived := false
 	if FileAccess.file_exists(path):
-		var profile = Json.read(path)
-		if profile is Dictionary:
-			return profile
-		var aside := path + UNREADABLE_SUFFIX
-		if FileAccess.file_exists(aside):
-			DirAccess.remove_absolute(aside)
-		DirAccess.rename_absolute(path, aside)
-		push_warning("Profil illisible mis de côté : %s" % aside)
+		var profile: Variant = read_valid(path, validator)
+		if profile != null:
+			return _result(ReadState.CLEAN, profile)
+		var error := _archive(path)
+		if error != OK:
+			return _result(ReadState.FAILED, {}, error)
+		archived = true
 	var temp_path := path + TEMP_SUFFIX
 	if FileAccess.file_exists(temp_path):
-		var recovered = Json.read(temp_path)
-		if recovered is Dictionary:
-			DirAccess.rename_absolute(temp_path, path)
-			return recovered
-	return {}
+		var recovered: Variant = read_valid(temp_path, validator)
+		if recovered != null:
+			var restore_error := DirAccess.rename_absolute(temp_path, path)
+			if restore_error != OK:
+				return _result(ReadState.FAILED, recovered, restore_error)
+			return _result(ReadState.RECOVERED, recovered)
+		var error := _archive(temp_path)
+		if error != OK:
+			return _result(ReadState.FAILED, {}, error)
+		archived = true
+	return _result(ReadState.ARCHIVED if archived else ReadState.CLEAN, {})
+
+
+static func read_valid(path: String, validator: Callable) -> Variant:
+	var data: Variant = Json.read(path)
+	if data is Dictionary and (not validator.is_valid() or validator.call(data)):
+		return data
+	return null
+
+
+static func _archive(path: String) -> Error:
+	var base := path + UNREADABLE_SUFFIX
+	var target := base
+	var index := 1
+	while FileAccess.file_exists(target) or DirAccess.dir_exists_absolute(target):
+		target = "%s.%d" % [base, index]
+		index += 1
+	return DirAccess.rename_absolute(path, target)
+
+
+static func _result(state: ReadState, data: Dictionary, error: Error = OK) -> Dictionary:
+	return {"state": state, "data": data, "error": error}

@@ -4,6 +4,7 @@ extends "res://tests/support/CombatTestSuite.gd"
 const GraphModel := preload("res://scripts/domain/campaign/CampaignGraph.gd")
 const ProgressModel := preload("res://scripts/domain/campaign/CampaignProgress.gd")
 const StoreModel := preload("res://scripts/data/campaign/CampaignProgressStore.gd")
+const Storage := preload("res://scripts/data/PlayerSaveStorage.gd")
 const MigrationModel := preload("res://scripts/application/campaign/CampaignSaveMigration.gd")
 const ServiceModel := preload("res://scripts/application/campaign/CampaignService.gd")
 const UnlockRules := preload("res://scripts/domain/campaign/CampaignUnlockRules.gd")
@@ -14,6 +15,7 @@ const BAD_PATH := "user://campaign_missing_dir_checks/progress.json"
 func run() -> void:
 	_cleanup()
 	_test_round_trip()
+	_test_incomplete_progress()
 	_test_service_save_failure()
 	_test_migration()
 	_test_migration_is_idempotent()
@@ -65,6 +67,27 @@ func _test_round_trip() -> void:
 	copy.mark_completed("tuto_03")
 	_check(not progress.is_completed("tuto_03") and copy.is_completed("tuto_03"),
 		"progression : les copies de travail sont indépendantes")
+
+
+func _test_incomplete_progress() -> void:
+	var store := StoreModel.new(PATH)
+	var progress := ProgressModel.new()
+	progress.mark_completed("tuto_01")
+	var temporary := PATH + Storage.TEMP_SUFFIX
+	Storage.write(PATH, {"progress_version": ProgressModel.PROGRESS_VERSION})
+	Storage.write(temporary, progress.to_dict())
+	var preview := store.preview_progress()
+	_check(preview != null and preview.is_completed("tuto_01") and FileAccess.file_exists(temporary),
+		"progression : l’aperçu trouve la copie complète sans écrire sur le disque")
+	var loaded := store.load_progress()
+	_check(loaded != null and loaded.is_completed("tuto_01") and "récupérée" in store.load_notice
+		and FileAccess.file_exists(PATH + Storage.UNREADABLE_SUFFIX) and not FileAccess.file_exists(temporary),
+		"progression : le chargement restaure la copie complète et archive l’original")
+	var decoded := ProgressModel.from_dict({"campaign_version": {}, "attempts_by_node": {"tuto_01": []},
+		"map_navigation": {"version": {}, "offset_y": {}, "scroll_vertical": []}})
+	_check(decoded.campaign_version == 0 and decoded.attempts_for("tuto_01") == 0
+		and decoded.map_navigation["offset_y"] == 0.0, "progression : conversions sûres sur des types inattendus")
+	_cleanup()
 
 
 func _test_service_save_failure() -> void:

@@ -663,13 +663,13 @@ func _test_shop_screen() -> void:
 		"boutique : les prix restent visibles sur les fiches et les statistiques détaillées restent dans la modale")
 	page._show_ritual_offer("small")
 	_check(page.purchase_modal.visible and page.purchase_modal._kind == "ritual"
-		and page.purchase_modal.confirm_button.text == "15"
+		and page.purchase_modal.confirm_button.text == "ACHETER • 15"
 		and "Invocations" in page.purchase_modal.details_label.text,
 		"boutique : toucher un Rituel ouvre sa confirmation sans acheter")
 	page.purchase_modal.close()
 	page._show_god_offer("veskar")
 	_check(page.purchase_modal.visible and page.purchase_modal._kind == "god"
-		and page.purchase_modal.confirm_button.text == UIFormat.integer(page._economy.god_price()),
+		and page.purchase_modal.confirm_button.text == "ACHETER • %s" % UIFormat.integer(page._economy.god_price()),
 		"boutique : toucher un dieu ouvre son portrait et sa confirmation")
 	page.queue_free()
 	await get_tree().process_frame
@@ -691,7 +691,7 @@ func _test_shop_refresh_ui() -> void:
 	_check(page.refresh_popup.is_open() and page.refresh_popup.visible
 		and message == "Voulez-vous vraiment réinitialiser la boutique ?"
 		and page.refresh_popup.no_btn.text == "ANNULER"
-		and page.refresh_popup.yes_btn.text == "×1"
+		and page.refresh_popup.yes_btn.text == "ACTUALISER • 1"
 		and page.refresh_popup.yes_btn.icon != null,
 		"boutique : le bouton ouvre la confirmation avec ANNULER et une bougie")
 	page.refresh_popup.no_btn.pressed.emit()

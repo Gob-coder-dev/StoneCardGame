@@ -7,24 +7,29 @@ signal confirmed(kind: String, offer_id: String)
 
 const SoulIcon := preload("res://assets/ui/soul-placeholder.svg")
 const CandleIcon := preload("res://assets/ui/candle-placeholder.svg")
+const FocusScope := preload("res://scripts/ui/input/FocusScope.gd")
 
 @onready var title_label: Label = $Center/Panel/Content/Title
 @onready var visual: CenterContainer = $Center/Panel/Content/Visual
 @onready var details_label: Label = $Center/Panel/Content/Details
+@onready var error_label: Label = $Center/Panel/Content/Error
 @onready var cancel_button: Button = $Center/Panel/Content/Actions/Cancel
 @onready var confirm_button: Button = $Center/Panel/Content/Actions/Confirm
 
 var _kind := ""
 var _offer_id := ""
+var _focus := FocusScope.new()
 
 
 func _ready() -> void:
 	Audio.set_button_sfx(confirm_button, AudioCatalog.SFX_PURCHASE)
 	cancel_button.pressed.connect(close)
 	confirm_button.pressed.connect(_confirm)
+	error_label.add_theme_color_override("font_color", UITheme.COL_ERROR)
 
 
-func show_ritual(definition: Dictionary, candle_balance: int) -> void:
+func show_ritual(definition: Dictionary, candle_balance: int, opener: Control = null) -> void:
+	_focus.capture(self, opener)
 	_reset_visual()
 	_kind = "ritual"
 	_offer_id = str(definition.get("id", ""))
@@ -41,7 +46,8 @@ func show_ritual(definition: Dictionary, candle_balance: int) -> void:
 	cancel_button.grab_focus()
 
 
-func show_god(god: Dictionary, price: int, soul_balance: int, gifts: Array) -> void:
+func show_god(god: Dictionary, price: int, soul_balance: int, gifts: Array, opener: Control = null) -> void:
+	_focus.capture(self, opener)
 	_reset_visual()
 	_kind = "god"
 	_offer_id = str(god.get("id", ""))
@@ -81,8 +87,14 @@ func set_busy(busy: bool) -> void:
 	confirm_button.disabled = busy or bool(confirm_button.get_meta("unavailable", false))
 
 
+func show_error(message: String) -> void:
+	error_label.text = message
+	error_label.visible = not message.is_empty()
+
+
 func close() -> void:
 	visible = false
+	_focus.restore()
 	_kind = ""
 	_offer_id = ""
 	_reset_visual()
@@ -94,19 +106,29 @@ func _confirm() -> void:
 	confirmed.emit(_kind, _offer_id)
 
 
+func _input(event: InputEvent) -> void:
+	if is_visible_in_tree():
+		_focus.handle(event, [cancel_button, confirm_button], get_viewport())
+
+
 func _setup_confirm(price: int, icon: Texture2D, available: bool,
 		balance: int, unavailable_reason: String) -> void:
-	confirm_button.text = UIFormat.integer(price)
+	show_error("")
+	confirm_button.text = "ACHETER • %s" % UIFormat.integer(price)
+	confirm_button.accessibility_name = "Acheter pour %s %s" % [UIFormat.integer(price),
+		"bougies" if icon == CandleIcon else "âmes"]
 	confirm_button.icon = icon
 	confirm_button.add_theme_constant_override("icon_max_width", 48)
 	confirm_button.alignment = HORIZONTAL_ALIGNMENT_CENTER
 	var unavailable := not available or balance < price
 	confirm_button.set_meta("unavailable", unavailable)
-	confirm_button.disabled = unavailable
+	set_busy(false)
 	confirm_button.tooltip_text = unavailable_reason if not available \
 		else ("Solde insuffisant" if balance < price else "Confirmer l'achat")
-	if not available and unavailable_reason != "":
-		details_label.text += "\n\n%s" % unavailable_reason
+	if not available:
+		show_error(unavailable_reason)
+	elif balance < price:
+		show_error("Solde insuffisant.")
 
 
 func _ritual_details(definition: Dictionary) -> String:
@@ -135,8 +157,7 @@ func _groups_text(groups: Array) -> String:
 
 
 func _rarity_name(rarity: String, count: int) -> String:
-	var names := {"common": "commune", "rare": "rare", "epic": "épique", "legendary": "légendaire"}
-	var value := str(names.get(rarity, rarity))
+	var value := UIFormat.rarity_label(rarity).to_lower()
 	return value + ("s" if count > 1 else "")
 
 

@@ -15,6 +15,7 @@ func setup(value: Dictionary) -> void:
 	custom_minimum_size = Vector2(0, 510)
 	size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	text = ""
+	accessibility_name = str(value.get("name", "Rituel"))
 	var blood := Color(str(value.get("blood_color", "#a62f35")))
 	add_theme_stylebox_override("normal", UITheme.panel_style(
 		UITheme.COL_PANEL_BG, blood, 3, 18))

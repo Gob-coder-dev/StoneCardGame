@@ -28,11 +28,20 @@ static func supports(source: Dictionary) -> bool:
 	return Integer.read(source.get("progress_version", 0)) <= PROGRESS_VERSION
 
 
+static func is_complete(source: Dictionary) -> bool:
+	if not supports(source):
+		return true
+	return source.get("completed_node_ids") is Array \
+		and source.get("attempts_by_node") is Dictionary \
+		and source.get("last_selected_node_id") is String \
+		and Integer.read(source.get("campaign_version"), -1, -1) >= 0
+
+
 static func from_dict(source: Dictionary) -> CampaignProgress:
 	if not supports(source):
 		return null
 	var progress := CampaignProgress.new()
-	progress.campaign_version = int(source.get("campaign_version", 0))
+	progress.campaign_version = Integer.read(source.get("campaign_version"))
 	var raw_completed: Variant = source.get("completed_node_ids", [])
 	if raw_completed is Array:
 		for value in raw_completed:
@@ -42,7 +51,7 @@ static func from_dict(source: Dictionary) -> CampaignProgress:
 	var raw_attempts: Variant = source.get("attempts_by_node", {})
 	if raw_attempts is Dictionary:
 		for key in raw_attempts:
-			progress.attempts[str(key)] = maxi(0, int(raw_attempts[key]))
+			progress.attempts[str(key)] = Integer.read(raw_attempts[key])
 	progress.last_selected = str(source.get("last_selected_node_id", ""))
 	var raw_tutorials: Variant = source.get("tutorial_states", {})
 	if raw_tutorials is Dictionary:
@@ -55,16 +64,19 @@ static func from_dict(source: Dictionary) -> CampaignProgress:
 		# JSON relit les nombres en float : normaliser les champs de navigation
 		# garde une sérialisation stable entre mémoire et disque.
 		var navigation: Dictionary = (raw_navigation as Dictionary).duplicate(true)
-		navigation["version"] = maxi(1, int(navigation.get("version", 1)))
+		navigation["version"] = Integer.read(navigation.get("version"), 1, 1)
 		navigation["anchor_node_id"] = str(navigation.get("anchor_node_id", ""))
-		navigation["offset_y"] = float(navigation.get("offset_y", 0.0))
-		navigation["scroll_vertical"] = maxf(0.0,
-			float(navigation.get("scroll_vertical", 0.0)))
+		navigation["offset_y"] = _finite_coordinate(navigation.get("offset_y"))
+		navigation["scroll_vertical"] = maxf(0.0, _finite_coordinate(navigation.get("scroll_vertical")))
 		progress.map_navigation = navigation
 	var raw_migration: Variant = source.get("legacy", {})
 	if raw_migration is Dictionary:
 		progress.migration = (raw_migration as Dictionary).duplicate(true)
 	return progress
+
+
+static func _finite_coordinate(value: Variant) -> float:
+	return float(value) if (value is float or value is int) and is_finite(float(value)) else 0.0
 
 
 func to_dict() -> Dictionary:
@@ -159,7 +171,7 @@ func set_map_navigation(value: Dictionary) -> void:
 
 
 func migration_version() -> int:
-	return int(migration.get("legacy_version", 0))
+	return Integer.read(migration.get("legacy_version"))
 
 
 func set_migration_version(version: int) -> void:

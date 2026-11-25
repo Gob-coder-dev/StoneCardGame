@@ -67,6 +67,7 @@ func _resize_pool(target: int, card_size: int) -> void:
 		wrapper.custom_minimum_size = Vector2(0, card_size)
 		wrapper.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		var card := MonsterCard.new()
+		card.focus_mode = Control.FOCUS_ALL
 		card.card_pressed.connect(_on_card_pressed)
 		wrapper.add_child(card)
 		add_child(wrapper)

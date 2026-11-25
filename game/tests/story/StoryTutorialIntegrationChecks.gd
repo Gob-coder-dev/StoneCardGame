@@ -197,7 +197,11 @@ func _test_board_guidance(service: CampaignService) -> void:
 		and state.get_cell(0, 1)["owner"] == GameState.PLAYER_NONE,
 		"guidage : le plateau du tutoriel démarre entièrement vide")
 	if card_ready:
-		board._on_card_selected("gueule_de_travers_n1")
+		var card := StoryService.get_anchor("board.hand.card.gueule_de_travers_n1")
+		await get_tree().process_frame
+		_check(get_viewport().gui_get_focus_owner() == card,
+			"guidage : la carte désignée reçoit le focus")
+		_validate_with_key()
 		var place_step := await _wait_until(func() -> bool:
 			return StoryLayer._dialogue.visible and StoryService._tutorial._current_step.get("id", "") == "place_first", 180)
 		if place_step:
@@ -209,7 +213,10 @@ func _test_board_guidance(service: CampaignService) -> void:
 			and cell != null and cell.mouse_filter == Control.MOUSE_FILTER_STOP,
 			"guidage : la case (0,0) est la seule cible de pose")
 		if placement_ready:
-			board._on_cell_pressed(0, 0)
+			await get_tree().process_frame
+			_check(get_viewport().gui_get_focus_owner() == cell,
+				"guidage : la case désignée reçoit le focus")
+			_validate_with_key()
 	var placed := await _wait_until(func() -> bool:
 		return state.get_cell(0, 0)["owner"] == GameState.PLAYER_HUMAN, 120)
 	_check(placed and state.get_cell(0, 1)["owner"] == GameState.PLAYER_NONE,
@@ -225,6 +232,15 @@ func _test_board_guidance(service: CampaignService) -> void:
 	BattleContext.selected_opponent = saved_opponent
 	BattleContext.forced_first_player = saved_first
 	BattleContext.campaign_service = saved_service
+
+
+func _validate_with_key() -> void:
+	var event := InputEventKey.new()
+	event.keycode = KEY_SPACE
+	event.pressed = true
+	get_viewport().push_input(event)
+	event.pressed = false
+	get_viewport().push_input(event)
 
 
 func _test_collection_swap() -> void:

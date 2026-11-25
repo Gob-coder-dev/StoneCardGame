@@ -75,6 +75,7 @@ func register_story_anchors() -> void:
 func _add_tab_content(button: Button, index: int) -> void:
 	var caption := button.text
 	button.text = ""
+	button.accessibility_name = caption
 	button.tooltip_text = caption
 	var content := VBoxContainer.new()
 	content.name = "Content"

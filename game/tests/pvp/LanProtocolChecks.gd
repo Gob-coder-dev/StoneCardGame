@@ -52,6 +52,8 @@ func _test_identity() -> void:
 	var fingerprint := LanProtocol.catalogue_fingerprint()
 	_check(fingerprint.length() == LanProtocol.FINGERPRINT_LENGTH,
 		"l'empreinte du catalogue est un SHA-256 complet")
+	_check(LanProtocol.rules_fingerprint().length() == LanProtocol.FINGERPRINT_LENGTH,
+		"l'empreinte des règles est un SHA-256 complet")
 	_check(LanProtocol.app_version() == str(ProjectSettings.get_setting("application/config/version")),
 		"le protocole annonce la version réelle de l'application")
 	_check(LanProtocol.compatibility_problem(LanProtocol.identity_fields()) == "",
@@ -64,6 +66,10 @@ func _test_identity() -> void:
 	wrong_catalogue["catalogue"] = "0".repeat(LanProtocol.FINGERPRINT_LENGTH)
 	_check(LanProtocol.compatibility_problem(wrong_catalogue) != "",
 		"un catalogue différent est refusé")
+	var wrong_rules := LanProtocol.identity_fields()
+	wrong_rules["rules"] = "0".repeat(LanProtocol.FINGERPRINT_LENGTH)
+	_check(LanProtocol.compatibility_problem(wrong_rules) == "Règles de combat incompatibles.",
+		"des règles différentes sont refusées à version et catalogue identiques")
 	var wrong_protocol := LanProtocol.identity_fields()
 	wrong_protocol["protocol_version"] = LanProtocol.VERSION + 1
 	_check(LanProtocol.compatibility_problem(wrong_protocol) != "",
@@ -74,6 +80,10 @@ func _test_hello() -> void:
 	var hello := _hello()
 	_check(LanProtocol.validate(LanProtocol.KIND_HELLO, hello)["ok"],
 		"une poignée de main complète est acceptée")
+	var incomplete := hello.duplicate()
+	incomplete.erase("rules")
+	_check(not LanProtocol.validate(LanProtocol.KIND_HELLO, incomplete)["ok"],
+		"la poignée de main exige l’empreinte des règles")
 	var text := LanProtocol.encode(LanProtocol.KIND_HELLO, hello)
 	var decoded := LanProtocol.decode(text)
 	_check(text != "" and decoded["ok"] and decoded["kind"] == LanProtocol.KIND_HELLO
@@ -230,8 +240,8 @@ func _test_series_messages() -> void:
 	bad_progress["own_deck"] = []
 	_check(not LanProtocol.validate(LanProtocol.KIND_DRAFT_PROGRESS, bad_progress)["ok"],
 		"protocole : un deck local incohérent avec l'étape est refusé")
-	_check(LanProtocol.VERSION == 5,
-		"le protocole de draft projeté par destinataire est en version 5")
+	_check(LanProtocol.VERSION == 6,
+		"la version 6 inclut l’empreinte des règles et conserve le draft par destinataire")
 	_check(LanProtocol.validate(LanProtocol.KIND_PVP_PRESENCE,
 		{"presence": LanPvpPresence.LOBBY})["ok"],
 		"protocole : une présence de salon est valide")
@@ -405,6 +415,11 @@ func _test_malformed_payloads() -> void:
 func _test_beacon() -> void:
 	var beacon := LanProtocol.make_beacon("Hote", LanProtocol.GAME_PORT, 1)
 	_check(LanProtocol.validate_beacon(beacon)["ok"], "une annonce de partie est valide")
+	var different_rules := beacon.duplicate()
+	different_rules["rules"] = "0".repeat(LanProtocol.FINGERPRINT_LENGTH)
+	_check(LanProtocol.validate_beacon(different_rules)["ok"]
+		and not LanProtocol.compatibility_problem(different_rules).is_empty(),
+		"une annonce de règles différentes est détectée comme incompatible")
 	var wrong_marker := beacon.duplicate(true)
 	wrong_marker["beacon"] = "autre_jeu"
 	_check(not LanProtocol.validate_beacon(wrong_marker)["ok"],

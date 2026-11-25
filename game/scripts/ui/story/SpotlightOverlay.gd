@@ -10,6 +10,8 @@
 class_name SpotlightOverlay
 extends Control
 
+const FocusScope := preload("res://scripts/ui/input/FocusScope.gd")
+
 signal advance_requested
 
 ## Même voile que le dialogue : le jeu reste lisible autour de la cible.
@@ -108,6 +110,22 @@ func show_target(target: Control, prompt: String, show_advance: bool = false) ->
 	_update_geometry()
 	queue_redraw()
 	move_to_front()
+	_focus_target.call_deferred()
+
+
+func _focus_target() -> void:
+	if not is_visible_in_tree():
+		return
+	var control := _advance_button if _advance_button.visible else _target
+	if FocusScope.can_focus(control):
+		control.grab_focus()
+
+
+func _input(event: InputEvent) -> void:
+	if not is_visible_in_tree() or FocusScope.navigation_step(event) == 0:
+		return
+	_focus_target()
+	get_viewport().set_input_as_handled()
 
 
 func hide_spotlight() -> void:

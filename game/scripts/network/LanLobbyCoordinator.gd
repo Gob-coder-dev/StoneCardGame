@@ -1,7 +1,7 @@
 ## LanLobbyCoordinator.gd
 ## Poignée de main et préparation du salon PVP local.
 ##
-## L'hôte valide la version, le catalogue, le pseudo, le dieu et le deck du
+## L'hôte valide la version, le catalogue, les règles, le pseudo, le dieu et le deck du
 ## client avec `DeckRules`. Il attribue les camps (hôte = PLAYER_ONE, client =
 ## PLAYER_TWO), exige PRÊT des deux côtés, puis génère la configuration
 ## autoritaire : match_id, graine, cases bloquées, premier joueur, participants.
@@ -295,8 +295,6 @@ func press_ready() -> bool:
 func client_connected() -> void:
 	if _is_host:
 		return
-	_connected = true
-	_status = STATUS_CONNECTED
 	var hello := LanProtocol.identity_fields()
 	hello.merge({
 		"name": str(_local["name"]),
@@ -355,21 +353,22 @@ func _on_message(from_peer: int, kind: String, payload: Dictionary) -> void:
 			if not _is_host:
 				_on_hello_ack(from_peer, payload)
 		LanProtocol.KIND_HELLO_REJECT:
-			_on_hello_reject(payload)
-		LanProtocol.KIND_LOBBY_STATE:
 			if not _is_host and from_peer == _host_peer:
+				_on_hello_reject(payload)
+		LanProtocol.KIND_LOBBY_STATE:
+			if not _is_host and _connected and from_peer == _host_peer:
 				_on_lobby_state(payload)
 		LanProtocol.KIND_READY:
-			if _is_host and from_peer == _client_peer:
+			if _is_host and from_peer == _accepted_peer:
 				_on_remote_ready(payload)
 		LanProtocol.KIND_MATCH_START:
-			if not _is_host and from_peer == _host_peer:
+			if not _is_host and _connected and from_peer == _host_peer:
 				_on_match_start(payload)
 		LanProtocol.KIND_RULES_UPDATE:
-			if not _is_host and from_peer == _host_peer:
+			if not _is_host and _connected and from_peer == _host_peer:
 				_on_rules_update(payload)
 		LanProtocol.KIND_RULES_LOCK:
-			if not _is_host and from_peer == _host_peer:
+			if not _is_host and _connected and from_peer == _host_peer:
 				_on_rules_lock(payload)
 		_:
 			pass
@@ -381,8 +380,6 @@ func _on_peer_joined(peer_id: int) -> void:
 	if _client_peer != 0 and peer_id != _client_peer:
 		return
 	_client_peer = peer_id
-	_connected = true
-	_status = STATUS_CONNECTED
 	_error = ""
 	_install_presence()
 	_publish()
@@ -674,6 +671,8 @@ func _on_hello_ack(from_peer: int, payload: Dictionary) -> void:
 
 
 func _on_hello_reject(payload: Dictionary) -> void:
+	_connected = false
+	_local["ready"] = false
 	_fail(str(payload.get("reason", "Connexion refusée.")))
 
 

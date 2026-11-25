@@ -5,6 +5,9 @@
 class_name DialogueOverlay
 extends Control
 
+const FocusScope := preload("res://scripts/ui/input/FocusScope.gd")
+var _focus := FocusScope.new()
+
 signal closed
 
 const Gesture := preload("res://scripts/ui/input/TapGesture.gd")
@@ -158,6 +161,7 @@ func _make_portrait_slot(right_side: bool) -> Dictionary:
 func show_session(session: StorySession) -> void:
 	if session == null:
 		return
+	_focus.capture(self)
 	_session = session
 	_lines = session.sequence.get("lines", [])
 	_characters = session.context.get("characters", {})
@@ -178,6 +182,7 @@ func show_session(session: StorySession) -> void:
 func hide_overlay() -> void:
 	visible = false
 	_typing = false
+	_focus.restore()
 
 
 func _prepare_portraits() -> void:
@@ -294,6 +299,7 @@ func _close() -> void:
 	_typing = false
 	_lines.clear()
 	_session = null
+	_focus.restore()
 	closed.emit()
 
 
@@ -308,6 +314,8 @@ func _input(event: InputEvent) -> void:
 		return
 	if event.is_action_pressed("ui_cancel") or event.is_action_pressed("ui_accept"):
 		_advance()
+		get_viewport().set_input_as_handled()
+	elif FocusScope.navigation_step(event) != 0:
 		get_viewport().set_input_as_handled()
 
 

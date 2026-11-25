@@ -70,6 +70,7 @@ func setup(price: int, available: bool, reason: String = "") -> void:
 			UIFormat.integer(safe_price), "" if safe_price == 1 else "s"]
 	else:
 		tooltip_text = reason if reason != "" else "Réinitialisation indisponible."
+	accessibility_name = tooltip_text
 
 
 static func _button_style(bg: Color, border: Color) -> StyleBoxFlat:

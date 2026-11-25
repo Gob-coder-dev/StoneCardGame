@@ -19,6 +19,7 @@ const Symbols := preload("res://scripts/ui/MonsterSymbols.gd")
 
 ## ─── Signaux ──────────────────────────────────────────────────────────────────
 signal card_pressed(monster_id: String)
+signal keyboard_activated(monster_id: String)
 
 ## ─── Propriétaires (miroir de GameState pour éviter la dépendance dure) ───────
 const OWNER_NONE: int = 0
@@ -83,10 +84,13 @@ func _init() -> void:
 	mouse_filter = Control.MOUSE_FILTER_PASS
 	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	CardArtCache.texture_ready.connect(_on_texture_ready)
+	focus_entered.connect(queue_redraw)
+	focus_exited.connect(queue_redraw)
 
 
 func setup(monster: Dictionary, monster_owner: int = OWNER_NONE, battle_monster = null) -> void:
 	_monster = monster
+	accessibility_name = str(monster.get("name", "Carte"))
 	_owner = monster_owner
 	_battle_monster = battle_monster if battle_monster is BattleMonsterModel else null
 	_drawn_monster_state = _monster_state(_battle_monster)
@@ -363,6 +367,12 @@ func _on_texture_ready(path: String, loaded: Texture2D) -> void:
 ## ─── Entrée tactile / clic ────────────────────────────────────────────────────
 
 func _gui_input(event: InputEvent) -> void:
+	if has_focus() and event.is_action_pressed("ui_accept") and not _monster.is_empty():
+		accept_event()
+		var monster_id := get_monster_id()
+		card_pressed.emit(monster_id)
+		keyboard_activated.emit(monster_id)
+		return
 	if _tap.update(event, self) == Gesture.Result.TAP:
 		card_pressed.emit(get_monster_id())
 
@@ -383,6 +393,9 @@ func _draw() -> void:
 	_draw_artwork(art_rect, square_side, layout["family_color"])
 	_draw_name_panel(art_rect, float(layout["name_height"]))
 	_draw_card_overlays(frame_rect, square_side, float(layout["border_width"]))
+	if has_focus():
+		draw_rect(frame_rect.grow(-3), UITheme.COL_BG, false, 9.0)
+		draw_rect(frame_rect.grow(-3), UITheme.COL_TEXT, false, 5.0)
 
 
 ## Dessine la matière de famille et le contour de rareté, puis retourne les

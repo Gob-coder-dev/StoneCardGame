@@ -33,6 +33,7 @@ var _ai_score: Label
 var _center: Label        ## symbole central : flèche directionnelle ou "VS"
 var _banner: Label        ## bandeau de tour sous les plaques
 var _ai_display_name: String = "Adversaire"
+var _turn_message := ""
 
 
 func _ready() -> void:
@@ -236,9 +237,22 @@ func set_active_player(player: int) -> void:
 	_center.text = "◄" if human_active else "►"
 	## Bandeau de tour : texte court centré.
 	if human_active:
-		_banner.text = "À toi de jouer"
+		_turn_message = "À toi de jouer"
 	else:
-		_banner.text = "Tour de %s" % _ai_display_name
+		_turn_message = "Tour de %s" % _ai_display_name
+	clear_move_feedback()
+
+
+func show_move_feedback(message: String) -> void:
+	_banner.text = message
+	_banner.add_theme_font_size_override("font_size", 28)
+	_banner.add_theme_color_override("font_color", UITheme.COL_ERROR)
+
+
+func clear_move_feedback() -> void:
+	_banner.text = _turn_message
+	_banner.add_theme_font_size_override("font_size", UITheme.FONT_BANNER)
+	_banner.add_theme_color_override("font_color", COL_ACTIVE)
 
 
 ## Fin de partie : plus aucun joueur n'est actif pendant le passage au résultat.
@@ -246,4 +260,5 @@ func set_game_over() -> void:
 	_human_plate.add_theme_stylebox_override("panel", _plate_style(COL_HUMAN, false))
 	_ai_plate.add_theme_stylebox_override("panel", _plate_style(COL_AI, false))
 	_center.text = "VS"
-	_banner.text = "Partie terminée"
+	_turn_message = "Partie terminée"
+	clear_move_feedback()

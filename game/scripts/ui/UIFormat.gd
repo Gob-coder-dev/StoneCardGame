@@ -20,6 +20,16 @@ static func integer(value: int) -> String:
 	return ("-" if value < 0 else "") + " ".join(groups)
 
 
+static func rarity_label(rarity: String) -> String:
+	match rarity:
+		"common": return "Commune"
+		"uncommon": return "Peu commune"
+		"rare": return "Rare"
+		"epic": return "Épique"
+		"legendary": return "Légendaire"
+	return ""
+
+
 ## Nom compact pour les zones de combat. Les anciennes sauvegardes peuvent
 ## encore contenir un libellé composé avec des tirets ; seule l'identité du
 ## combattant doit apparaître dans les plaques et messages de tour.

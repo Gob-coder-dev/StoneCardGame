@@ -3,6 +3,7 @@ extends Control
 
 const Routes := preload("res://scripts/ui/GameRoutes.gd")
 const GodIdentityModel := preload("res://scripts/data/GodIdentity.gd")
+const FocusScope := preload("res://scripts/ui/input/FocusScope.gd")
 
 ## Destination de chaque mode, après validation du deck.
 const MODE_SCENES: Dictionary = {
@@ -16,6 +17,7 @@ const DECK_WARNING: String = "VEUILLEZ COMPLÉTER VOTRE DECK"
 @onready var campaign_button: Button = $Content/Hero/Identity/ModeButtons/CampaignButton
 @onready var pvp_button: Button = $Content/Hero/Identity/ModeButtons/PvpButton
 @onready var deck_status: Label = $Content/Hero/Identity/DeckStatus
+@onready var recovery_notice: Label = $Content/Hero/Identity/RecoveryNotice
 @onready var background: MenuBackground = $Background
 @onready var portrait_area: Control = $Content/Hero/PortraitArea
 @onready var emblem: Control = $Content/Hero/PortraitArea/Emblem
@@ -40,6 +42,7 @@ const DECK_WARNING: String = "VEUILLEZ COMPLÉTER VOTRE DECK"
 ## Navigation injectable : les tests vérifient la destination réelle sans
 ## changer de scène. Vide en jeu, la scène est alors ouverte normalement.
 var scene_changer: Callable = Callable()
+var _warning_focus := FocusScope.new()
 
 
 func _ready() -> void:
@@ -111,6 +114,9 @@ func _refresh() -> void:
 	god_family.add_theme_color_override("font_color", Color(str(identity.get("color", "#e9e1d1"))))
 	god_title.add_theme_color_override("font_color", UITheme.COL_TEXT_DIM)
 	_restore_deck_status()
+	recovery_notice.text = PlayerData.profile_load_notice
+	recovery_notice.visible = not recovery_notice.text.is_empty()
+	recovery_notice.add_theme_color_override("font_color", UITheme.COL_WARNING)
 	var deck := PlayerData.get_active_deck()
 	if not get_meta("menu_preview", false):
 		CardArtCache.activate_god(PlayerData.player_god_id, 1, deck)
@@ -144,17 +150,18 @@ func _deck_is_ready(mode: String = "") -> bool:
 
 
 func _on_mode_pressed(mode: String) -> void:
-	if mode == "campaign" and CampaignContext.get_service().load_error() == ERR_UNAVAILABLE:
+	if mode == "campaign" and CampaignContext.get_service().load_error() != OK:
 		Routes.go_with_override(get_tree(), scene_changer, Routes.CAMPAIGN_MAP)
 		return
 	if not _deck_is_ready(mode):
-		_show_deck_warning()
+		_show_deck_warning(campaign_button if mode == "campaign" else pvp_button)
 		return
 	Routes.go_with_override(get_tree(), scene_changer, str(MODE_SCENES[mode]))
 
 
-func _show_deck_warning() -> void:
+func _show_deck_warning(opener: Button) -> void:
 	sound_settings.close()
+	_warning_focus.capture(deck_warning_overlay, opener)
 	var deck := PlayerData.get_active_deck()
 	deck_warning_message.text = "%s\n\nVotre deck contient %d carte%s sur %d. Complétez-le avant de lancer une campagne ou une partie PVP." % [
 		DECK_WARNING, deck.size(), "s" if deck.size() > 1 else "", DeckRules.DECK_SIZE
@@ -165,12 +172,21 @@ func _show_deck_warning() -> void:
 
 func _close_deck_warning() -> void:
 	deck_warning_overlay.visible = false
-	campaign_button.grab_focus()
+	_warning_focus.restore()
 
 
 func _open_collection() -> void:
-	deck_warning_overlay.visible = false
+	_close_deck_warning()
 	Routes.go_with_override(get_tree(), scene_changer, Routes.COLLECTION)
+
+
+func _input(event: InputEvent) -> void:
+	if deck_warning_overlay != null and deck_warning_overlay.is_visible_in_tree():
+		_warning_focus.handle(event, [complete_deck_button, close_warning_button], get_viewport())
+	elif is_visible_in_tree() and not get_meta("menu_preview", false) \
+			and get_viewport().gui_get_focus_owner() == null and FocusScope.navigation_step(event) != 0:
+		campaign_button.grab_focus()
+		get_viewport().set_input_as_handled()
 
 
 func _unhandled_input(event: InputEvent) -> void:

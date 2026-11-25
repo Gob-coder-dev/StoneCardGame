@@ -15,6 +15,21 @@ static func default_stats() -> Dictionary:
 static func supports(raw: Dictionary) -> bool:
 	return Integer.read(raw.get("save_version", 0)) <= VERSION
 
+
+static func is_complete(raw: Dictionary) -> bool:
+	if not supports(raw):
+		return true
+	if Integer.read(raw.get("save_version", 0)) == VERSION:
+		var inventory: Variant = raw.get("inventory")
+		return raw.get("decks_by_god") is Dictionary and raw.get("selected_deck_by_god") is Dictionary \
+			and raw.get("stats") is Dictionary and raw.get("quests") is Dictionary \
+			and raw.get("player_god_id") is String and raw.get("player_name") is String \
+			and inventory is Dictionary and inventory.get("cards") is Dictionary \
+			and inventory.get("unlocked_god_ids") is Array \
+			and Integer.read(inventory.get("souls"), -1, -1) >= 0 \
+			and Integer.read(inventory.get("candles"), -1, -1) >= 0
+	return raw.get("player_deck") is Array or raw.get("decks_by_god") is Dictionary
+
 static func encode(decks: Dictionary, selections: Dictionary, god: String,
 		player_name: String, stats: Dictionary, inventory: Dictionary = {},
 		quests: Dictionary = {}, legacy_campaign_stats: Dictionary = {},

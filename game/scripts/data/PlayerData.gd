@@ -141,6 +141,7 @@ const SAVE_PATH: String = "user://savegame.json"
 var _save_path: String
 ## Une sauvegarde créée par une version future reste intacte, même après un achat.
 var profile_load_error: Error = OK
+var profile_load_notice: String = ""
 
 
 ## Le chemin peut être fourni à une instance isolée pour les tests.
@@ -164,10 +165,20 @@ func save() -> Error:
 
 
 func load_save() -> void:
-	var raw := SaveStorage.read(_save_path)
-	profile_load_error = OK if SaveCodec.supports(raw) else ERR_UNAVAILABLE
-	if profile_load_error != OK:
-		push_warning("PlayerData: sauvegarde plus récente que cette version ; écriture désactivée.")
+	var result := SaveStorage.read_result(_save_path, SaveCodec.is_complete)
+	var raw: Dictionary = result["data"]
+	profile_load_error = result["error"]
+	profile_load_notice = ""
+	if not SaveCodec.supports(raw):
+		profile_load_error = ERR_UNAVAILABLE
+		profile_load_notice = "Ce profil nécessite une version plus récente de Beastpact."
+		raw = {}
+	elif profile_load_error != OK:
+		profile_load_notice = "Le profil est inaccessible. L’enregistrement est suspendu."
+	elif result["state"] == SaveStorage.ReadState.RECOVERED:
+		profile_load_notice = "Votre profil a été récupéré depuis la sauvegarde temporaire."
+	elif result["state"] == SaveStorage.ReadState.ARCHIVED:
+		profile_load_notice = "Le profil endommagé a été archivé. Un nouveau profil est ouvert."
 	_apply_profile(SaveCodec.decode(raw))
 
 

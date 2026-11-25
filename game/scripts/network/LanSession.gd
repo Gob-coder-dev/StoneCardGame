@@ -179,8 +179,15 @@ func _receive(kind: String, payload: Dictionary) -> void:
 		return
 	var check := LanProtocol.validate(kind, payload)
 	if not check["ok"]:
+		if multiplayer.is_server() and kind == LanProtocol.KIND_HELLO \
+				and LanProtocol.has_other_protocol_version(payload):
+			send_to(sender, LanProtocol.KIND_HELLO_REJECT, {"reason": LanProtocol.compatibility_problem(payload)})
+			return
 		notice.emit("Message réseau refusé : %s" % str(check["reason"]))
 		return
+	if not multiplayer.is_server() and state == State.LOBBY and kind in [LanProtocol.KIND_HELLO_ACK,
+			LanProtocol.KIND_HELLO_REJECT]:
+		_timer.stop()
 	message_received.emit(sender, kind, payload)
 
 
@@ -225,7 +232,7 @@ func _on_peer_disconnected(peer_id: int) -> void:
 func _on_connected_to_server() -> void:
 	if _peer == null:
 		return
-	_timer.stop()
+	_timer.start(CONNECT_TIMEOUT)
 	last_notice = ""
 	_set_state(State.LOBBY)
 	connected_to_host.emit()
@@ -255,7 +262,8 @@ func _on_timeout() -> void:
 			_close_peer()
 			_set_state(State.DISCONNECTED)
 		State.HOSTING, State.LOBBY:
-			last_notice = "Salon expiré : aucun adversaire."
+			last_notice = "Salon expiré : aucun adversaire." if multiplayer.is_server() else \
+				"L’hôte n’a pas confirmé la connexion. Vérifiez que vous utilisez la même version."
 			_close_peer()
 			_set_state(State.DISCONNECTED)
 		_:

@@ -13,6 +13,7 @@ func setup(god: Dictionary, owned: bool, price: int) -> void:
 	custom_minimum_size = Vector2(0, 190)
 	size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	text = ""
+	accessibility_name = str(god.get("name", god_id))
 	var accent := Color(str(god.get("color", UITheme.COL_BORDER.to_html())))
 	add_theme_stylebox_override("normal", UITheme.panel_style(
 		UITheme.COL_PANEL_BG, accent, 3, 14))

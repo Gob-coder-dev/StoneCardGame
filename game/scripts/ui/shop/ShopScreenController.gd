@@ -101,7 +101,7 @@ func _refresh(now_unix: int = 0) -> void:
 	for definition in ritual_state.get("rituals", []):
 		var card := RitualOffer.new()
 		card.setup(definition)
-		card.selection_requested.connect(_show_ritual_offer)
+		card.selection_requested.connect(_show_ritual_offer.bind(card))
 		rituals_grid.add_child(card)
 	for god in MonsterLoader.get_all_gods():
 		gods_grid.add_child(_god_panel(god))
@@ -135,7 +135,7 @@ func _offer_panel(offer: Dictionary) -> PanelContainer:
 	box.add_child(card)
 	var quantity := Label.new()
 	quantity.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	quantity.text = "%s  ×%d" % [str(offer["rarity"]).to_upper(), int(offer["quantity"])]
+	quantity.text = "%s  ×%d" % [UIFormat.rarity_label(str(offer["rarity"])).to_upper(), int(offer["quantity"])]
 	quantity.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	quantity.add_theme_font_size_override("font_size", 24)
 	box.add_child(quantity)
@@ -144,6 +144,9 @@ func _offer_panel(offer: Dictionary) -> PanelContainer:
 	button.custom_minimum_size.y = 62
 	var purchased := bool(offer.get("purchased", false))
 	button.text = "ACHETÉ" if purchased else UIFormat.integer(int(offer["price"]))
+	button.accessibility_name = "%s, acheté" % card.accessibility_name if purchased else \
+		"Acheter ×%d %s pour %s âmes" % [int(offer["quantity"]), card.accessibility_name,
+			UIFormat.integer(int(offer["price"]))]
 	button.icon = null if purchased else SOUL_ICON
 	button.add_theme_constant_override("icon_max_width", 38)
 	button.alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -160,21 +163,26 @@ func _god_panel(god: Dictionary) -> GodOfferCard:
 	var owned := PlayerData.has_unlocked_god(god_id)
 	var card := GodOffer.new()
 	card.setup(god, owned, _economy.god_price())
-	card.selection_requested.connect(_show_god_offer)
+	card.selection_requested.connect(_show_god_offer.bind(card))
 	return card
 
 
 func _buy_offer(offer_id: String) -> void:
 	var result := _shop.buy_offer(offer_id)
-	_show_status(str(result.get("reason", "Cartes ajoutées à votre collection.")),
-		not bool(result.get("ok", false)))
+	if bool(result.get("ok", false)):
+		var copies := int(result.get("copies", 0))
+		_show_status("%d carte ajoutée à votre collection." % copies if copies == 1 else
+			"%d cartes ajoutées à votre collection." % copies, false)
+	else:
+		_show_status(str(result.get("reason", "Achat impossible.")), true)
 	_refresh()
 
 
 func _buy_god(god_id: String) -> Dictionary:
 	var result := _economy.buy_god(god_id)
-	var message := str(result.get("reason", "Dieu et cartes débloqués."))
+	var message := str(result.get("reason", "Achat impossible."))
 	if bool(result.get("ok", false)):
+		message = "Dieu et cartes débloqués."
 		var released: Array = result.get("released_cards", [])
 		var released_count := 0
 		for card_reward in released:
@@ -183,8 +191,8 @@ func _buy_god(god_id: String) -> Dictionary:
 			message = "Dieu débloqué : %d récompense%s en attente récupérée%s." % [
 				released_count, "s" if released_count > 1 else "",
 				"es" if released_count > 1 else "e"]
+		_refresh()
 	_show_status(message, not bool(result.get("ok", false)))
-	_refresh()
 	return result
 
 
@@ -192,25 +200,26 @@ func _buy_ritual(ritual_id: String) -> Dictionary:
 	var result := _rituals.purchase(ritual_id)
 	if not bool(result.get("ok", false)):
 		_show_status(str(result.get("reason", "Rituel indisponible.")), true)
-	_refresh()
+	else:
+		_refresh()
 	return result
 
 
-func _show_ritual_offer(ritual_id: String) -> void:
+func _show_ritual_offer(ritual_id: String, opener: Control = null) -> void:
 	var state := _rituals.state()
 	for definition in state.get("rituals", []):
 		if str(definition.get("id", "")) == ritual_id:
-			purchase_modal.show_ritual(definition, PlayerData.candles())
+			purchase_modal.show_ritual(definition, PlayerData.candles(), opener)
 			return
 	_show_status("Ce Rituel est introuvable.", true)
 
 
-func _show_god_offer(god_id: String) -> void:
+func _show_god_offer(god_id: String, opener: Control = null) -> void:
 	var god := MonsterLoader.get_god(god_id)
 	if god.is_empty() or PlayerData.has_unlocked_god(god_id):
 		return
 	var gifts: Array = EconomyConfig.get_config().get("god_gifts", {}).get(god_id, [])
-	purchase_modal.show_god(god, _economy.god_price(), PlayerData.souls(), gifts)
+	purchase_modal.show_god(god, _economy.god_price(), PlayerData.souls(), gifts, opener)
 
 
 func _confirm_purchase(kind: String, offer_id: String) -> void:
@@ -229,8 +238,8 @@ func _confirm_purchase(kind: String, offer_id: String) -> void:
 		var ritual_result := _buy_ritual(offer_id)
 		if bool(ritual_result.get("ok", false)):
 			var opening: Dictionary = ritual_result.get("opening", {})
+			purchase_modal.close()
 			if RitualOpeningContext.begin(opening):
-				purchase_modal.close()
 				if _open_ritual() == OK:
 					return
 				# L'achat est déjà validé. Abandonner également la présentation
@@ -238,6 +247,8 @@ func _confirm_purchase(kind: String, offer_id: String) -> void:
 				# mécanisme implicite de reprise.
 				RitualOpeningContext.clear()
 			_show_status("L'ouverture visuelle du Rituel est indisponible, mais les récompenses sont acquises.", true)
+		else:
+			purchase_modal.show_error(str(ritual_result.get("reason", "Achat impossible.")))
 	purchase_modal.set_busy(false)
 	_purchase_in_progress = false
 
@@ -250,7 +261,7 @@ func _open_refresh_confirmation() -> void:
 	if refresh_button.disabled or _refresh_in_progress or _refresh_price <= 0:
 		return
 	refresh_popup.open(REFRESH_CONFIRMATION,
-		"×%s" % UIFormat.integer(_refresh_price), CANDLE_ICON, "ANNULER")
+		"ACTUALISER • %s" % UIFormat.integer(_refresh_price), CANDLE_ICON, "ANNULER", refresh_button)
 
 
 func _confirm_refresh() -> void:

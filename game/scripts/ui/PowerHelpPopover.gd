@@ -159,6 +159,11 @@ func _on_outside_input(event: InputEvent, backdrop: Control) -> void:
 
 
 func _input(event: InputEvent) -> void:
-	if is_visible_in_tree() and event.is_action_pressed("ui_cancel"):
+	if not is_visible_in_tree():
+		return
+	if event.is_action_pressed("ui_cancel"):
 		close()
+		get_viewport().set_input_as_handled()
+	elif preload("res://scripts/ui/input/FocusScope.gd").navigation_step(event) != 0:
+		_close_button.grab_focus()
 		get_viewport().set_input_as_handled()

@@ -7,6 +7,7 @@ const NumberedSelector := preload("res://scripts/ui/collection/NumberedSelector.
 const PowerHelp := preload("res://scripts/ui/PowerHelp.gd")
 const PowerHelpPopover := preload("res://scripts/ui/PowerHelpPopover.gd")
 const Symbols := preload("res://scripts/ui/MonsterSymbols.gd")
+const FocusScope := preload("res://scripts/ui/input/FocusScope.gd")
 
 @onready var title_label: Label = $InfoPanel/InfoContent/Header/Title
 @onready var summary_label: Label = $InfoPanel/InfoContent/Scroll/Page/Summary
@@ -20,6 +21,7 @@ const Symbols := preload("res://scripts/ui/MonsterSymbols.gd")
 @onready var use_button: UpgradePriceButton = $InfoPanel/InfoContent/UseButton
 @onready var error_label: Label = $InfoPanel/InfoContent/Error
 @onready var _power_help := PowerHelpPopover.new()
+@onready var _levels: HBoxContainer = $InfoPanel/InfoContent/Levels
 
 const Gesture := preload("res://scripts/ui/input/TapGesture.gd")
 var _backdrop_tap := Gesture.new()
@@ -31,6 +33,8 @@ var _deck: Array = []
 var _god_help: VBoxContainer
 var _god_label: Label
 var _power_button: Button
+var _focus := FocusScope.new()
+var _focus_controls: Array[Control] = []
 
 
 func _ready() -> void:
@@ -75,21 +79,23 @@ func _fit_card() -> void:
 		card_container.custom_minimum_size.y = side
 
 
-func open_for(monster_id: String, deck: Array = []) -> void:
+func open_for(monster_id: String, deck: Array = [], opener: Control = null) -> void:
 	if not MonsterLoader.has_monster(monster_id):
 		return
+	_focus.capture(self, opener)
 	_lineage = MonsterLoader.monster_lineage(monster_id)
 	_deck = deck.duplicate()
-	var row: HBoxContainer = $InfoPanel/InfoContent/Levels
-	for button in row.get_children():
-		row.remove_child(button)
+	for button in _levels.get_children():
+		_levels.remove_child(button)
 		button.queue_free()
-	_selector = NumberedSelector.new(row, MonsterLoader.lineage_max_level(_lineage))
+	_selector = NumberedSelector.new(_levels, MonsterLoader.lineage_max_level(_lineage))
 	_selector.value_selected.connect(_select_level)
 	_selector.show_unlocked_through(int(PlayerData.card_entry(_lineage).get("unlocked_level", 0)))
 	_refresh_form(monster_id)
 	$InfoPanel/InfoContent/Scroll.scroll_vertical = 0
 	visible = true
+	_focus_controls.assign([close_button] + _levels.get_children() + [_power_button, use_button])
+	close_button.grab_focus()
 
 
 func _select_level(level: int) -> void:
@@ -121,7 +127,7 @@ func _refresh_form(monster_id: String) -> void:
 	var god := MonsterLoader.get_god(str(monster.get("god_id", "neutral")))
 	var family := "Neutre" if god.is_empty() else str(god.get("family_name", ""))
 	summary_label.text = "%s • %s • Niv. %d • %s points" % [
-		_rarity_label(monster.get("rarity", "")), family, level,
+		UIFormat.rarity_label(monster.get("rarity", "")), family, level,
 		UIFormat.cost(MonsterLoader.monster_cost(monster_id))
 	]
 	description_label.text = monster.get("description", "")
@@ -204,24 +210,20 @@ func show_error(message: String) -> void:
 func close_sheet() -> void:
 	_power_help.close(false)
 	visible = false
+	_focus.restore()
 	_backdrop_tap.reset()
 	_shown_variant = ""
 	_deck.clear()
 
 
+func _input(event: InputEvent) -> void:
+	if is_visible_in_tree() and not _power_help.visible:
+		_focus.handle(event, _focus_controls, get_viewport())
+
+
 func _on_backdrop_input(event: InputEvent) -> void:
 	if _backdrop_tap.update(event, $Backdrop) == Gesture.Result.TAP:
 		close_sheet()
-
-
-func _rarity_label(rarity: String) -> String:
-	match rarity:
-		"common": return "Commune"
-		"uncommon": return "Peu commune"
-		"rare": return "Rare"
-		"epic": return "Épique"
-		"legendary": return "Légendaire"
-		_: return ""
 
 
 func _special_summary(monster: Dictionary) -> String:

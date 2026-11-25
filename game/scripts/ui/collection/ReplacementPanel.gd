@@ -77,6 +77,7 @@ func _rebuild() -> void:
 		wrapper.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		wrapper.add_theme_constant_override("separation", 6)
 		var card := _make_card(MonsterLoader.get_monster(old_id), MonsterCard.OWNER_HUMAN, UITheme.CARD_REPLACEMENT)
+		card.focus_mode = Control.FOCUS_ALL
 		card.card_pressed.connect(_on_target_pressed)
 		var new_cost := DeckRules.replacement_cost(_deck, old_id, _incoming_id)
 		var valid := DeckRules.can_replace(_deck, old_id, _incoming_id, PlayerData.player_god_id)

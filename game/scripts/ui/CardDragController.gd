@@ -63,6 +63,8 @@ func _input(event: InputEvent) -> void:
 			_follow()
 			var monster_id := _monster_id
 			var target := _target
+			if target == NO_CELL:
+				target = _board.nearest_cell(_ghost_center(), func(_row: int, _col: int) -> bool: return true)
 			_end()
 			if target != NO_CELL:
 				drop_requested.emit(monster_id, target.x, target.y)
@@ -92,12 +94,15 @@ func _follow() -> void:
 		return
 	var local := get_global_transform_with_canvas().affine_inverse() * _gesture.position
 	_ghost.position = local - _ghost.size * 0.5 - Vector2(0.0, _ghost.size.y * _lift)
-	var ghost_center := get_global_transform_with_canvas() * (_ghost.position + _ghost.size * 0.5)
-	var target := _board.nearest_cell(ghost_center,
+	var target := _board.nearest_cell(_ghost_center(),
 		func(row: int, col: int) -> bool: return _accepts.call(_monster_id, row, col))
 	if target != _target:
 		_target = target
 		_board.set_drop_target(_target)
+
+
+func _ghost_center() -> Vector2:
+	return get_global_transform_with_canvas() * (_ghost.position + _ghost.size * 0.5)
 
 
 func cancel() -> void:

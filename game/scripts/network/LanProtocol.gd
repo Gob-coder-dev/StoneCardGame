@@ -11,7 +11,8 @@ class_name LanProtocol
 extends RefCounted
 
 ## Version du protocole. Toute modification du format la fait changer.
-const VERSION: int = 5
+const VERSION: int = 6
+const RulesIdentity := preload("res://scripts/data/RulesIdentity.gd")
 
 ## Ports du mode local. Les deux appareils sont sur le même réseau Wi-Fi.
 const DISCOVERY_PORT: int = 45454
@@ -98,6 +99,7 @@ const KINDS: Array[String] = [
 ## les règles livrés avec l'application. Deux versions différentes ne peuvent
 ## pas se tromper mutuellement.
 static var _catalogue_fingerprint: String = ""
+static var _rules_fingerprint: String = ""
 
 
 ## ─── Identité de la version ──────────────────────────────────────────────────
@@ -120,6 +122,12 @@ static func catalogue_fingerprint() -> String:
 	return _catalogue_fingerprint
 
 
+static func rules_fingerprint() -> String:
+	if _rules_fingerprint.is_empty():
+		_rules_fingerprint = RulesIdentity.lan_checksum()
+	return _rules_fingerprint
+
+
 static func _catalogue_paths() -> Array[String]:
 	var paths: Array[String] = ["res://data/monsters/manifest.json", "res://data/gods.json"]
 	var file := FileAccess.open(paths[0], FileAccess.READ)
@@ -137,6 +145,11 @@ static func _catalogue_paths() -> Array[String]:
 	return paths
 
 
+static func has_other_protocol_version(payload: Dictionary) -> bool:
+	var version := _integer(payload.get("protocol_version"))
+	return version != INVALID_INT and version != VERSION
+
+
 ## Raison d'incompatibilité, ou chaîne vide si les versions sont compatibles.
 static func compatibility_problem(handshake: Dictionary) -> String:
 	if _integer(handshake.get("protocol_version")) != VERSION:
@@ -145,6 +158,10 @@ static func compatibility_problem(handshake: Dictionary) -> String:
 		return "Versions de l'application incompatibles."
 	if str(handshake.get("catalogue", "")) != catalogue_fingerprint():
 		return "Catalogues de cartes incompatibles."
+	if rules_fingerprint().is_empty():
+		return "L’empreinte des règles de cette version est indisponible."
+	if str(handshake.get("rules", "")) != rules_fingerprint():
+		return "Règles de combat incompatibles."
 	return ""
 
 
@@ -154,6 +171,7 @@ static func identity_fields() -> Dictionary:
 		"protocol_version": VERSION,
 		"app_version": app_version(),
 		"catalogue": catalogue_fingerprint(),
+		"rules": rules_fingerprint(),
 	}
 
 
@@ -299,7 +317,7 @@ static func validate(kind: String, payload: Dictionary) -> Dictionary:
 
 
 static func _validate_hello(payload: Dictionary) -> Dictionary:
-	if not _shape(payload, ["protocol_version", "app_version", "catalogue",
+	if not _shape(payload, ["protocol_version", "app_version", "catalogue", "rules",
 			"name", "god_id", "deck"]):
 		return _verdict(false, "Poignée de main incomplète.")
 	if _integer(payload.get("protocol_version")) == INVALID_INT:
@@ -308,6 +326,8 @@ static func _validate_hello(payload: Dictionary) -> Dictionary:
 		return _verdict(false, "Version d'application invalide.")
 	if not _fingerprint(payload.get("catalogue")):
 		return _verdict(false, "Empreinte de catalogue invalide.")
+	if not _fingerprint(payload.get("rules")):
+		return _verdict(false, "Empreinte de règles invalide.")
 	if not _player_name(payload.get("name")):
 		return _verdict(false, "Pseudo invalide.")
 	if not _god_id(payload.get("god_id")):
@@ -318,7 +338,7 @@ static func _validate_hello(payload: Dictionary) -> Dictionary:
 
 
 static func _validate_hello_ack(payload: Dictionary) -> Dictionary:
-	if not _shape(payload, ["protocol_version", "app_version", "catalogue",
+	if not _shape(payload, ["protocol_version", "app_version", "catalogue", "rules",
 			"name", "god_id", "you_are"]):
 		return _verdict(false, "Accusé de poignée de main incomplet.")
 	if _integer(payload.get("protocol_version")) == INVALID_INT:
@@ -327,6 +347,8 @@ static func _validate_hello_ack(payload: Dictionary) -> Dictionary:
 		return _verdict(false, "Version d'application invalide.")
 	if not _fingerprint(payload.get("catalogue")):
 		return _verdict(false, "Empreinte de catalogue invalide.")
+	if not _fingerprint(payload.get("rules")):
+		return _verdict(false, "Empreinte de règles invalide.")
 	if not _player_name(payload.get("name")):
 		return _verdict(false, "Pseudo invalide.")
 	if not _god_id(payload.get("god_id")):
@@ -711,22 +733,21 @@ static func _validate_series_state(payload: Dictionary) -> Dictionary:
 ## Petit beacon JSON diffusé sur le port de découverte. Il ne sert qu'à
 ## proposer une partie : aucune donnée de combat n'y figure.
 static func make_beacon(host_name: String, port: int, players: int) -> Dictionary:
-	return {
+	var payload := identity_fields()
+	payload.merge({
 		"beacon": BEACON_MARKER,
-		"protocol_version": VERSION,
-		"app_version": app_version(),
-		"catalogue": catalogue_fingerprint(),
 		"name": host_name,
 		"port": port,
 		"players": players,
-	}
+	})
+	return payload
 
 
 static func validate_beacon(payload: Variant) -> Dictionary:
 	if not payload is Dictionary:
 		return _verdict(false, "Annonce illisible.")
 	if not _shape(payload, ["beacon", "protocol_version", "app_version",
-			"catalogue", "name", "port", "players"]):
+			"catalogue", "rules", "name", "port", "players"]):
 		return _verdict(false, "Annonce incomplète.")
 	if str(payload.get("beacon", "")) != BEACON_MARKER:
 		return _verdict(false, "Annonce étrangère.")
@@ -736,6 +757,8 @@ static func validate_beacon(payload: Variant) -> Dictionary:
 		return _verdict(false, "Version d'annonce invalide.")
 	if not _fingerprint(payload.get("catalogue")):
 		return _verdict(false, "Empreinte d'annonce invalide.")
+	if not _fingerprint(payload.get("rules")):
+		return _verdict(false, "Empreinte de règles invalide.")
 	if not _player_name(payload.get("name")):
 		return _verdict(false, "Pseudo d'annonce invalide.")
 	var port := _integer(payload.get("port"))

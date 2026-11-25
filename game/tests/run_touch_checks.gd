@@ -76,6 +76,7 @@ func _run() -> void:
 	await _check_pvp_draft_touch()
 	await _check_other_menus()
 	await _check_campaign_map()
+	await _check_battle_keyboard_and_gamepad()
 	await _check_buffered_input()
 	await _check_battle_touch()
 	await _check_battle_power_help()
@@ -211,7 +212,7 @@ func _check_deck_slots() -> void:
 
 
 ## Le vidage passe par une vraie confirmation tactile : un appui hors de la
-## carte annule, NON conserve le deck et OUI libère l'emplacement affiché.
+## carte annule, et chaque action reste accessible au clavier.
 func _check_deck_clear() -> void:
 	var page := await _open_scene("res://scenes/menus/CollectionScreen.tscn")
 	var scroll: ScrollContainer = page.get_node("Content/Scroll")
@@ -219,6 +220,22 @@ func _check_deck_clear() -> void:
 	scroll.ensure_control_visible(button)
 	await _settle()
 	var deck_size: int = ProfileFixture.DECK.size()
+	button.grab_focus()
+	await _key(KEY_ENTER)
+	_check(root.gui_get_focus_owner() == page.confirm_popup.no_btn,
+		"confirmation : Entrée ouvre avec le focus sur Annuler")
+	await _key(KEY_TAB)
+	_check(root.gui_get_focus_owner() == page.confirm_popup.yes_btn,
+		"confirmation : Tab atteint la destruction")
+	await _key(KEY_TAB)
+	_check(root.gui_get_focus_owner() == page.confirm_popup.no_btn,
+		"confirmation : Tab ne traverse pas la modale")
+	await _key(KEY_TAB, true)
+	_check(root.gui_get_focus_owner() == page.confirm_popup.yes_btn,
+		"confirmation : Maj+Tab boucle dans le sens inverse")
+	await _key(KEY_ESCAPE)
+	_check(not page.confirm_popup.is_open() and root.gui_get_focus_owner() == button,
+		"confirmation : Échap rend le focus au bouton d’origine")
 	await _tap(_center(button))
 	_check(page.confirm_popup.is_open() and page.confirm_popup.visible
 		and PlayerData.get_active_deck().size() == deck_size,
@@ -717,6 +734,34 @@ func _check_battle_touch() -> void:
 	BattleContext.forced_first_player = saved_first
 
 
+func _check_battle_keyboard_and_gamepad() -> void:
+	var saved_npc: String = BattleContext.selected_npc_id
+	var saved_first: int = BattleContext.forced_first_player
+	BattleContext.select_opponent(preload("res://tests/support/OpponentFixture.gd").get_npc("disciple_muraille"))
+	var board := await _open_battle(GameState.PLAYER_HUMAN)
+	var view: BoardView = board.board_view
+	var state: GameState = board.turn_manager.get_state()
+	view.slot_at(0, 0).grab_focus()
+	await _key(KEY_SPACE)
+	_check(board.hud._banner.text == "Choisis d’abord une carte." and state.human_hand.size() == DeckRules.DECK_SIZE,
+		"combat : une pose sans sélection explique l’action attendue")
+	view.slot_at(0, 0).release_focus()
+	await _key(KEY_TAB)
+	var card: MonsterCard = board.hand_view.card_at(0)
+	_check(root.gui_get_focus_owner() == card, "combat : Tab ouvre la navigation sur la main")
+	await _key(KEY_SPACE)
+	var focused := root.gui_get_focus_owner()
+	_check(board._selected_monster_id == card.get_monster_id()
+		and focused != null and view.is_ancestor_of(focused),
+		"combat : Espace sélectionne la carte et conduit à une case jouable")
+	await _joy(JOY_BUTTON_A)
+	_check(state.human_hand.size() == DeckRules.DECK_SIZE - 1,
+		"combat : la validation à la manette pose exactement une carte")
+	await _remove(board)
+	BattleContext.selected_npc_id = saved_npc
+	BattleContext.forced_first_player = saved_first
+
+
 func _check_battle_power_help() -> void:
 	var saved_npc: String = BattleContext.selected_npc_id
 	var saved_first: int = BattleContext.forced_first_player
@@ -967,6 +1012,27 @@ func _mouse_button(position: Vector2, pressed: bool) -> void:
 	_inject(event)
 
 
+func _key(code: Key, shift: bool = false) -> void:
+	var event := InputEventKey.new()
+	event.keycode = code
+	event.shift_pressed = shift
+	event.pressed = true
+	root.push_input(event)
+	event.pressed = false
+	root.push_input(event)
+	await _settle()
+
+
+func _joy(code: JoyButton) -> void:
+	var event := InputEventJoypadButton.new()
+	event.button_index = code
+	event.pressed = true
+	root.push_input(event)
+	event.pressed = false
+	root.push_input(event)
+	await _settle()
+
+
 func _inject(event: InputEvent) -> void:
 	# L'entrée passe par Input, y compris l'émulation native et le routage GUI.
 	# Les contrôles vivent dans le canevas 1080p ; l'OS reçoit des pixels écran.
@@ -1035,12 +1101,29 @@ func _check_campaign_map() -> void:
 	_check(dialog.visible and dialog.launch_button.text == "REJOUER",
 		"campagne tactile : un niveau terminé reste rejouable")
 	await _tap(_center(dialog.close_button))
+	await _joy(JOY_BUTTON_DPAD_DOWN)
+	_check(root.gui_get_focus_owner() == available and locked.focus_mode == Control.FOCUS_NONE,
+		"campagne : la manette atteint le niveau accessible et ignore les niveaux verrouillés")
+	await _key(KEY_ENTER)
+	_check(dialog.visible and root.gui_get_focus_owner() == dialog.launch_button,
+		"campagne : Entrée ouvre la fiche avec le focus sur Affronter")
+	await _key(KEY_ESCAPE)
+	_check(not dialog.visible and root.gui_get_focus_owner() == available,
+		"campagne : la fermeture rend le focus au niveau ouvert")
 	scroll.scroll_vertical = 0
 	await _settle()
 	var before := scroll.scroll_vertical
 	await _swipe(_center(available), Vector2(0, -260))
 	_check(scroll.scroll_vertical > before + 30 and not dialog.visible,
 		"campagne tactile : glisser depuis un nœud fait défiler sans l'activer")
+	scroll.scroll_vertical = roundi(scroll.get_v_scroll_bar().max_value)
+	await _settle()
+	_check(map.node_control("tuto_02") == null, "campagne : le défilement éloigné décharge les niveaux")
+	page.get_node("Root/Header/BackButton").grab_focus()
+	await _joy(JOY_BUTTON_DPAD_DOWN)
+	var focused := root.gui_get_focus_owner()
+	_check(focused is CampaignNodeView and focused.node_id in ["tuto_01", "tuto_02"],
+		"campagne : la manette recharge et rend visible un niveau accessible hors écran")
 	await _remove(page)
 	CampaignContext.reset_for_tests()
 	for suffix in ["", ".tmp", ".unreadable"]:

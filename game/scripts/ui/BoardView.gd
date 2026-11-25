@@ -29,6 +29,7 @@ var _drop_target := Vector2i(-1, -1)
 var _drop_style: StyleBoxFlat = null
 var _drop_previous_style: StyleBox = null
 var _cell_styles: Dictionary = {}
+var _focus_style := UITheme.focus_ring(10)
 ## Camp affiché en bleu sur cet appareil. La campagne garde PLAYER_HUMAN ; le
 ## client PVP reçoit PLAYER_TWO pour retrouver ses propres cases en bleu.
 var local_owner: int = GameState.PLAYER_HUMAN
@@ -119,12 +120,26 @@ func update_geometry() -> void:
 func _make_slot(row: int, col: int) -> Panel:
 	var slot := Panel.new()
 	slot.name = "cell_%d_%d" % [row, col]
+	slot.accessibility_name = "Case %d, %d" % [row + 1, col + 1]
 	slot.add_theme_stylebox_override("panel", _cell_style(GameState.PLAYER_NONE))
 	slot.gui_input.connect(_on_slot_input.bind(row, col))
+	slot.draw.connect(_draw_slot_focus.bind(slot))
+	slot.focus_entered.connect(slot.queue_redraw)
+	slot.focus_exited.connect(slot.queue_redraw)
 	return slot
 
 
+func _draw_slot_focus(slot: Panel) -> void:
+	if slot.has_focus():
+		slot.draw_style_box(_focus_style, Rect2(Vector2.ZERO, slot.size))
+
+
 func _on_slot_input(event: InputEvent, row: int, col: int) -> void:
+	var slot := slot_at(row, col)
+	if slot.has_focus() and event.is_action_pressed("ui_accept"):
+		slot.accept_event()
+		cell_pressed.emit(row, col)
+		return
 	var clicked: bool = event is InputEventScreenTouch and event.pressed and not event.canceled
 	if event is InputEventMouseButton and event.device != -1:
 		clicked = event.pressed and event.button_index == MOUSE_BUTTON_LEFT
@@ -146,12 +161,14 @@ func refresh(state: GameState) -> void:
 			var slot: Panel = _slots[idx]
 
 			if cell["cell_type"] == GameState.CELL_BLOCKED:
+				slot.accessibility_description = "Bloquée"
 				_apply_cell_style(idx, GameState.PLAYER_NONE, true)
 				_mark_blocked(slot)
 				continue
 			_apply_cell_style(idx, int(cell["owner"]))
 
 			if cell["owner"] == GameState.PLAYER_NONE:
+				slot.accessibility_description = "Libre"
 				if _cards[idx] != null:
 					_cards[idx].queue_free()
 					_cards[idx] = null
@@ -162,6 +179,7 @@ func refresh(state: GameState) -> void:
 			else:
 				_cards[idx].set_combat_owner(cell["owner"])
 				_cards[idx].set_battle_monster(cell.get("monster"))
+			slot.accessibility_description = "Occupée par %s" % _cards[idx].accessibility_name
 
 
 func _spawn_card(slot: Panel, monster_id: String, owner_val: int, battle_monster = null) -> MonsterCard:
@@ -312,3 +330,4 @@ func swarm_link_count() -> int:
 func set_input_enabled(enabled: bool) -> void:
 	for slot in _slots:
 		slot.mouse_filter = Control.MOUSE_FILTER_STOP if enabled else Control.MOUSE_FILTER_IGNORE
+		slot.focus_mode = Control.FOCUS_ALL if enabled else Control.FOCUS_NONE

@@ -138,11 +138,14 @@ func _test_version_mismatch() -> void:
 		{"field": "app_version", "value": "0.0.0-elsewhere", "label": "application"},
 		{"field": "catalogue", "value": "0".repeat(LanProtocol.FINGERPRINT_LENGTH),
 			"label": "catalogue"},
+		{"field": "rules", "value": "0".repeat(LanProtocol.FINGERPRINT_LENGTH),
+			"label": "règles de combat"},
 		{"field": "protocol_version", "value": LanProtocol.VERSION + 1, "label": "protocole"},
 	]
 	for entry in cases:
 		var pair := _pair()
 		pair["host_transport"].peer_joined.emit(2)
+		_check(not pair["host"].state()["can_ready"], "le salon attend la validation du pair")
 		var hello := LanProtocol.identity_fields()
 		hello.merge({"name": "Client", "god_id": "veskar", "deck": _deck()})
 		hello[entry["field"]] = entry["value"]
@@ -152,6 +155,8 @@ func _test_version_mismatch() -> void:
 			"une version de %s incompatible est refusée" % entry["label"])
 		_check(pair["host_transport"].sent_of(LanProtocol.KIND_MATCH_START).is_empty(),
 			"aucune partie ne démarre avec un %s incompatible" % entry["label"])
+		_check(not pair["host"].state()["can_ready"] and not pair["client"].state()["can_ready"],
+			"une incompatibilité de %s laisse les deux boutons PRÊT inactifs" % entry["label"])
 
 
 func _test_third_player() -> void:
@@ -232,8 +237,11 @@ func _test_local_deck_required() -> void:
 	transport.local_id = LanProtocol.SERVER_ID
 	host.attach(transport, true, 2)
 	host.set_local_profile("Hote", "veskar", [])
-	# Un adversaire est connecté : seul le deck local peut bloquer le prêt.
+	# L’adversaire est validé : seul le deck local peut bloquer le prêt.
 	transport.peer_joined.emit(2)
+	var hello := LanProtocol.identity_fields()
+	hello.merge({"name": "Client", "god_id": "veskar", "deck": _deck()})
+	transport.message_received.emit(2, LanProtocol.KIND_HELLO, hello)
 	var errors: Array = []
 	host.failed.connect(func(message: String): errors.append(message))
 	_check(not host.press_ready() and errors.size() == 1,

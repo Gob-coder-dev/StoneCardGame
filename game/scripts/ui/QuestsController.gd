@@ -322,7 +322,7 @@ func _card_chip(card: Dictionary) -> HBoxContainer:
 	# au ScrollContainer sur mobile.
 	chip.mouse_filter = Control.MOUSE_FILTER_PASS
 	chip.add_theme_constant_override("separation", 6)
-	chip.tooltip_text = "%s · %s%s" % [card_name, _rarity_label(rarity), suffix]
+	chip.tooltip_text = "%s · %s%s" % [card_name, UIFormat.rarity_label(rarity).to_lower(), suffix]
 	var frame := PanelContainer.new()
 	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	frame.add_theme_stylebox_override("panel",
@@ -382,14 +382,6 @@ func _thumb_style(color: Color) -> StyleBoxFlat:
 	style.content_margin_bottom = 2
 	style.shadow_size = 0
 	return style
-
-
-func _rarity_label(rarity: String) -> String:
-	match rarity:
-		"rare": return "rare"
-		"epic": return "épique"
-		"legendary": return "légendaire"
-		_: return "commune"
 
 
 func _on_card_art_ready(path: String, texture: Texture2D) -> void:

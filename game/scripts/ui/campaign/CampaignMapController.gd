@@ -8,6 +8,7 @@ extends Control
 const Routes := preload("res://scripts/ui/GameRoutes.gd")
 const GodIdentityModel := preload("res://scripts/data/GodIdentity.gd")
 const EncounterPresenter := preload("res://scripts/ui/campaign/CampaignEncounterPresenter.gd")
+const FocusScope := preload("res://scripts/ui/input/FocusScope.gd")
 
 @onready var background: MenuBackground = $Background
 @onready var back_button: Button = $Root/Header/BackButton
@@ -28,6 +29,8 @@ var _position_save_timer: Timer = null
 var _loading_timer: Timer = null
 var _replay_in_progress := false
 var _launch_in_progress := false
+var _keyboard_nodes: Array[String] = []
+var _focus_pending := ""
 
 
 func _ready() -> void:
@@ -95,6 +98,10 @@ func _show_unavailable() -> void:
 
 func _refresh() -> void:
 	var states := _service.states()
+	_keyboard_nodes.clear()
+	for node_id in _service.graph().node_ids():
+		if int(states[node_id]) != CampaignUnlockRules.State.LOCKED:
+			_keyboard_nodes.append(node_id)
 	var anchor := _initial_anchor()
 	var selected := _service.progress().last_selected
 	if selected == "" or not _service.has_node(selected):
@@ -107,8 +114,7 @@ func _refresh() -> void:
 	var total := _service.graph().node_count()
 	var completed := _service.progress().completed_count()
 	progress_label.text = "%d / %d niveaux terminés" % [completed, total]
-	status_label.text = "Toutes les branches terminées restent accessibles."
-	status_label.add_theme_color_override("font_color", UITheme.COL_TEXT_DIM)
+	_restore_status()
 
 
 func _initial_anchor() -> String:
@@ -184,7 +190,7 @@ func _on_node_activated(node_id: String) -> void:
 	CampaignContext.focus_node_id = node_id
 	map_view.set_selected(node_id)
 	dialog.open(EncounterPresenter.summary(_service.node(node_id), PlayerData.player_god_id),
-		_service.state_for(node_id))
+		_service.state_for(node_id), map_view.node_control(node_id))
 	_register_story_anchors()
 	StoryService.notify_event("campaign_node_opened", {"node_id": node_id})
 
@@ -237,8 +243,13 @@ func _on_replay_requested(sequence_ids: Array[String]) -> void:
 
 
 func _on_dialog_closed() -> void:
-	status_label.text = "Toutes les branches terminées restent accessibles."
-	status_label.add_theme_color_override("font_color", UITheme.COL_TEXT_DIM)
+	_restore_status()
+
+
+func _restore_status() -> void:
+	var notice := _service.store().load_notice
+	status_label.text = "Toutes les branches terminées restent accessibles." if notice.is_empty() else notice
+	status_label.add_theme_color_override("font_color", UITheme.COL_TEXT_DIM if notice.is_empty() else UITheme.COL_WARNING)
 
 
 func _on_scroll_changed(_value: float) -> void:
@@ -329,6 +340,7 @@ func _save_position_now() -> void:
 
 func _on_streaming_changed(pending_count: int) -> void:
 	_register_story_anchors()
+	_apply_pending_focus()
 	if _loading_timer == null or loading_hint == null:
 		return
 	if pending_count > 0:
@@ -357,6 +369,64 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
 		_go_back()
 		get_viewport().set_input_as_handled()
+
+
+func _input(event: InputEvent) -> void:
+	if not is_node_ready() or not is_visible_in_tree() or _replay_in_progress:
+		return
+	if event is InputEventScreenTouch or event is InputEventMouseButton:
+		_focus_pending = ""
+		return
+	if dialog.visible and not StoryService.is_playing() and not StoryService.is_guiding_anchor("map.launch"):
+		dialog.handle_navigation(event)
+		return
+	if not _nav_ready or StoryService.is_playing() or StoryService.is_tutorial_running():
+		return
+	var step := FocusScope.navigation_step(event)
+	if step != 0 and not _keyboard_nodes.is_empty() and _navigate_levels(event, step):
+		get_viewport().set_input_as_handled()
+
+
+func _navigate_levels(event: InputEvent, step: int) -> bool:
+	var current := get_viewport().gui_get_focus_owner()
+	var index := _keyboard_nodes.find(_focus_pending)
+	if current is CampaignNodeView and index == -1:
+		index = _keyboard_nodes.find(current.node_id)
+	var tab := event.is_action_pressed("ui_focus_next", true, true) \
+		or event.is_action_pressed("ui_focus_prev", true, true)
+	if index == -1:
+		if current != null and current != back_button:
+			return false
+		var anchor := _keyboard_nodes.find(_initial_anchor())
+		_focus_level(_keyboard_nodes[maxi(0, anchor)])
+		return true
+	var next := index + step
+	if tab and (next < 0 or next >= _keyboard_nodes.size()):
+		_focus_pending = ""
+		back_button.grab_focus()
+	else:
+		_focus_level(_keyboard_nodes[clampi(next, 0, _keyboard_nodes.size() - 1)])
+	return true
+
+
+func _focus_level(node_id: String) -> void:
+	_focus_pending = node_id
+	var view := map_view.node_control(node_id)
+	if FocusScope.can_focus(view):
+		_apply_pending_focus()
+		return
+	scroll.scroll_vertical = roundi(map_view.scroll_for_anchor(node_id, 0.0))
+	_update_streaming()
+
+
+func _apply_pending_focus() -> void:
+	if _focus_pending.is_empty() or dialog.visible or StoryService.is_playing():
+		return
+	var view := map_view.node_control(_focus_pending)
+	if FocusScope.can_focus(view):
+		_focus_pending = ""
+		scroll.ensure_control_visible(view)
+		view.grab_focus()
 
 
 func _notification(what: int) -> void:

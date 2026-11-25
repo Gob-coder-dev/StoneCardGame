@@ -3,6 +3,7 @@
 ## n'entrent pas dans le contenu de combat ; les sources sont signees a part.
 extends RefCounted
 
+const RulesIdentity := preload("res://scripts/data/RulesIdentity.gd")
 
 static func content_checksum() -> String:
 	var gods: Array[String] = []
@@ -32,24 +33,4 @@ static func content_checksum() -> String:
 
 
 static func rules_checksum() -> String:
-	if FileAccess.file_exists("res://rl_rules.sha256"):
-		var baked := FileAccess.get_file_as_string("res://rl_rules.sha256").strip_edges()
-		if baked.length() == 64:
-			return baked
-	var paths: Array[String] = []
-	for folder in ["res://scripts/engine", "res://scripts/ai", "res://scripts/data", "res://scripts/domain"]:
-		_collect_sources(folder, paths)
-	paths.sort()
-	var rows: Array[String] = []
-	for path in paths:
-		var source := FileAccess.get_file_as_string(path).trim_prefix("\ufeff").replace("\r\n", "\n")
-		rows.append(path.trim_prefix("res://") + ":" + source.sha256_text())
-	return "\n".join(rows).sha256_text()
-
-
-static func _collect_sources(folder: String, paths: Array[String]) -> void:
-	for name in DirAccess.get_files_at(folder):
-		if name.ends_with(".gd"):
-			paths.append(folder.path_join(name))
-	for name in DirAccess.get_directories_at(folder):
-		_collect_sources(folder.path_join(name), paths)
+	return RulesIdentity.rl_checksum()

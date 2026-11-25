@@ -55,8 +55,10 @@ static func create_default(store_path: String = StoreModel.DEFAULT_PATH,
 func _load_progress(legacy_stats: Dictionary) -> void:
 	var loaded := _store.load_progress()
 	if loaded == null:
-		_load_error = ERR_UNAVAILABLE
-		_problems.append("Cette progression a été créée par une version plus récente de Beastpact.")
+		_load_error = _store.load_error
+		_problems.append("Cette progression a été créée par une version plus récente de Beastpact."
+			if _load_error == ERR_UNAVAILABLE else
+			"La progression est inaccessible. L’enregistrement est suspendu (%s)." % error_string(_load_error))
 		return
 	_progress = loaded
 	if _progress.campaign_version == 0:

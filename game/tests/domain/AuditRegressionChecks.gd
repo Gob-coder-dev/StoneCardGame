@@ -73,9 +73,9 @@ func _test_future_profile() -> void:
 	Storage.write(PATH, raw)
 	var before := FileAccess.get_file_as_string(PATH)
 	var isolated := Profile.new(PATH)
-	_expect_log("PlayerData: sauvegarde plus récente")
 	isolated.load_save()
 	_check(isolated.profile_load_error == ERR_UNAVAILABLE and isolated.save() == ERR_UNAVAILABLE
+		and "version plus récente" in isolated.profile_load_notice
 		and FileAccess.get_file_as_string(PATH) == before,
 		"sauvegarde : une version future reste intacte après une tentative d'écriture")
 	isolated.free()

@@ -6,6 +6,7 @@ extends Container
 
 ## Émis quand le joueur touche une carte de sa main.
 signal card_selected(monster_id: String)
+signal card_keyboard_selected(monster_id: String)
 ## Émis dès qu'un doigt ou la souris appuie sur une carte : l'appui peut devenir
 ## un glissement vers le plateau (voir CardDragController).
 signal card_press_started(monster_id: String, card: MonsterCard, pointer: int, canvas_position: Vector2)
@@ -14,6 +15,7 @@ const DragGesture := preload("res://scripts/ui/input/DragGesture.gd")
 
 var _cards: Array[MonsterCard] = []  ## cartes affichées, dans l'ordre de la main
 var _selected_id: String = ""
+var _keyboard_enabled := false
 var columns: int = UITheme.DECK_COLUMNS
 var _card_size: float = UITheme.CARD_HAND
 
@@ -101,6 +103,8 @@ func _rebuild(monster_ids: Array) -> void:
 		card.setup(MonsterLoader.get_monster(str(monster_id)), MonsterCard.OWNER_HUMAN)
 		card.custom_minimum_size = Vector2(_card_size, _card_size)
 		card.card_pressed.connect(_on_card_pressed)
+		card.keyboard_activated.connect(card_keyboard_selected.emit)
+		card.focus_mode = Control.FOCUS_ALL if _keyboard_enabled else Control.FOCUS_NONE
 		card.gui_input.connect(_on_card_input.bind(card))
 		wrapper.add_child(card)
 
@@ -124,6 +128,12 @@ func _on_card_input(event: InputEvent, card: MonsterCard) -> void:
 
 func card_count() -> int:
 	return _cards.size()
+
+
+func set_keyboard_enabled(enabled: bool) -> void:
+	_keyboard_enabled = enabled
+	for card in _cards:
+		card.focus_mode = Control.FOCUS_ALL if enabled else Control.FOCUS_NONE
 
 
 func card_at(index: int) -> MonsterCard:

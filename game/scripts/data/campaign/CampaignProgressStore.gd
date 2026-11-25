@@ -7,11 +7,12 @@ class_name CampaignProgressStore
 extends RefCounted
 
 const Storage := preload("res://scripts/data/PlayerSaveStorage.gd")
-const Json := preload("res://scripts/data/JsonFile.gd")
 const ProgressModel := preload("res://scripts/domain/campaign/CampaignProgress.gd")
 const DEFAULT_PATH := "user://campaign_progress.json"
 
 var _path: String = DEFAULT_PATH
+var load_error: Error = OK
+var load_notice: String = ""
 
 
 ## Le chemin est injectable pour isoler les tests du fichier du joueur.
@@ -28,22 +29,33 @@ func exists() -> bool:
 
 
 func load_raw() -> Dictionary:
-	return Storage.read(_path)
+	var result := Storage.read_result(_path, ProgressModel.is_complete)
+	var raw: Dictionary = result["data"]
+	load_error = result["error"]
+	if not ProgressModel.supports(raw):
+		load_error = ERR_UNAVAILABLE
+	if result["state"] == Storage.ReadState.RECOVERED:
+		load_notice = "Votre progression a été récupérée depuis la sauvegarde temporaire."
+	elif result["state"] == Storage.ReadState.ARCHIVED:
+		load_notice = "La progression endommagée a été archivée. Une nouvelle carte est ouverte."
+	return raw
 
 
 func load_progress() -> CampaignProgress:
-	return ProgressModel.from_dict(load_raw())
+	var raw := load_raw()
+	return ProgressModel.from_dict(raw) if load_error == OK else null
 
 
 func preview_progress() -> CampaignProgress:
-	var raw: Variant = Json.read(_path)
-	if not raw is Dictionary:
-		raw = Json.read(_path + Storage.TEMP_SUFFIX)
+	var raw: Variant = Storage.read_valid(_path, ProgressModel.is_complete)
+	if raw == null:
+		raw = Storage.read_valid(_path + Storage.TEMP_SUFFIX, ProgressModel.is_complete)
 	return ProgressModel.from_dict(raw) if raw is Dictionary else null
 
 
 func schema_error() -> Error:
-	return OK if ProgressModel.supports(load_raw()) else ERR_UNAVAILABLE
+	load_raw()
+	return load_error
 
 
 func save(progress: CampaignProgress) -> Error:

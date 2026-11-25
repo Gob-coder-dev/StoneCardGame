@@ -17,6 +17,7 @@ const LanDriver := preload("res://scripts/ui/match/LanMatchDriver.gd")
 const Routes := preload("res://scripts/ui/GameRoutes.gd")
 const BattleLayoutModel := preload("res://scripts/ui/BattleLayout.gd")
 const PowerHelpPopover := preload("res://scripts/ui/PowerHelpPopover.gd")
+const FocusScope := preload("res://scripts/ui/input/FocusScope.gd")
 
 @onready var root: VBoxContainer = $Root
 @onready var turn_manager: TurnManager = $TurnManager
@@ -35,6 +36,7 @@ var _move_captures: int = 0
 var _best_move_captures: int = 0
 var _card_drag: CardDragController = null  ## couche du glisser-déposer
 var _leaving := false
+var _keyboard_play := false
 ## Un match PVP terminé passe la main à l'écran de résultat, qui garde la
 ## session ouverte pour proposer une revanche.
 var _finished_pvp := false
@@ -159,6 +161,7 @@ func _return_to_pvp_lobby() -> void:
 func _connect_signals() -> void:
 	board_view.cell_pressed.connect(_on_cell_pressed)
 	hand_view.card_selected.connect(_on_card_selected)
+	hand_view.card_keyboard_selected.connect(_on_card_keyboard_selected)
 	turn_manager.turn_started.connect(_on_turn_started)
 	turn_manager.monster_placed.connect(_on_monster_placed)
 	turn_manager.monster_captured.connect(_on_monster_captured)
@@ -201,25 +204,65 @@ func _on_card_selected(monster_id: String) -> void:
 		return
 	_selected_monster_id = monster_id
 	hand_view.set_selected(monster_id)
+	hud.clear_move_feedback()
 	Audio.play_sfx(AudioCatalog.SFX_BUTTON)
 	StoryService.notify_event("card_selected", {"monster_id": monster_id})
 
 
 func _on_cell_pressed(row: int, col: int) -> void:
-	if StoryService.blocks_placement() or _selected_monster_id == "":
-		return
-	if not StoryService.placement_allowed({"row": row, "col": col,
-			"monster_id": _selected_monster_id, "owner": _driver.local_side}):
-		return
-	StoryService.notify_event("cell_pressed", {"row": row, "col": col})
-	if _driver.request_move(row, col, _selected_monster_id):
+	if _try_place(_selected_monster_id, row, col, true):
 		_selected_monster_id = ""
 		hand_view.clear_selection()
+
+
+func _on_card_keyboard_selected(monster_id: String) -> void:
+	_keyboard_play = true
+	var current := get_viewport().gui_get_focus_owner()
+	if _selected_monster_id != monster_id or current == null or not hand_view.is_ancestor_of(current):
+		return
+	for row in range(board_view.board_size()):
+		for col in range(board_view.board_size()):
+			if _can_drop(monster_id, row, col):
+				board_view.slot_at(row, col).grab_focus()
+				return
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not _human_can_play() or not board_view.is_built():
+		return
+	if event.is_action_pressed("ui_cancel") and _selected_monster_id != "":
+		var card := hand_view.card_for_monster(_selected_monster_id)
+		_selected_monster_id = ""
+		hand_view.clear_selection()
+		hud.clear_move_feedback()
+		if FocusScope.can_focus(card):
+			card.grab_focus()
+		get_viewport().set_input_as_handled()
+
+
+func _input(event: InputEvent) -> void:
+	if is_node_ready() and _human_can_play() and not StoryService.is_playing() \
+			and not StoryService.is_tutorial_running() and get_viewport().gui_get_focus_owner() == null \
+			and FocusScope.navigation_step(event) != 0:
+		_keyboard_play = true
+		_focus_hand()
+		get_viewport().set_input_as_handled()
+
+
+func _focus_hand() -> void:
+	if get_viewport().gui_get_focus_owner() != null:
+		return
+	for index in range(hand_view.card_count()):
+		var card := hand_view.card_at(index)
+		if FocusScope.can_focus(card) and StoryService.selection_allowed({"monster_id": card.get_monster_id()}):
+			card.grab_focus()
+			return
 
 
 ## Le glissement n'est suivi que lorsque le joueur peut réellement jouer.
 func _on_card_press_started(monster_id: String, card: MonsterCard, pointer: int, canvas_position: Vector2) -> void:
 	if _human_can_play():
+		_keyboard_play = false
 		_card_drag.begin(monster_id, card, pointer, canvas_position)
 
 
@@ -231,12 +274,41 @@ func _on_card_drag_started(_monster_id: String) -> void:
 
 
 func _on_card_dropped(monster_id: String, row: int, col: int) -> void:
-	if StoryService.blocks_placement():
-		return
-	if not StoryService.placement_allowed({"row": row, "col": col,
-			"monster_id": monster_id, "owner": _driver.local_side}):
-		return
-	_driver.request_move(row, col, monster_id)
+	_try_place(monster_id, row, col, false)
+
+
+func _try_place(monster_id: String, row: int, col: int, notify_press: bool) -> bool:
+	var reason := _placement_problem(monster_id, row, col)
+	if not reason.is_empty():
+		_on_invalid_move(reason)
+		return false
+	if notify_press:
+		StoryService.notify_event("cell_pressed", {"row": row, "col": col})
+	if _driver.request_move(row, col, monster_id):
+		hud.clear_move_feedback()
+		return true
+	_on_invalid_move("La pose n’a pas été acceptée. Réessaie.")
+	return false
+
+
+func _placement_problem(monster_id: String, row: int, col: int) -> String:
+	if _driver == null or not _driver.can_submit():
+		return "Attends ton tour."
+	if monster_id.is_empty():
+		return "Choisis d’abord une carte."
+	if StoryService.blocks_placement() or not StoryService.placement_allowed({"row": row,
+			"col": col, "monster_id": monster_id, "owner": _driver.local_side}):
+		return "Suis l’indication du tutoriel."
+	var state := turn_manager.get_state()
+	if PlacementRules.is_valid(state, row, col, monster_id, _driver.local_side):
+		return ""
+	if state.in_bounds(row, col):
+		var cell := state.get_cell(row, col)
+		if cell["cell_type"] == GameState.CELL_BLOCKED:
+			return "Cette case est bloquée."
+		if cell["owner"] != GameState.PLAYER_NONE:
+			return "Cette case est occupée."
+	return "Choisis une case libre."
 
 
 ## Mêmes règles que pour un appui : PlacementRules décide, au tour du joueur.
@@ -259,11 +331,12 @@ func _update_interaction() -> void:
 	if _driver == null:
 		return
 	var state := turn_manager.get_state()
-	if state == null or state.is_game_over:
-		board_view.set_input_enabled(false)
-		return
-	board_view.set_input_enabled(state.current_player == _driver.local_side \
-		and _driver.can_submit() and not StoryService.blocks_placement())
+	var local_turn := state != null and not state.is_game_over \
+		and state.current_player == _driver.local_side and _driver.can_submit()
+	hand_view.set_keyboard_enabled(local_turn)
+	board_view.set_input_enabled(local_turn and not StoryService.blocks_placement())
+	if local_turn and _keyboard_play:
+		_focus_hand.call_deferred()
 
 
 ## ─── Réactions aux signaux du TurnManager ────────────────────────────────────
@@ -295,6 +368,7 @@ func _on_monster_placed(row: int, col: int, _monster_id: String, _owner: int) ->
 	hand_view.refresh(state.hand_of(_driver.local_side))
 	_register_story_anchors()
 	board_view.set_input_enabled(false)
+	hand_view.set_keyboard_enabled(false)
 	Audio.play_sfx(AudioCatalog.SFX_MONSTER_PLACE_LOCAL if _owner == _driver.local_side
 		else AudioCatalog.SFX_MONSTER_PLACE_REMOTE)
 	StoryService.notify_event("monster_placed", {
@@ -342,9 +416,8 @@ func _on_game_over(winner: int, score_human: int, score_ai: int) -> void:
 	_driver.on_game_over(winner, score_human, score_ai)
 
 
-func _on_invalid_move(_reason: String) -> void:
-	## Coup refusé : rien à afficher (le joueur peut simplement réessayer).
-	pass
+func _on_invalid_move(reason: String) -> void:
+	hud.show_move_feedback(reason)
 
 
 ## Relais unique de présentation ; les annonces métier ne déclenchent aucun dessin.
