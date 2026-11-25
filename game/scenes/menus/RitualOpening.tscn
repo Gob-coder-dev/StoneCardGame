@@ -1,9 +1,16 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/ritual/RitualOpeningController.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/ui/ritual/RitualFlameBackdrop.gd" id="2"]
 [ext_resource type="Script" path="res://scripts/ui/ritual/RitualSigil.gd" id="3"]
 [ext_resource type="Script" path="res://scripts/ui/input/TouchButton.gd" id="4"]
+
+[sub_resource type="StyleBoxFlat" id="ActivationLabelStyle"]
+bg_color = Color(0.94, 0.66, 0.45, 1)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
 
 [sub_resource type="StyleBoxFlat" id="RewardStyle"]
 content_margin_left = 22.0
@@ -115,14 +122,40 @@ mouse_filter = 2
 script = ExtResource("3")
 
 [node name="ActivationButton" type="Button" parent="Margin/Page/Stage"]
+visible = false
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -430.0
+offset_top = -430.0
+offset_right = 430.0
+offset_bottom = 532.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("4")
 flat = true
+accessibility_name = "Activer le sceau"
+
+[node name="Action" type="Label" parent="Margin/Page/Stage/ActivationButton"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 120.0
+offset_top = -96.0
+offset_right = -120.0
+offset_bottom = -8.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.09, 0.047, 0.06, 1)
+theme_override_font_sizes/font_size = 32
+theme_override_styles/normal = SubResource("ActivationLabelStyle")
+text = "ACTIVER LE SCEAU"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="RewardButton" type="Button" parent="Margin/Page/Stage"]
 visible = false
@@ -143,12 +176,14 @@ script = ExtResource("4")
 theme_override_styles/normal = SubResource("RewardStyle")
 theme_override_styles/hover = SubResource("RewardStyle")
 theme_override_styles/pressed = SubResource("RewardStyle")
+theme_override_styles/disabled = SubResource("RewardStyle")
 
 [node name="Center" type="CenterContainer" parent="Margin/Page/Stage/RewardButton"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_bottom = -104.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
@@ -159,11 +194,27 @@ mouse_filter = 2
 theme_override_constants/separation = 12
 alignment = 1
 
+[node name="Action" type="Label" parent="Margin/Page/Stage/RewardButton"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = -96.0
+offset_right = -24.0
+offset_bottom = -16.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.74, 0.58, 1)
+theme_override_font_sizes/font_size = 30
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="Prompt" type="Label" parent="Margin/Page"]
+visible = false
 layout_mode = 2
 theme_override_colors/font_color = Color(0.86, 0.78, 0.88, 1)
 theme_override_font_sizes/font_size = 30
-text = "Touchez l'écran"
 horizontal_alignment = 1
 autowrap_mode = 2
 

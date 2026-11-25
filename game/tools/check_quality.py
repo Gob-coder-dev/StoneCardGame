@@ -17,7 +17,10 @@ import tempfile
 import zipfile
 
 PROJECT = Path(__file__).resolve().parents[1]
-DEFAULT_SCENES = ("GodSystemChecks", "TouchInputChecks", "MenuNavigationChecks")
+DEFAULT_SCENES = (
+    "GodSystemChecks", "TouchInputChecks", "MenuNavigationChecks",
+    "CampaignBalanceChecks", "CampaignMapOptimizationChecks",
+)
 SHUTDOWN_ERRORS = re.compile(r"instances were leaked|resources still in use", re.I)
 SCRIPT_ERRORS = re.compile(r"SCRIPT ERROR:|Parse Error:|Failed to load script", re.I)
 

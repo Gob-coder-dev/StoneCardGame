@@ -40,4 +40,4 @@ func _run() -> void:
 	var errors := log.problems()
 	print("CAMPAIGN_BALANCE_CHECKS: %d passed, %d failed, %d Godot errors" % [
 		passed, failed, errors.size()])
-	get_tree().quit(0 if failed == 0 and errors.is_empty() else 1)
+	Audio.quit_game(0 if failed == 0 and errors.is_empty() else 1)

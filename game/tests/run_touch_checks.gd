@@ -72,6 +72,7 @@ func _run() -> void:
 	await _check_button_inputs()
 	await _check_main_menu()
 	await _check_shop_and_quest_scroll()
+	await _check_ritual_input()
 	await _check_pvp_lobby()
 	await _check_pvp_draft_touch()
 	await _check_other_menus()
@@ -936,6 +937,51 @@ func _drag_touch(start: Vector2, finish: Vector2) -> void:
 		await get_tree().process_frame
 	_release(finish)
 	await _settle()
+
+
+func _check_ritual_input() -> void:
+	RitualOpeningContext.begin({"ritual_id": "small", "ritual_name": "Petit rituel",
+		"rewards": [{"type": "souls", "amount": 12}, {"type": "souls", "amount": 5}]})
+	var page := await _open_scene("res://scenes/menus/RitualOpening.tscn")
+	var action: Label = page.sigil_button.get_node("Action")
+	_check(action.is_visible_in_tree() and action.text == "ACTIVER LE SCEAU"
+		and page.sigil_button.accessibility_name == "Activer le sceau"
+		and root.gui_get_focus_owner() == page.sigil_button,
+		"rituel : le sceau porte sa commande visible, son nom accessible et le focus")
+	await _tap(_center(page.title_label))
+	_check(not page.flames.visible and page.sigil_button.visible and not page.sigil_button.disabled,
+		"rituel : toucher le titre ne lance pas l’invocation")
+	await _tap(_center(action))
+	_check(page.flames.visible and page.sigil_button.disabled,
+		"rituel : toucher le libellé active le sceau une seule fois")
+	await get_tree().create_timer(0.58).timeout
+	_check(page.reward_button.visible and page.reward_button.disabled,
+		"rituel : la carte reste inactive pendant l’embrasement")
+	await _key(KEY_SPACE)
+	await get_tree().create_timer(0.75).timeout
+	_check(page.reward_action.text == "RÉVÉLER LA RÉCOMPENSE"
+		and root.gui_get_focus_owner() == page.reward_button,
+		"rituel : le focus atteint la carte scellée après la transition")
+	await _key(KEY_ENTER)
+	await get_tree().create_timer(0.50).timeout
+	_check(page.reward_button.accessibility_name == "Récompense suivante"
+		and root.gui_get_focus_owner() == page.reward_button,
+		"rituel : Entrée révèle la récompense et rend le focus à l’action suivante")
+	await _joy(JOY_BUTTON_A)
+	await get_tree().create_timer(0.88).timeout
+	_check(page._index == 1 and page.reward_action.text == "RÉVÉLER LA RÉCOMPENSE"
+		and root.gui_get_focus_owner() == page.reward_button,
+		"rituel : la manette passe à la récompense suivante et le focus revient sur la carte scellée")
+	await _tap(_center(page.reward_action))
+	await get_tree().create_timer(0.50).timeout
+	_check(page.reward_action.text == "VOIR LE RÉCAPITULATIF",
+		"rituel : toucher la dernière carte révèle l’action de récapitulatif")
+	await _joy(JOY_BUTTON_A)
+	await get_tree().create_timer(0.38).timeout
+	_check(page.summary.visible and root.gui_get_focus_owner() == page.finish_button,
+		"rituel : la manette ouvre le récapitulatif et sélectionne Terminer")
+	await _remove(page)
+	RitualOpeningContext.clear()
 
 
 func _open_scene(path: String) -> Control:

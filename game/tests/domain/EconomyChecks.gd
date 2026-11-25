@@ -730,12 +730,12 @@ func _test_ritual_opening_screen() -> void:
 	var sigil_position: Vector2 = page.sigil.position
 	var sigil_scale: Vector2 = page.sigil.scale
 	await page._on_sigil_pressed()
-	_check(page.reward_button.visible and page.prompt_label.text == "Touchez pour révéler",
+	_check(page.reward_button.visible and page.reward_action.text == "RÉVÉLER LA RÉCOMPENSE",
 		"Rituels : l'embrasement plein écran produit la première invocation face cachée")
 	_check(page.sigil.visible and page.sigil.position == sigil_position and page.sigil.scale == sigil_scale,
 		"Rituels : le sceau reste immobile derrière toute l'ouverture")
 	await page._on_reward_pressed()
-	_check(page.prompt_label.text == "Touchez pour poursuivre"
+	_check(page.reward_action.text == "VOIR LE RÉCAPITULATIF"
 		and not PlayerData.inventory_dict().has("pending_ritual_opening"),
 		"Rituels : le retournement révèle une récompense déjà acquise sans persister l'animation")
 	page.flames.ignite_minor()

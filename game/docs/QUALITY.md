@@ -142,7 +142,9 @@ Les exceptions `unused_signal` sont limitées aux déclarations de contrats dont
 les signaux sont émis par une sous-classe ou un collaborateur identifié dans le
 commentaire. Les avertissements du projet restent activés.
 
-Les trois suites doivent terminer avec le code `0`. Une vérification visuelle
+Les cinq suites standard doivent terminer avec le code `0`. Elles couvrent le
+jeu, les entrées, la navigation, l’équilibrage de campagne et le streaming de
+la carte. Une vérification visuelle
 reste obligatoire sur téléphone et tablette pour les proportions, gestes,
 transitions et coûts de première ouverture.
 

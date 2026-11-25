@@ -5,6 +5,7 @@ extends Control
 const RitualConfigModel := preload("res://scripts/data/economy/RitualConfig.gd")
 const Routes := preload("res://scripts/ui/GameRoutes.gd")
 const SoulIcon := preload("res://assets/ui/soul-placeholder.svg")
+const REVEAL_ACTION := "Révéler la récompense"
 
 enum Stage { SIGIL, REWARD_BACK, REWARD_FRONT, SUMMARY, BUSY }
 
@@ -14,6 +15,7 @@ enum Stage { SIGIL, REWARD_BACK, REWARD_FRONT, SUMMARY, BUSY }
 @onready var sigil_button: Button = $Margin/Page/Stage/ActivationButton
 @onready var sigil: RitualSigil = $Margin/Page/Stage/Sigil
 @onready var reward_button: Button = $Margin/Page/Stage/RewardButton
+@onready var reward_action: Label = $Margin/Page/Stage/RewardButton/Action
 @onready var reward_content: VBoxContainer = $Margin/Page/Stage/RewardButton/Center/Content
 @onready var prompt_label: Label = $Margin/Page/Prompt
 @onready var summary: PanelContainer = $Margin/Page/Summary
@@ -59,9 +61,10 @@ func _show_sigil() -> void:
 	sigil_button.visible = true
 	sigil_button.disabled = false
 	reward_button.visible = false
+	prompt_label.visible = false
 	summary.visible = false
 	finish_button.visible = false
-	prompt_label.text = "Touchez l'écran pour commencer l'invocation"
+	sigil_button.grab_focus()
 
 
 func _on_sigil_pressed() -> void:
@@ -71,9 +74,15 @@ func _on_sigil_pressed() -> void:
 	sigil_button.disabled = true
 	Audio.play_sfx(AudioCatalog.SFX_BIG_FLAME)
 	flames.ignite_full()
+	await _present_sealed_reward()
+
+
+func _present_sealed_reward() -> void:
 	await flames.covered
+	sigil_button.hide()
 	_show_reward_back()
 	await flames.finished
+	_enable_reward_action(Stage.REWARD_BACK)
 
 
 func _show_reward_back() -> void:
@@ -92,11 +101,22 @@ func _show_reward_back() -> void:
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.add_theme_font_size_override("font_size", 30)
 	reward_content.add_child(label)
+	reward_button.disabled = true
 	reward_button.visible = true
 	reward_button.modulate = Color.WHITE
 	reward_button.scale = Vector2.ONE
-	_stage = Stage.REWARD_BACK
-	prompt_label.text = "Touchez pour révéler"
+	_set_reward_action(REVEAL_ACTION)
+
+
+func _set_reward_action(action: String) -> void:
+	reward_button.accessibility_name = action
+	reward_action.text = action.to_upper()
+
+
+func _enable_reward_action(next_stage: Stage) -> void:
+	_stage = next_stage
+	reward_button.disabled = false
+	reward_button.grab_focus()
 
 
 func _on_reward_pressed() -> void:
@@ -108,22 +128,25 @@ func _on_reward_pressed() -> void:
 
 func _reveal_current() -> void:
 	_stage = Stage.BUSY
+	reward_button.disabled = true
 	var close := create_tween()
 	close.tween_property(reward_button, "scale:x", 0.03, 0.18).set_trans(Tween.TRANS_QUAD)
 	await close.finished
 	Audio.play_sfx(AudioCatalog.SFX_REVEAL)
 	var reward: Dictionary = (_opening.get("rewards", []) as Array)[_index]
 	_build_reward_front(reward)
+	_set_reward_action("Récompense suivante" if _index + 1 < _opening["rewards"].size()
+		else "Voir le récapitulatif")
 	var open := create_tween()
 	open.tween_property(reward_button, "scale:x", 1.0, 0.22) \
 		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	await open.finished
-	_stage = Stage.REWARD_FRONT
-	prompt_label.text = "Touchez pour poursuivre"
+	_enable_reward_action(Stage.REWARD_FRONT)
 
 
 func _advance() -> void:
 	_stage = Stage.BUSY
+	reward_button.disabled = true
 	var start_position := reward_button.position
 	var direction := 1.0 if _index % 2 == 0 else -1.0
 	var target_position := start_position + Vector2(size.x * 0.66 * direction, 0.0)
@@ -141,9 +164,7 @@ func _advance() -> void:
 		return
 	Audio.play_sfx(AudioCatalog.SFX_LITTLE_FLAME)
 	flames.ignite_minor()
-	await flames.covered
-	_show_reward_back()
-	await flames.finished
+	await _present_sealed_reward()
 
 
 func _build_reward_front(reward: Dictionary) -> void:
@@ -219,13 +240,13 @@ func _show_summary() -> void:
 	stage_container.visible = false
 	summary.visible = true
 	finish_button.visible = true
-	prompt_label.text = "Le Rituel est accompli"
 	_clear(summary_grid)
 	var rewards: Array = _opening.get("rewards", [])
 	summary_grid.columns = 2 if rewards.size() <= 4 else 3
 	var tile_size := 320 if rewards.size() <= 4 else 250
 	for reward in rewards:
 		summary_grid.add_child(_summary_tile(reward, tile_size))
+	finish_button.grab_focus()
 
 
 func _summary_tile(reward: Dictionary, tile_size: int) -> Control:
@@ -276,10 +297,12 @@ func _finish() -> void:
 
 func _show_error(message: String) -> void:
 	_stage = Stage.BUSY
+	stage_container.hide()
 	status_label.visible = true
 	status_label.text = message
 	status_label.add_theme_color_override("font_color", UITheme.COL_ERROR)
 	prompt_label.text = "Les récompenses ont déjà été enregistrées."
+	prompt_label.show()
 	finish_button.visible = true
 	finish_button.text = "RETOUR AUX QUÊTES" if _return_route() == Routes.QUESTS \
 		else "RETOUR À LA BOUTIQUE"
@@ -287,6 +310,7 @@ func _show_error(message: String) -> void:
 	finish_button.pressed.connect(func():
 		RitualOpeningContext.clear()
 		GameRoutes.go(get_tree(), _return_route()))
+	finish_button.grab_focus()
 
 
 func _clear(container: Container) -> void:
