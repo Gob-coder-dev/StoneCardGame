@@ -13,7 +13,7 @@ func run() -> void:
 	_test_series_messages()
 	_test_moves()
 	_test_turn_proofs()
-	_test_end_and_desync()
+	_test_desync()
 	_test_start_request()
 	_test_malformed_payloads()
 	_test_beacon()
@@ -240,8 +240,6 @@ func _test_series_messages() -> void:
 	bad_progress["own_deck"] = []
 	_check(not LanProtocol.validate(LanProtocol.KIND_DRAFT_PROGRESS, bad_progress)["ok"],
 		"protocole : un deck local incohérent avec l'étape est refusé")
-	_check(LanProtocol.VERSION == 6,
-		"la version 6 inclut l’empreinte des règles et conserve le draft par destinataire")
 	_check(LanProtocol.validate(LanProtocol.KIND_PVP_PRESENCE,
 		{"presence": LanPvpPresence.LOBBY})["ok"],
 		"protocole : une présence de salon est valide")
@@ -360,16 +358,10 @@ func _test_turn_proofs() -> void:
 		"une séquence négative est refusée")
 
 
-func _test_end_and_desync() -> void:
-	_check(LanProtocol.validate(LanProtocol.KIND_MATCH_END,
+func _test_desync() -> void:
+	_check(not LanProtocol.validate("match_end",
 		{"match_id": "match-1", "winner": GameState.PLAYER_TWO, "score_one": 3, "score_two": 9})["ok"],
-		"une fin de partie valide est acceptée")
-	_check(not LanProtocol.validate(LanProtocol.KIND_MATCH_END,
-		{"match_id": "match-1", "winner": 9, "score_one": 3, "score_two": 9})["ok"],
-		"un vainqueur hors des deux camps est refusé")
-	_check(not LanProtocol.validate(LanProtocol.KIND_MATCH_END,
-		{"match_id": "match-1", "winner": 1, "score_one": 99, "score_two": 9})["ok"],
-		"un score impossible est refusé")
+		"le résultat séparé du protocole précédent est refusé")
 	_check(LanProtocol.validate(LanProtocol.KIND_DESYNC,
 		{"match_id": "match-1", "sequence": 4, "reason": "États différents."})["ok"],
 		"un message de désynchronisation est valide")

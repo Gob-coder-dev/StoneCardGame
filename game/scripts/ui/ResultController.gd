@@ -78,10 +78,8 @@ func _ready() -> void:
 	abandon_btn.add_theme_color_override("font_color", ABANDON_TEXT_COLOR)
 
 	_campaign = BattleContext.has_campaign_node()
-	_player_name = UIFormat.combatant_name(PlayerData.player_name, 18)
-	var npc := BattleContext.current_opponent()
-	_opponent_name = UIFormat.combatant_name(str(
-		npc.get("combatant_name", npc.get("name", "Adversaire"))), 18)
+	_player_name = PlayerData.player_name
+	_opponent_name = UIFormat.campaign_combatant_name(BattleContext.current_opponent())
 	_series = BattleContext.campaign_series_state() if _campaign else {}
 	_series_view = _build_series_view()
 	_apply_outcome()

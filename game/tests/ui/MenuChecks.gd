@@ -503,27 +503,32 @@ func _test_deck_slots() -> void:
 ## La zone sûre ne décale que les conteneurs déclarés, uniquement quand une
 ## valeur est fournie : appliquer deux fois la même marge ne la cumule jamais.
 func _test_safe_area() -> void:
-	SafeArea.set_insets_for_tests({"top": 60.0, "left": 0.0, "right": 0.0})
+	var applied := {"top": 60.0, "left": 0.0, "right": 0.0, "bottom": 54.0}
+	SafeArea.set_insets_for_tests(applied)
 	var page: Control = (load("res://scenes/menus/CollectionScreen.tscn") as PackedScene).instantiate()
 	add_child(page)
 	await get_tree().process_frame
 	var content: Control = page.get_node("Content")
+	var nav: Control = page.get_node("BottomNav")
 	_check(is_equal_approx(content.offset_top, 42.0 + 60.0),
 		"zone sûre : le contenu descend de l'inset supérieur mesuré")
-	_check(is_equal_approx(page.get_node("BottomNav").offset_top, -176.0),
-		"zone sûre : la barre de navigation garde sa hauteur propre")
-	SafeArea.set_insets_for_tests({"top": 60.0, "left": 0.0, "right": 0.0})
-	_check(is_equal_approx(content.offset_top, 42.0 + 60.0),
+	_check(nav.offset_top == -176.0 and nav.offset_bottom == 0.0 and content.offset_bottom == -186.0,
+		"zone sûre : la barre et le contenu de collection restent à leurs positions d'origine")
+	SafeArea.set_insets_for_tests(applied.duplicate())
+	_check(is_equal_approx(content.offset_top, 42.0 + 60.0) and nav.offset_bottom == 0.0,
 		"zone sûre : une valeur identique ne cumule pas la marge")
 	SafeArea.set_insets_for_tests({"top": 0.0, "left": 0.0, "right": 0.0})
-	_check(is_equal_approx(content.offset_top, 42.0),
+	_check(is_equal_approx(content.offset_top, 42.0) and nav.offset_bottom == 0.0,
 		"zone sûre : un appareil sans découpe retrouve la mise en page d'origine")
 	var menu: Control = (load("res://scenes/menus/MainMenu.tscn") as PackedScene).instantiate()
 	add_child(menu)
 	await get_tree().process_frame
-	SafeArea.set_insets_for_tests({"top": 84.0, "left": 0.0, "right": 0.0})
+	SafeArea.set_insets_for_tests({"top": 84.0, "left": 0.0, "right": 0.0, "bottom": 126.0})
 	_check(is_equal_approx(menu.get_node("Content").offset_top, 64.0 + 84.0),
 		"zone sûre : une scène déjà ouverte suit un changement de zone")
+	_check(menu.get_node("Content").offset_bottom == -186.0
+		and menu.get_node("BottomNav").offset_bottom == 0.0,
+		"zone sûre : la barre de l'accueil reste ancrée en bas avec trois boutons Android")
 	menu.queue_free()
 	page.queue_free()
 	await get_tree().process_frame
@@ -540,6 +545,14 @@ func _test_safe_area() -> void:
 		"zone sûre : la bande haute complète ne pousse pas l'interface")
 	_check(is_equal_approx(SafeArea.clamp_top(8.0), 8.0),
 		"zone sûre : une petite découpe garde sa valeur")
+	var screen := Rect2(0, 0, 1080, 1920)
+	_check(SafeArea.canvas_insets(screen, Rect2(0, 0, 1080, 1896), 0.0, false)["bottom"] == 24.0
+		and SafeArea.canvas_insets(screen, Rect2(0, 0, 1080, 1848), 0.0, false)["bottom"] == 72.0
+		and SafeArea.canvas_insets(screen, screen, 0.0, false, 72.0)["bottom"] == 72.0
+		and SafeArea.canvas_insets(screen, Rect2(0, 0, 1080, 1848), 0.0, false, 72.0)["bottom"] == 72.0
+		and SafeArea.canvas_insets(screen, screen, 0.0, false, 126.0)["bottom"] == 126.0
+		and SafeArea.canvas_insets(screen, screen, 0.0, false)["bottom"] == 0.0,
+		"zone sûre : la réserve système protège les commandes en mode immersif, sans doublonner une marge")
 
 
 ## Vider un deck est une action destructive confirmée : elle ne touche que
@@ -723,17 +736,20 @@ func _test_result_uses_generated_opponent() -> void:
 	var saved_human := BattleContext.last_score_human
 	var saved_ai := BattleContext.last_score_ai
 	var opponent := OpponentFixtureModel.build("nerava", "n2", "tres_difficile")
+	var full_name := "La Gardienne des eaux profondes — Dernière héritière des royaumes oubliés"
+	opponent["combatant_name"] = full_name
 	BattleContext.select_opponent(opponent)
 	BattleContext.record_result(GameState.PLAYER_HUMAN, 42, 17)
 	var page: Control = (load("res://scenes/menus/Result.tscn") as PackedScene).instantiate()
 	add_child(page)
-	await get_tree().process_frame
-	var expected_name := UIFormat.combatant_name(str(opponent["name"]), 18)
+	for frame in range(3):
+		await get_tree().process_frame
 	_check(page.result_label.text == "VICTOIRE !"
-		and page.score_label.text.contains(expected_name)
-		and not page.score_label.text.contains(" — Le ")
+		and page.score_label.text.contains(full_name)
+		and page.score_label.get_line_count() > 1
+		and page.score_label.get_visible_line_count() == page.score_label.get_line_count()
 		and page.score_label.text.contains("42") and page.score_label.text.contains("17"),
-		"l'écran de résultat affiche le nom court et le score de la rencontre")
+		"l'écran de résultat affiche le score et le nom complet sur plusieurs lignes")
 	page.queue_free()
 	await get_tree().process_frame
 	BattleContext.selected_npc_id = saved_id

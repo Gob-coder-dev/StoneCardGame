@@ -15,8 +15,7 @@ static func is_series(series: Dictionary) -> bool:
 		and str(series.get("series", "")) != SeriesRulesModel.SERIES_FT1
 
 
-## Score d'un camp, du point de vue du joueur local. Les noms arrivent déjà
-## raccourcis par l'écran : le format reste identique partout.
+## Score des deux camps, du point de vue du joueur local.
 static func score_line(score_one: int, score_two: int, local_one: bool,
 		local_name: String, remote_name: String) -> String:
 	var mine := score_one if local_one else score_two

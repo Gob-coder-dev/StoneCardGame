@@ -11,7 +11,7 @@ class_name LanProtocol
 extends RefCounted
 
 ## Version du protocole. Toute modification du format la fait changer.
-const VERSION: int = 6
+const VERSION: int = 7
 const RulesIdentity := preload("res://scripts/data/RulesIdentity.gd")
 
 ## Ports du mode local. Les deux appareils sont sur le même réseau Wi-Fi.
@@ -57,7 +57,6 @@ const KIND_MOVE_ACCEPTED: String = "move_accepted"
 const KIND_MOVE_REJECTED: String = "move_rejected"
 const KIND_TURN_ACK: String = "turn_ack"
 const KIND_TURN_CONFIRMED: String = "turn_confirmed"
-const KIND_MATCH_END: String = "match_end"
 ## Accord de lancement : chaque appareil le demande (après le pile ou face, ou
 ## pour une revanche), et l'hôte diffuse `match_start` quand les deux l'ont
 ## demandé. Un seul camp ne peut donc pas lancer la partie à la place de l'autre.
@@ -88,7 +87,7 @@ const PRESENCES: Array[String] = ["lobby", "preparation", "pre_battle", "in_matc
 const KINDS: Array[String] = [
 	KIND_HELLO, KIND_HELLO_ACK, KIND_HELLO_REJECT, KIND_LOBBY_STATE, KIND_READY,
 	KIND_MATCH_START, KIND_MOVE_INTENT, KIND_MOVE_ACCEPTED, KIND_MOVE_REJECTED,
-	KIND_TURN_ACK, KIND_TURN_CONFIRMED, KIND_MATCH_END, KIND_START_REQUEST,
+	KIND_TURN_ACK, KIND_TURN_CONFIRMED, KIND_START_REQUEST,
 	KIND_DESYNC, KIND_BYE, KIND_RULES_UPDATE, KIND_RULES_LOCK, KIND_PREPARE_START,
 	KIND_LOADOUT_REVEAL, KIND_LOADOUT_READY, KIND_LOADOUT_CONFIRM, KIND_DRAFT_OFFERS,
 	KIND_DRAFT_CHOICE, KIND_DRAFT_FINISHED, KIND_ROUND_START, KIND_ROUND_RESULT,
@@ -265,8 +264,6 @@ static func validate(kind: String, payload: Dictionary) -> Dictionary:
 			return _validate_turn_proof(payload)
 		KIND_TURN_CONFIRMED:
 			return _validate_turn_proof(payload)
-		KIND_MATCH_END:
-			return _validate_match_end(payload)
 		KIND_RULES_UPDATE:
 			return _validate_rules_update(payload)
 		KIND_RULES_LOCK:
@@ -464,21 +461,6 @@ static func _validate_turn_proof(payload: Dictionary) -> Dictionary:
 		return _verdict(false, "Séquence invalide.")
 	if not _fingerprint(payload.get("fingerprint")):
 		return _verdict(false, "Empreinte d'état invalide.")
-	return _verdict(true, "")
-
-
-static func _validate_match_end(payload: Dictionary) -> Dictionary:
-	if not _shape(payload, ["match_id", "winner", "score_one", "score_two"]):
-		return _verdict(false, "Fin de partie incomplète.")
-	if not _match_id(payload.get("match_id")):
-		return _verdict(false, "match_id invalide.")
-	var winner := _integer(payload.get("winner"))
-	if winner == INVALID_INT or winner < GameState.PLAYER_NONE or winner > GameState.PLAYER_TWO:
-		return _verdict(false, "Vainqueur invalide.")
-	for key in ["score_one", "score_two"]:
-		var score := _integer(payload.get(key))
-		if score == INVALID_INT or score < 0 or score > MAX_SCORE:
-			return _verdict(false, "Score invalide.")
 	return _verdict(true, "")
 
 

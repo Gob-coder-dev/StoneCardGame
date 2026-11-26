@@ -237,16 +237,14 @@ func _confirm_if_ready() -> void:
 	var fingerprint := _local_fingerprint
 	_local_fingerprint = ""
 	_remote_fingerprint = ""
-	_pending_ack_sequence = -1
-	_set_can_submit(true)
-	if _transport != null:
-		_transport.broadcast(LanProtocol.KIND_TURN_CONFIRMED, {
+	if _transport == null or not _transport.broadcast(LanProtocol.KIND_TURN_CONFIRMED, {
 			"match_id": _match_id,
 			"sequence": _sequence,
 			"fingerprint": fingerprint,
-		})
-	turn_confirmed.emit(_sequence)
-	_publish_result_if_ready()
+		}):
+		abort("La connexion a été interrompue. La partie est annulée.")
+		return
+	_accept_confirmation()
 
 
 func _fail_desync() -> void:
@@ -275,45 +273,42 @@ func report_local_state(fingerprint: String, turn_sequence: int) -> void:
 	_local_fingerprint = fingerprint
 	if _is_host:
 		_confirm_if_ready()
-	else:
-		_transport.send_to(HOST_PEER, LanProtocol.KIND_TURN_ACK, {
+	elif not _transport.send_to(HOST_PEER, LanProtocol.KIND_TURN_ACK, {
 			"match_id": _match_id,
 			"sequence": turn_sequence,
 			"fingerprint": fingerprint,
-		})
+		}):
+		abort("La connexion a été interrompue. La partie est annulée.")
 
 
 ## ─── Fin et erreurs ──────────────────────────────────────────────────────────
 
-## Seul l'hôte décide du résultat et le diffuse.
+## Chaque moteur prépare son résultat avant d'envoyer l'empreinte finale.
+## Le score et le verdict font partie de l'état vérifié par la confirmation.
 func finish_match(winner: int, score_one: int, score_two: int) -> void:
-	if _closed or _desynced or _finished:
+	if _closed or _desynced or _finished or _pending_ack_sequence != _sequence:
 		return
-	if not _is_host:
-		return
-	var payload := {
-		"match_id": _match_id,
+	_pending_result = {
 		"winner": winner,
 		"score_one": score_one,
 		"score_two": score_two,
 	}
-	if not LanProtocol.validate(LanProtocol.KIND_MATCH_END, payload)["ok"]:
+
+
+## La confirmation du dernier tour valide le résultat sur chaque appareil.
+func _accept_confirmation() -> void:
+	if _closed or _desynced or _finished:
 		return
-	_pending_result = payload
-	_publish_result_if_ready()
-
-
-## Le dernier tour suit le même accord d'empreintes que tous les autres.
-## Un verdict calculé localement reste en attente tant que son tour n'est pas confirmé.
-func _publish_result_if_ready() -> void:
-	if _pending_result.is_empty() or _pending_ack_sequence >= 0 \
-			or _closed or _desynced or _finished:
+	_pending_ack_sequence = -1
+	if _pending_result.is_empty():
+		_set_can_submit(true)
+		turn_confirmed.emit(_sequence)
 		return
 	var result := _pending_result
 	_pending_result = {}
 	_finished = true
 	_set_can_submit(false)
-	_transport.broadcast(LanProtocol.KIND_MATCH_END, result)
+	turn_confirmed.emit(_sequence)
 	match_finished.emit(int(result["winner"]), int(result["score_one"]), int(result["score_two"]))
 
 
@@ -402,12 +397,6 @@ func _on_message(from_peer: int, kind: String, payload: Dictionary) -> void:
 			_desynced = true
 			_set_can_submit(false)
 			desync.emit(str(payload.get("reason", DESYNC_MESSAGE)))
-		LanProtocol.KIND_MATCH_END:
-			if not _is_host and from_peer == HOST_PEER:
-				_finished = true
-				_can_submit = false
-				match_finished.emit(int(payload.get("winner", GameState.PLAYER_NONE)),
-					int(payload.get("score_one", 0)), int(payload.get("score_two", 0)))
 		_:
 			pass
 
@@ -446,16 +435,14 @@ func _on_accepted(from_peer: int, payload: Dictionary) -> void:
 
 func _on_turn_confirmed(payload: Dictionary) -> void:
 	var turn_sequence := int(payload.get("sequence", -1))
-	if turn_sequence != _sequence:
+	if turn_sequence != _sequence or turn_sequence != _pending_ack_sequence:
 		return
 	if str(payload.get("fingerprint", "")) != _local_fingerprint:
 		_desynced = true
 		_set_can_submit(false)
 		desync.emit(DESYNC_MESSAGE)
 		return
-	_pending_ack_sequence = -1
-	_set_can_submit(true)
-	turn_confirmed.emit(turn_sequence)
+	_accept_confirmation()
 
 
 func _on_rejected(payload: Dictionary) -> void:
@@ -496,8 +483,7 @@ func _on_peer_left(peer_id: int) -> void:
 	var expected := _client_peer if _is_host else HOST_PEER
 	if expected != 0 and peer_id != expected:
 		return
-	_can_submit = false
-	aborted.emit("L'adversaire a quitté la partie.")
+	abort("L'adversaire a quitté la partie.")
 
 
 ## ─── Contrôles internes ─────────────────────────────────────────────────────

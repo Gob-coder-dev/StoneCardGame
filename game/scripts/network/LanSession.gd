@@ -155,8 +155,7 @@ func send_to(peer_id: int, kind: String, payload: Dictionary) -> bool:
 	if not LanProtocol.validate(kind, payload)["ok"]:
 		push_error("LanSession: message refusé avant envoi (%s)." % kind)
 		return false
-	_receive.rpc_id(peer_id, kind, payload)
-	return true
+	return rpc_id(peer_id, &"_receive", kind, payload) == OK
 
 
 func broadcast(kind: String, payload: Dictionary) -> bool:
@@ -165,8 +164,7 @@ func broadcast(kind: String, payload: Dictionary) -> bool:
 	if not LanProtocol.validate(kind, payload)["ok"]:
 		push_error("LanSession: message refusé avant envoi (%s)." % kind)
 		return false
-	_receive.rpc(kind, payload)
-	return true
+	return rpc(&"_receive", kind, payload) == OK
 
 
 ## ─── Réception ───────────────────────────────────────────────────────────────
@@ -249,10 +247,13 @@ func _on_connection_failed() -> void:
 func _on_server_disconnected() -> void:
 	if _peer == null:
 		return
-	last_notice = "L'hôte a quitté la partie." if state == State.IN_MATCH \
+	var in_match := state == State.IN_MATCH
+	last_notice = "L'hôte a quitté la partie." if in_match \
 		else "L'hôte a quitté le salon."
 	_close_peer()
 	_set_state(State.DISCONNECTED)
+	if in_match:
+		peer_left.emit(LanProtocol.SERVER_ID)
 
 
 func _on_timeout() -> void:

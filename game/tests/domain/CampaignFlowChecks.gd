@@ -152,13 +152,22 @@ func _test_series_result_view() -> void:
 ## défaite ; une nouvelle entrée repart sur une série neuve.
 func _test_mid_series_abandon() -> void:
 	_enter(SERIES_NODE)
+	var full_name := "La Gardienne des eaux profondes — Dernière héritière des royaumes oubliés"
+	BattleContext.selected_opponent["combatant_name"] = full_name
 	var losses_before := int(PlayerData.stats.get("losses", 0))
 	BattleContext.record_mode_round(GameState.PLAYER_HUMAN, 9, 6)
 	BattleContext.prepare_result(GameState.PLAYER_HUMAN, 9, 6, 2)
 	BattleContext.persist_result()
 	var page: Control = (load("res://scenes/menus/Result.tscn") as PackedScene).instantiate()
 	add_child(page)
-	await get_tree().process_frame
+	for frame in range(3):
+		await get_tree().process_frame
+	_check(page.score_label.text.contains(full_name) and page.series_card._score_label.text.contains(full_name),
+		"résultat de série : les scores de manche et de série conservent le nom complet")
+	var series_score: Label = page.series_card._score_label
+	_check(series_score.autowrap_mode == TextServer.AUTOWRAP_WORD_SMART
+		and series_score.get_visible_line_count() == series_score.get_line_count(),
+		"résultat de série : toutes les lignes du score restent visibles")
 	_check(page.result_label.text == "MANCHE 1 GAGNÉE"
 		and page.series_card.visible
 		and page.series_card._score_label.text == "%s 1  —  0 %s" % [

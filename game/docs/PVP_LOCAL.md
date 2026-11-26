@@ -285,7 +285,8 @@ L'intention ne contient **pas** de séquence : seul l'hôte la numérote.
 6. Après résolution et présentation, chaque appareil envoie `turn_ack`
    (`sequence`, `fingerprint`).
 7. L'hôte compare les deux empreintes, puis diffuse `turn_confirmed`.
-   Le tour suivant ne s'ouvre qu'à ce moment-là.
+   La confirmation ouvre le tour suivant ou valide le verdict local si le
+   plateau est complet.
 8. Si les empreintes diffèrent, `desync` arrête la partie et le salon affiche
    l'erreur.
 
@@ -312,10 +313,11 @@ propositions (`draft_choice`) et sa confirmation de loadout
 (`loadout_confirm`). Toute carte hors offre, tout choix en double et toute
 confirmation d'une ancienne préparation sont ignorés.
 
-`match_end` n'est émis que par l'hôte. Un client qui tente `finish_match()` est
-ignoré. La configuration `match_start` reçue est refusée si ses participants
-n'attribuent pas `PLAYER_TWO` au pair local, ou si les deux camps désignent le
-même `peer_id`.
+Le dernier tour inclut le verdict et les scores dans l'empreinte comparée.
+Chaque appareil prépare son résultat local et l'enregistre à la confirmation
+du dernier tour. La configuration `match_start` reçue est refusée si ses
+participants n'attribuent pas `PLAYER_TWO` au pair local, ou si les deux
+camps désignent le même `peer_id`.
 
 ## Déterminisme et graine
 

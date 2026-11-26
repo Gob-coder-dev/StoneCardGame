@@ -26,10 +26,12 @@ func run() -> void:
 	_test_liveness_timeout()
 	_test_results()
 	_test_result_waits_for_proof()
+	_test_final_confirmation_delivery()
 	_test_late_messages_after_end()
 	_test_start_handshake()
 	_test_rematch()
 	_test_determinism()
+	await _test_driver_final_turn()
 	await _test_driver_keeps_stats()
 
 
@@ -423,8 +425,8 @@ func _test_results() -> void:
 	_check((pair["client_finished"] as Array).is_empty(),
 		"le client ne peut pas décider du résultat")
 	host.finish_match(GameState.PLAYER_TWO, 2, 9)
-	_check(pair["client_finished"] == [[GameState.PLAYER_TWO, 2, 9]],
-		"le résultat diffusé par l'hôte arrive au client")
+	_check((pair["client_finished"] as Array).is_empty(),
+		"le résultat de l'hôte exige également un tour à confirmer")
 
 
 func _test_rejected_retry() -> void:
@@ -446,6 +448,7 @@ func _test_result_waits_for_proof() -> void:
 	var cell := _free_cell(pair["state"])
 	host.request_move(cell.x, cell.y, _hand_card(pair["state"], GameState.PLAYER_ONE))
 	host.finish_match(GameState.PLAYER_ONE, 9, 4)
+	client.finish_match(GameState.PLAYER_ONE, 9, 4)
 	_check((pair["client_finished"] as Array).is_empty(),
 		"PVP : le résultat attend la preuve du dernier tour")
 	_confirm(pair)
@@ -458,6 +461,7 @@ func _test_result_waits_for_proof() -> void:
 	cell = _free_cell(broken["state"])
 	broken_host.request_move(cell.x, cell.y, _hand_card(broken["state"], GameState.PLAYER_ONE))
 	broken_host.finish_match(GameState.PLAYER_ONE, 9, 4)
+	broken["client"].finish_match(GameState.PLAYER_ONE, 9, 4)
 	broken_host.report_local_state("a".repeat(LanProtocol.FINGERPRINT_LENGTH), 1)
 	broken["client"].report_local_state("b".repeat(LanProtocol.FINGERPRINT_LENGTH), 1)
 	_check((broken["client_finished"] as Array).is_empty()
@@ -465,14 +469,45 @@ func _test_result_waits_for_proof() -> void:
 		"PVP : une désynchronisation finale invalide le résultat en attente")
 
 
+func _test_final_confirmation_delivery() -> void:
+	for delivered in [false, true]:
+		var pair := _pair()
+		var host: LanMatchCoordinator = pair["host"]
+		var client: LanMatchCoordinator = pair["client"]
+		var transport: Fake = pair["host_transport"]
+		var host_results: Array = []
+		host.match_finished.connect(func(winner: int, one: int, two: int):
+			host_results.append([winner, one, two]))
+		_prepare_final_turn(pair)
+		if delivered:
+			client.turn_confirmed.connect(func(_sequence: int): transport.online = false)
+		else:
+			transport.online = false
+		_confirm(pair)
+		pair["client_transport"].peer_left.emit(LanProtocol.SERVER_ID)
+		var expected: Array = [[GameState.PLAYER_ONE, 9, 4]] if delivered else []
+		_check(host_results == expected and pair["client_finished"] == expected,
+			"coupure PVP : les deux appareils gardent le même verdict après confirmation, sinon aucun")
+		if not delivered:
+			_check(pair["host_aborted"].size() == 1 and pair["client_aborted"].size() == 1,
+				"coupure PVP : les deux côtés annulent si l'envoi final échoue")
+
+
+func _prepare_final_turn(pair: Dictionary) -> void:
+	var cell := _free_cell(pair["state"])
+	pair["host"].request_move(cell.x, cell.y, _hand_card(pair["state"], GameState.PLAYER_ONE))
+	pair["host"].finish_match(GameState.PLAYER_ONE, 9, 4)
+	pair["client"].finish_match(GameState.PLAYER_ONE, 9, 4)
+
+
 func _test_late_messages_after_end() -> void:
 	var pair := _pair()
-	var host: LanMatchCoordinator = pair["host"]
-	host.finish_match(GameState.PLAYER_ONE, 9, 4)
-	pair["host_transport"].push(1, LanProtocol.KIND_MATCH_END, {
-		"match_id": MATCH_ID, "winner": 1, "score_one": 9, "score_two": 4})
+	_prepare_final_turn(pair)
+	_confirm(pair)
+	var confirmation: Dictionary = pair["host_transport"].last_sent()["payload"]
+	pair["host_transport"].push(1, LanProtocol.KIND_TURN_CONFIRMED, confirmation)
 	_check((pair["client_finished"] as Array).size() == 1,
-		"PVP : un résultat reçu deux fois ne déclenche pas deux fins de partie")
+		"PVP : une confirmation finale répétée ne déclenche pas deux fins de partie")
 	var aborted := _pair()
 	var aborted_host: LanMatchCoordinator = aborted["host"]
 	var cell := _free_cell(aborted["state"])
@@ -490,7 +525,8 @@ func _test_rematch() -> void:
 	var host: LanMatchCoordinator = pair["host"]
 	var client: LanMatchCoordinator = pair["client"]
 	var recorder = pair["recorder"]
-	host.finish_match(GameState.PLAYER_ONE, 7, 2)
+	_prepare_final_turn(pair)
+	_confirm(pair)
 	host.enable_start()
 	client.enable_start()
 	host.set_start_builder(recorder.build_rematch)
@@ -577,7 +613,47 @@ func _test_determinism() -> void:
 		"une empreinte sans état reste stable et ne plante pas")
 
 
-## La preuve la plus importante : un match PVP ne touche jamais aux statistiques.
+func _test_driver_final_turn() -> void:
+	var pair := _pair()
+	var blocked: Array = []
+	for index in range(1, GameState.total_cells()):
+		blocked.append([index / GameState.BOARD_SIZE, index % GameState.BOARD_SIZE])
+	var results: Array = [[], []]
+	var drivers: Array[LanMatchDriver] = []
+	var managers: Array[TurnManager] = []
+	for index in range(2):
+		var manager := TurnManager.new()
+		var driver: LanMatchDriver = Driver.new()
+		add_child(manager)
+		add_child(driver)
+		managers.append(manager)
+		drivers.append(driver)
+		driver.setup(manager)
+		var coordinator: LanMatchCoordinator = pair["host"] if index == 0 else pair["client"]
+		driver._coordinator = coordinator
+		coordinator.command_accepted.connect(driver._on_command_accepted)
+		coordinator.match_finished.connect(driver._on_match_finished)
+		manager.turn_ended.connect(driver.on_turn_ended.unbind(2))
+		manager.game_over.connect(driver.on_game_over)
+		driver.finished.connect(func(winner: int, one: int, two: int):
+			results[index].append([winner, one, two]))
+		manager.start_game(_deck(), _deck(), blocked, "", GameState.PLAYER_ONE, "veskar", "veskar", 4242)
+	var accepted: bool = pair["host"].request_move(0, 0, _deck()[0])
+	for frame in range(12):
+		await get_tree().process_frame
+		if not results[0].is_empty() and not results[1].is_empty():
+			break
+	_check(accepted and results == [[[GameState.PLAYER_ONE, 1, 0]], [[GameState.PLAYER_ONE, 1, 0]]]
+		and managers[0].get_state().is_game_over and managers[1].get_state().is_game_over,
+		"PVP : les deux moteurs confirment et présentent le même verdict après le dernier placement")
+	for index in range(2):
+		drivers[index].shutdown()
+		drivers[index].queue_free()
+		managers[index].queue_free()
+	await get_tree().process_frame
+
+
+## Le driver ne doit jamais enregistrer une partie dans les statistiques de campagne.
 func _test_driver_keeps_stats() -> void:
 	var stats := PlayerData.stats.duplicate(true)
 	var games_played := int(PlayerData.stats.get("games_played", 0))

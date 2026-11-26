@@ -50,3 +50,8 @@ static func truncate(value: String, max_characters: int) -> String:
 	if max_characters > 1 and value.length() > max_characters:
 		return value.left(max_characters - 1).strip_edges() + "…"
 	return value
+
+
+static func campaign_combatant_name(encounter: Dictionary) -> String:
+	var name := str(encounter.get("combatant_name", "")).strip_edges()
+	return name if not name.is_empty() else combatant_name(str(encounter.get("name", "")), 0)

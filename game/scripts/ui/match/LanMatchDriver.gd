@@ -108,15 +108,16 @@ func on_turn_ended() -> void:
 	if _coordinator == null:
 		return
 	var state := turn_manager.get_state()
-	if state == null:
+	if state == null or RulesEngine.is_game_over(state):
 		return
 	_coordinator.report_local_state(StateFingerprintModel.of(state), _last_sequence)
 
 
 func on_game_over(winner: int, score_one: int, score_two: int) -> void:
-	# Seul l'hôte diffuse le résultat ; le client attend MATCH_END.
-	if _coordinator != null:
-		_coordinator.finish_match(winner, score_one, score_two)
+	if _coordinator == null:
+		return
+	_coordinator.finish_match(winner, score_one, score_two)
+	_coordinator.report_local_state(StateFingerprintModel.of(turn_manager.get_state()), _last_sequence)
 
 
 func shutdown() -> void:
@@ -147,6 +148,7 @@ func _on_command_accepted(command: Dictionary) -> void:
 	var sequence := int(command.get("sequence", 0))
 	if sequence <= _last_sequence:
 		return
+	_last_sequence = sequence
 	if _confirmation_timer != null:
 		_confirmation_timer.start(LanProtocol.TURN_CONFIRM_TIMEOUT_SECONDS)
 	if not turn_manager.play(int(command["player"]), int(command["row"]),
@@ -154,7 +156,6 @@ func _on_command_accepted(command: Dictionary) -> void:
 		_leaving = true
 		aborted.emit("Désynchronisation : le moteur local a refusé un coup validé.")
 		return
-	_last_sequence = sequence
 
 
 func _on_confirmation_timeout() -> void:
@@ -181,4 +182,6 @@ func _on_match_finished(winner: int, score_one: int, score_two: int) -> void:
 	if _leaving:
 		return
 	_leaving = true
+	if _confirmation_timer != null:
+		_confirmation_timer.stop()
 	finished.emit(winner, score_one, score_two)

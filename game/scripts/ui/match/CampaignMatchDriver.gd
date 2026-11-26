@@ -41,9 +41,7 @@ func start() -> bool:
 	local_side = GameState.PLAYER_ONE
 	records_campaign_stats = true
 	local_name = PlayerData.player_name
-	opponent_name = str(_npc_data.get("combatant_name", "")).strip_edges()
-	if opponent_name.is_empty():
-		opponent_name = UIFormat.combatant_name(str(_npc_data.get("name", "")), 0)
+	opponent_name = UIFormat.campaign_combatant_name(_npc_data)
 	local_god = GodIdentityModel.player(player_god_id)
 	opponent_god = GodIdentityModel.bot(opponent_god_id)
 	_ai_runner = AITurnRunner.new()

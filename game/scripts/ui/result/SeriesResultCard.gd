@@ -21,6 +21,7 @@ func _ready() -> void:
 	_header_label = _make_label(20, UITheme.COL_TEXT_DIM)
 	_header_label.text = "SÉRIE"
 	_score_label = _make_label(38, UITheme.COL_TEXT)
+	_score_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_caption_label = _make_label(24, UITheme.COL_TEXT_DIM)
 	_note_label = _make_label(20, UITheme.COL_WARNING)
 	column.add_child(_header_label)

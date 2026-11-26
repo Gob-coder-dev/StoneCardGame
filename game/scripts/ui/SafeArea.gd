@@ -1,11 +1,12 @@
 ## SafeArea.gd
-## Autoload : décale l'interface sous la zone réellement visible de l'écran.
+## Autoload : garde les commandes dans la zone utilisable de l'écran.
 ##
 ## Les appareils sans découpe (tablettes, ordinateurs) ne voient aucune
 ## différence : l'inset vaut zéro, donc les offsets de conception sont
 ## restaurés tels quels. Un téléphone à caméra poinçonnée reçoit uniquement la
 ## hauteur occupée par la caméra elle-même, jamais toute la barre d'état : en
-## plein écran immersif, seule la découpe empiète réellement sur l'interface.
+## plein écran immersif, seule la découpe empiète réellement en haut.
+## La marge basse réserve l'emprise de la navigation Android lorsqu'elle apparaît.
 ##
 ## Les scènes déclarent leur conteneur principal dans le groupe
 ## `safe_area_top`. Le service mémorise les offsets d'origine et ajoute
@@ -16,9 +17,11 @@ extends Node
 const GROUP_TOP: StringName = &"safe_area_top"
 const GROUP_LEFT: StringName = &"safe_area_left"
 const GROUP_RIGHT: StringName = &"safe_area_right"
+const GROUP_BOTTOM: StringName = &"safe_area_bottom"
 
 ## Une valeur aberrante de l'OS ne doit jamais écraser la mise en page.
-const MAX_INSET_RATIO: float = 0.05
+const MAX_SIDE_INSET_RATIO: float = 0.05
+const MAX_BOTTOM_INSET_RATIO: float = 0.10
 ## Sur Android, le rectangle de découpe couvre toute la bande haute (barre
 ## d'état comprise) : 130 px sur un Redmi 14 Pro, alors que l'objectif n'en
 ## occupe qu'une quarantaine. Décaler l'interface de toute cette bande vide
@@ -81,7 +84,7 @@ func _on_node_added(node: Node) -> void:
 
 func _targets_an_edge(control: Control) -> bool:
 	return control.is_in_group(GROUP_TOP) or control.is_in_group(GROUP_LEFT) \
-		or control.is_in_group(GROUP_RIGHT)
+		or control.is_in_group(GROUP_RIGHT) or control.is_in_group(GROUP_BOTTOM)
 
 
 func _refresh() -> void:
@@ -107,17 +110,11 @@ func _apply(control: Control) -> void:
 	control.offset_left = base.x + _inset_for(control, GROUP_LEFT)
 	control.offset_top = base.y + _inset_for(control, GROUP_TOP)
 	control.offset_right = base.z - _inset_for(control, GROUP_RIGHT)
-	control.offset_bottom = base.w
+	control.offset_bottom = base.w - _inset_for(control, GROUP_BOTTOM)
 
 
 func _inset_for(control: Control, group: StringName) -> float:
-	if not control.is_in_group(group):
-		return 0.0
-	if group == GROUP_TOP:
-		return float(_insets["top"])
-	if group == GROUP_LEFT:
-		return float(_insets["left"])
-	return float(_insets["right"])
+	return float(_insets.get(str(group).trim_prefix("safe_area_"), 0.0)) if control.is_in_group(group) else 0.0
 
 
 func _forget(control: Control) -> void:
@@ -129,26 +126,43 @@ func _forget(control: Control) -> void:
 func _read_os_insets() -> Dictionary:
 	if not OS.has_feature("mobile") or OS.get_name() != "Android":
 		return _empty_insets()
-	# Sans découpe, l'API a déjà renvoyé des rectangles faux selon les versions
-	# d'Android : on ne touche à rien tant qu'aucune caméra n'empiète sur l'écran.
-	if DisplayServer.get_display_cutouts().is_empty():
-		return _empty_insets()
 	var safe := Rect2(DisplayServer.get_display_safe_area())
-	if safe.size.x <= 0.0 or safe.size.y <= 0.0:
-		return _empty_insets()
+	var cutouts := DisplayServer.get_display_cutouts()
 	var viewport := get_viewport()
 	var visible := viewport.get_visible_rect()
 	var to_canvas := viewport.get_final_transform().affine_inverse()
 	var safe_canvas := to_canvas * safe
-	var limit := visible.size * MAX_INSET_RATIO
 	var screen_height := float(DisplayServer.window_get_size().y)
-	var camera := cutout_depth(DisplayServer.get_display_cutouts(), screen_height)
-	var top := (to_canvas * Vector2(0.0, camera)).y - visible.position.y
+	var camera := cutout_depth(cutouts, screen_height)
+	var top := (to_canvas * Vector2(0.0, camera)).y - visible.position.y if camera > 0.0 else 0.0
+	var navigation_bottom := to_canvas.basis_xform(Vector2(0.0, _android_navigation_bottom())).y
+	return canvas_insets(visible, safe_canvas, top, not cutouts.is_empty(), navigation_bottom)
+
+
+static func canvas_insets(visible: Rect2, safe: Rect2, top: float, has_cutout: bool,
+		navigation_bottom: float = 0.0) -> Dictionary:
+	if not safe.has_area() or not visible.intersects(safe):
+		safe = visible
+	var side_limit := visible.size.x * MAX_SIDE_INSET_RATIO
+	var bottom_limit := visible.size.y * MAX_BOTTOM_INSET_RATIO
 	return {
 		"top": clamp_top(top),
-		"left": clampf(roundf(safe_canvas.position.x - visible.position.x), 0.0, limit.x),
-		"right": clampf(roundf(visible.end.x - safe_canvas.end.x), 0.0, limit.x),
+		"left": clampf(roundf(safe.position.x - visible.position.x), 0.0, side_limit) if has_cutout else 0.0,
+		"right": clampf(roundf(visible.end.x - safe.end.x), 0.0, side_limit) if has_cutout else 0.0,
+		"bottom": clampf(roundf(maxf(visible.end.y - safe.end.y, navigation_bottom)), 0.0, bottom_limit),
 	}
+
+
+## En mode immersif, la zone sûre de Godot ignore les barres système.
+## La marge stable d'Android reste disponible sur toutes les API prises en charge.
+static func _android_navigation_bottom() -> int:
+	if not Engine.has_singleton("AndroidRuntime"):
+		return 0
+	var activity: Object = Engine.get_singleton("AndroidRuntime").call("getActivity")
+	var window: Object = activity.call("getWindow") if activity != null else null
+	var decor: Object = window.call("getDecorView") if window != null else null
+	var platform_insets: Object = decor.call("getRootWindowInsets") if decor != null else null
+	return int(platform_insets.call("getStableInsetBottom")) if platform_insets != null else 0
 
 
 ## Marge haute appliquée : de quoi passer sous l'objectif, jamais plus.
@@ -169,5 +183,5 @@ static func cutout_depth(cutouts: Array, screen_height: float) -> float:
 	return depth
 
 
-func _empty_insets() -> Dictionary:
-	return {"top": 0.0, "left": 0.0, "right": 0.0}
+static func _empty_insets() -> Dictionary:
+	return {"top": 0.0, "left": 0.0, "right": 0.0, "bottom": 0.0}
