@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 from samstone_rl.decks import DeckCatalog, DeckGenerator, DeckOperators
 
@@ -57,3 +58,19 @@ def test_candidate_hash_ignores_input_order():
     reversed_candidate = catalog.candidate("veskar", reversed(candidate.stone_ids))
     assert reversed_candidate.stone_ids == candidate.stone_ids
     assert reversed_candidate.deck_hash == candidate.deck_hash
+
+
+def test_budget_matching_preserves_existing_lineages_order_and_affinities():
+    catalog = synthetic_catalog()
+    generator = DeckGenerator(catalog)
+    original = ("n11_n1", "n06_n1", "n05_n1", "n10_n1", "n04_n1", "n03_n1", "n02_n1", "n01_n1")
+    target = catalog.cost(original) + 2
+    matched = generator.match_budget("veskar", original, target)
+    assert catalog.cost(matched) == target
+    assert catalog.candidate("veskar", matched)
+    assert [catalog.variants[x].lineage_id for x in matched] == [
+        catalog.variants[x].lineage_id for x in original
+    ]
+    assert max(catalog.variants[x].level for x in matched) <= 3
+    with pytest.raises(ValueError, match="indisponible"):
+        generator.match_budget("veskar", original, 0.25)

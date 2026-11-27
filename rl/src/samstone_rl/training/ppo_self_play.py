@@ -15,12 +15,13 @@ from samstone_rl.models.policy import policy_spec
 from samstone_rl.training.league import LeagueOpponent, SelfPlayLeague
 from samstone_rl.training.phase_five_arena import PhaseFiveArena
 from samstone_rl.training.phase_five_curriculum import ChampionCurriculum
+from samstone_rl.training.phase_five_decks import training_deck, validate_deck_pools
 from samstone_rl.training.phase_five_protocol import validate_settings
 from samstone_rl.training.ppo_cleanrl import PPOTrainer
 from samstone_rl.training.self_play_metrics import log_self_play
 from samstone_rl.training.validation import wilson_lower
 from samstone_rl.utils.certification import require_certified
-from samstone_rl.utils.checkpoints import file_checksum, load_checkpoint
+from samstone_rl.utils.checkpoints import file_checksum, load_checkpoint, state_checksum
 from samstone_rl.utils.provenance import provenance
 from samstone_rl.utils.resources import close_on_error
 
@@ -38,6 +39,32 @@ def verify_phase_four(checkpoint, current, allow_python_source_change):
         )
 
 
+def _transferred_champion(source_path, source):
+    """Verify the incumbent and phase-4 reference recorded by the source run."""
+    phase5 = source.get("phase5", {})
+    champions = phase5.get("champion_curriculum", {}).get("champions", [])
+    if len(champions) < 2:
+        raise ValueError("le transfert exige un champion promu dans le run source")
+    entry = champions[-1]
+    root = source_path.parent
+    reference = root / "phase4_baseline.pt"
+    champion = (root / entry["path"]).resolve()
+    if (
+        not champion.is_relative_to((root / "league").resolve())
+        or file_checksum(champion) != entry["sha256"]
+        or file_checksum(reference) != phase5["initial_policy_checksum"]
+    ):
+        raise ValueError("references du run source incompatibles")
+    initial = load_checkpoint(champion)
+    if state_checksum(initial["model"]) != entry["policy"]:
+        raise ValueError("les poids du champion source ne correspondent pas au registre")
+    return (
+        reference,
+        initial,
+        dict(source=str(source_path), champion=str(champion), sha256=entry["sha256"]),
+    )
+
+
 class PhaseFiveTrainer(ChampionCurriculum, PPOTrainer):
     @close_on_error
     def __init__(
@@ -46,14 +73,17 @@ class PhaseFiveTrainer(ChampionCurriculum, PPOTrainer):
         *,
         phase4_checkpoint: str | Path | None = None,
         resume: str | Path | None = None,
+        transfer_from: str | Path | None = None,
         allow_python_source_change: bool = False,
         migrate_legacy_phase5: bool = False,
         output_override: str | Path | None = None,
     ) -> None:
-        if (phase4_checkpoint is None) == (resume is None):
-            raise ValueError("fournir soit phase4_checkpoint, soit resume")
-        source_path = Path(phase4_checkpoint or resume).resolve()
+        if sum(item is not None for item in (phase4_checkpoint, resume, transfer_from)) != 1:
+            raise ValueError("fournir phase4_checkpoint, resume ou transfer_from")
+        source_path = Path(phase4_checkpoint or resume or transfer_from).resolve()
         source = load_checkpoint(source_path)
+        reference_path = source_path
+        transfer = None
         original = source.get("phase5", {})
         if phase4_checkpoint is not None and not source.get("curriculum", {}).get("completed"):
             raise ValueError("la phase 5 exige phase4_validated.pt")
@@ -66,18 +96,39 @@ class PhaseFiveTrainer(ChampionCurriculum, PPOTrainer):
             )
         requested = yaml.safe_load(Path(config_path).read_text(encoding="utf-8"))
         validate_settings(requested["phase5"])
+        if resume is None:
+            validate_deck_pools(requested["environment"])
         if requested.get("phase4_automation", {}).get("enabled", False):
             raise ValueError("la phase 5 ne doit pas activer phase4_automation")
-        if phase4_checkpoint is not None:
-            verify_phase_four(source, provenance(), allow_python_source_change)
+        if transfer_from is not None:
+            reference_path, source, transfer = _transferred_champion(source_path, source)
+        if resume is None:
+            current = provenance()
+            reference = load_checkpoint(reference_path) if transfer else source
+            verify_phase_four(reference, current, allow_python_source_change)
+            if transfer:
+                recorded = source["provenance"]
+                changes = {
+                    key
+                    for key in current.keys() | recorded.keys()
+                    if current.get(key) != recorded.get(key)
+                }
+                if changes and not (changes == {"python_source"} and allow_python_source_change):
+                    raise ValueError("provenance du champion source incompatible")
             if policy_spec(source.get("config", {})) != policy_spec(requested):
                 raise ValueError("contrat du modele different de la phase 4")
             for key in ("scenarios", "reward"):
                 before = source.get("config", {}).get("environment", {}).get(key)
-                if before is not None and before != requested["environment"][key]:
+                after = requested["environment"][key]
+                if transfer and key == "scenarios":
+                    if sorted(case["god"] for case in before) != sorted(
+                        case["god"] for case in after
+                    ):
+                        raise ValueError("le transfert exige les memes dieux")
+                elif before is not None and before != after:
                     raise ValueError(f"phase 5 et phase 4 n'utilisent pas les memes {key}")
         self.phase5_state = {}
-        self._last_screening = source.get("evaluation") or {}
+        self._last_screening = (source.get("evaluation") or {}) if resume else {}
         self._allow_pending_source_restart = allow_python_source_change
         self.phase5_completed = False
         mutable_phase5 = (("phase5", "maximum_updates_without_promotion"),)
@@ -91,11 +142,11 @@ class PhaseFiveTrainer(ChampionCurriculum, PPOTrainer):
         )
         self.phase4_baseline = self.output / "phase4_baseline.pt"
         self.league_directory = self.output / "league"
-        if phase4_checkpoint is not None:
-            self.phase4_checksum = file_checksum(source_path)
+        if resume is None:
+            self.phase4_checksum = file_checksum(reference_path)
             if self.phase4_baseline.exists() or self.league_directory.exists():
                 raise ValueError("run de phase 5 deja initialise; utiliser --resume")
-            shutil.copy2(source_path, self.phase4_baseline)
+            shutil.copy2(reference_path, self.phase4_baseline)
         else:
             self.phase4_checksum = str(original["initial_policy_checksum"])
             if (
@@ -128,7 +179,7 @@ class PhaseFiveTrainer(ChampionCurriculum, PPOTrainer):
         else:
             self.model.load_state_dict(source["model"])
             self.curriculum.load_state_dict(source["curriculum"])
-        self._initialize_champions(source, legacy=legacy)
+        self._initialize_champions(source, legacy=legacy, transfer=transfer)
         self.arena = PhaseFiveArena(self)
         self.phase5_completed = self.phase5_state["status"] == "completed"
         if resume is None or legacy:
@@ -161,8 +212,8 @@ class PhaseFiveTrainer(ChampionCurriculum, PPOTrainer):
         config = dict(
             human_god=home["god"],
             ai_god=away["god"],
-            human_deck=list(home["deck"]),
-            ai_deck=list(away["deck"]),
+            human_deck=list(training_deck(home, self.rng)),
+            ai_deck=list(training_deck(away, self.rng)),
         )
         if blocked is not None:
             config["blocked"] = blocked
@@ -244,6 +295,11 @@ def main(argv=None):
     source = parser.add_mutually_exclusive_group(required=True)
     source.add_argument("--phase4", type=Path)
     source.add_argument("--resume", type=Path)
+    source.add_argument(
+        "--transfer-from",
+        type=Path,
+        help="importer le champion d'un run termine ou en cours avec de nouveaux decks",
+    )
     parser.add_argument("--allow-python-source-change", action="store_true")
     parser.add_argument("--migrate-legacy-phase5", action="store_true")
     parser.add_argument("--quiet", action="store_true")
@@ -259,6 +315,7 @@ def main(argv=None):
                 args.config,
                 phase4_checkpoint=args.phase4,
                 resume=args.resume,
+                transfer_from=args.transfer_from,
                 allow_python_source_change=args.allow_python_source_change,
                 migrate_legacy_phase5=args.migrate_legacy_phase5,
             )

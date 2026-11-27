@@ -1,0 +1,190 @@
+# Phase 5 with six Godot-validated presets at 80 points.
+seed: 54321
+device: cpu
+output_dir: runs/ppo_self_play_80
+environment:
+  backend: python_batch
+  evaluation_backend: godot
+  godot_path: null
+  reward:
+    capture: 0.0
+    multi_capture: 0.0
+    terminal: 2.0
+    final_margin: 0.1
+    final_margin_scale: 5.0
+    board_control_delta: 0.05
+    board_control_delta_limit: 4
+  scenarios:
+  - god: veskar
+    deck:
+    - devoracle_n3
+    - griffe_a_jetons_n4
+    - roulette_vorace_n3
+    - croupier_manchot_n3
+    - jumeau_de_cuivre_n3
+    - valet_a_lenvers_n3
+    - avortons_des_caves_n4
+    - le_voyeur_n1
+  - god: nerava
+    deck:
+    - porte_fievre_n4
+    - crache_cendre_n4
+    - clochelet_malade_n3
+    - machoire_moisie_n4
+    - veuve_des_spores_n3
+    - griffe_septique_n3
+    - avortons_des_caves_n4
+    - devoreur_de_lanternes_n3
+  - god: kharun
+    deck:
+    - eclat_cuirasse_n4
+    - heaume_errant_n4
+    - carapace_vide_n4
+    - osselet_blinde_n4
+    - chevalier_sans_visage_n3
+    - golem_de_faience_n3
+    - avortons_des_caves_n4
+    - le_sac_a_murmures_n4
+  - god: ilyr
+    deck:
+    - longuepine_n3
+    - bouche_arbalete_n2
+    - echassier_des_brumes_n2
+    - veilleur_bifurque_n3
+    - lil_empale_n1
+    - la_croisee_des_regards_n1
+    - avortons_des_caves_n3
+    - le_voyeur_n1
+  - god: sylkha
+    deck:
+    - nud_vivant_n4
+    - bourgeon_mordant_n3
+    - mante_des_racines_n3
+    - porte_nid_n3
+    - fourmilion_des_nerfs_n1
+    - la_nourrice_nouee_n2
+    - avortons_des_caves_n4
+    - devoreur_de_lanternes_n3
+  - god: enigma
+    deck:
+    - collecteur_de_dents_n4
+    - depeceur_rampant_n4
+    - recycleur_thoracique_n3
+    - porte_greffes_n2
+    - le_demonteur_n2
+    - la_machine_aux_mille_depouilles_n1
+    - avortons_des_caves_n3
+    - le_voyeur_n1
+model:
+  architecture: tactical_actor_critic
+  action_hidden_dim: 128
+  hidden_dim: 512
+ppo:
+  total_timesteps: 4194304
+  rollout_steps: 32
+  num_envs: 16
+  learning_rate: 0.0001
+  gamma: 0.99
+  gae_lambda: 0.95
+  minibatches: 8
+  min_update_epochs: 1
+  max_update_epochs: 4
+  target_kl: 0.02
+  update_epochs: 3
+  clip_coef: 0.2
+  entropy_coef: 0.01
+  value_coef: 0.5
+  max_grad_norm: 0.5
+monitoring:
+  tensorboard: true
+  checkpoint_every_updates: 25
+  snapshot_every_updates: 200
+  alerts:
+    target_kl: 0.02
+    maximum_clip_fraction: 0.3
+    minimum_normalized_entropy: 0.08
+    minimum_explained_variance: -0.1
+    maximum_throughput_drop: 0.35
+    maximum_eval_regression: 0.05
+    maximum_reward_divergence: 0.25
+    minimum_anchor_win_rate: 0.8
+    plateau_evaluations: 5
+    consecutive_updates: 3
+curriculum:
+  promotion_win_rate: 0.85
+  confidence_floor: 0.9
+  maximum_loss_rate: 0.07
+  non_loss_confidence_floor: 0.9
+  replay_probability: 0.2
+  stages:
+  - name: precision_0
+    precision: 0.0
+    anticipation: false
+  - name: precision_025
+    precision: 0.25
+    anticipation: false
+  - name: precision_050
+    precision: 0.5
+    anticipation: false
+  - name: precision_100
+    precision: 1.0
+    anticipation: false
+  - name: precision_100_anticipation_25
+    precision: 1.0
+    anticipation_probability: 0.25
+  - name: precision_100_anticipation_50
+    precision: 1.0
+    anticipation_probability: 0.5
+  - name: precision_100_anticipation_75
+    precision: 1.0
+    anticipation_probability: 0.75
+  - name: precision_100_anticipation
+    precision: 1.0
+    anticipation_probability: 1.0
+  god_sampling:
+    enabled: false
+  terrain_sampling:
+    enabled: false
+evaluation:
+  every_updates: 100
+  num_envs: 10
+  godot_retry_attempts: 2
+phase5:
+  protocol: champion_v1
+  target_promotions: 3
+  minimum_updates_between_attempts: 100
+  maximum_updates_without_promotion: 1500
+  maximum_history_anchors: 3
+  seed_base: 6100000000000
+  mirror_probability: 0.1
+  training_weights:
+    current: 0.6
+    historical: 0.2
+    godot: 0.2
+  adaptive_opponents:
+    initial_bot_fraction: 0.4
+    minimum_bot_fraction: 0.25
+    maximum_bot_fraction: 0.5
+    adjustment: 0.05
+    consecutive_results: 2
+    every_updates: 100
+    games_per_slice: 1
+  screen_games_per_slice: 1
+  screen_minimum_score: 0.52
+  promotion:
+    games_per_slice: 8
+    confirmations: 2
+    minimum_score: 0.53
+    confidence_level: 0.95
+    bootstrap_samples: 2000
+    maximum_god_regression: 0.05
+  history:
+    games_per_slice: 2
+    minimum_score: 0.48
+    maximum_regression: 0.05
+  retention:
+    games_per_slice: 2
+    maximum_stage_regression: 0.05
+    maximum_god_regression: 0.08
+  final:
+    games_per_slice: 12

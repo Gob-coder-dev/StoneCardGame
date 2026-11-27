@@ -21,8 +21,8 @@ from samstone_rl.utils.checkpoints import (
 class ChampionCurriculum(AdaptiveOpponents):
     """Mixin: only a successful frozen tournament can replace the champion."""
 
-    def _initialize_champions(self, source, *, legacy=False):
-        saved = source.get("phase5", {}).get("champion_curriculum")
+    def _initialize_champions(self, source, *, legacy=False, transfer=None):
+        saved = None if transfer else source.get("phase5", {}).get("champion_curriculum")
         self._phase5_exit_code = 0
         self._phase5_heartbeat = 0.0
         if saved is not None:
@@ -39,8 +39,8 @@ class ChampionCurriculum(AdaptiveOpponents):
                 backup = self.output / "checkpoints/legacy_phase5_source.pt"
                 if not backup.exists():
                     save_checkpoint(backup, source)
-            baseline = load_checkpoint(self.phase4_baseline)
-            champion = self._champion_file(baseline, 0, 0, 0.5)
+            initial = source if transfer else load_checkpoint(self.phase4_baseline)
+            champion = self._champion_file(initial, 0, 0, 0.5)
             self.phase5_state = dict(
                 schema=1,
                 status="training",
@@ -56,6 +56,8 @@ class ChampionCurriculum(AdaptiveOpponents):
                 reports=[],
                 legacy_migration=legacy,
             )
+            if transfer:
+                self.phase5_state["initial_transfer"] = transfer
         self._initialize_opponent_sampling()
         self._activate_champions()
 

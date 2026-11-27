@@ -316,8 +316,55 @@ Après réussite, lancer la phase 5 avec la commande suivante.
 
 ## Phase 5 : champion, candidat et arrêt automatique
 
-La collecte reste en Python et les validations utilisent Godot. Le modèle de
-phase 4 est le premier champion figé ; le candidat poursuit PPO. Le champion
+La configuration `configs/ppo_self_play_80_varied.yaml` utilise quatre ratios,
+de 7 cartes du dieu et 1 neutre à 4 cartes du dieu et 4 neutres. Chaque
+composition compte 8 lignées distinctes et coûte exactement 80 points.
+Pour chaque dieu et chaque ratio, la collecte tire parmi 4 decks. Les
+évaluations tournent sur 2 autres decks, puis 2 decks supplémentaires sont
+réservés à la validation finale. Les deux politiques évaluées conservent
+les mêmes decks, terrains et graines dans les comparaisons appariées.
+Le script `generate_phase5_deck_pools.py` reconstruit la configuration et
+fait valider tous les decks par Godot.
+
+Depuis `rl/`, démarrer le run à decks variés à partir du champion certifié.
+
+```powershell
+$env:GODOT_BIN = "C:\Program Files (x86)\godot\Godot_v4.7.2-stable_win64.exe"
+$env:PYTHONPATH = (Resolve-Path "artifacts\phase5_compat_7163154e\rl_varied\src").Path
+.\.venv311\Scripts\python.exe -u -m samstone_rl.training.ppo_self_play `
+  --config configs\ppo_self_play_80_varied.yaml `
+  --transfer-from runs\ppo_self_play_80\phase5_validated.pt `
+  --allow-python-source-change --quiet
+```
+
+Pour reprendre ce run, utiliser `--resume runs\ppo_self_play_80_varied\latest.pt`
+à la place de `--transfer-from ...`. TensorBoard lit
+`runs\ppo_self_play_80_varied\tensorboard`.
+
+Pour entraîner la phase 5 avec les six decks validés à 80 points, utiliser
+`configs/ppo_self_play_80.yaml`. L'option `--transfer-from` prend le
+`latest.pt` du run source et charge les poids de son dernier champion promu.
+Le run à 80 points démarre avec son propre compteur de promotions et son
+propre optimiseur. La référence de phase 4 est évaluée avec les decks à
+80 points lors des contrôles contre les bots. Avec les sources de la copie
+compatible chargées depuis `rl/` :
+
+```powershell
+$env:GODOT_BIN = "C:\Program Files (x86)\godot\Godot_v4.7.2-stable_win64.exe"
+$env:PYTHONPATH = (Resolve-Path "artifacts\phase5_compat_7163154e\rl_budget80\src").Path
+.\.venv311\Scripts\python.exe -u -m samstone_rl.training.ppo_self_play `
+  --config configs\ppo_self_play_80.yaml `
+  --transfer-from runs\ppo_self_play_v2\latest.pt `
+  --allow-python-source-change --quiet
+```
+
+Après le premier lancement, utiliser `--resume runs\ppo_self_play_80\latest.pt`
+pour continuer ce run. Les événements TensorBoard sont enregistrés dans
+`runs\ppo_self_play_80\tensorboard`. Après certification, le checkpoint de
+ce run pour la phase 6 est `runs\ppo_self_play_80\phase5_validated.pt`.
+
+La collecte reste en Python et les validations utilisent Godot. Un démarrage
+avec `--phase4` fait du modèle de phase 4 le premier champion figé. Le champion
 change seulement après deux confirmations réussies et les contrôles de
 conservation par dieu, contre les anciens champions et les bots.
 
@@ -360,7 +407,9 @@ Le déroulement par défaut est le suivant :
 - Présélection toutes les 100 mises à jour : 144 duels équilibrés, score minimum
   52 %. Une présélection réussie ne remplace pas le champion.
 - Le candidat figé passe d'abord les contrôles contre les bots des huit paliers,
-  puis contre les anciens champions. Un échec arrête la tentative immédiatement.
+  puis contre les anciens champions. Chaque palier couvre les 36 confrontations
+  de dieux, dont 6 miroirs. Le candidat et la référence jouent les mêmes parties.
+  Un échec arrête la tentative immédiatement.
 - Deux confirmations distinctes de 1 152 duels, au moins 53 % de
   score et borne bootstrap appariée supérieure à 50 % à chaque confirmation.
 - Contrôle de conservation par dieu contre le champion.
@@ -378,7 +427,7 @@ distincts de la présélection et de la collecte.
 
 Le bloc `phase5.adaptive_opponents` fixe la part initiale de bots à 40 %.
 Toutes les 100 mises à jour, un suivi Godot compare le candidat à la référence
-de phase 4 sur de nouvelles parties appariées. Le suivi utilise ses propres
+de phase 4 sur les mêmes 36 confrontations. Le suivi utilise ses propres
 graines et registres. Deux suivis concordants ajustent le ratio de 5 points,
 dans l’intervalle de 25 % à 50 %. Les profils dont l’écart dépasse le seuil
 de conservation reçoivent davantage de parties. La moitié des tirages de bots

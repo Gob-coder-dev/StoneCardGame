@@ -50,11 +50,21 @@ class AdaptiveOpponents:
 
     def _initialize_opponent_sampling(self):
         settings = self.config["phase5"].get("adaptive_opponents")
-        if settings is None or "opponent_sampling" in self.phase5_state:
+        if settings is None:
+            return
+        saved = self.phase5_state.get("opponent_sampling")
+        if saved is not None:
+            if saved.get("matchups") != "all_ordered":
+                saved.update(
+                    matchups="all_ordered",
+                    streak=0,
+                    stage_deficits={stage.name: 0.0 for stage in self.curriculum.stages},
+                )
             return
         stages = self.curriculum.stages
         focus = {stage.name for stage in stages[-2:]}
         self.phase5_state["opponent_sampling"] = dict(
+            matchups="all_ordered",
             bot_fraction=float(settings["initial_bot_fraction"]),
             streak=0,
             stage_deficits={stage.name: 0.10 if stage.name in focus else 0.0 for stage in stages},
@@ -116,6 +126,7 @@ class AdaptiveOpponents:
             step,
             dict(
                 passed=report["passed"],
+                games_per_policy=report.get("games_per_policy"),
                 bot_fraction=state["bot_fraction"],
                 win_rate_deltas=report["win_rate_deltas"],
                 stage_weights=dict(
@@ -127,5 +138,5 @@ class AdaptiveOpponents:
                     )
                 ),
             ),
-            dict(update=update),
+            dict(update=update, matchups="all_ordered"),
         )

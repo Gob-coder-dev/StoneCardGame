@@ -10,6 +10,7 @@ from samstone_rl.bridge import GodotProtocolError
 from samstone_rl.evaluation.tournament import run_tournament, tournament_path
 from samstone_rl.models.policy import act_from_info, build_policy
 from samstone_rl.opponents.checkpoint import CheckpointOpponent
+from samstone_rl.training.phase_five_decks import assign_match_decks
 from samstone_rl.training.phase_five_protocol import duel_cases, duel_summary, outcome_stats
 from samstone_rl.utils.checkpoints import file_checksum, policy_checksum
 
@@ -62,8 +63,8 @@ class PhaseFiveArena:
             "config": dict(
                 human_god=home["god"],
                 ai_god=away["god"],
-                human_deck=list(home["deck"]),
-                ai_deck=list(away["deck"]),
+                human_deck=list(case.get("left_deck", home["deck"])),
+                ai_deck=list(case.get("right_deck", away["deck"])),
                 first_player=case["first"],
             )
         }
@@ -130,6 +131,7 @@ class PhaseFiveArena:
     def duels(self, actor, opponent_path, repetitions, seed, label):
         opponent = self.opponent(opponent_path)
         cases = duel_cases(len(self.scenarios), repetitions, seed)
+        assign_match_decks(cases, self.scenarios, seed, label)
         outcomes = self.run(
             cases, actor, lambda _: opponent, label, policy_checksum(opponent.model)
         )
@@ -150,22 +152,30 @@ class PhaseFiveArena:
     def retention(self, actor, reference_path, repetitions, seed, label="retention"):
         trainer = self.trainer
         cases = []
+        gods = len(self.scenarios)
+        rotation = seed // 1_000_000
+        deck_seed = seed
         for stage in range(len(trainer.curriculum.stages)):
-            for scenario in range(len(self.scenarios)):
-                for player in (1, 2):
-                    for first in (1, 2):
-                        for _ in range(repetitions):
-                            cases.append(
-                                dict(
-                                    left=scenario,
-                                    right=scenario,
-                                    player=player,
-                                    first=first,
-                                    seed=seed,
-                                    stage=stage,
-                                )
+            for own in range(gods):
+                for rival in range(gods):
+                    for repeat in range(repetitions):
+                        # Rotate the four camp/opening combinations across
+                        # equally represented ordered matchups and repeats.
+                        setup = (own * gods + rival + stage + repeat + rotation) % 4
+                        camp, opening = divmod(setup, 2)
+                        left, right = (own, rival) if camp == 0 else (rival, own)
+                        cases.append(
+                            dict(
+                                left=left,
+                                right=right,
+                                player=camp + 1,
+                                first=opening + 1,
+                                seed=seed,
+                                stage=stage,
                             )
-                            seed += 1
+                        )
+                        seed += 1
+        assign_match_decks(cases, self.scenarios, deck_seed, label)
 
         def profile(case):
             return trainer.curriculum.stages[case["stage"]].opponent()
@@ -188,7 +198,8 @@ class PhaseFiveArena:
             for case, info in zip(cases, outcomes, strict=True):
                 score = 0.5 if info["winner"] == 0 else float(info["winner"] == case["player"])
                 groups[f"stage:{trainer.curriculum.stages[case['stage']].name}"].append(score)
-                groups[f"god:{self.scenarios[case['left']]['god']}"].append(score)
+                own = case["left"] if case["player"] == 1 else case["right"]
+                groups[f"god:{self.scenarios[own]['god']}"].append(score)
             return {key: outcome_stats(values) for key, values in groups.items()}
 
         candidate, baseline = summarize(candidate), summarize(baseline)
@@ -208,6 +219,8 @@ class PhaseFiveArena:
             - 1e-12
         ]
         return dict(
+            matchups="all_ordered",
+            games_per_policy=len(cases),
             passed=not failed,
             win_rate_deltas=deltas,
             failed_groups=failed,
